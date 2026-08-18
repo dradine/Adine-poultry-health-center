@@ -1,30 +1,18 @@
 document.addEventListener("DOMContentLoaded", () => {
 
-    const form =
-        document.getElementById("loginForm");
-
-    const emailInput =
-        document.getElementById("email");
-
-    const passwordInput =
-        document.getElementById("password");
-
-    const button =
-        document.getElementById("loginButton");
-
-    const message =
-        document.getElementById("message");
-
-    const togglePassword =
-        document.getElementById("togglePassword");
+    const form = document.getElementById("loginForm");
+    const emailInput = document.getElementById("email");
+    const passwordInput = document.getElementById("password");
+    const button = document.getElementById("loginButton");
+    const message = document.getElementById("message");
+    const togglePassword = document.getElementById("togglePassword");
 
 
     function showMessage(text, type = "error") {
 
         message.textContent = text;
 
-        message.className =
-            "message " + type;
+        message.className = "message " + type;
 
         message.classList.remove("hidden");
     }
@@ -44,36 +32,46 @@ document.addEventListener("DOMContentLoaded", () => {
         params.get("message");
 
     if (urlMessage) {
-        showMessage(urlMessage, "info");
+
+        showMessage(
+            urlMessage,
+            "info"
+        );
+
     }
 
 
-    togglePassword.addEventListener(
-        "click",
-        () => {
+    if (togglePassword) {
 
-            if (
-                passwordInput.type ===
-                "password"
-            ) {
+        togglePassword.addEventListener(
+            "click",
+            () => {
 
-                passwordInput.type =
-                    "text";
+                if (
+                    passwordInput.type ===
+                    "password"
+                ) {
 
-                togglePassword.textContent =
-                    "پنهان";
+                    passwordInput.type =
+                        "text";
 
-            } else {
+                    togglePassword.textContent =
+                        "پنهان";
 
-                passwordInput.type =
-                    "password";
+                } else {
 
-                togglePassword.textContent =
-                    "نمایش";
+                    passwordInput.type =
+                        "password";
+
+                    togglePassword.textContent =
+                        "نمایش";
+
+                }
+
             }
+        );
 
-        }
-    );
+    }
 
 
     form.addEventListener(
@@ -117,34 +115,82 @@ document.addEventListener("DOMContentLoaded", () => {
                 } =
                 await supabaseClient.auth
                     .signInWithPassword({
-                        email,
-                        password
+                        email: email,
+                        password: password
                     });
 
 
+                /*
+                 * خطای واقعی Supabase
+                 */
+
                 if (error) {
 
+                    console.error(
+                        "LOGIN ERROR:",
+                        error
+                    );
+
+                    console.error(
+                        "LOGIN ERROR CODE:",
+                        error.code
+                    );
+
+                    console.error(
+                        "LOGIN ERROR MESSAGE:",
+                        error.message
+                    );
+
+
+                    /*
+                     * پیام‌های مشخص
+                     */
+
+                    if (
+                        error.message &&
+                        error.message
+                            .toLowerCase()
+                            .includes(
+                                "email not confirmed"
+                            )
+                    ) {
+
+                        showMessage(
+                            "ایمیل شما هنوز تأیید نشده است."
+                        );
+
+                    } else {
+
+                        showMessage(
+                            error.message ||
+                            "ورود انجام نشد."
+                        );
+
+                    }
+
+                    return;
+                }
+
+
+                if (!data || !data.user) {
+
                     showMessage(
-                        "ایمیل یا رمز عبور صحیح نیست."
+                        "ورود انجام نشد؛ حساب کاربری پیدا نشد."
                     );
 
                     return;
                 }
 
 
-                if (!data.user) {
-
-                    showMessage(
-                        "ورود انجام نشد."
-                    );
-
-                    return;
-                }
-
+                /*
+                 * دریافت پروفایل
+                 */
 
                 const profile =
                     await AdineAuth
-                        .getProfile(data.user.id);
+                        .getProfile(
+                            data.user.id
+                        );
 
 
                 if (!profile) {
@@ -154,14 +200,21 @@ document.addEventListener("DOMContentLoaded", () => {
                         .signOut();
 
                     showMessage(
-                        "اطلاعات حساب شما پیدا نشد."
+                        "حساب شما در سامانه ثبت نشده است. لطفاً با مالک سامانه تماس بگیرید."
                     );
 
                     return;
                 }
 
 
-                if (profile.status !== "active") {
+                /*
+                 * بررسی وضعیت حساب
+                 */
+
+                if (
+                    profile.status !==
+                    "active"
+                ) {
 
                     let text =
                         "دسترسی شما به سامانه فعال نیست.";
@@ -171,8 +224,10 @@ document.addEventListener("DOMContentLoaded", () => {
                         profile.status ===
                         "pending"
                     ) {
+
                         text =
-                            "ثبت‌نام شما با موفقیت انجام شد و اکنون در انتظار تأیید مالک است.";
+                            "ایمیل شما تأیید شده است، اما حساب هنوز توسط مالک فعال نشده است.";
+
                     }
 
 
@@ -180,8 +235,10 @@ document.addEventListener("DOMContentLoaded", () => {
                         profile.status ===
                         "suspended"
                     ) {
+
                         text =
                             "دسترسی حساب شما موقتاً غیرفعال شده است.";
+
                     }
 
 
@@ -189,8 +246,10 @@ document.addEventListener("DOMContentLoaded", () => {
                         profile.status ===
                         "blocked"
                     ) {
+
                         text =
                             "حساب شما مسدود شده است.";
+
                     }
 
 
@@ -198,8 +257,10 @@ document.addEventListener("DOMContentLoaded", () => {
                         profile.status ===
                         "removed"
                     ) {
+
                         text =
                             "دسترسی شما به سامانه لغو شده است.";
+
                     }
 
 
@@ -214,11 +275,32 @@ document.addEventListener("DOMContentLoaded", () => {
                 }
 
 
+                /*
+                 * ثبت آخرین فعالیت
+                 */
+
+                const {
+                    error: activityError
+                } =
                 await supabaseClient
                     .rpc(
                         "update_my_activity"
                     );
 
+
+                if (activityError) {
+
+                    console.warn(
+                        "ACTIVITY UPDATE ERROR:",
+                        activityError
+                    );
+
+                }
+
+
+                /*
+                 * انتقال کاربر
+                 */
 
                 if (
                     profile.role ===
@@ -232,15 +314,22 @@ document.addEventListener("DOMContentLoaded", () => {
 
                     window.location.href =
                         "dashboard.html";
+
                 }
+
 
             } catch (error) {
 
-                console.error(error);
+                console.error(
+                    "LOGIN EXCEPTION:",
+                    error
+                );
 
                 showMessage(
-                    "خطایی در ورود رخ داد. دوباره تلاش کنید."
+                    error.message ||
+                    "خطایی در ورود رخ داد."
                 );
+
 
             } finally {
 
@@ -248,6 +337,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
                 button.textContent =
                     "ورود";
+
             }
 
         }

@@ -1,9 +1,12 @@
 
-const SUPABASE_URL = "https://vzcczkavlopznljnnehp.supabase.co/rest/v1/";
+const SUPABASE_URL =
+    "https://vzcczkavlopznljnnehp.supabase.co";
 
-const SUPABASE_PUBLISHABLE_KEY = "sb_publishable_4jMgvqKI__-MsmMQtEiCig_M9WjhvN9";
+const SUPABASE_ANON_KEY =
+    "sb_publishable_4jMgvqKI__-MsmMQtEiCig_M9WjhvN9";
 
-window.supabaseClient = window.supabase.createClient(
-    SUPABASE_URL,
-    SUPABASE_PUBLISHABLE_KEY
-);
+window.supabaseClient =
+    window.supabase.createClient(
+        SUPABASE_URL,
+        SUPABASE_ANON_KEY
+    );

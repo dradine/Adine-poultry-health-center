@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+
+<html lang="fa" dir="rtl">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0, viewport-fit=cover"
+    >
+
+    <title>
+        مدیریت کاربران | آدینه
+    </title>
+
+    <link
+        rel="stylesheet"
+        href="style.css"
+    >
+
+</head>
+
+<body class="app-page">
+
+    <header class="app-header">
+
+        <div class="app-header-inner">
+
+            <h1 class="app-title">
+                مدیریت کاربران
+            </h1>
+
+            <button
+                id="logoutButton"
+                class="action-button action-block"
+            >
+                خروج
+            </button>
+
+        </div>
+
+    </header>
+
+
+    <main class="app-content">
+
+        <section class="card">
+
+            <h2>
+                مدیریت دسترسی کاربران
+            </h2>
+
+            <p>
+                کاربران ثبت‌نام‌شده و وضعیت دسترسی آنها
+            </p>
+
+        </section>
+
+
+        <section class="card">
+
+            <div
+                id="message"
+                class="message hidden"
+            ></div>
+
+            <div class="table-wrapper">
+
+                <table class="users-table">
+
+                    <thead>
+
+                        <tr>
+
+                            <th>
+                                نام
+                            </th>
+
+                            <th>
+                                ایمیل
+                            </th>
+
+                            <th>
+                                وضعیت
+                            </th>
+
+                            <th>
+                                ثبت‌نام
+                            </th>
+
+                            <th>
+                                آخرین فعالیت
+                            </th>
+
+                            <th>
+                                عملیات
+                            </th>
+
+                        </tr>
+
+                    </thead>
+
+                    <tbody id="usersTableBody">
+
+                        <tr>
+
+                            <td
+                                colspan="6"
+                            >
+                                در حال بارگذاری...
+                            </td>
+
+                        </tr>
+
+                    </tbody>
+
+                </table>
+
+            </div>
+
+        </section>
+
+    </main>
+
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+    <script src="config.js"></script>
+
+    <script src="auth.js"></script>
+
+    <script src="owner.js"></script>
+
+</body>
+
+</html>

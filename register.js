@@ -1,217 +1,212 @@
-
 document.addEventListener("DOMContentLoaded", () => {
 
-    const form =
-        document.getElementById("registerForm");
-
-    const fullNameInput =
-        document.getElementById("fullName");
-
-    const emailInput =
-        document.getElementById("email");
-
-    const passwordInput =
-        document.getElementById("password");
-
-    const confirmPasswordInput =
-        document.getElementById(
-            "confirmPassword"
-        );
-
-    const button =
-        document.getElementById(
-            "registerButton"
-        );
-
-    const message =
-        document.getElementById(
-            "message"
-        );
-
-    const togglePassword =
-        document.getElementById(
-            "togglePassword"
-        );
+    const form = document.getElementById("registerForm");
+    const fullNameInput = document.getElementById("fullName");
+    const emailInput = document.getElementById("email");
+    const passwordInput = document.getElementById("password");
+    const confirmPasswordInput = document.getElementById("confirmPassword");
+    const button = document.getElementById("registerButton");
+    const message = document.getElementById("message");
+    const togglePassword = document.getElementById("togglePassword");
 
 
-    function showMessage(
-        text,
-        type = "error"
-    ) {
+    function showMessage(text, type = "error") {
 
         message.textContent = text;
 
-        message.className =
-            "message " + type;
+        message.className = "message " + type;
 
-        message.classList.remove(
-            "hidden"
-        );
+        message.classList.remove("hidden");
     }
 
 
-    togglePassword.addEventListener(
-        "click",
-        () => {
+    function hideMessage() {
 
-            const visible =
-                passwordInput.type ===
-                "text";
+        message.classList.add("hidden");
 
-            passwordInput.type =
-                visible
-                    ? "password"
-                    : "text";
+    }
 
-            togglePassword.textContent =
-                visible
-                    ? "نمایش"
-                    : "پنهان";
+
+    togglePassword.addEventListener("click", () => {
+
+        const isHidden =
+            passwordInput.type === "password";
+
+        passwordInput.type =
+            isHidden ? "text" : "password";
+
+        togglePassword.textContent =
+            isHidden ? "پنهان" : "نمایش";
+
+    });
+
+
+    form.addEventListener("submit", async (event) => {
+
+        event.preventDefault();
+
+        hideMessage();
+
+
+        const fullName =
+            fullNameInput.value.trim();
+
+        const email =
+            emailInput.value
+                .trim()
+                .toLowerCase();
+
+        const password =
+            passwordInput.value;
+
+        const confirmPassword =
+            confirmPasswordInput.value;
+
+
+        if (fullName.length < 2) {
+
+            showMessage(
+                "نام و نام خانوادگی را کامل وارد کنید."
+            );
+
+            return;
         }
-    );
 
 
-    form.addEventListener(
-        "submit",
-        async (event) => {
+        if (!email) {
 
-            event.preventDefault();
+            showMessage(
+                "ایمیل را وارد کنید."
+            );
 
-
-            const fullName =
-                fullNameInput.value.trim();
-
-            const email =
-                emailInput.value
-                    .trim()
-                    .toLowerCase();
-
-            const password =
-                passwordInput.value;
-
-            const confirmPassword =
-                confirmPasswordInput.value;
+            return;
+        }
 
 
-            if (
-                fullName.length < 2
-            ) {
+        if (password.length < 8) {
+
+            showMessage(
+                "رمز عبور باید حداقل ۸ کاراکتر باشد."
+            );
+
+            return;
+        }
+
+
+        if (password !== confirmPassword) {
+
+            showMessage(
+                "تکرار رمز عبور با رمز عبور یکسان نیست."
+            );
+
+            return;
+        }
+
+
+        button.disabled = true;
+
+        button.textContent =
+            "در حال ثبت‌نام...";
+
+
+        try {
+
+            const redirectUrl =
+                window.location.origin +
+                "/Adine-poultry-health-center/login.html";
+
+
+            const {
+                data,
+                error
+            } = await supabaseClient.auth.signUp({
+
+                email: email,
+
+                password: password,
+
+                options: {
+
+                    data: {
+
+                        full_name: fullName
+
+                    },
+
+                    emailRedirectTo:
+                        redirectUrl
+
+                }
+
+            });
+
+
+            if (error) {
+
+                console.error(
+                    "SIGNUP ERROR:",
+                    error
+                );
 
                 showMessage(
-                    "نام و نام خانوادگی را کامل وارد کنید."
+                    error.message ||
+                    "ثبت‌نام انجام نشد."
                 );
 
                 return;
             }
 
 
-            if (password.length < 8) {
+            if (!data || !data.user) {
 
                 showMessage(
-                    "رمز عبور باید حداقل ۸ کاراکتر باشد."
+                    "ثبت‌نام انجام نشد."
                 );
 
                 return;
             }
 
 
-            if (
-                password !==
-                confirmPassword
-            ) {
-
-                showMessage(
-                    "تکرار رمز عبور با رمز عبور یکسان نیست."
-                );
-
-                return;
-            }
+            /*
+             * حساب جدید به صورت خودکار
+             * در profiles با وضعیت pending
+             * ساخته می‌شود.
+             *
+             * کاربر ابتدا باید ایمیل خود را
+             * تأیید کند و سپس مالک حساب را
+             * فعال کند.
+             */
 
 
-            button.disabled = true;
+            form.reset();
+
+
+            showMessage(
+                "ثبت‌نام با موفقیت انجام شد. لینک تأیید به ایمیل شما ارسال شد. پس از تأیید ایمیل، حساب شما باید توسط مالک فعال شود.",
+                "success"
+            );
+
+
+        } catch (error) {
+
+            console.error(
+                "REGISTER ERROR:",
+                error
+            );
+
+            showMessage(
+                "خطایی در ثبت‌نام رخ داد. دوباره تلاش کنید."
+            );
+
+        } finally {
+
+            button.disabled = false;
 
             button.textContent =
-                "در حال ثبت‌نام...";
-
-
-            try {
-
-                const {
-                    data,
-                    error
-                } =
-                await supabaseClient.auth
-                    .signUp({
-
-                        email,
-
-                        password,
-
-                        options: {
-
-                            data: {
-                                full_name:
-                                    fullName
-                            },
-
-                            emailRedirectTo:
-                                window.location.origin +
-                                "/login.html"
-
-                        }
-
-                    });
-
-
-                if (error) {
-
-                    console.error(error);
-
-                    showMessage(
-                        error.message ||
-                        "ثبت‌نام انجام نشد."
-                    );
-
-                    return;
-                }
-
-
-                if (!data.user) {
-
-                    showMessage(
-                        "ثبت‌نام انجام نشد."
-                    );
-
-                    return;
-                }
-
-
-                showMessage(
-                    "ثبت‌نام با موفقیت انجام شد. ایمیل خود را تأیید کنید. پس از تأیید ایمیل، حساب شما باید توسط مالک فعال شود.",
-                    "success"
-                );
-
-
-                form.reset();
-
-
-            } catch (error) {
-
-                console.error(error);
-
-                showMessage(
-                    "خطایی در ثبت‌نام رخ داد."
-                );
-
-            } finally {
-
-                button.disabled = false;
-
-                button.textContent =
-                    "ثبت‌نام";
-            }
+                "ثبت‌نام";
 
         }
-    );
+
+    });
 
 });

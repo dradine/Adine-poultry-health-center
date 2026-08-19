@@ -1,12 +1,12 @@
 /* =========================================================
    ADINE POULTRY HEALTH CENTER
-   GENETICS SELECTOR UI
-   ========================================================= */
+   GENETICS UI ENGINE
+========================================================= */
 
 
 /* =========================================================
-   PRODUCTION TYPE
-   ========================================================= */
+   POPULATE PRODUCTION TYPE
+========================================================= */
 
 function populateProductionTypes(
     select
@@ -22,7 +22,7 @@ function populateProductionTypes(
     select.innerHTML = `
 
         <option value="">
-            نوع گله را انتخاب کنید
+            انتخاب نوع گله
         </option>
 
         <option value="broiler">
@@ -47,164 +47,12 @@ function populateProductionTypes(
 
 
 /* =========================================================
-   GENETICS
-   ========================================================= */
+   POPULATE GENETICS
+========================================================= */
 
 function populateGenetics(
-    select,
-    type
-) {
-
-    if (!select) {
-
-        return;
-
-    }
-
-
-    select.innerHTML = `
-
-        <option value="">
-            انتخاب سویه / شرکت
-        </option>
-
-    `;
-
-
-    let genetics = [];
-
-
-    if (
-        type === "broiler"
-    ) {
-
-        genetics =
-            getBroilerGenetics();
-
-    }
-
-    else if (
-        type === "layer"
-    ) {
-
-        genetics =
-            getLayerGenetics();
-
-    }
-
-    else if (
-        type === "pullet"
-    ) {
-
-        genetics =
-            getLayerGenetics();
-
-    }
-
-    else if (
-        type === "breeder"
-    ) {
-
-        genetics =
-            getBroilerGenetics();
-
-    }
-
-
-    genetics.forEach(
-        key => {
-
-            const option =
-                document.createElement(
-                    "option"
-                );
-
-
-            option.value =
-                key;
-
-
-            option.textContent =
-                getGeneticsLabel(
-                    key
-                );
-
-
-            select.appendChild(
-                option
-            );
-
-        }
-    );
-
-}
-
-
-/* =========================================================
-   LABEL
-   ========================================================= */
-
-function getGeneticsLabel(
-    key
-) {
-
-    const labels = {
-
-        Ross:
-            "Aviagen / Ross",
-
-        Cobb:
-            "Cobb",
-
-        ArborAcres:
-            "Arbor Acres",
-
-        IndianRiver:
-            "Indian River",
-
-        Hubbard:
-            "Hubbard",
-
-        Arian:
-            "آرین",
-
-        HyLine:
-            "Hy-Line",
-
-        Hendrix:
-            "Hendrix Genetics",
-
-        Lohmann:
-            "Lohmann",
-
-        NOVOgen:
-            "NOVOgen",
-
-        HN:
-            "H&N",
-
-        TETRA:
-            "TETRA"
-
-    };
-
-
-    return (
-        labels[key] ||
-        key
-    );
-
-}
-
-
-/* =========================================================
-   STRAIN
-   ========================================================= */
-
-function populateStrains(
-    select,
     type,
-    genetics
+    select
 ) {
 
     if (!select) {
@@ -217,45 +65,71 @@ function populateStrains(
     select.innerHTML = `
 
         <option value="">
-            انتخاب نژاد / سویه
+            انتخاب شرکت / ژنتیک
         </option>
 
     `;
 
 
-    if (!type || !genetics) {
+    getGenetics(type)
+        .forEach(
+            genetics => {
 
-        return;
-
-    }
-
-
-    if (
-        type === "pullet"
-    ) {
-
-        type = "layer";
-
-    }
+                const option =
+                    document.createElement(
+                        "option"
+                    );
 
 
-    if (
-        type === "breeder"
-    ) {
-
-        type = "broiler";
-
-    }
+                option.value =
+                    genetics.id;
 
 
-    const strains =
-        getProducts(
-            type,
-            genetics
+                option.textContent =
+                    genetics.name;
+
+
+                select.appendChild(
+                    option
+                );
+
+            }
         );
 
+}
 
-    strains.forEach(
+
+/* =========================================================
+   POPULATE STRAINS
+========================================================= */
+
+function populateStrains(
+    type,
+    geneticsId,
+    select
+) {
+
+    if (!select) {
+
+        return;
+
+    }
+
+
+    select.innerHTML = `
+
+        <option value="">
+            انتخاب سویه / نژاد
+        </option>
+
+    `;
+
+
+    getStrains(
+        type,
+        geneticsId
+    )
+    .forEach(
         strain => {
 
             const option =
@@ -283,154 +157,109 @@ function populateStrains(
 
 
 /* =========================================================
-   PROGRAM
-   ========================================================= */
+   SETUP SELECTORS
+========================================================= */
 
-function populatePrograms(
-    select,
-    type,
-    genetics,
-    strain
-) {
+function setupGeneticsSelectors({
 
-    if (!select) {
+    typeSelect,
 
-        return;
+    geneticsSelect,
 
-    }
+    strainSelect,
 
+    onChange = null
 
-    select.innerHTML = `
+}) {
 
-        <option value="">
-            انتخاب برنامه استاندارد
-        </option>
+    if (typeSelect) {
 
-    `;
+        populateProductionTypes(
+            typeSelect
+        );
 
 
-    if (
-        !type ||
-        !genetics ||
-        !strain
-    ) {
+        typeSelect.addEventListener(
+            "change",
+            function() {
 
-        return;
-
-    }
-
-
-    if (
-        type === "broiler"
-    ) {
-
-        const product =
-            getProduct(
-                "broiler",
-                genetics,
-                strain
-            );
-
-
-        if (
-            product &&
-            product.programs
-        ) {
-
-            Object.entries(
-                product.programs
-            )
-            .forEach(
-                ([key, program]) => {
-
-                    const option =
-                        document.createElement(
-                            "option"
-                        );
-
-
-                    option.value =
-                        key;
-
-
-                    option.textContent =
-                        program.label;
-
-
-                    select.appendChild(
-                        option
-                    );
-
-                }
-            );
-
-        }
-
-    }
-
-
-    else if (
-        type === "breeder"
-    ) {
-
-        const options = [
-
-            {
-                value:
-                    "parentStock",
-
-                label:
-                    "Parent Stock"
-            }
-
-        ];
-
-
-        options.forEach(
-            item => {
-
-                const option =
-                    document.createElement(
-                        "option"
-                    );
-
-
-                option.value =
-                    item.value;
-
-
-                option.textContent =
-                    item.label;
-
-
-                select.appendChild(
-                    option
+                populateGenetics(
+                    this.value,
+                    geneticsSelect
                 );
 
+
+                if (strainSelect) {
+
+                    strainSelect.innerHTML =
+                        `
+                        <option value="">
+                            انتخاب سویه / نژاد
+                        </option>
+                        `;
+
+                }
+
+
+                if (
+                    typeof onChange ===
+                    "function"
+                ) {
+
+                    onChange();
+
+                }
+
             }
         );
 
     }
 
 
-    else {
+    if (geneticsSelect) {
 
-        const option =
-            document.createElement(
-                "option"
-            );
+        geneticsSelect.addEventListener(
+            "change",
+            function() {
 
-
-        option.value =
-            "commercial";
-
-
-        option.textContent =
-            "Commercial Standard";
+                populateStrains(
+                    typeSelect.value,
+                    this.value,
+                    strainSelect
+                );
 
 
-        select.appendChild(
-            option
+                if (
+                    typeof onChange ===
+                    "function"
+                ) {
+
+                    onChange();
+
+                }
+
+            }
+        );
+
+    }
+
+
+    if (strainSelect) {
+
+        strainSelect.addEventListener(
+            "change",
+            function() {
+
+                if (
+                    typeof onChange ===
+                    "function"
+                ) {
+
+                    onChange();
+
+                }
+
+            }
         );
 
     }
@@ -439,219 +268,84 @@ function populatePrograms(
 
 
 /* =========================================================
-   SELECTOR INIT
-   ========================================================= */
+   GET SELECTED STANDARD
+========================================================= */
 
-function initGeneticsSelectors() {
+function getSelectedStandardFromUI({
 
-    const type =
-        document.getElementById(
-            "productionType"
-        );
+    typeSelect,
 
+    geneticsSelect,
 
-    const genetics =
-        document.getElementById(
-            "genetics"
-        );
+    strainSelect
 
-
-    const strain =
-        document.getElementById(
-            "strain"
-        );
-
-
-    const program =
-        document.getElementById(
-            "standardProgram"
-        );
-
-
-    if (!type) {
-
-        return;
-
-    }
-
-
-    populateProductionTypes(
-        type
-    );
-
-
-    type.addEventListener(
-        "change",
-        () => {
-
-            populateGenetics(
-                genetics,
-                type.value
-            );
-
-
-            if (strain) {
-
-                strain.innerHTML = `
-
-                    <option value="">
-                        ابتدا سویه را انتخاب کنید
-                    </option>
-
-                `;
-
-            }
-
-
-            if (program) {
-
-                program.innerHTML = `
-
-                    <option value="">
-                        ابتدا برنامه را انتخاب کنید
-                    </option>
-
-                `;
-
-            }
-
-        }
-    );
-
-
-    genetics?.addEventListener(
-        "change",
-        () => {
-
-            populateStrains(
-                strain,
-                type.value,
-                genetics.value
-            );
-
-        }
-    );
-
-
-    strain?.addEventListener(
-        "change",
-        () => {
-
-            populatePrograms(
-                program,
-                type.value,
-                genetics.value,
-                strain.value
-            );
-
-            showGeneticInfo(
-                type.value,
-                genetics.value,
-                strain.value
-            );
-
-        }
-    );
-
-}
-
-
-/* =========================================================
-   INFO PANEL
-   ========================================================= */
-
-function showGeneticInfo(
-    type,
-    genetics,
-    strain
-) {
-
-    const box =
-        document.getElementById(
-            "geneticsInfo"
-        );
-
-
-    if (!box) {
-
-        return;
-
-    }
-
+}) {
 
     if (
-        !type ||
-        !genetics ||
-        !strain
+        !typeSelect ||
+        !geneticsSelect ||
+        !strainSelect
     ) {
 
-        box.innerHTML = "";
+        return null;
+
+    }
+
+
+    return getStandard(
+        typeSelect.value,
+        geneticsSelect.value,
+        strainSelect.value
+    );
+
+}
+
+
+/* =========================================================
+   STANDARD STATUS MESSAGE
+========================================================= */
+
+function renderStandardStatus(
+    element,
+    standard
+) {
+
+    if (!element) {
 
         return;
 
     }
 
 
-    const productType =
-        type === "pullet"
-            ? "layer"
-            : type === "breeder"
-                ? "broiler"
-                : type;
+    if (!standard) {
 
+        element.innerHTML = `
 
-    const product =
-        getProduct(
-            productType,
-            genetics,
-            strain
-        );
+            <div class="info-box">
 
+                برای این سویه هنوز
+                استاندارد عددی وارد نشده است.
+                عدد حدسی در محاسبات استفاده نمی‌شود.
 
-    if (!product) {
+            </div>
 
-        box.innerHTML = "";
+        `;
 
         return;
 
     }
 
 
-    const official =
-        product.officialDocumentation
-            ? "مستندات رسمی موجود"
-            : "نیازمند منبع محلی/ایرانی";
+    element.innerHTML = `
 
+        <div class="info-box">
 
-    const local =
-        product.localIranianLine
-            ? "لاین ایرانی"
-            : "";
-
-
-    box.innerHTML = `
-
-        <div class="genetics-info-card">
-
-            <strong>
-                ${escapeHTML(strain)}
-            </strong>
-
-            <span>
-                ${escapeHTML(
-                    getGeneticsLabel(genetics)
-                )}
-            </span>
-
-            <small>
-                ${official}
-            </small>
-
-            ${
-                local
-                    ? `<small>${local}</small>`
-                    : ""
-            }
+            استاندارد مرجع فعال است.
+            سال مرجع:
+            ${escapeHTML(
+                standard.sourceYear ||
+                "-"
+            )}
 
         </div>
 

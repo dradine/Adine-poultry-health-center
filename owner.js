@@ -1,174 +1,258 @@
-document.addEventListener(
-    "DOMContentLoaded",
-    async () => {
+document.addEventListener("DOMContentLoaded", async () => {
 
-        const auth =
-            await AdineAuth
-                .requireOwner();
+    const auth = await AdineAuth.requireOwner();
 
-        if (!auth) {
+    if (!auth) {
+        return;
+    }
+
+
+    const tbody = document.getElementById("usersTableBody");
+    const message = document.getElementById("message");
+    const logout = document.getElementById("logoutButton");
+
+
+    if (!tbody) {
+        console.error("usersTableBody not found.");
+        return;
+    }
+
+
+    function showMessage(text, type = "success") {
+
+        if (!message) {
             return;
         }
 
+        message.textContent = text;
 
-        const tbody =
-            document.getElementById(
-                "usersTableBody"
-            );
+        message.className = "message " + type;
 
-        const message =
-            document.getElementById(
-                "message"
-            );
-
-        const logout =
-            document.getElementById(
-                "logoutButton"
-            );
+        message.classList.remove("hidden");
+    }
 
 
-        function showMessage(
-            text,
-            type = "success"
-        ) {
+    function statusText(status) {
 
-            message.textContent =
-                text;
+        const map = {
 
-            message.className =
-                "message " + type;
+            pending:
+                "در انتظار تأیید",
 
-            message.classList.remove(
-                "hidden"
-            );
+            approved:
+                "فعال",
 
+            disabled:
+                "موقتاً غیرفعال",
+
+            blocked:
+                "مسدود"
+
+        };
+
+        return map[status] || status || "نامشخص";
+    }
+
+
+    function statusClass(status) {
+
+        return "status-badge status-" + (status || "unknown");
+    }
+
+
+    function formatDate(date) {
+
+        if (!date) {
+            return "—";
         }
 
+        try {
 
-        function statusText(
-            status
-        ) {
-
-            const map = {
-
-                pending:
-                    "در انتظار تأیید",
-
-                active:
-                    "فعال",
-
-                suspended:
-                    "موقتاً غیرفعال",
-
-                blocked:
-                    "مسدود",
-
-                removed:
-                    "اخراج‌شده"
-
-            };
-
-            return (
-                map[status] ||
-                status
-            );
-        }
-
-
-        function statusClass(
-            status
-        ) {
-
-            return (
-                "status-badge status-" +
-                status
-            );
-        }
-
-
-        function formatDate(
-            date
-        ) {
-
-            if (!date) {
-                return "—";
-            }
-
-            return new Date(
-                date
-            ).toLocaleString(
+            return new Date(date).toLocaleString(
                 "fa-IR",
                 {
-                    dateStyle:
-                        "short",
-                    timeStyle:
-                        "short"
+                    dateStyle: "short",
+                    timeStyle: "short"
                 }
             );
+
+        } catch (error) {
+
+            console.error(error);
+
+            return "—";
+        }
+    }
+
+
+    function escapeHtml(value) {
+
+        const div =
+            document.createElement("div");
+
+        div.textContent =
+            value ?? "";
+
+        return div.innerHTML;
+    }
+
+
+    function renderActionButtons(user) {
+
+        if (user.role === "owner") {
+
+            return `
+                <strong>
+                    مالک
+                </strong>
+            `;
         }
 
 
-        async function loadUsers() {
+        let actions = "";
 
-            tbody.innerHTML =
-                `<tr>
-                    <td colspan="6">
-                        در حال بارگذاری...
-                    </td>
-                </tr>`;
 
+        /*
+         * تأیید / فعال‌سازی
+         */
+
+        if (user.status !== "approved") {
+
+            actions += `
+                <button
+                    type="button"
+                    class="action-button action-active"
+                    data-id="${user.id}"
+                    data-status="approved"
+                >
+                    تأیید / فعال‌سازی
+                </button>
+            `;
+        }
+
+
+        /*
+         * غیرفعال موقت
+         */
+
+        if (user.status !== "disabled") {
+
+            actions += `
+                <button
+                    type="button"
+                    class="action-button action-suspend"
+                    data-id="${user.id}"
+                    data-status="disabled"
+                >
+                    غیرفعال موقت
+                </button>
+            `;
+        }
+
+
+        /*
+         * مسدود کردن
+         */
+
+        if (user.status !== "blocked") {
+
+            actions += `
+                <button
+                    type="button"
+                    class="action-button action-block"
+                    data-id="${user.id}"
+                    data-status="blocked"
+                >
+                    مسدود
+                </button>
+            `;
+        }
+
+
+        return actions;
+    }
+
+
+    async function loadUsers() {
+
+        tbody.innerHTML = `
+            <tr>
+                <td colspan="6">
+                    در حال بارگذاری کاربران...
+                </td>
+            </tr>
+        `;
+
+
+        try {
 
             const {
                 data,
                 error
             } =
-            await supabaseClient
-                .from("profiles")
-                .select(
-                    `
-                    id,
-                    email,
-                    full_name,
-                    role,
-                    status,
-                    created_at,
-                    updated_at,
-                    last_seen_at,
-                    last_activity_at
-                    `
-                )
-                .order(
-                    "created_at",
-                    {
-                        ascending:
-                            false
-                    }
-                );
+                await supabaseClient
+                    .from("profiles")
+                    .select(`
+                        id,
+                        email,
+                        full_name,
+                        role,
+                        status,
+                        created_at,
+                        updated_at
+                    `)
+                    .order(
+                        "created_at",
+                        {
+                            ascending: false
+                        }
+                    );
 
 
             if (error) {
 
-                console.error(error);
+                console.error(
+                    "LOAD USERS ERROR:",
+                    error
+                );
 
-                tbody.innerHTML =
-                    `<tr>
+
+                tbody.innerHTML = `
+                    <tr>
                         <td colspan="6">
-                            خطا در دریافت کاربران
+                            <strong>
+                                خطا در دریافت کاربران
+                            </strong>
+                            <br>
+                            <small>
+                                ${escapeHtml(
+                                    error.message ||
+                                    "خطای نامشخص"
+                                )}
+                            </small>
                         </td>
-                    </tr>`;
+                    </tr>
+                `;
+
+                showMessage(
+                    error.message ||
+                    "خطا در دریافت کاربران.",
+                    "error"
+                );
 
                 return;
             }
 
 
-            if (!data.length) {
+            if (!data || data.length === 0) {
 
-                tbody.innerHTML =
-                    `<tr>
+                tbody.innerHTML = `
+                    <tr>
                         <td colspan="6">
                             هنوز کاربری ثبت نشده است.
                         </td>
-                    </tr>`;
+                    </tr>
+                `;
 
                 return;
             }
@@ -177,226 +261,193 @@ document.addEventListener(
             tbody.innerHTML = "";
 
 
-            data.forEach(
-                user => {
+            data.forEach(user => {
 
-                    const row =
-                        document.createElement(
-                            "tr"
-                        );
+                const row =
+                    document.createElement("tr");
 
 
-                    let actions =
-                        "";
+                row.innerHTML = `
+
+                    <td>
+                        ${escapeHtml(
+                            user.full_name ||
+                            "—"
+                        )}
+                    </td>
 
 
-                    if (
-                        user.role !==
-                        "owner"
-                    ) {
-
-                        if (
-                            user.status !==
-                            "active"
-                        ) {
-
-                            actions +=
-                                `<button
-                                    class="action-button action-active"
-                                    data-id="${user.id}"
-                                    data-status="active"
-                                >
-                                    فعال‌سازی
-                                </button>`;
-
-                        }
+                    <td>
+                        ${escapeHtml(
+                            user.email ||
+                            "—"
+                        )}
+                    </td>
 
 
-                        if (
-                            user.status !==
-                            "suspended"
-                        ) {
+                    <td>
 
-                            actions +=
-                                `<button
-                                    class="action-button action-suspend"
-                                    data-id="${user.id}"
-                                    data-status="suspended"
-                                >
-                                    غیرفعال موقت
-                                </button>`;
+                        <span
+                            class="${statusClass(
+                                user.status
+                            )}"
+                        >
 
-                        }
-
-
-                        if (
-                            user.status !==
-                            "blocked"
-                        ) {
-
-                            actions +=
-                                `<button
-                                    class="action-button action-block"
-                                    data-id="${user.id}"
-                                    data-status="blocked"
-                                >
-                                    مسدود
-                                </button>`;
-
-                        }
-
-
-                        if (
-                            user.status !==
-                            "removed"
-                        ) {
-
-                            actions +=
-                                `<button
-                                    class="action-button action-block"
-                                    data-id="${user.id}"
-                                    data-status="removed"
-                                >
-                                    اخراج
-                                </button>`;
-
-                        }
-
-                    } else {
-
-                        actions =
-                            `<strong>
-                                مالک
-                            </strong>`;
-                    }
-
-
-                    row.innerHTML = `
-
-                        <td>
-                            ${escapeHtml(
-                                user.full_name ||
-                                "—"
+                            ${statusText(
+                                user.status
                             )}
-                        </td>
 
-                        <td>
-                            ${escapeHtml(
-                                user.email
+                        </span>
+
+                    </td>
+
+
+                    <td>
+                        ${formatDate(
+                            user.created_at
+                        )}
+                    </td>
+
+
+                    <td>
+                        ${formatDate(
+                            user.updated_at
+                        )}
+                    </td>
+
+
+                    <td>
+                        <div class="user-actions">
+                            ${renderActionButtons(
+                                user
                             )}
-                        </td>
+                        </div>
+                    </td>
 
-                        <td>
-                            <span
-                                class="${statusClass(
-                                    user.status
-                                )}"
-                            >
-                                ${statusText(
-                                    user.status
-                                )}
-                            </span>
-                        </td>
-
-                        <td>
-                            ${formatDate(
-                                user.created_at
-                            )}
-                        </td>
-
-                        <td>
-                            ${formatDate(
-                                user.last_activity_at
-                            )}
-                        </td>
-
-                        <td>
-                            ${actions}
-                        </td>
-
-                    `;
+                `;
 
 
-                    tbody.appendChild(
-                        row
-                    );
+                tbody.appendChild(row);
 
-                }
+            });
+
+        } catch (error) {
+
+            console.error(
+                "LOAD USERS EXCEPTION:",
+                error
             );
 
+
+            tbody.innerHTML = `
+                <tr>
+                    <td colspan="6">
+                        خطا در دریافت کاربران.
+                    </td>
+                </tr>
+            `;
+
+
+            showMessage(
+                "خطایی هنگام دریافت کاربران رخ داد.",
+                "error"
+            );
         }
+    }
 
 
-        function escapeHtml(
-            value
-        ) {
+    /*
+     * تغییر وضعیت کاربر
+     */
 
-            const div =
-                document.createElement(
-                    "div"
+    tbody.addEventListener(
+        "click",
+        async event => {
+
+            const button =
+                event.target.closest(
+                    "button[data-status]"
                 );
 
-            div.textContent =
-                value;
 
-            return div.innerHTML;
-        }
-
-
-        tbody.addEventListener(
-            "click",
-            async event => {
-
-                const button =
-                    event.target.closest(
-                        "button[data-status]"
-                    );
-
-                if (!button) {
-                    return;
-                }
+            if (!button) {
+                return;
+            }
 
 
-                const userId =
-                    button.dataset.id;
-
-                const newStatus =
-                    button.dataset.status;
+            const userId =
+                button.dataset.id;
 
 
-                let confirmation =
-                    "آیا این تغییر انجام شود؟";
+            const newStatus =
+                button.dataset.status;
 
 
-                if (
-                    newStatus ===
-                    "removed"
-                ) {
-
-                    confirmation =
-                        "آیا مطمئن هستید که می‌خواهید دسترسی این کاربر را لغو کنید؟";
-
-                }
+            if (!userId || !newStatus) {
+                return;
+            }
 
 
-                if (
-                    !confirm(
-                        confirmation
-                    )
-                ) {
-                    return;
-                }
+            let confirmation =
+                "آیا مطمئن هستید؟";
 
 
-                button.disabled =
-                    true;
+            if (
+                newStatus ===
+                "approved"
+            ) {
+
+                confirmation =
+                    "آیا این کاربر تأیید و فعال شود؟";
+            }
 
 
-                try {
+            if (
+                newStatus ===
+                "disabled"
+            ) {
 
-                    const {
-                        error
-                    } =
+                confirmation =
+                    "آیا دسترسی این کاربر موقتاً غیرفعال شود؟";
+            }
+
+
+            if (
+                newStatus ===
+                "blocked"
+            ) {
+
+                confirmation =
+                    "آیا این کاربر مسدود شود؟";
+            }
+
+
+            if (
+                !window.confirm(
+                    confirmation
+                )
+            ) {
+
+                return;
+            }
+
+
+            button.disabled = true;
+
+
+            const originalText =
+                button.textContent;
+
+
+            button.textContent =
+                "در حال انجام...";
+
+
+            try {
+
+                const {
+                    error
+                } =
                     await supabaseClient
                         .rpc(
                             "owner_set_user_status",
@@ -410,70 +461,107 @@ document.addEventListener(
                         );
 
 
-                    if (error) {
-
-                        console.error(
-                            error
-                        );
-
-                        showMessage(
-                            "تغییر وضعیت انجام نشد.",
-                            "error"
-                        );
-
-                        return;
-                    }
-
-
-                    showMessage(
-                        "وضعیت کاربر با موفقیت تغییر کرد.",
-                        "success"
-                    );
-
-
-                    await loadUsers();
-
-
-                } catch (error) {
+                if (error) {
 
                     console.error(
+                        "STATUS UPDATE ERROR:",
                         error
                     );
 
+
                     showMessage(
-                        "خطایی رخ داد.",
+                        error.message ||
+                        "تغییر وضعیت انجام نشد.",
                         "error"
                     );
 
-                } finally {
 
-                    button.disabled =
-                        false;
-
+                    return;
                 }
 
-            }
-        );
 
+                showMessage(
+                    "وضعیت کاربر با موفقیت تغییر کرد.",
+                    "success"
+                );
+
+
+                await loadUsers();
+
+
+            } catch (error) {
+
+                console.error(
+                    "STATUS UPDATE EXCEPTION:",
+                    error
+                );
+
+
+                showMessage(
+                    error.message ||
+                    "خطایی هنگام تغییر وضعیت رخ داد.",
+                    "error"
+                );
+
+
+            } finally {
+
+                button.disabled =
+                    false;
+
+                button.textContent =
+                    originalText;
+            }
+
+        }
+    );
+
+
+    /*
+     * خروج مالک
+     */
+
+    if (logout) {
 
         logout.addEventListener(
             "click",
             async () => {
 
-                await AdineAuth
-                    .signOut();
+                logout.disabled = true;
+
+                try {
+
+                    await AdineAuth.signOut();
+
+                } catch (error) {
+
+                    console.error(
+                        "LOGOUT ERROR:",
+                        error
+                    );
+
+                    logout.disabled = false;
+                }
 
             }
         );
-
-
-        await loadUsers();
-
-
-        setInterval(
-            loadUsers,
-            30000
-        );
-
     }
-);
+
+
+    /*
+     * دریافت اولیه کاربران
+     */
+
+    await loadUsers();
+
+
+    /*
+     * بروزرسانی خودکار هر 30 ثانیه
+     */
+
+    setInterval(
+        loadUsers,
+        30000
+    );
+
+});

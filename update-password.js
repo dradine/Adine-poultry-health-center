@@ -27,47 +27,24 @@ document.addEventListener("DOMContentLoaded", async () => {
     }
 
 
-    let recoveryReady = false;
-
-
-    // بررسی session اولیه
-    const {
-        data: {
-            session
-        }
-    } =
-    await supabaseClient.auth.getSession();
-
-
-    if (session) {
-
-        recoveryReady = true;
-
-        showMessage(
-            "لطفاً رمز عبور جدید خود را وارد کنید.",
-            "info"
-        );
-    }
-
-
-    // دریافت recovery event
+    // فقط برای اطلاع کاربر
     supabaseClient.auth.onAuthStateChange(
-        async (event, session) => {
+        (event, session) => {
 
             console.log(
                 "AUTH EVENT:",
-                event
+                event,
+                session
             );
 
 
             if (
-                event === "PASSWORD_RECOVERY"
+                event === "PASSWORD_RECOVERY" ||
+                event === "SIGNED_IN"
             ) {
 
-                recoveryReady = true;
-
                 showMessage(
-                    "لطفاً رمز عبور جدید خود را وارد کنید.",
+                    "لطفاً رمز عبور جدید را وارد کنید.",
                     "info"
                 );
             }
@@ -81,16 +58,6 @@ document.addEventListener("DOMContentLoaded", async () => {
         async (event) => {
 
             event.preventDefault();
-
-
-            if (!recoveryReady) {
-
-                showMessage(
-                    "لینک بازیابی معتبر نیست یا منقضی شده است."
-                );
-
-                return;
-            }
 
 
             if (
@@ -127,6 +94,7 @@ document.addEventListener("DOMContentLoaded", async () => {
             try {
 
                 const {
+                    data,
                     error
                 } =
                 await supabaseClient.auth
@@ -136,15 +104,23 @@ document.addEventListener("DOMContentLoaded", async () => {
                     });
 
 
+                console.log(
+                    "UPDATE RESULT:",
+                    data,
+                    error
+                );
+
+
                 if (error) {
 
                     console.error(
-                        "UPDATE PASSWORD ERROR:",
+                        "PASSWORD UPDATE ERROR:",
                         error
                     );
 
                     showMessage(
-                        error.message
+                        error.message ||
+                        "تغییر رمز عبور انجام نشد."
                     );
 
                     return;
@@ -157,11 +133,10 @@ document.addEventListener("DOMContentLoaded", async () => {
                 );
 
 
-                await supabaseClient.auth.signOut();
-
-
                 setTimeout(
-                    () => {
+                    async () => {
+
+                        await supabaseClient.auth.signOut();
 
                         window.location.href =
                             "login.html";
@@ -187,9 +162,7 @@ document.addEventListener("DOMContentLoaded", async () => {
                     "ذخیره رمز جدید";
             }
 
-
         }
     );
-
 
 });

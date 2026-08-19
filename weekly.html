@@ -1,5 +1,4 @@
 <!DOCTYPE html>
-
 <html lang="fa" dir="rtl">
 
 <head>
@@ -11,8 +10,13 @@
     content="width=device-width, initial-scale=1, viewport-fit=cover"
 >
 
+<meta
+    name="theme-color"
+    content="#173f35"
+>
+
 <title>
-    ثبت هفتگی گله
+ثبت هفتگی | مرکز تخصصی سلامت طیور آدینه
 </title>
 
 <link
@@ -35,10 +39,17 @@
         >
 
         <span>
-            پایش هفتگی
+            پایش هفتگی گله
         </span>
 
     </div>
+
+    <button
+        class="btn btn-secondary"
+        onclick="location.href='Dashboard.html'"
+    >
+        داشبورد
+    </button>
 
 </header>
 
@@ -49,7 +60,7 @@
 
 
 <h1 class="page-title">
-    پایش هفتگی گله
+پایش هفتگی گله
 </h1>
 
 
@@ -59,10 +70,15 @@
 ></p>
 
 
-<form
-    id="weeklyForm"
-    class="card"
->
+
+<section class="card">
+
+<h2 class="card-title">
+اطلاعات هفته
+</h2>
+
+
+<form id="weeklyForm">
 
 
 <div class="form-grid">
@@ -71,27 +87,11 @@
 <div class="form-group">
 
 <label>
-    هفته
+تاریخ ارزیابی
 </label>
 
 <input
-    id="week"
-    type="number"
-    min="1"
-    required
->
-
-</div>
-
-
-<div class="form-group">
-
-<label>
-    تاریخ ارزیابی
-</label>
-
-<input
-    id="evaluationDate"
+    id="recordDate"
     type="date"
     required
 >
@@ -102,13 +102,13 @@
 <div class="form-group">
 
 <label>
-    تعداد فعلی
+سن گله (روز)
 </label>
 
 <input
-    id="birdCount"
+    id="ageDays"
     type="number"
-    min="1"
+    min="0"
     required
 >
 
@@ -118,14 +118,13 @@
 <div class="form-group">
 
 <label>
-    تلفات این هفته
+تعداد زنده
 </label>
 
 <input
-    id="mortality"
+    id="liveBirds"
     type="number"
     min="0"
-    value="0"
 >
 
 </div>
@@ -134,12 +133,30 @@
 <div class="form-group">
 
 <label>
-    میانگین وزن (گرم)
+وزن متوسط (گرم)
 </label>
 
 <input
     id="averageWeight"
     type="number"
+    min="0"
+    step="0.1"
+    required
+>
+
+</div>
+
+
+<div class="form-group">
+
+<label>
+انحراف معیار (گرم)
+</label>
+
+<input
+    id="sd"
+    type="number"
+    min="0"
     step="0.1"
 >
 
@@ -149,12 +166,13 @@
 <div class="form-group">
 
 <label>
-    مصرف دان کل
+CV (%)
 </label>
 
 <input
-    id="feed"
+    id="cv"
     type="number"
+    min="0"
     step="0.01"
 >
 
@@ -164,13 +182,126 @@
 <div class="form-group">
 
 <label>
-    مصرف آب کل
+یکنواختی ±10%
+</label>
+
+<input
+    id="uniformity10"
+    type="number"
+    min="0"
+    max="100"
+    step="0.1"
+>
+
+</div>
+
+
+<div class="form-group">
+
+<label>
+یکنواختی ±15%
+</label>
+
+<input
+    id="uniformity15"
+    type="number"
+    min="0"
+    max="100"
+    step="0.1"
+>
+
+</div>
+
+
+<div class="form-group">
+
+<label>
+حداقل وزن
+</label>
+
+<input
+    id="minWeight"
+    type="number"
+    min="0"
+>
+
+</div>
+
+
+<div class="form-group">
+
+<label>
+حداکثر وزن
+</label>
+
+<input
+    id="maxWeight"
+    type="number"
+    min="0"
+>
+
+</div>
+
+
+<div class="form-group">
+
+<label>
+مصرف دان روزانه
+</label>
+
+<input
+    id="feed"
+    type="number"
+    min="0"
+    step="0.1"
+    placeholder="کیلوگرم"
+>
+
+</div>
+
+
+<div class="form-group">
+
+<label>
+مصرف آب روزانه
 </label>
 
 <input
     id="water"
     type="number"
-    step="0.01"
+    min="0"
+    step="0.1"
+    placeholder="لیتر"
+>
+
+</div>
+
+
+<div class="form-group">
+
+<label>
+تلفات هفتگی
+</label>
+
+<input
+    id="mortality"
+    type="number"
+    min="0"
+>
+
+</div>
+
+
+<div class="form-group">
+
+<label>
+حذف / حذفی
+</label>
+
+<input
+    id="culls"
+    type="number"
+    min="0"
 >
 
 </div>
@@ -179,7 +310,7 @@
 <div class="form-group full">
 
 <label>
-    توضیحات
+توضیحات
 </label>
 
 <textarea
@@ -195,47 +326,46 @@
 <div class="button-row">
 
 <button
-    type="submit"
     class="btn btn-primary"
+    type="submit"
 >
-    محاسبه و ذخیره
+محاسبه و ذخیره
 </button>
 
 </div>
 
+
 </form>
+
+</section>
+
 
 
 <section
-    id="result"
+    id="calculation"
     class="card"
-    style="display:none"
 >
 
 <h2 class="card-title">
-    نتیجه
+نتیجه محاسبات
 </h2>
 
 
 <div
-    id="stats"
+    id="resultGrid"
     class="stats-grid"
-></div>
-
-
-<div
-    id="comparison"
-    style="margin-top:20px"
 ></div>
 
 </section>
 
 
+
 <section class="card">
 
 <h2 class="card-title">
-    سوابق هفتگی
+سوابق هفتگی
 </h2>
+
 
 <div class="table-wrapper">
 
@@ -250,23 +380,27 @@
 </th>
 
 <th>
+سن
+</th>
+
+<th>
 وزن
 </th>
 
 <th>
-دان/پرنده
+CV
 </th>
 
 <th>
-آب/پرنده
+یکنواختی ±10
 </th>
 
 <th>
-FCR
+دان
 </th>
 
 <th>
-تلفات
+آب
 </th>
 
 <th>
@@ -277,8 +411,9 @@ FCR
 
 </thead>
 
+
 <tbody
-id="weeklyTable"
+    id="weeklyTable"
 ></tbody>
 
 </table>
@@ -293,12 +428,12 @@ id="weeklyTable"
 </main>
 
 
-<script src="standards.js"></script>
+<script src="app-core.js"></script>
 <script src="standard-data.js"></script>
+<script src="standards.js"></script>
 <script src="poultry-utils.js"></script>
 <script src="weekly-storage.js"></script>
 <script src="comparison-engine.js"></script>
-<script src="app-core.js"></script>
 <script src="genetics-ui.js"></script>
 <script src="weekly-engine.js"></script>
 
@@ -343,427 +478,279 @@ const farm =
         );
 
 
+const house =
+    getHouses()
+        .find(
+            x =>
+                x.id ===
+                flock.houseId
+        );
+
+
 document.getElementById(
     "flockInfo"
 ).textContent =
 
     `${farm?.name || ""} | ` +
-
+    `${house?.name || ""} | ` +
     `${flock.flockName} | ` +
-
     `${flock.strain}`;
 
 
+
 document.getElementById(
-    "evaluationDate"
+    "recordDate"
 ).value =
     todayISO();
 
 
-const previousRecords =
-    getFlockWeeklyRecords(
-        flock.id
-    );
 
-
-const lastRecord =
-    previousRecords.length
-        ? previousRecords[
-            previousRecords.length - 1
-          ]
-        : null;
-
+/* =====================================================
+   AUTO AGE
+===================================================== */
 
 document.getElementById(
-    "week"
-).value =
-    lastRecord
-        ? Number(lastRecord.week) + 1
-        : 1;
+    "recordDate"
+).addEventListener(
+    "change",
+    updateAge
+);
 
 
-document.getElementById(
-    "birdCount"
-).value =
-    lastRecord
-        ? lastRecord.birdCount -
-          lastRecord.mortality
+function updateAge() {
 
-        : flock.birdCount;
+    const age =
+        calculateAgeDays(
+            flock.placementDate,
+            document.getElementById(
+                "recordDate"
+            ).value
+        );
 
+
+    if (
+        age !== null
+    ) {
+
+        document.getElementById(
+            "ageDays"
+        ).value =
+            age;
+
+    }
+
+}
+
+
+updateAge();
+
+
+
+/* =====================================================
+   CALCULATE
+===================================================== */
+
+function calculateWeekly() {
+
+    const weight =
+        Number(
+            document.getElementById(
+                "averageWeight"
+            ).value || 0
+        );
+
+
+    const sd =
+        Number(
+            document.getElementById(
+                "sd"
+            ).value || 0
+        );
+
+
+    let cv =
+        Number(
+            document.getElementById(
+                "cv"
+            ).value || 0
+        );
+
+
+    if (
+        !cv &&
+        weight &&
+        sd
+    ) {
+
+        cv =
+            (sd / weight) *
+            100;
+
+    }
+
+
+    document.getElementById(
+        "cv"
+    ).value =
+        cv
+            ? cv.toFixed(2)
+            : "";
+
+
+    return {
+
+        weight,
+        sd,
+        cv
+
+    };
+
+}
+
+
+
+/* =====================================================
+   SAVE
+===================================================== */
 
 document.getElementById(
     "weeklyForm"
 ).addEventListener(
     "submit",
-    event => {
+    function(event) {
 
         event.preventDefault();
 
 
-        const record =
-            createWeeklyFlockRecord({
+        const calc =
+            calculateWeekly();
 
-                farmId:
-                    flock.farmId,
 
-                houseId:
-                    flock.houseId,
+        const record = {
 
-                flockId:
-                    flock.id,
+            farmId:
+                flock.farmId,
 
-                week:
+            houseId:
+                flock.houseId,
+
+            flockId:
+                flock.id,
+
+            date:
+                document.getElementById(
+                    "recordDate"
+                ).value,
+
+            ageDays:
+                Number(
                     document.getElementById(
-                        "week"
-                    ).value,
+                        "ageDays"
+                    ).value || 0
+                ),
 
-                date:
+            liveBirds:
+                Number(
                     document.getElementById(
-                        "evaluationDate"
-                    ).value,
+                        "liveBirds"
+                    ).value || 0
+                ),
 
-                birdCount:
+            averageWeight:
+                calc.weight,
+
+            sd:
+                calc.sd,
+
+            cv:
+                calc.cv,
+
+            uniformity10:
+                Number(
                     document.getElementById(
-                        "birdCount"
-                    ).value,
+                        "uniformity10"
+                    ).value || 0
+                ),
 
-                mortality:
+            uniformity15:
+                Number(
                     document.getElementById(
-                        "mortality"
-                    ).value,
+                        "uniformity15"
+                    ).value || 0
+                ),
 
-                averageWeight:
+            minWeight:
+                Number(
                     document.getElementById(
-                        "averageWeight"
-                    ).value,
+                        "minWeight"
+                    ).value || 0
+                ),
 
-                feed:
+            maxWeight:
+                Number(
+                    document.getElementById(
+                        "maxWeight"
+                    ).value || 0
+                ),
+
+            feed:
+                Number(
                     document.getElementById(
                         "feed"
-                    ).value,
+                    ).value || 0
+                ),
 
-                water:
+            water:
+                Number(
                     document.getElementById(
                         "water"
-                    ).value,
+                    ).value || 0
+                ),
 
-                notes:
+            mortality:
+                Number(
                     document.getElementById(
-                        "notes"
-                    ).value
+                        "mortality"
+                    ).value || 0
+                ),
 
-            });
+            culls:
+                Number(
+                    document.getElementById(
+                        "culls"
+                    ).value || 0
+                ),
 
+            notes:
+                document.getElementById(
+                    "notes"
+                ).value
 
-        const calculated =
-            calculateWeeklyRecord(
-                record,
-                lastRecord
-            );
+        };
 
 
         saveWeeklyRecord(
-            calculated
+            record
         );
 
 
-        showResult(
-            calculated
+        renderWeekly();
+
+
+        alert(
+            "اطلاعات هفتگی ذخیره شد."
         );
-
-
-        renderTable();
 
     }
 );
 
 
-/* =========================================================
-   RESULT
-   ========================================================= */
 
-function showResult(
-    record
-) {
+/* =====================================================
+   RENDER
+===================================================== */
 
-    document.getElementById(
-        "result"
-    ).style.display =
-        "block";
-
-
-    document.getElementById(
-        "stats"
-    ).innerHTML = `
-
-        <div class="stat">
-
-            <div class="stat-label">
-                میانگین وزن
-            </div>
-
-            <div class="stat-value">
-                ${record.averageWeight || "-"}
-            </div>
-
-        </div>
-
-
-        <div class="stat">
-
-            <div class="stat-label">
-                افزایش وزن
-            </div>
-
-            <div class="stat-value">
-                ${record.weightGain ?? "-"}
-            </div>
-
-        </div>
-
-
-        <div class="stat">
-
-            <div class="stat-label">
-                دان/پرنده
-            </div>
-
-            <div class="stat-value">
-                ${
-                    roundNumber(
-                        record.feedPerBird,
-                        2
-                    ) ?? "-"
-                }
-            </div>
-
-        </div>
-
-
-        <div class="stat">
-
-            <div class="stat-label">
-                آب/پرنده
-            </div>
-
-            <div class="stat-value">
-                ${
-                    roundNumber(
-                        record.waterPerBird,
-                        2
-                    ) ?? "-"
-                }
-            </div>
-
-        </div>
-
-
-        <div class="stat">
-
-            <div class="stat-label">
-                آب به دان
-            </div>
-
-            <div class="stat-value">
-                ${
-                    roundNumber(
-                        record.waterFeedRatio,
-                        2
-                    ) ?? "-"
-                }
-            </div>
-
-        </div>
-
-
-        <div class="stat">
-
-            <div class="stat-label">
-                FCR
-            </div>
-
-            <div class="stat-value">
-                ${
-                    roundNumber(
-                        record.fcr,
-                        3
-                    ) ?? "-"
-                }
-            </div>
-
-        </div>
-
-
-        <div class="stat">
-
-            <div class="stat-label">
-                تلفات
-            </div>
-
-            <div class="stat-value">
-                ${
-                    roundNumber(
-                        record.mortalityPercent,
-                        2
-                    ) ?? "-"
-                }%
-            </div>
-
-        </div>
-
-
-        <div class="stat">
-
-            <div class="stat-label">
-                زنده‌مانی
-            </div>
-
-            <div class="stat-value">
-                ${
-                    roundNumber(
-                        record.livability,
-                        2
-                    ) ?? "-"
-                }%
-            </div>
-
-        </div>
-
-    `;
-
-
-    showStandardComparison(
-        record
-    );
-
-}
-
-
-/* =========================================================
-   STANDARD COMPARISON
-   ========================================================= */
-
-function showStandardComparison(
-    record
-) {
-
-    const box =
-        document.getElementById(
-            "comparison"
-        );
-
-
-    const age =
-        Number(
-            record.ageDays ||
-            (
-                Number(record.week) *
-                7
-            )
-        );
-
-
-    const standard =
-        getWeeklyStandard({
-
-            type:
-                flock.productionType,
-
-            genetics:
-                flock.genetics,
-
-            strain:
-                flock.strain,
-
-            program:
-                flock.program,
-
-            age
-
-        });
-
-
-    if (!standard) {
-
-        box.innerHTML = `
-
-            <div class="card">
-
-                <strong>
-                    استاندارد عددی هنوز وارد نشده است.
-                </strong>
-
-                <p>
-                    اطلاعات عملکرد واقعی ذخیره شد.
-                    پس از ورود کاتالوگ رسمی این گله
-                    به‌صورت خودکار با استاندارد مقایسه خواهد شد.
-                </p>
-
-            </div>
-
-        `;
-
-        return;
-
-    }
-
-
-    const comparison =
-        compareWeeklyRecord({
-
-            record,
-
-            standard
-
-        });
-
-
-    if (!comparison) {
-
-        return;
-
-    }
-
-
-    box.innerHTML = `
-
-        <div class="card">
-
-            <h3>
-                مقایسه با استاندارد
-            </h3>
-
-            <p>
-                امتیاز کلی:
-                <strong>
-                    ${
-                        roundNumber(
-                            comparison.overall.score,
-                            1
-                        )
-                    }
-                </strong>
-            </p>
-
-        </div>
-
-    `;
-
-}
-
-
-/* =========================================================
-   TABLE
-   ========================================================= */
-
-function renderTable() {
-
-    const tbody =
-        document.getElementById(
-            "weeklyTable"
-        );
-
+function renderWeekly() {
 
     const records =
         getFlockWeeklyRecords(
@@ -771,13 +758,19 @@ function renderTable() {
         );
 
 
+    const table =
+        document.getElementById(
+            "weeklyTable"
+        );
+
+
     if (!records.length) {
 
-        tbody.innerHTML = `
+        table.innerHTML = `
 
             <tr>
 
-                <td colspan="7">
+                <td colspan="8">
                     هنوز اطلاعاتی ثبت نشده است.
                 </td>
 
@@ -790,50 +783,59 @@ function renderTable() {
     }
 
 
-    tbody.innerHTML =
+    table.innerHTML =
+
         records
             .map(
-                record => `
+                (
+                    record,
+                    index
+                ) => `
 
                     <tr>
 
                         <td>
-                            ${record.week}
+                            ${index + 1}
                         </td>
 
                         <td>
-                            ${record.averageWeight ?? "-"}
+                            ${Number(
+                                record.ageDays || 0
+                            ).toLocaleString(
+                                "fa-IR"
+                            )}
                         </td>
 
                         <td>
-                            ${
-                                roundNumber(
-                                    record.feedPerBird,
-                                    2
-                                ) ?? "-"
-                            }
+                            ${Number(
+                                record.averageWeight || 0
+                            ).toLocaleString(
+                                "fa-IR"
+                            )}
                         </td>
 
                         <td>
-                            ${
-                                roundNumber(
-                                    record.waterPerBird,
-                                    2
-                                ) ?? "-"
-                            }
+                            ${Number(
+                                record.cv || 0
+                            ).toFixed(2)}
                         </td>
 
                         <td>
-                            ${
-                                roundNumber(
-                                    record.fcr,
-                                    3
-                                ) ?? "-"
-                            }
+                            ${Number(
+                                record.uniformity10 || 0
+                            ).toFixed(1)}
                         </td>
 
                         <td>
-                            ${record.mortality}
+                            ${Number(
+                                record.feed || 0
+                            )}
+                        </td>
+
+                        <td>
+                            ${Number(
+                                record.water || 0
+                            )}
                         </td>
 
                         <td>
@@ -841,7 +843,7 @@ function renderTable() {
                             <button
                                 class="btn btn-danger"
                                 onclick="
-                                    deleteWeek(
+                                    removeWeekly(
                                         '${record.id}'
                                     )
                                 "
@@ -860,7 +862,8 @@ function renderTable() {
 }
 
 
-function deleteWeek(
+
+function removeWeekly(
     id
 ) {
 
@@ -880,14 +883,15 @@ function deleteWeek(
     );
 
 
-    renderTable();
+    renderWeekly();
 
 }
 
 
-renderTable();
+renderWeekly();
 
 </script>
+
 
 </body>
 

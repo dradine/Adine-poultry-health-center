@@ -77,6 +77,7 @@ document.addEventListener("DOMContentLoaded", () => {
                         email,
                         {
                             redirectTo:
+    "https://dradine.github.io/Adine-poultry-health-center/update-password.html"
     new URL(
         "update-password.html",
         window.location.href

@@ -1,498 +1,238 @@
 /* =========================================================
    ADINE POULTRY HEALTH CENTER
-   STANDARD DATA ENGINE
-   ========================================================= */
+   GENETICS / CATALOG MASTER DATA
+========================================================= */
 
-const STANDARD_DATA = {
-
-    /* =====================================================
-       BROILER
-    ===================================================== */
+const POULTRY_CATALOG = {
 
     broiler: {
 
-        Ross: {
+        label: "گوشتی",
 
-            "Ross 308": {
+        genetics: [
 
-                commercial: true,
-
-                parentStock: true,
-
-                sexOptions: [
-                    "mixed",
-                    "male",
-                    "female"
-                ],
-
-                programs: {
-
-                    broiler: {
-                        label: "Ross 308 Broiler",
-                        records: {}
-                    },
-
-                    parentStock: {
-                        label: "Ross 308 Parent Stock",
-                        records: {}
-                    }
-
-                }
-
+            {
+                id: "aviagen_ross",
+                name: "Aviagen / Ross",
+                strains: [
+                    "Ross 308",
+                    "Ross 308 FF",
+                    "Ross 708",
+                    "Ross 308 AP"
+                ]
             },
 
-
-            "Ross 308 FF": {
-
-                commercial: true,
-
-                parentStock: true,
-
-                programs: {
-
-                    broiler: {
-                        label: "Ross 308 FF Broiler",
-                        records: {}
-                    },
-
-                    parentStock: {
-                        label: "Ross 308 FF Parent Stock",
-                        records: {}
-                    }
-
-                }
-
+            {
+                id: "cobb",
+                name: "Cobb",
+                strains: [
+                    "Cobb500",
+                    "Cobb800"
+                ]
             },
 
-
-            "Ross 708": {
-
-                commercial: true,
-
-                parentStock: true,
-
-                programs: {
-
-                    broiler: {
-                        label: "Ross 708 Broiler",
-                        records: {}
-                    },
-
-                    parentStock: {
-                        label: "Ross 708 Parent Stock",
-                        records: {}
-                    }
-
-                }
-
+            {
+                id: "aviagen_arbor",
+                name: "Aviagen / Arbor Acres",
+                strains: [
+                    "Arbor Acres Plus",
+                    "Arbor Acres Plus S"
+                ]
             },
 
-
-            "Ross 308 AP": {
-
-                commercial: true,
-
-                parentStock: true,
-
-                programs: {
-
-                    broiler: {
-                        label: "Ross 308 AP Broiler",
-                        records: {}
-                    },
-
-                    parentStock: {
-                        label: "Ross 308 AP Parent Stock",
-                        records: {}
-                    }
-
-                }
-
-            }
-
-        },
-
-
-        Cobb: {
-
-            "Cobb500": {
-
-                commercial: true,
-
-                parentStock: true,
-
-                programs: {
-
-                    broiler: {
-                        label: "Cobb500 Broiler",
-                        records: {}
-                    },
-
-                    parentStock: {
-                        label: "Cobb500 Parent Stock",
-                        records: {}
-                    }
-
-                }
-
+            {
+                id: "aviagen_indian",
+                name: "Aviagen / Indian River",
+                strains: [
+                    "Indian River",
+                    "Indian River FF"
+                ]
             },
 
-
-            "Cobb800": {
-
-                commercial: true,
-
-                parentStock: true,
-
-                programs: {
-
-                    broiler: {
-                        label: "Cobb800 Broiler",
-                        records: {}
-                    },
-
-                    parentStock: {
-                        label: "Cobb800 Parent Stock",
-                        records: {}
-                    }
-
-                }
-
-            }
-
-        },
-
-
-        ArborAcres: {
-
-            "Arbor Acres Plus": {
-
-                commercial: true,
-
-                parentStock: true,
-
-                programs: {
-
-                    broiler: {
-                        label: "Arbor Acres Plus Broiler",
-                        records: {}
-                    },
-
-                    parentStock: {
-                        label: "Arbor Acres Plus Parent Stock",
-                        records: {}
-                    }
-
-                }
-
+            {
+                id: "hubbard",
+                name: "Hubbard",
+                strains: [
+                    "Efficiency Plus",
+                    "Hubbard EDGE"
+                ]
             },
 
-
-            "Arbor Acres Plus S": {
-
-                commercial: true,
-
-                parentStock: true,
-
-                programs: {
-
-                    broiler: {
-                        label: "Arbor Acres Plus S Broiler",
-                        records: {}
-                    },
-
-                    parentStock: {
-                        label: "Arbor Acres Plus S Parent Stock",
-                        records: {}
-                    }
-
-                }
-
+            {
+                id: "arian",
+                name: "آرین ایران",
+                strains: [
+                    "Arian"
+                ]
             }
 
-        },
-
-
-        IndianRiver: {
-
-            "Indian River": {
-
-                commercial: true,
-
-                parentStock: true,
-
-                programs: {
-
-                    broiler: {
-                        label: "Indian River Broiler",
-                        records: {}
-                    },
-
-                    parentStock: {
-                        label: "Indian River Parent Stock",
-                        records: {}
-                    }
-
-                }
-
-            }
-
-        },
-
-
-        Hubbard: {
-
-            "Efficiency Plus": {
-
-                commercial: true,
-
-                parentStock: true,
-
-                programs: {
-
-                    broiler: {
-                        label: "Hubbard Efficiency Plus",
-                        records: {}
-                    },
-
-                    parentStock: {
-                        label: "Hubbard Efficiency Plus Breeder",
-                        records: {}
-                    }
-
-                }
-
-            },
-
-
-            "EDGE": {
-
-                commercial: true,
-
-                parentStock: true,
-
-                programs: {
-
-                    broiler: {
-                        label: "Hubbard EDGE",
-                        records: {}
-                    },
-
-                    parentStock: {
-                        label: "Hubbard EDGE Breeder",
-                        records: {}
-                    }
-
-                }
-
-            }
-
-        },
-
-
-        Arian: {
-
-            "Arian": {
-
-                commercial: true,
-
-                parentStock: true,
-
-                localIranianLine: true,
-
-                programs: {
-
-                    broiler: {
-
-                        label:
-                            "Arian Broiler",
-
-                        records: {},
-
-                        dataStatus:
-                            "iranian-reference-required"
-
-                    },
-
-                    parentStock: {
-
-                        label:
-                            "Arian Parent Stock",
-
-                        records: {},
-
-                        dataStatus:
-                            "iranian-reference-required"
-
-                    }
-
-                }
-
-            }
-
-        }
+        ]
 
     },
 
 
-    /* =====================================================
-       LAYER
-    ===================================================== */
-
     layer: {
 
-        HyLine: {
+        label: "تخم‌گذار",
 
-            "W-36": {
-                records: {}
+        genetics: [
+
+            {
+                id: "hyline",
+                name: "Hy-Line",
+                strains: [
+                    "W-36",
+                    "W-80",
+                    "W-80 Plus",
+                    "W-80 Pro",
+                    "Brown"
+                ]
             },
 
-            "W-80": {
-                records: {}
+            {
+                id: "hendrix",
+                name: "Hendrix Genetics",
+                strains: [
+                    "ISA Brown",
+                    "ISA White",
+                    "Dekalb White",
+                    "Dekalb Brown",
+                    "Bovans White",
+                    "Bovans Brown",
+                    "Shaver White",
+                    "Shaver Brown",
+                    "Hisex White",
+                    "Hisex Brown"
+                ]
             },
 
-            "W-80 Plus": {
-                records: {}
+            {
+                id: "lohmann",
+                name: "Lohmann",
+                strains: [
+                    "Lohmann Brown-Classic",
+                    "Lohmann Brown-Lite",
+                    "Lohmann Brown-Extra",
+                    "Lohmann LSL-Classic",
+                    "Lohmann LSL-Lite",
+                    "Lohmann LSL-Extra",
+                    "Lohmann Sandy",
+                    "Lohmann Tradition"
+                ]
             },
 
-            "W-80 Pro": {
-                records: {}
+            {
+                id: "novogen",
+                name: "NOVOgen",
+                strains: [
+                    "NOVOgen Brown",
+                    "NOVOgen White"
+                ]
             },
 
-            "Brown": {
-                records: {}
-            },
-
-            "Silver Brown": {
-                records: {}
+            {
+                id: "tetra",
+                name: "TETRA",
+                strains: [
+                    "TETRA Brown"
+                ]
             }
 
-        },
+        ]
+
+    },
 
 
-        Hendrix: {
+    pullet: {
 
-            "ISA Brown": {
-                records: {}
+        label: "پولت",
+
+        genetics: [
+
+            {
+                id: "hyline",
+                name: "Hy-Line",
+                strains: [
+                    "W-36",
+                    "W-80",
+                    "Brown"
+                ]
             },
 
-            "ISA White": {
-                records: {}
+            {
+                id: "hendrix",
+                name: "Hendrix Genetics",
+                strains: [
+                    "ISA Brown",
+                    "ISA White",
+                    "Dekalb White",
+                    "Dekalb Brown",
+                    "Hisex White",
+                    "Hisex Brown"
+                ]
             },
 
-            "Dekalb White": {
-                records: {}
-            },
-
-            "Dekalb Brown": {
-                records: {}
-            },
-
-            "Bovans White": {
-                records: {}
-            },
-
-            "Bovans Brown": {
-                records: {}
-            },
-
-            "Shaver White": {
-                records: {}
-            },
-
-            "Shaver Brown": {
-                records: {}
-            },
-
-            "Shaver Black": {
-                records: {}
-            },
-
-            "Babcock White": {
-                records: {}
-            },
-
-            "Babcock Brown": {
-                records: {}
-            },
-
-            "Hisex White": {
-                records: {}
-            },
-
-            "Hisex Brown": {
-                records: {}
+            {
+                id: "lohmann",
+                name: "Lohmann",
+                strains: [
+                    "Lohmann Brown-Classic",
+                    "Lohmann LSL-Classic",
+                    "Lohmann Brown-Lite",
+                    "Lohmann LSL-Lite"
+                ]
             }
 
-        },
+        ]
+
+    },
 
 
-        Lohmann: {
+    breeder: {
 
-            "Lohmann Brown-Classic": {
-                records: {}
+        label: "مرغ مادر",
+
+        genetics: [
+
+            {
+                id: "aviagen_ross",
+                name: "Aviagen / Ross",
+                strains: [
+                    "Ross 308",
+                    "Ross 308 FF",
+                    "Ross 708",
+                    "Ross 308 AP"
+                ]
             },
 
-            "Lohmann Brown-Lite": {
-                records: {}
+            {
+                id: "aviagen_arbor",
+                name: "Aviagen / Arbor Acres",
+                strains: [
+                    "Arbor Acres Plus",
+                    "Arbor Acres Plus S"
+                ]
             },
 
-            "Lohmann Brown-Extra": {
-                records: {}
+            {
+                id: "aviagen_indian",
+                name: "Aviagen / Indian River",
+                strains: [
+                    "Indian River",
+                    "Indian River FF"
+                ]
             },
 
-            "Lohmann LSL-Classic": {
-                records: {}
-            },
-
-            "Lohmann LSL-Lite": {
-                records: {}
-            },
-
-            "Lohmann LSL-Extra": {
-                records: {}
-            },
-
-            "Lohmann Sandy": {
-                records: {}
-            },
-
-            "Lohmann Tradition": {
-                records: {}
+            {
+                id: "cobb",
+                name: "Cobb",
+                strains: [
+                    "Cobb500",
+                    "Cobb800"
+                ]
             }
 
-        },
-
-
-        NOVOgen: {
-
-            "NOVOgen Brown": {
-                records: {}
-            },
-
-            "NOVOgen White": {
-                records: {}
-            }
-
-        },
-
-
-        HN: {
-
-            "Nick Chick": {
-                records: {}
-            }
-
-        },
-
-
-        TETRA: {
-
-            "TETRA Brown": {
-                records: {}
-            }
-
-        }
+        ]
 
     }
 
@@ -500,12 +240,12 @@ const STANDARD_DATA = {
 
 
 /* =========================================================
-   METRIC DEFINITIONS
-   ========================================================= */
+   PERFORMANCE METRICS
+========================================================= */
 
 const PERFORMANCE_METRICS = {
 
-    age: {
+    ageDays: {
         label: "سن",
         unit: "روز"
     },
@@ -520,23 +260,13 @@ const PERFORMANCE_METRICS = {
         unit: "g/day"
     },
 
-    weeklyGain: {
-        label: "افزایش وزن هفتگی",
-        unit: "g/week"
-    },
-
     dailyFeed: {
         label: "مصرف دان روزانه",
         unit: "g/bird/day"
     },
 
-    weeklyFeed: {
-        label: "مصرف دان هفتگی",
-        unit: "g/bird/week"
-    },
-
     cumulativeFeed: {
-        label: "مصرف تجمعی دان",
+        label: "دان تجمعی",
         unit: "g/bird"
     },
 
@@ -555,8 +285,13 @@ const PERFORMANCE_METRICS = {
         unit: "%"
     },
 
-    uniformity: {
-        label: "یکنواختی",
+    uniformity10: {
+        label: "یکنواختی ±10%",
+        unit: "%"
+    },
+
+    uniformity15: {
+        label: "یکنواختی ±15%",
         unit: "%"
     },
 
@@ -565,24 +300,19 @@ const PERFORMANCE_METRICS = {
         unit: "%"
     },
 
+    dailyWater: {
+        label: "مصرف آب روزانه",
+        unit: "L/bird/day"
+    },
+
     eggProduction: {
-        label: "درصد تولید",
+        label: "تولید تخم‌مرغ",
         unit: "%"
     },
 
     henDayProduction: {
-        label: "Hen-Day Production",
+        label: "Hen-Day",
         unit: "%"
-    },
-
-    henHousedProduction: {
-        label: "Hen-Housed Production",
-        unit: "%"
-    },
-
-    eggMass: {
-        label: "Egg Mass",
-        unit: "g/hen/day"
     },
 
     eggWeight: {
@@ -590,19 +320,14 @@ const PERFORMANCE_METRICS = {
         unit: "g"
     },
 
+    eggMass: {
+        label: "Egg Mass",
+        unit: "g/hen/day"
+    },
+
     cumulativeEggs: {
-        label: "تعداد تخم تجمعی",
+        label: "تخم تجمعی",
         unit: "egg/hen"
-    },
-
-    peakProduction: {
-        label: "پیک تولید",
-        unit: "%"
-    },
-
-    peakAge: {
-        label: "سن پیک",
-        unit: "week"
     },
 
     fertility: {
@@ -620,91 +345,19 @@ const PERFORMANCE_METRICS = {
 
 /* =========================================================
    STANDARD RECORD
-   ========================================================= */
+========================================================= */
 
-function createPerformanceRecord({
-
-    age = null,
-
-    bodyWeight = null,
-
-    dailyGain = null,
-
-    weeklyGain = null,
-
-    dailyFeed = null,
-
-    weeklyFeed = null,
-
-    cumulativeFeed = null,
-
-    fcr = null,
-
-    livability = null,
-
-    mortality = null,
-
-    uniformity = null,
-
-    cv = null,
-
-    eggProduction = null,
-
-    henDayProduction = null,
-
-    henHousedProduction = null,
-
-    eggMass = null,
-
-    eggWeight = null,
-
-    cumulativeEggs = null,
-
-    peakProduction = null,
-
-    peakAge = null,
-
-    fertility = null,
-
-    hatchability = null
-
-} = {}) {
+function standardRecord(
+    ageDays,
+    values = {}
+) {
 
     return {
 
-        age,
+        ageDays:
+            Number(ageDays),
 
-        bodyWeight,
-
-        dailyGain,
-
-        weeklyGain,
-
-        dailyFeed,
-        weeklyFeed,
-        cumulativeFeed,
-
-        fcr,
-
-        livability,
-        mortality,
-
-        uniformity,
-        cv,
-
-        eggProduction,
-        henDayProduction,
-        henHousedProduction,
-
-        eggMass,
-        eggWeight,
-        cumulativeEggs,
-
-        peakProduction,
-        peakAge,
-
-        fertility,
-        hatchability
+        ...values
 
     };
 
@@ -712,292 +365,165 @@ function createPerformanceRecord({
 
 
 /* =========================================================
-   ADD STANDARD
-   ========================================================= */
+   VERIFIED / IMPORTED STANDARD DATA
+=========================================================
 
-function addStandardRecord({
+   IMPORTANT:
+   Numeric values must come from the applicable breeder
+   catalogue. Missing values remain null.
 
-    type,
+========================================================= */
 
-    genetics,
+const VERIFIED_STANDARDS = {
 
-    strain,
+    broiler: {
 
-    program = null,
+        aviagen_ross: {
 
-    record
+            "Ross 308": {
 
-}) {
+                sourceYear: 2022,
 
-    if (!record) {
+                sourceStatus:
+                    "official-aviagen-reference",
 
-        return false;
+                records: [
 
-    }
+                    standardRecord(7, {
+                        bodyWeight: 190
+                    }),
 
+                    standardRecord(14, {
+                        bodyWeight: 490
+                    }),
 
-    try {
+                    standardRecord(21, {
+                        bodyWeight: 900
+                    }),
 
-        const target =
-            program
-                ? STANDARD_DATA
-                    [type]
-                    [genetics]
-                    [strain]
-                    .programs
-                    [program]
-                    .records
+                    standardRecord(28, {
+                        bodyWeight: 1400
+                    }),
 
-                : STANDARD_DATA
-                    [type]
-                    [genetics]
-                    [strain]
-                    .records;
+                    standardRecord(35, {
+                        bodyWeight: 1950
+                    }),
 
+                    standardRecord(42, {
+                        bodyWeight: 2500
+                    }),
 
-        if (!target) {
+                    standardRecord(49, {
+                        bodyWeight: 3050
+                    }),
 
-            return false;
+                    standardRecord(56, {
+                        bodyWeight: 3600
+                    })
+
+                ]
+
+            }
 
         }
 
-
-        const key =
-            String(record.age);
-
-
-        target[key] =
-            record;
-
-
-        return true;
-
-    } catch (error) {
-
-        console.error(
-            "Unable to add standard:",
-            error
-        );
-
-        return false;
-
     }
 
-}
+};
 
 
 /* =========================================================
-   GET STANDARD
-   ========================================================= */
+   SOURCE INFORMATION
+========================================================= */
 
-function getStandardRecord({
+const STANDARD_SOURCES = {
 
-    type,
+    aviagen:
 
-    genetics,
+        "Official Aviagen technical center",
 
-    strain,
+    hyline:
 
-    program = null,
+        "Official Hy-Line technical resources",
 
-    age
+    hendrix:
 
-}) {
+        "Official Hendrix Genetics technical resources",
 
-    try {
+    lohmann:
 
-        const target =
-            program
-                ? STANDARD_DATA
-                    [type]
-                    [genetics]
-                    [strain]
-                    .programs
-                    [program]
-                    .records
+        "Official Lohmann Breeders technical resources",
 
-                : STANDARD_DATA
-                    [type]
-                    [genetics]
-                    [strain]
-                    .records;
+    cobb:
 
+        "Official Cobb technical resources"
 
-        return (
-            target[String(age)] ||
-            null
-        );
-
-    } catch (error) {
-
-        return null;
-
-    }
-
-}
+};
 
 
 /* =========================================================
-   GET STANDARD SERIES
-   ========================================================= */
+   CATALOG HELPERS
+========================================================= */
 
-function getStandardSeries({
-
-    type,
-
-    genetics,
-
-    strain,
-
-    program = null,
-
-    metric
-
-}) {
-
-    try {
-
-        const target =
-            program
-                ? STANDARD_DATA
-                    [type]
-                    [genetics]
-                    [strain]
-                    .programs
-                    [program]
-                    .records
-
-                : STANDARD_DATA
-                    [type]
-                    [genetics]
-                    [strain]
-                    .records;
-
-
-        return Object.values(target)
-
-            .filter(
-                item =>
-                    item &&
-                    item.age !== null &&
-                    item[metric] !== null &&
-                    item[metric] !== undefined
-            )
-
-            .sort(
-                (a, b) =>
-                    Number(a.age) -
-                    Number(b.age)
-            );
-
-    } catch (error) {
-
-        return [];
-
-    }
-
-}
-
-
-/* =========================================================
-   GET STANDARD LABEL
-   ========================================================= */
-
-function getMetricLabel(
-    metric
+function getCatalog(
+    type
 ) {
 
     return (
-        PERFORMANCE_METRICS[metric]?.label ||
-        metric
+        POULTRY_CATALOG[type] ||
+        null
     );
 
 }
 
 
-/* =========================================================
-   COMPARE ACTUAL WITH STANDARD
-   ========================================================= */
-
-function comparePerformance(
-    actual,
-    standard
+function getGenetics(
+    type
 ) {
 
-    if (
-        actual === null ||
-        standard === null ||
-        actual === undefined ||
-        standard === undefined
-    ) {
+    return (
+        POULTRY_CATALOG[type]
+            ?.genetics ||
+        []
+    );
 
-        return {
-
-            difference: null,
-
-            percentage: null,
-
-            status: "no-standard"
-
-        };
-
-    }
+}
 
 
-    const a =
-        Number(actual);
+function getStrains(
+    type,
+    geneticsId
+) {
 
-    const s =
-        Number(standard);
+    const genetics =
+        getGenetics(type)
+            .find(
+                item =>
+                    item.id ===
+                    geneticsId
+            );
 
+    return (
+        genetics?.strains ||
+        []
+    );
 
-    if (
-        !Number.isFinite(a) ||
-        !Number.isFinite(s)
-    ) {
-
-        return {
-
-            difference: null,
-
-            percentage: null,
-
-            status: "invalid"
-
-        };
-
-    }
+}
 
 
-    const difference =
-        a - s;
+function getStandard(
+    type,
+    geneticsId,
+    strain
+) {
 
-
-    const percentage =
-        s !== 0
-            ? difference / s * 100
-            : null;
-
-
-    return {
-
-        difference,
-
-        percentage,
-
-        status:
-
-            percentage === null
-                ? "invalid"
-
-                : percentage > 5
-                    ? "above"
-
-                    : percentage < -5
-                        ? "below"
-
-                        : "within"
-
-    };
+    return (
+        VERIFIED_STANDARDS
+            [type]
+            ?.[geneticsId]
+            ?.[strain]
+        ||
+        null
+    );
 
 }

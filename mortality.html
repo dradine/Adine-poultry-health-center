@@ -1,0 +1,922 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+
+<head>
+
+<meta charset="UTF-8">
+
+<meta
+    name="viewport"
+    content="width=device-width, initial-scale=1, viewport-fit=cover"
+>
+
+<meta
+    name="theme-color"
+    content="#173f35"
+>
+
+<title>
+    تلفات و بیماری | آدینه
+</title>
+
+<link
+    rel="stylesheet"
+    href="app.css"
+>
+
+</head>
+
+
+<body>
+
+<header class="topbar">
+
+    <div class="brand">
+
+        <img
+            src="IMG_4309.png"
+            alt="آدینه"
+        >
+
+        <span>
+            تلفات و بیماری
+        </span>
+
+    </div>
+
+    <button
+        type="button"
+        class="btn btn-secondary"
+        onclick="location.href='Dashboard.html'"
+    >
+        داشبورد
+    </button>
+
+</header>
+
+
+<main class="page">
+
+<div class="container">
+
+
+<h1 class="page-title">
+    پایش تلفات و بیماری
+</h1>
+
+
+<p
+    id="flockInfo"
+    class="page-description"
+></p>
+
+
+<section class="card">
+
+<h2 class="card-title">
+    ثبت مورد جدید
+</h2>
+
+
+<form id="mortalityForm">
+
+
+<div class="form-grid">
+
+
+<div class="form-group">
+
+<label>
+    تاریخ
+</label>
+
+<input
+    id="eventDate"
+    type="date"
+    required
+>
+
+</div>
+
+
+<div class="form-group">
+
+<label>
+    سن گله
+</label>
+
+<input
+    id="eventAge"
+    type="number"
+    min="0"
+>
+
+</div>
+
+
+<div class="form-group">
+
+<label>
+    نوع مورد
+</label>
+
+<select
+    id="eventType"
+    required
+>
+
+<option value="">
+انتخاب کنید
+</option>
+
+<option value="mortality">
+تلفات
+</option>
+
+<option value="disease">
+بیماری
+</option>
+
+<option value="suspected">
+مشکوک
+</option>
+
+<option value="other">
+سایر
+</option>
+
+</select>
+
+</div>
+
+
+<div class="form-group">
+
+<label>
+    تعداد
+</label>
+
+<input
+    id="eventCount"
+    type="number"
+    min="0"
+    value="0"
+>
+
+</div>
+
+
+<div class="form-group">
+
+<label>
+    بیماری / تشخیص
+</label>
+
+<select id="disease">
+
+<option value="">
+انتخاب کنید
+</option>
+
+<option>
+H9 / آنفلوانزا
+</option>
+
+<option>
+نیوکاسل
+</option>
+
+<option>
+برونشیت عفونی
+</option>
+
+<option>
+گامبورو
+</option>
+
+<option>
+کوکسیدیوز
+</option>
+
+<option>
+کلی‌باسیلوز
+</option>
+
+<option>
+مایکوپلاسما
+</option>
+
+<option>
+سالمونلا
+</option>
+
+<option>
+سایر
+</option>
+
+</select>
+
+</div>
+
+
+<div class="form-group">
+
+<label>
+    شدت
+</label>
+
+<select id="severity">
+
+<option value="">
+انتخاب کنید
+</option>
+
+<option value="low">
+خفیف
+</option>
+
+<option value="medium">
+متوسط
+</option>
+
+<option value="high">
+شدید
+</option>
+
+<option value="critical">
+بحرانی
+</option>
+
+</select>
+
+</div>
+
+
+<div class="form-group full">
+
+<label>
+علائم / یافته‌ها
+</label>
+
+<textarea
+    id="symptoms"
+></textarea>
+
+</div>
+
+
+<div class="form-group full">
+
+<label>
+اقدامات انجام‌شده
+</label>
+
+<textarea
+    id="actions"
+></textarea>
+
+</div>
+
+
+<div class="form-group full">
+
+<label>
+توضیحات
+</label>
+
+<textarea
+    id="eventNotes"
+></textarea>
+
+</div>
+
+
+</div>
+
+
+<div class="button-row">
+
+<button
+    type="submit"
+    class="btn btn-primary"
+>
+ذخیره مورد
+</button>
+
+</div>
+
+
+</form>
+
+</section>
+
+
+<section class="card">
+
+<h2 class="card-title">
+    خلاصه وضعیت
+</h2>
+
+
+<div
+    id="summary"
+    class="stats-grid"
+></div>
+
+</section>
+
+
+<section class="card">
+
+<h2 class="card-title">
+    سوابق
+</h2>
+
+
+<div class="table-wrapper">
+
+<table class="data-table">
+
+<thead>
+
+<tr>
+
+<th>
+تاریخ
+</th>
+
+<th>
+نوع
+</th>
+
+<th>
+تعداد
+</th>
+
+<th>
+تشخیص
+</th>
+
+<th>
+شدت
+</th>
+
+<th>
+عملیات
+</th>
+
+</tr>
+
+</thead>
+
+
+<tbody
+id="mortalityTable"
+></tbody>
+
+</table>
+
+</div>
+
+</section>
+
+
+</div>
+
+</main>
+
+
+<script src="standards.js"></script>
+<script src="standard-data.js"></script>
+<script src="poultry-utils.js"></script>
+<script src="weekly-storage.js"></script>
+<script src="comparison-engine.js"></script>
+<script src="app-core.js"></script>
+<script src="genetics-ui.js"></script>
+<script src="weekly-engine.js"></script>
+
+
+<script>
+
+const selection =
+    getCurrentSelection();
+
+
+if (!selection.flockId) {
+
+    location.href =
+        "flocks.html";
+
+}
+
+
+const flock =
+    getFlocks()
+        .find(
+            x =>
+                x.id ===
+                selection.flockId
+        );
+
+
+if (!flock) {
+
+    location.href =
+        "flocks.html";
+
+}
+
+
+const farm =
+    getFarms()
+        .find(
+            x =>
+                x.id ===
+                flock.farmId
+        );
+
+
+document.getElementById(
+    "flockInfo"
+).textContent =
+
+    `${farm?.name || ""} | ` +
+    `${flock.flockName} | ` +
+    `${flock.strain}`;
+
+
+document.getElementById(
+    "eventDate"
+).value =
+    todayISO();
+
+
+/* =========================================================
+   STORAGE
+========================================================= */
+
+function getDiseaseRecords() {
+
+    return readStorage(
+        "disease_records",
+        []
+    );
+
+}
+
+
+function saveDiseaseRecord(
+    record
+) {
+
+    const records =
+        getDiseaseRecords();
+
+
+    records.push({
+
+        id:
+            createId("disease"),
+
+        farmId:
+            flock.farmId,
+
+        houseId:
+            flock.houseId,
+
+        flockId:
+            flock.id,
+
+        ...record,
+
+        createdAt:
+            new Date().toISOString()
+
+    });
+
+
+    writeStorage(
+        "disease_records",
+        records
+    );
+
+}
+
+
+function deleteDiseaseRecord(
+    id
+) {
+
+    const records =
+        getDiseaseRecords()
+            .filter(
+                item =>
+                    item.id !== id
+            );
+
+
+    writeStorage(
+        "disease_records",
+        records
+    );
+
+
+    renderRecords();
+
+}
+
+
+/* =========================================================
+   SAVE
+========================================================= */
+
+document.getElementById(
+    "mortalityForm"
+).addEventListener(
+    "submit",
+    function(event) {
+
+        event.preventDefault();
+
+
+        saveDiseaseRecord({
+
+            date:
+                document.getElementById(
+                    "eventDate"
+                ).value,
+
+            age:
+                Number(
+                    document.getElementById(
+                        "eventAge"
+                    ).value || 0
+                ),
+
+            type:
+                document.getElementById(
+                    "eventType"
+                ).value,
+
+            count:
+                Number(
+                    document.getElementById(
+                        "eventCount"
+                    ).value || 0
+                ),
+
+            disease:
+                document.getElementById(
+                    "disease"
+                ).value,
+
+            severity:
+                document.getElementById(
+                    "severity"
+                ).value,
+
+            symptoms:
+                document.getElementById(
+                    "symptoms"
+                ).value,
+
+            actions:
+                document.getElementById(
+                    "actions"
+                ).value,
+
+            notes:
+                document.getElementById(
+                    "eventNotes"
+                ).value
+
+        });
+
+
+        this.reset();
+
+
+        document.getElementById(
+            "eventDate"
+        ).value =
+            todayISO();
+
+
+        renderRecords();
+
+
+        alert(
+            "مورد با موفقیت ثبت شد."
+        );
+
+    }
+);
+
+
+/* =========================================================
+   RENDER
+========================================================= */
+
+function renderRecords() {
+
+    const records =
+        getDiseaseRecords()
+            .filter(
+                item =>
+                    item.flockId ===
+                    flock.id
+            )
+            .sort(
+                (a,b) =>
+                    b.date.localeCompare(
+                        a.date
+                    )
+            );
+
+
+    const table =
+        document.getElementById(
+            "mortalityTable"
+        );
+
+
+    if (!records.length) {
+
+        table.innerHTML = `
+
+            <tr>
+
+                <td colspan="6">
+                    هنوز موردی ثبت نشده است.
+                </td>
+
+            </tr>
+
+        `;
+
+    }
+
+    else {
+
+        table.innerHTML =
+            records
+                .map(
+                    record => `
+
+                        <tr>
+
+                            <td>
+                                ${escapeHTML(
+                                    record.date
+                                )}
+                            </td>
+
+                            <td>
+                                ${getTypeLabel(
+                                    record.type
+                                )}
+                            </td>
+
+                            <td>
+                                ${record.count}
+                            </td>
+
+                            <td>
+                                ${escapeHTML(
+                                    record.disease ||
+                                    "-"
+                                )}
+                            </td>
+
+                            <td>
+                                ${getSeverityLabel(
+                                    record.severity
+                                )}
+                            </td>
+
+                            <td>
+
+                                <button
+                                    type="button"
+                                    class="btn btn-danger"
+                                    onclick="
+                                        deleteDiseaseRecord(
+                                            '${record.id}'
+                                        )
+                                    "
+                                >
+                                    حذف
+                                </button>
+
+                            </td>
+
+                        </tr>
+
+                    `
+                )
+                .join("");
+
+    }
+
+
+    renderSummary(
+        records
+    );
+
+}
+
+
+/* =========================================================
+   SUMMARY
+========================================================= */
+
+function renderSummary(
+    records
+) {
+
+    const totalDeaths =
+        records
+            .filter(
+                x =>
+                    x.type ===
+                    "mortality"
+            )
+            .reduce(
+                (
+                    sum,
+                    x
+                ) =>
+                    sum +
+                    Number(
+                        x.count || 0
+                    ),
+                0
+            );
+
+
+    const diseaseCases =
+        records
+            .filter(
+                x =>
+                    x.type ===
+                    "disease"
+            )
+            .reduce(
+                (
+                    sum,
+                    x
+                ) =>
+                    sum +
+                    Number(
+                        x.count || 0
+                    ),
+                0
+            );
+
+
+    const suspected =
+        records
+            .filter(
+                x =>
+                    x.type ===
+                    "suspected"
+            )
+            .length;
+
+
+    const critical =
+        records
+            .filter(
+                x =>
+                    x.severity ===
+                    "critical"
+            )
+            .length;
+
+
+    document.getElementById(
+        "summary"
+    ).innerHTML = `
+
+        <div class="stat">
+
+            <div class="stat-label">
+                مجموع تلفات ثبت‌شده
+            </div>
+
+            <div class="stat-value">
+                ${totalDeaths}
+            </div>
+
+        </div>
+
+
+        <div class="stat">
+
+            <div class="stat-label">
+                موارد بیماری
+            </div>
+
+            <div class="stat-value">
+                ${diseaseCases}
+            </div>
+
+        </div>
+
+
+        <div class="stat">
+
+            <div class="stat-label">
+                موارد مشکوک
+            </div>
+
+            <div class="stat-value">
+                ${suspected}
+            </div>
+
+        </div>
+
+
+        <div class="stat">
+
+            <div class="stat-label">
+                موارد بحرانی
+            </div>
+
+            <div class="stat-value">
+                ${critical}
+            </div>
+
+        </div>
+
+    `;
+
+}
+
+
+function getTypeLabel(
+    type
+) {
+
+    const labels = {
+
+        mortality:
+            "تلفات",
+
+        disease:
+            "بیماری",
+
+        suspected:
+            "مشکوک",
+
+        other:
+            "سایر"
+
+    };
+
+
+    return (
+        labels[type] ||
+        type ||
+        "-"
+    );
+
+}
+
+
+function getSeverityLabel(
+    severity
+) {
+
+    const labels = {
+
+        low:
+            "خفیف",
+
+        medium:
+            "متوسط",
+
+        high:
+            "شدید",
+
+        critical:
+            "بحرانی"
+
+    };
+
+
+    return (
+        labels[severity] ||
+        "-"
+    );
+
+}
+
+
+renderRecords();
+
+</script>
+
+</body>
+
+</html>

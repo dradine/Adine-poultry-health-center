@@ -1,0 +1,685 @@
+<!DOCTYPE html>
+
+<html lang="fa" dir="rtl">
+
+<head>
+
+<meta charset="UTF-8">
+
+<meta
+    name="viewport"
+    content="width=device-width, initial-scale=1, viewport-fit=cover"
+>
+
+<title>
+    ثبت سالن و گله
+</title>
+
+<link
+    rel="stylesheet"
+    href="app.css"
+>
+
+</head>
+
+
+<body>
+
+<header class="topbar">
+
+    <div class="brand">
+
+        <img
+            src="IMG_4309.png"
+            alt="آدینه"
+        >
+
+        <span>
+            ثبت سالن و گله
+        </span>
+
+    </div>
+
+</header>
+
+
+<main class="page">
+
+<div class="container">
+
+
+<h1 class="page-title">
+    سالن و گله
+</h1>
+
+
+<p
+    id="selectedFarm"
+    class="page-description"
+>
+</p>
+
+
+<form
+    id="flockForm"
+    class="card"
+>
+
+
+    <div class="form-grid">
+
+
+        <div class="form-group">
+
+            <label>
+                نام سالن
+            </label>
+
+            <input
+                id="houseName"
+                required
+                placeholder="مثلاً سالن ۱"
+            >
+
+        </div>
+
+
+        <div class="form-group">
+
+            <label>
+                ظرفیت سالن
+            </label>
+
+            <input
+                id="houseCapacity"
+                type="number"
+                min="0"
+            >
+
+        </div>
+
+
+        <div class="form-group">
+
+            <label>
+                طول سالن (متر)
+            </label>
+
+            <input
+                id="houseLength"
+                type="number"
+                min="0"
+            >
+
+        </div>
+
+
+        <div class="form-group">
+
+            <label>
+                عرض سالن (متر)
+            </label>
+
+            <input
+                id="houseWidth"
+                type="number"
+                min="0"
+            >
+
+        </div>
+
+
+        <div class="form-group">
+
+            <label>
+                سیستم پرورش
+            </label>
+
+            <select id="housingSystem">
+
+                <option value="">
+                    انتخاب کنید
+                </option>
+
+                <option value="floor">
+                    بستر
+                </option>
+
+                <option value="cage">
+                    قفس
+                </option>
+
+                <option value="aviary">
+                    آویاری
+                </option>
+
+                <option value="freeRange">
+                    آزاد
+                </option>
+
+            </select>
+
+        </div>
+
+
+        <div class="form-group">
+
+            <label>
+                تهویه
+            </label>
+
+            <input
+                id="ventilation"
+                placeholder="مثلاً تونلی"
+            >
+
+        </div>
+
+
+    </div>
+
+
+    <div class="button-row">
+
+        <button
+            class="btn btn-primary"
+            type="submit"
+        >
+            ثبت سالن
+        </button>
+
+    </div>
+
+</form>
+
+
+<form
+    id="flockForm"
+    class="card"
+>
+
+
+<h2 class="card-title">
+    ثبت گله
+</h2>
+
+
+<div class="form-grid">
+
+
+    <div class="form-group">
+
+        <label>
+            نام گله
+        </label>
+
+        <input
+            id="flockName"
+            required
+        >
+
+    </div>
+
+
+    <div class="form-group">
+
+        <label>
+            تعداد اولیه
+        </label>
+
+        <input
+            id="birdCount"
+            type="number"
+            min="1"
+            required
+        >
+
+    </div>
+
+
+    <div class="form-group">
+
+        <label>
+            تاریخ ورود گله
+        </label>
+
+        <input
+            id="placementDate"
+            type="date"
+            required
+        >
+
+    </div>
+
+
+    <div class="form-group">
+
+        <label>
+            نوع گله
+        </label>
+
+        <select
+            id="productionType"
+            required
+        ></select>
+
+    </div>
+
+
+    <div class="form-group">
+
+        <label>
+            شرکت / ژنتیک
+        </label>
+
+        <select
+            id="genetics"
+            required
+        >
+
+            <option value="">
+                ابتدا نوع گله را انتخاب کنید
+            </option>
+
+        </select>
+
+    </div>
+
+
+    <div class="form-group">
+
+        <label>
+            سویه
+        </label>
+
+        <select
+            id="strain"
+            required
+        >
+
+            <option value="">
+                ابتدا ژنتیک را انتخاب کنید
+            </option>
+
+        </select>
+
+    </div>
+
+
+    <div class="form-group">
+
+        <label>
+            برنامه استاندارد
+        </label>
+
+        <select
+            id="standardProgram"
+        >
+
+            <option value="">
+                انتخاب کنید
+            </option>
+
+        </select>
+
+    </div>
+
+
+    <div class="form-group">
+
+        <label>
+            جنسیت
+        </label>
+
+        <select id="sex">
+
+            <option value="mixed">
+                مخلوط
+            </option>
+
+            <option value="male">
+                نر
+            </option>
+
+            <option value="female">
+                ماده
+            </option>
+
+        </select>
+
+    </div>
+
+
+    <div
+        id="geneticsInfo"
+        class="form-group full"
+    ></div>
+
+
+</div>
+
+
+<div class="button-row">
+
+    <button
+        class="btn btn-primary"
+        type="submit"
+    >
+        ثبت گله
+    </button>
+
+</div>
+
+
+</form>
+
+
+<section class="card">
+
+<h2 class="card-title">
+    گله‌های این سالن
+</h2>
+
+<div id="flocksList"></div>
+
+</section>
+
+
+</div>
+
+</main>
+
+
+<script src="standards.js"></script>
+<script src="standard-data.js"></script>
+<script src="poultry-utils.js"></script>
+<script src="weekly-storage.js"></script>
+<script src="comparison-engine.js"></script>
+<script src="app-core.js"></script>
+<script src="genetics-ui.js"></script>
+<script src="weekly-engine.js"></script>
+
+
+<script>
+
+let currentFarmId =
+    getCurrentSelection()
+        .farmId;
+
+
+if (!currentFarmId) {
+
+    location.href =
+        "farms.html";
+
+}
+
+
+const farm =
+    getFarms()
+        .find(
+            x =>
+                x.id ===
+                currentFarmId
+        );
+
+
+document.getElementById(
+    "selectedFarm"
+).textContent =
+    farm
+        ? `فارم انتخاب‌شده: ${farm.name}`
+        : "فارم انتخاب نشده";
+
+
+initGeneticsSelectors();
+
+
+const flockForm =
+    document.getElementById(
+        "flockForm"
+    );
+
+
+flockForm.addEventListener(
+    "submit",
+    event => {
+
+        event.preventDefault();
+
+
+        const house =
+            saveHouse({
+
+                farmId:
+                    currentFarmId,
+
+                name:
+                    document.getElementById(
+                        "houseName"
+                    ).value,
+
+                capacity:
+                    document.getElementById(
+                        "houseCapacity"
+                    ).value,
+
+                length:
+                    document.getElementById(
+                        "houseLength"
+                    ).value,
+
+                width:
+                    document.getElementById(
+                        "houseWidth"
+                    ).value,
+
+                housingSystem:
+                    document.getElementById(
+                        "housingSystem"
+                    ).value,
+
+                ventilation:
+                    document.getElementById(
+                        "ventilation"
+                    ).value
+
+            });
+
+
+        const flock =
+            saveFlock({
+
+                farmId:
+                    currentFarmId,
+
+                houseId:
+                    house.id,
+
+                flockName:
+                    document.getElementById(
+                        "flockName"
+                    ).value,
+
+                birdCount:
+                    document.getElementById(
+                        "birdCount"
+                    ).value,
+
+                placementDate:
+                    document.getElementById(
+                        "placementDate"
+                    ).value,
+
+                productionType:
+                    document.getElementById(
+                        "productionType"
+                    ).value,
+
+                genetics:
+                    document.getElementById(
+                        "genetics"
+                    ).value,
+
+                strain:
+                    document.getElementById(
+                        "strain"
+                    ).value,
+
+                program:
+                    document.getElementById(
+                        "standardProgram"
+                    ).value,
+
+                sex:
+                    document.getElementById(
+                        "sex"
+                    ).value
+
+            });
+
+
+        setCurrentSelection({
+
+            farmId:
+                currentFarmId,
+
+            houseId:
+                house.id,
+
+            flockId:
+                flock.id
+
+        });
+
+
+        alert(
+            "گله با موفقیت ثبت شد."
+        );
+
+
+        renderFlocks();
+
+    }
+);
+
+
+function renderFlocks() {
+
+    const container =
+        document.getElementById(
+            "flocksList"
+        );
+
+
+    const flocks =
+        getFlocks()
+            .filter(
+                x =>
+                    x.farmId ===
+                    currentFarmId
+            );
+
+
+    if (!flocks.length) {
+
+        container.innerHTML =
+            "<p>گله‌ای ثبت نشده است.</p>";
+
+        return;
+
+    }
+
+
+    container.innerHTML =
+        flocks
+            .map(
+                flock => `
+
+                    <div class="card">
+
+                        <strong>
+                            ${escapeHTML(
+                                flock.flockName
+                            )}
+                        </strong>
+
+                        <p>
+                            نوع:
+                            ${escapeHTML(
+                                flock.productionType
+                            )}
+                        </p>
+
+                        <p>
+                            سویه:
+                            ${escapeHTML(
+                                flock.strain
+                            )}
+                        </p>
+
+                        <p>
+                            تعداد:
+                            ${flock.birdCount}
+                        </p>
+
+                        <button
+                            class="btn btn-primary"
+                            onclick="
+                                selectFlock(
+                                    '${flock.id}'
+                                )
+                            "
+                        >
+                            ورود اطلاعات هفتگی
+                        </button>
+
+                    </div>
+
+                `
+            )
+            .join("");
+
+}
+
+
+function selectFlock(
+    flockId
+) {
+
+    const flock =
+        getFlocks()
+            .find(
+                x =>
+                    x.id ===
+                    flockId
+            );
+
+
+    setCurrentSelection({
+
+        farmId:
+            flock.farmId,
+
+        houseId:
+            flock.houseId,
+
+        flockId:
+            flock.id
+
+    });
+
+
+    location.href =
+        "weekly.html";
+
+}
+
+
+renderFlocks();
+
+</script>
+
+</body>
+
+</html>

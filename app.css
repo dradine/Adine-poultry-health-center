@@ -1,0 +1,998 @@
+/* =========================================================
+   ADINE POULTRY HEALTH CENTER
+   MOBILE FIRST UI
+   ========================================================= */
+
+:root {
+
+    --primary: #173f35;
+    --primary-light: #286653;
+
+    --accent: #c9a227;
+
+    --background: #f4f6f5;
+
+    --surface: #ffffff;
+
+    --text: #18221f;
+
+    --muted: #718079;
+
+    --border: #e1e7e4;
+
+    --danger: #b42318;
+
+    --success: #18794e;
+
+    --warning: #a15c00;
+
+    --radius:
+        16px;
+
+    --shadow:
+        0 8px 28px
+        rgba(0,0,0,.08);
+
+}
+
+
+* {
+
+    box-sizing:
+        border-box;
+
+}
+
+
+html {
+
+    direction:
+        rtl;
+
+    scroll-behavior:
+        smooth;
+
+}
+
+
+body {
+
+    margin:
+        0;
+
+    font-family:
+        -apple-system,
+        BlinkMacSystemFont,
+        "Segoe UI",
+        Tahoma,
+        Arial,
+        sans-serif;
+
+    background:
+        var(--background);
+
+    color:
+        var(--text);
+
+}
+
+
+/* =========================================================
+   LOGIN / HERO
+   ========================================================= */
+
+.app-hero {
+
+    min-height:
+        100svh;
+
+    position:
+        relative;
+
+    display:
+        flex;
+
+    align-items:
+        center;
+
+    justify-content:
+        center;
+
+    overflow:
+        hidden;
+
+}
+
+
+.app-hero::before {
+
+    content:
+        "";
+
+    position:
+        absolute;
+
+    inset:
+        0;
+
+    background-image:
+        linear-gradient(
+            rgba(10,30,25,.58),
+            rgba(10,30,25,.66)
+        ),
+        url("IMG_4309.png");
+
+    background-size:
+        cover;
+
+    background-position:
+        center;
+
+    filter:
+        blur(1.5px);
+
+    transform:
+        scale(1.03);
+
+}
+
+
+.app-hero-content {
+
+    position:
+        relative;
+
+    z-index:
+        2;
+
+    width:
+        min(92%, 460px);
+
+    padding:
+        32px 24px;
+
+    text-align:
+        center;
+
+    color:
+        white;
+
+}
+
+
+.app-logo {
+
+    width:
+        min(180px, 48vw);
+
+    max-height:
+        150px;
+
+    object-fit:
+        contain;
+
+    display:
+        block;
+
+    margin:
+        0 auto 22px;
+
+    filter:
+        drop-shadow(
+            0 6px 16px
+            rgba(0,0,0,.30)
+        );
+
+}
+
+
+.app-title {
+
+    margin:
+        0;
+
+    font-size:
+        clamp(25px, 7vw, 38px);
+
+    font-weight:
+        800;
+
+}
+
+
+.app-subtitle {
+
+    margin:
+        10px 0 28px;
+
+    color:
+        rgba(255,255,255,.88);
+
+    line-height:
+        1.8;
+
+}
+
+
+/* =========================================================
+   APP SHELL
+   ========================================================= */
+
+.app-shell {
+
+    min-height:
+        100svh;
+
+}
+
+
+.topbar {
+
+    position:
+        sticky;
+
+    top:
+        0;
+
+    z-index:
+        100;
+
+    background:
+        rgba(255,255,255,.94);
+
+    backdrop-filter:
+        blur(12px);
+
+    border-bottom:
+        1px solid var(--border);
+
+    min-height:
+        64px;
+
+    display:
+        flex;
+
+    align-items:
+        center;
+
+    justify-content:
+        space-between;
+
+    padding:
+        8px 14px;
+
+}
+
+
+.brand {
+
+    display:
+        flex;
+
+    align-items:
+        center;
+
+    gap:
+        10px;
+
+    font-weight:
+        800;
+
+}
+
+
+.brand img {
+
+    width:
+        42px;
+
+    height:
+        42px;
+
+    object-fit:
+        contain;
+
+}
+
+
+/* =========================================================
+   CONTENT
+   ========================================================= */
+
+.container {
+
+    width:
+        min(1200px, 94%);
+
+    margin:
+        0 auto;
+
+}
+
+
+.page {
+
+    padding:
+        20px 0 100px;
+
+}
+
+
+.page-title {
+
+    margin:
+        0 0 6px;
+
+    font-size:
+        24px;
+
+}
+
+
+.page-description {
+
+    margin:
+        0 0 20px;
+
+    color:
+        var(--muted);
+
+}
+
+
+/* =========================================================
+   CARDS
+   ========================================================= */
+
+.card {
+
+    background:
+        var(--surface);
+
+    border:
+        1px solid var(--border);
+
+    border-radius:
+        var(--radius);
+
+    box-shadow:
+        var(--shadow);
+
+    padding:
+        18px;
+
+    margin-bottom:
+        16px;
+
+}
+
+
+.card-title {
+
+    margin:
+        0 0 14px;
+
+    font-size:
+        18px;
+
+    font-weight:
+        800;
+
+}
+
+
+/* =========================================================
+   DASHBOARD GRID
+   ========================================================= */
+
+.dashboard-grid {
+
+    display:
+        grid;
+
+    grid-template-columns:
+        repeat(
+            auto-fit,
+            minmax(
+                150px,
+                1fr
+            )
+        );
+
+    gap:
+        12px;
+
+}
+
+
+.menu-card {
+
+    min-height:
+        130px;
+
+    padding:
+        18px;
+
+    border-radius:
+        18px;
+
+    background:
+        white;
+
+    border:
+        1px solid var(--border);
+
+    display:
+        flex;
+
+    flex-direction:
+        column;
+
+    justify-content:
+        space-between;
+
+    text-decoration:
+        none;
+
+    color:
+        var(--text);
+
+    box-shadow:
+        var(--shadow);
+
+    transition:
+        .2s;
+
+}
+
+
+.menu-card:active {
+
+    transform:
+        scale(.98);
+
+}
+
+
+.menu-icon {
+
+    font-size:
+        30px;
+
+}
+
+
+.menu-title {
+
+    font-weight:
+        800;
+
+}
+
+
+.menu-description {
+
+    font-size:
+        12px;
+
+    color:
+        var(--muted);
+
+}
+
+
+/* =========================================================
+   FORMS
+   ========================================================= */
+
+.form-grid {
+
+    display:
+        grid;
+
+    grid-template-columns:
+        repeat(
+            auto-fit,
+            minmax(
+                220px,
+                1fr
+            )
+        );
+
+    gap:
+        14px;
+
+}
+
+
+.form-group {
+
+    display:
+        flex;
+
+    flex-direction:
+        column;
+
+    gap:
+        7px;
+
+}
+
+
+.form-group.full {
+
+    grid-column:
+        1 / -1;
+
+}
+
+
+label {
+
+    font-size:
+        13px;
+
+    font-weight:
+        700;
+
+}
+
+
+input,
+select,
+textarea {
+
+    width:
+        100%;
+
+    min-height:
+        46px;
+
+    border:
+        1px solid #d7dfdb;
+
+    border-radius:
+        12px;
+
+    padding:
+        10px 12px;
+
+    background:
+        white;
+
+    color:
+        var(--text);
+
+    font:
+        inherit;
+
+    outline:
+        none;
+
+}
+
+
+textarea {
+
+    min-height:
+        100px;
+
+    resize:
+        vertical;
+
+}
+
+
+input:focus,
+select:focus,
+textarea:focus {
+
+    border-color:
+        var(--primary-light);
+
+    box-shadow:
+        0 0 0 3px
+        rgba(40,102,83,.10);
+
+}
+
+
+/* =========================================================
+   BUTTONS
+   ========================================================= */
+
+.btn {
+
+    min-height:
+        46px;
+
+    border:
+        0;
+
+    border-radius:
+        12px;
+
+    padding:
+        10px 18px;
+
+    font:
+        inherit;
+
+    font-weight:
+        800;
+
+    cursor:
+        pointer;
+
+}
+
+
+.btn-primary {
+
+    background:
+        var(--primary);
+
+    color:
+        white;
+
+}
+
+
+.btn-accent {
+
+    background:
+        var(--accent);
+
+    color:
+        #171717;
+
+}
+
+
+.btn-danger {
+
+    background:
+        #fbe9e7;
+
+    color:
+        var(--danger);
+
+}
+
+
+.btn-secondary {
+
+    background:
+        #edf2ef;
+
+    color:
+        var(--primary);
+
+}
+
+
+.button-row {
+
+    display:
+        flex;
+
+    gap:
+        10px;
+
+    flex-wrap:
+        wrap;
+
+    margin-top:
+        16px;
+
+}
+
+
+/* =========================================================
+   TABLE
+   ========================================================= */
+
+.table-wrapper {
+
+    overflow-x:
+        auto;
+
+}
+
+
+.data-table {
+
+    width:
+        100%;
+
+    border-collapse:
+        collapse;
+
+    min-width:
+        720px;
+
+}
+
+
+.data-table th,
+.data-table td {
+
+    padding:
+        11px;
+
+    border-bottom:
+        1px solid var(--border);
+
+    text-align:
+        center;
+
+    white-space:
+        nowrap;
+
+}
+
+
+.data-table th {
+
+    background:
+        #f0f4f2;
+
+    font-size:
+        13px;
+
+}
+
+
+/* =========================================================
+   GENETICS INFO
+   ========================================================= */
+
+.genetics-info-card {
+
+    margin-top:
+        12px;
+
+    padding:
+        14px;
+
+    border-radius:
+        14px;
+
+    background:
+        #f2f7f4;
+
+    border:
+        1px solid #d9e7df;
+
+    display:
+        flex;
+
+    flex-direction:
+        column;
+
+    gap:
+        4px;
+
+}
+
+
+.genetics-info-card strong {
+
+    font-size:
+        17px;
+
+}
+
+
+.genetics-info-card span {
+
+    color:
+        var(--primary);
+
+}
+
+
+.genetics-info-card small {
+
+    color:
+        var(--muted);
+
+}
+
+
+/* =========================================================
+   STAT CARDS
+   ========================================================= */
+
+.stats-grid {
+
+    display:
+        grid;
+
+    grid-template-columns:
+        repeat(
+            2,
+            1fr
+        );
+
+    gap:
+        10px;
+
+}
+
+
+.stat {
+
+    background:
+        white;
+
+    border:
+        1px solid var(--border);
+
+    border-radius:
+        14px;
+
+    padding:
+        14px;
+
+}
+
+
+.stat-label {
+
+    color:
+        var(--muted);
+
+    font-size:
+        12px;
+
+}
+
+
+.stat-value {
+
+    margin-top:
+        5px;
+
+    font-size:
+        22px;
+
+    font-weight:
+        900;
+
+}
+
+
+/* =========================================================
+   BOTTOM NAV
+   ========================================================= */
+
+.bottom-nav {
+
+    position:
+        fixed;
+
+    bottom:
+        0;
+
+    left:
+        0;
+
+    right:
+        0;
+
+    z-index:
+        200;
+
+    min-height:
+        66px;
+
+    background:
+        rgba(255,255,255,.96);
+
+    backdrop-filter:
+        blur(14px);
+
+    border-top:
+        1px solid var(--border);
+
+    display:
+        grid;
+
+    grid-template-columns:
+        repeat(
+            4,
+            1fr
+        );
+
+}
+
+
+.bottom-nav button {
+
+    border:
+        0;
+
+    background:
+        transparent;
+
+    font:
+        inherit;
+
+    font-size:
+        11px;
+
+    color:
+        var(--muted);
+
+}
+
+
+.bottom-nav button.active {
+
+    color:
+        var(--primary);
+
+    font-weight:
+        800;
+
+}
+
+
+/* =========================================================
+   RESPONSIVE
+   ========================================================= */
+
+@media (
+    min-width: 700px
+) {
+
+    .stats-grid {
+
+        grid-template-columns:
+            repeat(
+                4,
+                1fr
+            );
+
+    }
+
+}
+
+
+@media (
+    max-width: 480px
+) {
+
+    .container {
+
+        width:
+            92%;
+
+    }
+
+
+    .card {
+
+        padding:
+            14px;
+
+    }
+
+
+    .form-grid {
+
+        grid-template-columns:
+            1fr;
+
+    }
+
+
+    .button-row .btn {
+
+        flex:
+            1 1 100%;
+
+    }
+
+}

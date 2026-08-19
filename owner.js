@@ -6,7 +6,6 @@ document.addEventListener("DOMContentLoaded", async () => {
         return;
     }
 
-
     const tbody = document.getElementById("usersTableBody");
     const message = document.getElementById("message");
     const logout = document.getElementById("logoutButton");
@@ -18,6 +17,10 @@ document.addEventListener("DOMContentLoaded", async () => {
     }
 
 
+    // ==============================
+    // پیام
+    // ==============================
+
     function showMessage(text, type = "success") {
 
         if (!message) {
@@ -26,11 +29,16 @@ document.addEventListener("DOMContentLoaded", async () => {
 
         message.textContent = text;
 
-        message.className = "message " + type;
+        message.className =
+            "message " + type;
 
         message.classList.remove("hidden");
     }
 
+
+    // ==============================
+    // متن وضعیت
+    // ==============================
 
     function statusText(status) {
 
@@ -39,26 +47,44 @@ document.addEventListener("DOMContentLoaded", async () => {
             pending:
                 "در انتظار تأیید",
 
-            approved:
+            active:
                 "فعال",
 
-            disabled:
+            suspended:
                 "موقتاً غیرفعال",
 
             blocked:
-                "مسدود"
+                "مسدود",
+
+            removed:
+                "اخراج‌شده"
 
         };
 
-        return map[status] || status || "نامشخص";
+        return (
+            map[status] ||
+            status ||
+            "نامشخص"
+        );
     }
 
+
+    // ==============================
+    // کلاس وضعیت
+    // ==============================
 
     function statusClass(status) {
 
-        return "status-badge status-" + (status || "unknown");
+        return (
+            "status-badge status-" +
+            (status || "unknown")
+        );
     }
 
+
+    // ==============================
+    // تاریخ
+    // ==============================
 
     function formatDate(date) {
 
@@ -85,6 +111,10 @@ document.addEventListener("DOMContentLoaded", async () => {
     }
 
 
+    // ==============================
+    // جلوگیری از HTML Injection
+    // ==============================
+
     function escapeHtml(value) {
 
         const div =
@@ -97,7 +127,15 @@ document.addEventListener("DOMContentLoaded", async () => {
     }
 
 
+    // ==============================
+    // دکمه‌های عملیات
+    // ==============================
+
     function renderActionButtons(user) {
+
+        /*
+         * مالک
+         */
 
         if (user.role === "owner") {
 
@@ -116,14 +154,14 @@ document.addEventListener("DOMContentLoaded", async () => {
          * تأیید / فعال‌سازی
          */
 
-        if (user.status !== "approved") {
+        if (user.status !== "active") {
 
             actions += `
                 <button
                     type="button"
                     class="action-button action-active"
                     data-id="${user.id}"
-                    data-status="approved"
+                    data-status="active"
                 >
                     تأیید / فعال‌سازی
                 </button>
@@ -135,14 +173,14 @@ document.addEventListener("DOMContentLoaded", async () => {
          * غیرفعال موقت
          */
 
-        if (user.status !== "disabled") {
+        if (user.status !== "suspended") {
 
             actions += `
                 <button
                     type="button"
                     class="action-button action-suspend"
                     data-id="${user.id}"
-                    data-status="disabled"
+                    data-status="suspended"
                 >
                     غیرفعال موقت
                 </button>
@@ -151,7 +189,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 
 
         /*
-         * مسدود کردن
+         * مسدود
          */
 
         if (user.status !== "blocked") {
@@ -169,9 +207,32 @@ document.addEventListener("DOMContentLoaded", async () => {
         }
 
 
+        /*
+         * اخراج
+         */
+
+        if (user.status !== "removed") {
+
+            actions += `
+                <button
+                    type="button"
+                    class="action-button action-block"
+                    data-id="${user.id}"
+                    data-status="removed"
+                >
+                    اخراج
+                </button>
+            `;
+        }
+
+
         return actions;
     }
 
+
+    // ==============================
+    // دریافت کاربران
+    // ==============================
 
     async function loadUsers() {
 
@@ -220,19 +281,24 @@ document.addEventListener("DOMContentLoaded", async () => {
                 tbody.innerHTML = `
                     <tr>
                         <td colspan="6">
+
                             <strong>
                                 خطا در دریافت کاربران
                             </strong>
+
                             <br>
+
                             <small>
                                 ${escapeHtml(
                                     error.message ||
                                     "خطای نامشخص"
                                 )}
                             </small>
+
                         </td>
                     </tr>
                 `;
+
 
                 showMessage(
                     error.message ||
@@ -240,11 +306,15 @@ document.addEventListener("DOMContentLoaded", async () => {
                     "error"
                 );
 
+
                 return;
             }
 
 
-            if (!data || data.length === 0) {
+            if (
+                !data ||
+                data.length === 0
+            ) {
 
                 tbody.innerHTML = `
                     <tr>
@@ -317,11 +387,15 @@ document.addEventListener("DOMContentLoaded", async () => {
 
 
                     <td>
+
                         <div class="user-actions">
+
                             ${renderActionButtons(
                                 user
                             )}
+
                         </div>
+
                     </td>
 
                 `;
@@ -330,6 +404,7 @@ document.addEventListener("DOMContentLoaded", async () => {
                 tbody.appendChild(row);
 
             });
+
 
         } catch (error) {
 
@@ -356,9 +431,9 @@ document.addEventListener("DOMContentLoaded", async () => {
     }
 
 
-    /*
-     * تغییر وضعیت کاربر
-     */
+    // ==============================
+    // تغییر وضعیت کاربر
+    // ==============================
 
     tbody.addEventListener(
         "click",
@@ -383,7 +458,11 @@ document.addEventListener("DOMContentLoaded", async () => {
                 button.dataset.status;
 
 
-            if (!userId || !newStatus) {
+            if (
+                !userId ||
+                !newStatus
+            ) {
+
                 return;
             }
 
@@ -394,7 +473,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 
             if (
                 newStatus ===
-                "approved"
+                "active"
             ) {
 
                 confirmation =
@@ -404,7 +483,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 
             if (
                 newStatus ===
-                "disabled"
+                "suspended"
             ) {
 
                 confirmation =
@@ -419,6 +498,16 @@ document.addEventListener("DOMContentLoaded", async () => {
 
                 confirmation =
                     "آیا این کاربر مسدود شود؟";
+            }
+
+
+            if (
+                newStatus ===
+                "removed"
+            ) {
+
+                confirmation =
+                    "آیا مطمئن هستید که می‌خواهید این کاربر را اخراج کنید؟";
             }
 
 
@@ -517,9 +606,9 @@ document.addEventListener("DOMContentLoaded", async () => {
     );
 
 
-    /*
-     * خروج مالک
-     */
+    // ==============================
+    // خروج
+    // ==============================
 
     if (logout) {
 
@@ -548,16 +637,16 @@ document.addEventListener("DOMContentLoaded", async () => {
     }
 
 
-    /*
-     * دریافت اولیه کاربران
-     */
+    // ==============================
+    // بارگذاری اولیه
+    // ==============================
 
     await loadUsers();
 
 
-    /*
-     * بروزرسانی خودکار هر 30 ثانیه
-     */
+    // ==============================
+    // بروزرسانی خودکار
+    // ==============================
 
     setInterval(
         loadUsers,

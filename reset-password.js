@@ -78,7 +78,7 @@ document.addEventListener("DOMContentLoaded", () => {
                         {
                             redirectTo:
     "https://dradine.github.io/Adine-poultry-health-center/update-password.html"
-    n
+    
    
                     );
 

@@ -1,39 +1,52 @@
-/* =========================================================
+/* =====================================================
    ADINE POULTRY HEALTH CENTER
-   MOBILE FIRST UI
-   ========================================================= */
+   GLOBAL APPLICATION STYLE
+===================================================== */
 
 :root {
 
-    --primary: #173f35;
-    --primary-light: #286653;
+    --primary:
+        #173f35;
 
-    --accent: #c9a227;
+    --primary-light:
+        #245b4d;
 
-    --background: #f4f6f5;
+    --secondary:
+        #eef4f1;
 
-    --surface: #ffffff;
+    --background:
+        #f5f7f6;
 
-    --text: #18221f;
+    --surface:
+        #ffffff;
 
-    --muted: #718079;
+    --text:
+        #17221f;
 
-    --border: #e1e7e4;
+    --muted:
+        #68746f;
 
-    --danger: #b42318;
+    --border:
+        #dfe7e3;
 
-    --success: #18794e;
+    --danger:
+        #b42318;
 
-    --warning: #a15c00;
+    --warning:
+        #a15c00;
+
+    --success:
+        #18794e;
+
+    --shadow:
+        0 8px 30px
+        rgba(20,40,34,.08);
 
     --radius:
         16px;
 
-    --shadow:
-        0 8px 28px
-        rgba(0,0,0,.08);
-
 }
+
 
 
 * {
@@ -44,10 +57,8 @@
 }
 
 
-html {
 
-    direction:
-        rtl;
+html {
 
     scroll-behavior:
         smooth;
@@ -55,10 +66,23 @@ html {
 }
 
 
+
 body {
 
     margin:
         0;
+
+    padding:
+        0;
+
+    min-height:
+        100vh;
+
+    background:
+        var(--background);
+
+    color:
+        var(--text);
 
     font-family:
         -apple-system,
@@ -68,163 +92,16 @@ body {
         Arial,
         sans-serif;
 
-    background:
-        var(--background);
-
-    color:
-        var(--text);
-
-}
-
-
-/* =========================================================
-   LOGIN / HERO
-   ========================================================= */
-
-.app-hero {
-
-    min-height:
-        100svh;
-
-    position:
-        relative;
-
-    display:
-        flex;
-
-    align-items:
-        center;
-
-    justify-content:
-        center;
-
-    overflow:
-        hidden;
-
-}
-
-
-.app-hero::before {
-
-    content:
-        "";
-
-    position:
-        absolute;
-
-    inset:
-        0;
-
-    background-image:
-        linear-gradient(
-            rgba(10,30,25,.58),
-            rgba(10,30,25,.66)
-        ),
-        url("IMG_4309.png");
-
-    background-size:
-        cover;
-
-    background-position:
-        center;
-
-    filter:
-        blur(1.5px);
-
-    transform:
-        scale(1.03);
-
-}
-
-
-.app-hero-content {
-
-    position:
-        relative;
-
-    z-index:
-        2;
-
-    width:
-        min(92%, 460px);
-
-    padding:
-        32px 24px;
-
-    text-align:
-        center;
-
-    color:
-        white;
-
-}
-
-
-.app-logo {
-
-    width:
-        min(180px, 48vw);
-
-    max-height:
-        150px;
-
-    object-fit:
-        contain;
-
-    display:
-        block;
-
-    margin:
-        0 auto 22px;
-
-    filter:
-        drop-shadow(
-            0 6px 16px
-            rgba(0,0,0,.30)
-        );
-
-}
-
-
-.app-title {
-
-    margin:
-        0;
-
-    font-size:
-        clamp(25px, 7vw, 38px);
-
-    font-weight:
-        800;
-
-}
-
-
-.app-subtitle {
-
-    margin:
-        10px 0 28px;
-
-    color:
-        rgba(255,255,255,.88);
-
     line-height:
-        1.8;
+        1.7;
 
 }
 
 
-/* =========================================================
-   APP SHELL
-   ========================================================= */
 
-.app-shell {
-
-    min-height:
-        100svh;
-
-}
-
+/* =====================================================
+   TOP BAR
+===================================================== */
 
 .topbar {
 
@@ -235,19 +112,13 @@ body {
         0;
 
     z-index:
-        100;
-
-    background:
-        rgba(255,255,255,.94);
-
-    backdrop-filter:
-        blur(12px);
-
-    border-bottom:
-        1px solid var(--border);
+        1000;
 
     min-height:
-        64px;
+        68px;
+
+    padding:
+        10px 18px;
 
     display:
         flex;
@@ -258,10 +129,24 @@ body {
     justify-content:
         space-between;
 
-    padding:
-        8px 14px;
+    gap:
+        12px;
+
+    background:
+        rgba(23,63,53,.97);
+
+    color:
+        #fff;
+
+    box-shadow:
+        0 4px 20px
+        rgba(0,0,0,.12);
+
+    backdrop-filter:
+        blur(10px);
 
 }
+
 
 
 .brand {
@@ -275,34 +160,78 @@ body {
     gap:
         10px;
 
-    font-weight:
-        800;
+    min-width:
+        0;
 
 }
+
 
 
 .brand img {
 
     width:
-        42px;
+        46px;
 
     height:
-        42px;
+        46px;
 
     object-fit:
         contain;
 
+    border-radius:
+        10px;
+
+    background:
+        rgba(255,255,255,.08);
+
 }
 
 
-/* =========================================================
-   CONTENT
-   ========================================================= */
+
+.brand span {
+
+    font-weight:
+        700;
+
+    font-size:
+        16px;
+
+    white-space:
+        nowrap;
+
+    overflow:
+        hidden;
+
+    text-overflow:
+        ellipsis;
+
+}
+
+
+
+/* =====================================================
+   PAGE
+===================================================== */
+
+.page {
+
+    min-height:
+        calc(100vh - 68px);
+
+    padding:
+        24px 14px 50px;
+
+}
+
+
 
 .container {
 
     width:
-        min(1200px, 94%);
+        100%;
+
+    max-width:
+        1100px;
 
     margin:
         0 auto;
@@ -310,41 +239,51 @@ body {
 }
 
 
-.page {
-
-    padding:
-        20px 0 100px;
-
-}
-
 
 .page-title {
 
     margin:
-        0 0 6px;
+        0 0 5px;
 
     font-size:
-        24px;
+        clamp(24px,5vw,34px);
+
+    font-weight:
+        800;
+
+    color:
+        var(--primary);
 
 }
+
 
 
 .page-description {
 
     margin:
-        0 0 20px;
+        0 0 22px;
 
     color:
         var(--muted);
 
+    font-size:
+        14px;
+
 }
 
 
-/* =========================================================
+
+/* =====================================================
    CARDS
-   ========================================================= */
+===================================================== */
 
 .card {
+
+    margin-bottom:
+        18px;
+
+    padding:
+        20px;
 
     background:
         var(--surface);
@@ -358,22 +297,20 @@ body {
     box-shadow:
         var(--shadow);
 
-    padding:
-        18px;
-
-    margin-bottom:
-        16px;
-
 }
+
 
 
 .card-title {
 
     margin:
-        0 0 14px;
+        0 0 18px;
+
+    color:
+        var(--primary);
 
     font-size:
-        18px;
+        20px;
 
     font-weight:
         800;
@@ -381,109 +318,10 @@ body {
 }
 
 
-/* =========================================================
-   DASHBOARD GRID
-   ========================================================= */
 
-.dashboard-grid {
-
-    display:
-        grid;
-
-    grid-template-columns:
-        repeat(
-            auto-fit,
-            minmax(
-                150px,
-                1fr
-            )
-        );
-
-    gap:
-        12px;
-
-}
-
-
-.menu-card {
-
-    min-height:
-        130px;
-
-    padding:
-        18px;
-
-    border-radius:
-        18px;
-
-    background:
-        white;
-
-    border:
-        1px solid var(--border);
-
-    display:
-        flex;
-
-    flex-direction:
-        column;
-
-    justify-content:
-        space-between;
-
-    text-decoration:
-        none;
-
-    color:
-        var(--text);
-
-    box-shadow:
-        var(--shadow);
-
-    transition:
-        .2s;
-
-}
-
-
-.menu-card:active {
-
-    transform:
-        scale(.98);
-
-}
-
-
-.menu-icon {
-
-    font-size:
-        30px;
-
-}
-
-
-.menu-title {
-
-    font-weight:
-        800;
-
-}
-
-
-.menu-description {
-
-    font-size:
-        12px;
-
-    color:
-        var(--muted);
-
-}
-
-
-/* =========================================================
+/* =====================================================
    FORMS
-   ========================================================= */
+===================================================== */
 
 .form-grid {
 
@@ -492,17 +330,15 @@ body {
 
     grid-template-columns:
         repeat(
-            auto-fit,
-            minmax(
-                220px,
-                1fr
-            )
+            2,
+            minmax(0,1fr)
         );
 
     gap:
-        14px;
+        15px;
 
 }
+
 
 
 .form-group {
@@ -514,9 +350,10 @@ body {
         column;
 
     gap:
-        7px;
+        6px;
 
 }
+
 
 
 .form-group.full {
@@ -527,15 +364,20 @@ body {
 }
 
 
+
 label {
 
     font-size:
-        13px;
+        14px;
 
     font-weight:
         700;
 
+    color:
+        var(--text);
+
 }
+
 
 
 input,
@@ -545,31 +387,51 @@ textarea {
     width:
         100%;
 
-    min-height:
-        46px;
-
     border:
-        1px solid #d7dfdb;
+        1px solid var(--border);
 
     border-radius:
-        12px;
-
-    padding:
-        10px 12px;
+        11px;
 
     background:
-        white;
+        #fff;
 
     color:
         var(--text);
 
-    font:
+    font-family:
         inherit;
+
+    font-size:
+        15px;
+
+    padding:
+        11px 12px;
 
     outline:
         none;
 
+    transition:
+        border-color .2s,
+        box-shadow .2s;
+
 }
+
+
+
+input:focus,
+select:focus,
+textarea:focus {
+
+    border-color:
+        var(--primary-light);
+
+    box-shadow:
+        0 0 0 3px
+        rgba(36,91,77,.10);
+
+}
+
 
 
 textarea {
@@ -583,48 +445,73 @@ textarea {
 }
 
 
-input:focus,
-select:focus,
-textarea:focus {
 
-    border-color:
-        var(--primary-light);
+/* =====================================================
+   BUTTONS
+===================================================== */
 
-    box-shadow:
-        0 0 0 3px
-        rgba(40,102,83,.10);
+.button-row {
+
+    display:
+        flex;
+
+    flex-wrap:
+        wrap;
+
+    gap:
+        10px;
+
+    margin-top:
+        18px;
 
 }
 
 
-/* =========================================================
-   BUTTONS
-   ========================================================= */
 
 .btn {
 
-    min-height:
-        46px;
+    appearance:
+        none;
 
     border:
         0;
 
     border-radius:
-        12px;
+        11px;
 
     padding:
-        10px 18px;
+        10px 17px;
 
-    font:
+    min-height:
+        44px;
+
+    font-family:
         inherit;
 
+    font-size:
+        14px;
+
     font-weight:
-        800;
+        700;
 
     cursor:
         pointer;
 
+    transition:
+        transform .15s,
+        opacity .15s;
+
 }
+
+
+
+.btn:active {
+
+    transform:
+        scale(.98);
+
+}
+
 
 
 .btn-primary {
@@ -633,37 +520,111 @@ textarea:focus {
         var(--primary);
 
     color:
-        white;
+        #fff;
 
 }
 
 
-.btn-accent {
+
+.btn-primary:hover {
 
     background:
-        var(--accent);
-
-    color:
-        #171717;
+        var(--primary-light);
 
 }
 
-
-.btn-danger {
-
-    background:
-        #fbe9e7;
-
-    color:
-        var(--danger);
-
-}
 
 
 .btn-secondary {
 
     background:
-        #edf2ef;
+        rgba(255,255,255,.12);
+
+    color:
+        #fff;
+
+    border:
+        1px solid
+        rgba(255,255,255,.25);
+
+}
+
+
+
+.btn-danger {
+
+    background:
+        var(--danger);
+
+    color:
+        #fff;
+
+}
+
+
+
+.btn-warning {
+
+    background:
+        var(--warning);
+
+    color:
+        #fff;
+
+}
+
+
+
+/* =====================================================
+   LIST CARDS
+===================================================== */
+
+.list-card {
+
+    display:
+        flex;
+
+    align-items:
+        center;
+
+    justify-content:
+        space-between;
+
+    gap:
+        18px;
+
+    padding:
+        16px;
+
+    margin-bottom:
+        12px;
+
+    border:
+        1px solid var(--border);
+
+    border-radius:
+        13px;
+
+    background:
+        #fff;
+
+}
+
+
+
+.list-card:last-child {
+
+    margin-bottom:
+        0;
+
+}
+
+
+
+.list-card h3 {
+
+    margin:
+        0 0 5px;
 
     color:
         var(--primary);
@@ -671,71 +632,14 @@ textarea:focus {
 }
 
 
-.button-row {
 
-    display:
-        flex;
+.list-card p {
 
-    gap:
-        10px;
+    margin:
+        2px 0;
 
-    flex-wrap:
-        wrap;
-
-    margin-top:
-        16px;
-
-}
-
-
-/* =========================================================
-   TABLE
-   ========================================================= */
-
-.table-wrapper {
-
-    overflow-x:
-        auto;
-
-}
-
-
-.data-table {
-
-    width:
-        100%;
-
-    border-collapse:
-        collapse;
-
-    min-width:
-        720px;
-
-}
-
-
-.data-table th,
-.data-table td {
-
-    padding:
-        11px;
-
-    border-bottom:
-        1px solid var(--border);
-
-    text-align:
-        center;
-
-    white-space:
-        nowrap;
-
-}
-
-
-.data-table th {
-
-    background:
-        #f0f4f2;
+    color:
+        var(--muted);
 
     font-size:
         13px;
@@ -743,66 +647,35 @@ textarea:focus {
 }
 
 
-/* =========================================================
-   GENETICS INFO
-   ========================================================= */
 
-.genetics-info-card {
+/* =====================================================
+   EMPTY
+===================================================== */
 
-    margin-top:
-        12px;
+.empty-state {
 
     padding:
-        14px;
+        28px 15px;
 
-    border-radius:
-        14px;
-
-    background:
-        #f2f7f4;
-
-    border:
-        1px solid #d9e7df;
-
-    display:
-        flex;
-
-    flex-direction:
-        column;
-
-    gap:
-        4px;
-
-}
-
-
-.genetics-info-card strong {
-
-    font-size:
-        17px;
-
-}
-
-
-.genetics-info-card span {
-
-    color:
-        var(--primary);
-
-}
-
-
-.genetics-info-card small {
+    text-align:
+        center;
 
     color:
         var(--muted);
 
+    background:
+        var(--secondary);
+
+    border-radius:
+        12px;
+
 }
 
 
-/* =========================================================
-   STAT CARDS
-   ========================================================= */
+
+/* =====================================================
+   STATS
+===================================================== */
 
 .stats-grid {
 
@@ -811,31 +684,33 @@ textarea:focus {
 
     grid-template-columns:
         repeat(
-            2,
-            1fr
+            4,
+            minmax(0,1fr)
         );
 
     gap:
-        10px;
+        12px;
 
 }
 
 
+
 .stat {
 
-    background:
-        white;
+    padding:
+        16px;
 
     border:
         1px solid var(--border);
 
     border-radius:
-        14px;
+        13px;
 
-    padding:
-        14px;
+    background:
+        var(--secondary);
 
 }
+
 
 
 .stat-label {
@@ -844,91 +719,90 @@ textarea:focus {
         var(--muted);
 
     font-size:
-        12px;
+        13px;
+
+    margin-bottom:
+        5px;
 
 }
+
 
 
 .stat-value {
 
-    margin-top:
-        5px;
+    color:
+        var(--primary);
 
     font-size:
-        22px;
+        21px;
 
     font-weight:
-        900;
+        800;
 
 }
 
 
-/* =========================================================
-   BOTTOM NAV
-   ========================================================= */
 
-.bottom-nav {
+/* =====================================================
+   TABLE
+===================================================== */
 
-    position:
-        fixed;
+.table-wrapper {
 
-    bottom:
-        0;
+    width:
+        100%;
 
-    left:
-        0;
+    overflow-x:
+        auto;
 
-    right:
-        0;
-
-    z-index:
-        200;
-
-    min-height:
-        66px;
-
-    background:
-        rgba(255,255,255,.96);
-
-    backdrop-filter:
-        blur(14px);
-
-    border-top:
-        1px solid var(--border);
-
-    display:
-        grid;
-
-    grid-template-columns:
-        repeat(
-            4,
-            1fr
-        );
+    -webkit-overflow-scrolling:
+        touch;
 
 }
 
 
-.bottom-nav button {
 
-    border:
-        0;
+.data-table {
 
-    background:
-        transparent;
+    width:
+        100%;
 
-    font:
-        inherit;
+    min-width:
+        700px;
+
+    border-collapse:
+        collapse;
 
     font-size:
-        11px;
-
-    color:
-        var(--muted);
+        14px;
 
 }
 
 
-.bottom-nav button.active {
+
+.data-table th,
+.data-table td {
+
+    padding:
+        11px 10px;
+
+    border-bottom:
+        1px solid var(--border);
+
+    text-align:
+        right;
+
+    white-space:
+        nowrap;
+
+}
+
+
+
+.data-table th {
+
+    background:
+        var(--secondary);
 
     color:
         var(--primary);
@@ -939,35 +813,102 @@ textarea:focus {
 }
 
 
-/* =========================================================
-   RESPONSIVE
-   ========================================================= */
 
-@media (
-    min-width: 700px
-) {
+.data-table tr:hover td {
 
-    .stats-grid {
-
-        grid-template-columns:
-            repeat(
-                4,
-                1fr
-            );
-
-    }
+    background:
+        #fafcfb;
 
 }
 
 
+
+/* =====================================================
+   CHART
+===================================================== */
+
+.chart-box {
+
+    position:
+        relative;
+
+    width:
+        100%;
+
+    height:
+        330px;
+
+}
+
+
+
+.chart-box canvas {
+
+    max-width:
+        100%;
+
+}
+
+
+
+/* =====================================================
+   INFO
+===================================================== */
+
+.info-box {
+
+    padding:
+        13px 15px;
+
+    background:
+        var(--secondary);
+
+    border:
+        1px solid var(--border);
+
+    border-radius:
+        11px;
+
+    color:
+        var(--muted);
+
+    font-size:
+        14px;
+
+}
+
+
+
+.danger-card {
+
+    border-color:
+        rgba(180,35,24,.25);
+
+}
+
+
+
+.danger-card p {
+
+    color:
+        var(--muted);
+
+}
+
+
+
+/* =====================================================
+   RESPONSIVE
+===================================================== */
+
 @media (
-    max-width: 480px
+    max-width: 760px
 ) {
 
-    .container {
+    .page {
 
-        width:
-            92%;
+        padding:
+            18px 10px 40px;
 
     }
 
@@ -975,6 +916,9 @@ textarea:focus {
     .card {
 
         padding:
+            15px;
+
+        border-radius:
             14px;
 
     }
@@ -988,10 +932,155 @@ textarea:focus {
     }
 
 
+    .form-group.full {
+
+        grid-column:
+            auto;
+
+    }
+
+
+    .stats-grid {
+
+        grid-template-columns:
+            repeat(
+                2,
+                minmax(0,1fr)
+            );
+
+    }
+
+
+    .list-card {
+
+        align-items:
+            flex-start;
+
+        flex-direction:
+            column;
+
+    }
+
+
+    .list-card .button-row {
+
+        width:
+            100%;
+
+    }
+
+
+    .list-card .btn {
+
+        width:
+            100%;
+
+    }
+
+
+    .chart-box {
+
+        height:
+            270px;
+
+    }
+
+
+    .brand span {
+
+        font-size:
+            14px;
+
+    }
+
+
+    .brand img {
+
+        width:
+            40px;
+
+        height:
+            40px;
+
+    }
+
+}
+
+
+
+@media (
+    max-width: 420px
+) {
+
+    .topbar {
+
+        padding:
+            8px 10px;
+
+    }
+
+
+    .stats-grid {
+
+        grid-template-columns:
+            1fr;
+
+    }
+
+
+    .button-row {
+
+        flex-direction:
+            column;
+
+    }
+
+
     .button-row .btn {
 
-        flex:
-            1 1 100%;
+        width:
+            100%;
+
+    }
+
+
+    .page-title {
+
+        font-size:
+            24px;
+
+    }
+
+}
+
+
+
+/* =====================================================
+   SAFE AREA — IPHONE
+===================================================== */
+
+@supports (
+    padding: env(safe-area-inset-top)
+) {
+
+    .topbar {
+
+        padding-top:
+            calc(
+                10px +
+                env(safe-area-inset-top)
+            );
+
+    }
+
+
+    .page {
+
+        padding-bottom:
+            calc(
+                50px +
+                env(safe-area-inset-bottom)
+            );
 
     }
 

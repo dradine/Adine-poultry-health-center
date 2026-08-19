@@ -1,48 +1,14 @@
 /* =========================================================
    ADINE POULTRY HEALTH CENTER
-   POULTRY CALCULATION ENGINE
-   ========================================================= */
+   POULTRY CALCULATION UTILITIES
+========================================================= */
 
 
 /* =========================================================
-   BASIC
-   ========================================================= */
+   BASIC STATISTICS
+========================================================= */
 
-function roundNumber(
-    value,
-    decimals = 2
-) {
-
-    if (
-        value === null ||
-        value === undefined ||
-        !Number.isFinite(Number(value))
-    ) {
-
-        return null;
-
-    }
-
-
-    const factor =
-        Math.pow(
-            10,
-            decimals
-        );
-
-
-    return Math.round(
-        Number(value) * factor
-    ) / factor;
-
-}
-
-
-/* =========================================================
-   AVERAGE
-   ========================================================= */
-
-function calculateAverage(
+function calculateMean(
     values
 ) {
 
@@ -63,20 +29,18 @@ function calculateAverage(
 
     return (
         numbers.reduce(
-            (sum, value) =>
+            (
+                sum,
+                value
+            ) =>
                 sum + value,
             0
-        )
-        /
+        ) /
         numbers.length
     );
 
 }
 
-
-/* =========================================================
-   SD
-   ========================================================= */
 
 function calculateSD(
     values
@@ -91,7 +55,8 @@ function calculateSD(
 
 
     if (
-        numbers.length < 2
+        numbers.length <
+        2
     ) {
 
         return null;
@@ -100,23 +65,29 @@ function calculateSD(
 
 
     const mean =
-        calculateAverage(
+        calculateMean(
             numbers
         );
 
 
     const variance =
         numbers.reduce(
-            (sum, value) =>
+            (
+                sum,
+                value
+            ) =>
                 sum +
                 Math.pow(
-                    value - mean,
+                    value -
+                    mean,
                     2
                 ),
             0
-        )
-        /
-        numbers.length;
+        ) /
+        (
+            numbers.length -
+            1
+        );
 
 
     return Math.sqrt(
@@ -126,16 +97,12 @@ function calculateSD(
 }
 
 
-/* =========================================================
-   CV
-   ========================================================= */
-
 function calculateCV(
     values
 ) {
 
     const mean =
-        calculateAverage(
+        calculateMean(
             values
         );
 
@@ -159,20 +126,20 @@ function calculateCV(
 
     return (
         sd /
-        mean *
-        100
-    );
+        mean
+    ) *
+    100;
 
 }
 
 
 /* =========================================================
    UNIFORMITY
-   ========================================================= */
+========================================================= */
 
 function calculateUniformity(
     values,
-    percentage = 10
+    percent = 10
 ) {
 
     const numbers =
@@ -191,22 +158,38 @@ function calculateUniformity(
 
 
     const mean =
-        calculateAverage(
+        calculateMean(
             numbers
         );
 
 
+    if (
+        mean === null ||
+        mean === 0
+    ) {
+
+        return null;
+
+    }
+
+
     const lower =
         mean *
-        (1 - percentage / 100);
+        (
+            1 -
+            percent / 100
+        );
 
 
     const upper =
         mean *
-        (1 + percentage / 100);
+        (
+            1 +
+            percent / 100
+        );
 
 
-    const within =
+    const inside =
         numbers.filter(
             value =>
                 value >= lower &&
@@ -215,25 +198,24 @@ function calculateUniformity(
 
 
     return (
-        within.length /
-        numbers.length *
-        100
-    );
+        inside.length /
+        numbers.length
+    ) *
+    100;
 
 }
 
 
 /* =========================================================
-   WEIGHT DISTRIBUTION
-   ========================================================= */
+   WEIGHT ANALYSIS
+========================================================= */
 
-function calculateWeightDistribution(
-    values,
-    percentage = 10
+function calculateWeightAnalysis(
+    weights
 ) {
 
     const numbers =
-        values
+        weights
             .map(Number)
             .filter(
                 Number.isFinite
@@ -242,356 +224,27 @@ function calculateWeightDistribution(
 
     if (!numbers.length) {
 
-        return null;
+        return {
+
+            count: 0,
+
+            mean: null,
+
+            sd: null,
+
+            cv: null,
+
+            uniformity10: null,
+
+            uniformity15: null,
+
+            min: null,
+
+            max: null
+
+        };
 
     }
-
-
-    const mean =
-        calculateAverage(
-            numbers
-        );
-
-
-    const lower =
-        mean *
-        (1 - percentage / 100);
-
-
-    const upper =
-        mean *
-        (1 + percentage / 100);
-
-
-    let below = 0;
-
-    let within = 0;
-
-    let above = 0;
-
-
-    numbers.forEach(
-        value => {
-
-            if (
-                value < lower
-            ) {
-
-                below++;
-
-            }
-
-            else if (
-                value > upper
-            ) {
-
-                above++;
-
-            }
-
-            else {
-
-                within++;
-
-            }
-
-        }
-    );
-
-
-    return {
-
-        below,
-
-        within,
-
-        above,
-
-        total:
-            numbers.length,
-
-        belowPercent:
-            below /
-            numbers.length *
-            100,
-
-        withinPercent:
-            within /
-            numbers.length *
-            100,
-
-        abovePercent:
-            above /
-            numbers.length *
-            100
-
-    };
-
-}
-
-
-/* =========================================================
-   MIN
-   ========================================================= */
-
-function calculateMinimum(
-    values
-) {
-
-    const numbers =
-        values
-            .map(Number)
-            .filter(
-                Number.isFinite
-            );
-
-
-    return numbers.length
-        ? Math.min(...numbers)
-        : null;
-
-}
-
-
-/* =========================================================
-   MAX
-   ========================================================= */
-
-function calculateMaximum(
-    values
-) {
-
-    const numbers =
-        values
-            .map(Number)
-            .filter(
-                Number.isFinite
-            );
-
-
-    return numbers.length
-        ? Math.max(...numbers)
-        : null;
-
-}
-
-
-/* =========================================================
-   FCR
-   ========================================================= */
-
-function calculateFCR(
-    feed,
-    weightGain
-) {
-
-    const f =
-        Number(feed);
-
-    const g =
-        Number(weightGain);
-
-
-    if (
-        !Number.isFinite(f) ||
-        !Number.isFinite(g) ||
-        g <= 0
-    ) {
-
-        return null;
-
-    }
-
-
-    return f / g;
-
-}
-
-
-/* =========================================================
-   MORTALITY
-   ========================================================= */
-
-function calculateMortality(
-    initialBirds,
-    mortalityCount
-) {
-
-    const initial =
-        Number(initialBirds);
-
-    const dead =
-        Number(mortalityCount);
-
-
-    if (
-        !Number.isFinite(initial) ||
-        !Number.isFinite(dead) ||
-        initial <= 0
-    ) {
-
-        return null;
-
-    }
-
-
-    return (
-        dead /
-        initial *
-        100
-    );
-
-}
-
-
-/* =========================================================
-   LIVABILITY
-   ========================================================= */
-
-function calculateLivability(
-    initialBirds,
-    mortalityCount
-) {
-
-    const mortality =
-        calculateMortality(
-            initialBirds,
-            mortalityCount
-        );
-
-
-    if (
-        mortality === null
-    ) {
-
-        return null;
-
-    }
-
-
-    return 100 -
-        mortality;
-
-}
-
-
-/* =========================================================
-   WATER / FEED PER BIRD
-   ========================================================= */
-
-function perBird(
-    total,
-    birds
-) {
-
-    const t =
-        Number(total);
-
-    const b =
-        Number(birds);
-
-
-    if (
-        !Number.isFinite(t) ||
-        !Number.isFinite(b) ||
-        b <= 0
-    ) {
-
-        return null;
-
-    }
-
-
-    return t / b;
-
-}
-
-
-/* =========================================================
-   WATER / FEED RATIO
-   ========================================================= */
-
-function waterFeedRatio(
-    water,
-    feed
-) {
-
-    const w =
-        Number(water);
-
-    const f =
-        Number(feed);
-
-
-    if (
-        !Number.isFinite(w) ||
-        !Number.isFinite(f) ||
-        f <= 0
-    ) {
-
-        return null;
-
-    }
-
-
-    return w / f;
-
-}
-
-
-/* =========================================================
-   COMPLETE WEIGHT ANALYSIS
-   ========================================================= */
-
-function analyzeWeights(
-    values
-) {
-
-    const numbers =
-        values
-            .map(Number)
-            .filter(
-                Number.isFinite
-            );
-
-
-    if (!numbers.length) {
-
-        return null;
-
-    }
-
-
-    const average =
-        calculateAverage(
-            numbers
-        );
-
-
-    const sd =
-        calculateSD(
-            numbers
-        );
-
-
-    const cv =
-        calculateCV(
-            numbers
-        );
-
-
-    const uniformity10 =
-        calculateUniformity(
-            numbers,
-            10
-        );
-
-
-    const uniformity15 =
-        calculateUniformity(
-            numbers,
-            15
-        );
 
 
     return {
@@ -599,36 +252,41 @@ function analyzeWeights(
         count:
             numbers.length,
 
-        average,
-
-        sd,
-
-        cv,
-
-        uniformity10,
-
-        uniformity15,
-
-        minimum:
-            calculateMinimum(
+        mean:
+            calculateMean(
                 numbers
             ),
 
-        maximum:
-            calculateMaximum(
+        sd:
+            calculateSD(
                 numbers
             ),
 
-        distribution10:
-            calculateWeightDistribution(
+        cv:
+            calculateCV(
+                numbers
+            ),
+
+        uniformity10:
+            calculateUniformity(
                 numbers,
                 10
             ),
 
-        distribution15:
-            calculateWeightDistribution(
+        uniformity15:
+            calculateUniformity(
                 numbers,
                 15
+            ),
+
+        min:
+            Math.min(
+                ...numbers
+            ),
+
+        max:
+            Math.max(
+                ...numbers
             )
 
     };
@@ -637,87 +295,242 @@ function analyzeWeights(
 
 
 /* =========================================================
-   WEEKLY PERFORMANCE
-   ========================================================= */
+   FCR
+========================================================= */
 
-function calculateWeeklyPerformance({
+function calculateFCR(
+    feedGrams,
+    weightGainGrams
+) {
 
-    birds,
+    const feed =
+        Number(
+            feedGrams
+        );
 
-    previousWeight,
-
-    currentWeight,
-
-    feed,
-
-    water,
-
-    mortality
-
-}) {
-
-    const result = {};
+    const gain =
+        Number(
+            weightGainGrams
+        );
 
 
-    result.birds =
-        Number(birds) || null;
+    if (
+        !Number.isFinite(feed) ||
+        !Number.isFinite(gain) ||
+        gain <= 0
+    ) {
+
+        return null;
+
+    }
 
 
-    result.weightGain =
-        Number.isFinite(
-            Number(previousWeight)
-        ) &&
-        Number.isFinite(
-            Number(currentWeight)
+    return feed / gain;
+
+}
+
+
+/* =========================================================
+   MORTALITY
+========================================================= */
+
+function calculateMortalityRate(
+    deaths,
+    initialBirds
+) {
+
+    const d =
+        Number(deaths);
+
+    const n =
+        Number(initialBirds);
+
+
+    if (
+        !Number.isFinite(d) ||
+        !Number.isFinite(n) ||
+        n <= 0
+    ) {
+
+        return null;
+
+    }
+
+
+    return (
+        d /
+        n
+    ) *
+    100;
+
+}
+
+
+function calculateLivability(
+    mortalityPercent
+) {
+
+    const mortality =
+        Number(
+            mortalityPercent
+        );
+
+
+    if (
+        !Number.isFinite(
+            mortality
         )
-            ? Number(currentWeight) -
-              Number(previousWeight)
+    ) {
 
-            : null;
+        return null;
+
+    }
 
 
-    result.feedPerBird =
-        perBird(
-            feed,
-            birds
+    return Math.max(
+        0,
+        100 -
+        mortality
+    );
+
+}
+
+
+/* =========================================================
+   WATER / FEED RATIO
+========================================================= */
+
+function calculateWaterFeedRatio(
+    waterLiters,
+    feedKg
+) {
+
+    const water =
+        Number(
+            waterLiters
+        );
+
+    const feed =
+        Number(
+            feedKg
         );
 
 
-    result.waterPerBird =
-        perBird(
-            water,
-            birds
+    if (
+        !Number.isFinite(water) ||
+        !Number.isFinite(feed) ||
+        feed <= 0
+    ) {
+
+        return null;
+
+    }
+
+
+    return (
+        water /
+        feed
+    );
+
+}
+
+
+/* =========================================================
+   EGG MASS
+========================================================= */
+
+function calculateEggMass(
+    productionPercent,
+    eggWeight
+) {
+
+    const production =
+        Number(
+            productionPercent
+        );
+
+    const weight =
+        Number(
+            eggWeight
         );
 
 
-    result.waterFeedRatio =
-        waterFeedRatio(
-            water,
-            feed
+    if (
+        !Number.isFinite(
+            production
+        ) ||
+        !Number.isFinite(
+            weight
+        )
+    ) {
+
+        return null;
+
+    }
+
+
+    return (
+        production /
+        100
+    ) *
+    weight;
+
+}
+
+
+/* =========================================================
+   PERSIAN DIGITS
+========================================================= */
+
+function toPersianDigits(
+    value
+) {
+
+    return String(
+        value
+    )
+    .replace(
+        /\d/g,
+        digit =>
+            "۰۱۲۳۴۵۶۷۸۹"
+                [digit]
+    );
+
+}
+
+
+/* =========================================================
+   FORMAT NUMBER
+========================================================= */
+
+function formatNumber(
+    value,
+    decimals = 1
+) {
+
+    if (
+        value === null ||
+        value === undefined ||
+        !Number.isFinite(
+            Number(value)
+        )
+    ) {
+
+        return "—";
+
+    }
+
+
+    return Number(value)
+        .toLocaleString(
+            "fa-IR",
+            {
+                minimumFractionDigits:
+                    decimals,
+
+                maximumFractionDigits:
+                    decimals
+            }
         );
-
-
-    result.mortalityPercent =
-        calculateMortality(
-            birds,
-            mortality
-        );
-
-
-    result.livability =
-        calculateLivability(
-            birds,
-            mortality
-        );
-
-
-    result.fcr =
-        calculateFCR(
-            result.feedPerBird,
-            result.weightGain
-        );
-
-
-    return result;
 
 }

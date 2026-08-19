@@ -80,20 +80,25 @@ button {
 
 .auth-logo {
     text-align: center;
-
     margin-bottom: 16px;
 }
 
 .auth-logo img {
     width: 105px;
-
     height: 105px;
-
     object-fit: contain;
-
     border-radius: 20px;
+    display: inline-block;
 }
 
+@media (max-width: 600px) {
+
+    .auth-logo img {
+        width: 90px;
+        height: 90px;
+    }
+
+}
 .auth-card h1 {
     text-align: center;
 

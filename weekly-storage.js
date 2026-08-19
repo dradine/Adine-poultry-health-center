@@ -1,56 +1,29 @@
 /* =========================================================
    ADINE POULTRY HEALTH CENTER
-   WEEKLY LOCAL DATA STORAGE
-   ========================================================= */
+   WEEKLY DATA STORAGE
+========================================================= */
 
-const WEEKLY_STORAGE_KEY =
-    "adine_poultry_weekly_records";
+const WEEKLY_STORAGE_NAME =
+    "weekly_records";
 
+
+/* =========================================================
+   GET ALL
+========================================================= */
 
 function getWeeklyRecords() {
 
-    try {
-
-        const raw =
-            localStorage.getItem(
-                WEEKLY_STORAGE_KEY
-            );
-
-
-        if (!raw) {
-
-            return [];
-
-        }
-
-
-        const data =
-            JSON.parse(raw);
-
-
-        return Array.isArray(data)
-            ? data
-            : [];
-
-    }
-
-    catch (error) {
-
-        console.error(
-            "Weekly storage read error:",
-            error
-        );
-
-        return [];
-
-    }
+    return readStorage(
+        WEEKLY_STORAGE_NAME,
+        []
+    );
 
 }
 
 
 /* =========================================================
    SAVE
-   ========================================================= */
+========================================================= */
 
 function saveWeeklyRecord(
     record
@@ -60,13 +33,13 @@ function saveWeeklyRecord(
         getWeeklyRecords();
 
 
-    const newRecord = {
+    const item = {
 
         ...record,
 
         id:
             record.id ||
-            crypto.randomUUID(),
+            createId("weekly"),
 
         createdAt:
             record.createdAt ||
@@ -80,71 +53,59 @@ function saveWeeklyRecord(
 
     const index =
         records.findIndex(
-            item =>
-                item.id ===
-                newRecord.id
+            x =>
+                x.id ===
+                item.id
         );
 
 
     if (index >= 0) {
 
         records[index] =
-            newRecord;
+            item;
 
     }
 
     else {
 
         records.push(
-            newRecord
+            item
         );
 
     }
 
 
-    localStorage.setItem(
-
-        WEEKLY_STORAGE_KEY,
-
-        JSON.stringify(
-            records
-        )
-
+    writeStorage(
+        WEEKLY_STORAGE_NAME,
+        records
     );
 
 
-    return newRecord;
+    return item;
 
 }
 
 
 /* =========================================================
    DELETE
-   ========================================================= */
+========================================================= */
 
 function deleteWeeklyRecord(
     id
 ) {
 
     const records =
-        getWeeklyRecords();
+        getWeeklyRecords()
+            .filter(
+                item =>
+                    item.id !==
+                    id
+            );
 
 
-    const filtered =
-        records.filter(
-            item =>
-                item.id !== id
-        );
-
-
-    localStorage.setItem(
-
-        WEEKLY_STORAGE_KEY,
-
-        JSON.stringify(
-            filtered
-        )
-
+    writeStorage(
+        WEEKLY_STORAGE_NAME,
+        records
     );
 
 
@@ -155,7 +116,7 @@ function deleteWeeklyRecord(
 
 /* =========================================================
    FIND
-   ========================================================= */
+========================================================= */
 
 function getWeeklyRecord(
     id
@@ -164,15 +125,16 @@ function getWeeklyRecord(
     return getWeeklyRecords()
         .find(
             item =>
-                item.id === id
+                item.id ===
+                id
         ) || null;
 
 }
 
 
 /* =========================================================
-   FARM RECORDS
-   ========================================================= */
+   FARM
+========================================================= */
 
 function getFarmWeeklyRecords(
     farmId
@@ -183,14 +145,26 @@ function getFarmWeeklyRecords(
             item =>
                 item.farmId ===
                 farmId
+        )
+        .sort(
+            (
+                a,
+                b
+            ) =>
+                Number(
+                    a.ageDays || 0
+                ) -
+                Number(
+                    b.ageDays || 0
+                )
         );
 
 }
 
 
 /* =========================================================
-   FLOCK RECORDS
-   ========================================================= */
+   FLOCK
+========================================================= */
 
 function getFlockWeeklyRecords(
     flockId
@@ -203,9 +177,39 @@ function getFlockWeeklyRecords(
                 flockId
         )
         .sort(
-            (a, b) =>
-                Number(a.ageDays || 0) -
-                Number(b.ageDays || 0)
+            (
+                a,
+                b
+            ) =>
+                Number(
+                    a.ageDays || 0
+                ) -
+                Number(
+                    b.ageDays || 0
+                )
         );
+
+}
+
+
+/* =========================================================
+   AGE RECORD
+========================================================= */
+
+function getFlockRecordByAge(
+    flockId,
+    ageDays
+) {
+
+    return getFlockWeeklyRecords(
+        flockId
+    )
+    .find(
+        item =>
+            Number(
+                item.ageDays
+            ) ===
+            Number(ageDays)
+    ) || null;
 
 }

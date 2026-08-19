@@ -16,13 +16,10 @@
 >
 
 <title>
-    تلفات و بیماری | آدینه
+تلفات و بیماری | مرکز تخصصی سلامت طیور آدینه
 </title>
 
-<link
-    rel="stylesheet"
-    href="app.css"
->
+<link rel="stylesheet" href="app.css">
 
 </head>
 
@@ -31,26 +28,26 @@
 
 <header class="topbar">
 
-    <div class="brand">
+<div class="brand">
 
-        <img
-            src="IMG_4309.png"
-            alt="آدینه"
-        >
+<img
+    src="IMG_4309.png"
+    alt="آدینه"
+>
 
-        <span>
-            تلفات و بیماری
-        </span>
+<span>
+تلفات و بیماری
+</span>
 
-    </div>
+</div>
 
-    <button
-        type="button"
-        class="btn btn-secondary"
-        onclick="location.href='Dashboard.html'"
-    >
-        داشبورد
-    </button>
+
+<button
+    class="btn btn-secondary"
+    onclick="location.href='Dashboard.html'"
+>
+داشبورد
+</button>
 
 </header>
 
@@ -61,7 +58,7 @@
 
 
 <h1 class="page-title">
-    پایش تلفات و بیماری
+پایش تلفات و بیماری
 </h1>
 
 
@@ -71,15 +68,15 @@
 ></p>
 
 
+
 <section class="card">
 
 <h2 class="card-title">
-    ثبت مورد جدید
+ثبت مورد جدید
 </h2>
 
 
 <form id="mortalityForm">
-
 
 <div class="form-grid">
 
@@ -87,7 +84,7 @@
 <div class="form-group">
 
 <label>
-    تاریخ
+تاریخ
 </label>
 
 <input
@@ -102,7 +99,7 @@
 <div class="form-group">
 
 <label>
-    سن گله
+سن گله
 </label>
 
 <input
@@ -117,7 +114,7 @@
 <div class="form-group">
 
 <label>
-    نوع مورد
+نوع مورد
 </label>
 
 <select
@@ -153,7 +150,7 @@
 <div class="form-group">
 
 <label>
-    تعداد
+تعداد
 </label>
 
 <input
@@ -169,7 +166,7 @@
 <div class="form-group">
 
 <label>
-    بیماری / تشخیص
+تشخیص / بیماری
 </label>
 
 <select id="disease">
@@ -178,41 +175,15 @@
 انتخاب کنید
 </option>
 
-<option>
-H9 / آنفلوانزا
-</option>
-
-<option>
-نیوکاسل
-</option>
-
-<option>
-برونشیت عفونی
-</option>
-
-<option>
-گامبورو
-</option>
-
-<option>
-کوکسیدیوز
-</option>
-
-<option>
-کلی‌باسیلوز
-</option>
-
-<option>
-مایکوپلاسما
-</option>
-
-<option>
-سالمونلا
-</option>
-
-<option>
-سایر
-</option>
+<option>H9 / آنفلوانزا</option>
+<option>نیوکاسل</option>
+<option>برونشیت عفونی</option>
+<option>گامبورو</option>
+<option>کوکسیدیوز</option>
+<option>کلی‌باسیلوز</option>
+<option>مایکوپلاسما</option>
+<option>سالمونلا</option>
+<option>سایر</option>
 
 </select>
 
@@ -222,7 +193,7 @@ H9 / آنفلوانزا
 <div class="form-group">
 
 <label>
-    شدت
+شدت
 </label>
 
 <select id="severity">
@@ -258,9 +229,7 @@ H9 / آنفلوانزا
 علائم / یافته‌ها
 </label>
 
-<textarea
-    id="symptoms"
-></textarea>
+<textarea id="symptoms"></textarea>
 
 </div>
 
@@ -271,9 +240,7 @@ H9 / آنفلوانزا
 اقدامات انجام‌شده
 </label>
 
-<textarea
-    id="actions"
-></textarea>
+<textarea id="actions"></textarea>
 
 </div>
 
@@ -284,9 +251,7 @@ H9 / آنفلوانزا
 توضیحات
 </label>
 
-<textarea
-    id="eventNotes"
-></textarea>
+<textarea id="eventNotes"></textarea>
 
 </div>
 
@@ -305,18 +270,17 @@ H9 / آنفلوانزا
 
 </div>
 
-
 </form>
 
 </section>
 
 
+
 <section class="card">
 
 <h2 class="card-title">
-    خلاصه وضعیت
+خلاصه وضعیت
 </h2>
-
 
 <div
     id="summary"
@@ -326,10 +290,11 @@ H9 / آنفلوانزا
 </section>
 
 
+
 <section class="card">
 
 <h2 class="card-title">
-    سوابق
+سوابق
 </h2>
 
 
@@ -341,38 +306,19 @@ H9 / آنفلوانزا
 
 <tr>
 
-<th>
-تاریخ
-</th>
-
-<th>
-نوع
-</th>
-
-<th>
-تعداد
-</th>
-
-<th>
-تشخیص
-</th>
-
-<th>
-شدت
-</th>
-
-<th>
-عملیات
-</th>
+<th>تاریخ</th>
+<th>نوع</th>
+<th>تعداد</th>
+<th>تشخیص</th>
+<th>شدت</th>
+<th>عملیات</th>
 
 </tr>
 
 </thead>
 
 
-<tbody
-id="mortalityTable"
-></tbody>
+<tbody id="mortalityTable"></tbody>
 
 </table>
 
@@ -380,18 +326,17 @@ id="mortalityTable"
 
 </section>
 
-
 </div>
 
 </main>
 
 
-<script src="standards.js"></script>
+<script src="app-core.js"></script>
 <script src="standard-data.js"></script>
+<script src="standards.js"></script>
 <script src="poultry-utils.js"></script>
 <script src="weekly-storage.js"></script>
 <script src="comparison-engine.js"></script>
-<script src="app-core.js"></script>
 <script src="genetics-ui.js"></script>
 <script src="weekly-engine.js"></script>
 
@@ -403,36 +348,36 @@ const selection =
 
 
 if (!selection.flockId) {
-
-    location.href =
-        "flocks.html";
-
+    location.href = "flocks.html";
 }
 
 
 const flock =
     getFlocks()
         .find(
-            x =>
-                x.id ===
-                selection.flockId
+            item =>
+                item.id === selection.flockId
         );
 
 
 if (!flock) {
-
-    location.href =
-        "flocks.html";
-
+    location.href = "flocks.html";
 }
 
 
 const farm =
     getFarms()
         .find(
-            x =>
-                x.id ===
-                flock.farmId
+            item =>
+                item.id === flock.farmId
+        );
+
+
+const house =
+    getHouses()
+        .find(
+            item =>
+                item.id === flock.houseId
         );
 
 
@@ -441,19 +386,19 @@ document.getElementById(
 ).textContent =
 
     `${farm?.name || ""} | ` +
-    `${flock.flockName} | ` +
-    `${flock.strain}`;
+    `${house?.name || ""} | ` +
+    `${flock.flockName}`;
 
 
 document.getElementById(
     "eventDate"
-).value =
-    todayISO();
+).value = todayISO();
 
 
-/* =========================================================
+
+/* =====================================================
    STORAGE
-========================================================= */
+===================================================== */
 
 function getDiseaseRecords() {
 
@@ -465,9 +410,7 @@ function getDiseaseRecords() {
 }
 
 
-function saveDiseaseRecord(
-    record
-) {
+function saveDiseaseRecord(record) {
 
     const records =
         getDiseaseRecords();
@@ -475,17 +418,11 @@ function saveDiseaseRecord(
 
     records.push({
 
-        id:
-            createId("disease"),
+        id: createId("disease"),
 
-        farmId:
-            flock.farmId,
-
-        houseId:
-            flock.houseId,
-
-        flockId:
-            flock.id,
+        farmId: flock.farmId,
+        houseId: flock.houseId,
+        flockId: flock.id,
 
         ...record,
 
@@ -503,9 +440,7 @@ function saveDiseaseRecord(
 }
 
 
-function deleteDiseaseRecord(
-    id
-) {
+function deleteDiseaseRecord(id) {
 
     const records =
         getDiseaseRecords()
@@ -526,9 +461,10 @@ function deleteDiseaseRecord(
 }
 
 
-/* =========================================================
+
+/* =====================================================
    SAVE
-========================================================= */
+===================================================== */
 
 document.getElementById(
     "mortalityForm"
@@ -598,8 +534,7 @@ document.getElementById(
 
         document.getElementById(
             "eventDate"
-        ).value =
-            todayISO();
+        ).value = todayISO();
 
 
         renderRecords();
@@ -613,9 +548,10 @@ document.getElementById(
 );
 
 
-/* =========================================================
+
+/* =====================================================
    RENDER
-========================================================= */
+===================================================== */
 
 function renderRecords() {
 
@@ -623,14 +559,11 @@ function renderRecords() {
         getDiseaseRecords()
             .filter(
                 item =>
-                    item.flockId ===
-                    flock.id
+                    item.flockId === flock.id
             )
             .sort(
                 (a,b) =>
-                    b.date.localeCompare(
-                        a.date
-                    )
+                    b.date.localeCompare(a.date)
             );
 
 
@@ -654,9 +587,7 @@ function renderRecords() {
 
         `;
 
-    }
-
-    else {
+    } else {
 
         table.innerHTML =
             records
@@ -678,7 +609,11 @@ function renderRecords() {
                             </td>
 
                             <td>
-                                ${record.count}
+                                ${Number(
+                                    record.count || 0
+                                ).toLocaleString(
+                                    "fa-IR"
+                                )}
                             </td>
 
                             <td>
@@ -697,7 +632,6 @@ function renderRecords() {
                             <td>
 
                                 <button
-                                    type="button"
                                     class="btn btn-danger"
                                     onclick="
                                         deleteDiseaseRecord(
@@ -719,27 +653,19 @@ function renderRecords() {
     }
 
 
-    renderSummary(
-        records
-    );
+    renderSummary(records);
 
 }
 
 
-/* =========================================================
-   SUMMARY
-========================================================= */
 
-function renderSummary(
-    records
-) {
+function renderSummary(records) {
 
     const totalDeaths =
         records
             .filter(
                 x =>
-                    x.type ===
-                    "mortality"
+                    x.type === "mortality"
             )
             .reduce(
                 (
@@ -758,8 +684,7 @@ function renderSummary(
         records
             .filter(
                 x =>
-                    x.type ===
-                    "disease"
+                    x.type === "disease"
             )
             .reduce(
                 (
@@ -778,8 +703,7 @@ function renderSummary(
         records
             .filter(
                 x =>
-                    x.type ===
-                    "suspected"
+                    x.type === "suspected"
             )
             .length;
 
@@ -788,8 +712,7 @@ function renderSummary(
         records
             .filter(
                 x =>
-                    x.severity ===
-                    "critical"
+                    x.severity === "critical"
             )
             .length;
 
@@ -799,54 +722,39 @@ function renderSummary(
     ).innerHTML = `
 
         <div class="stat">
-
             <div class="stat-label">
-                مجموع تلفات ثبت‌شده
+                مجموع تلفات
             </div>
-
             <div class="stat-value">
-                ${totalDeaths}
+                ${totalDeaths.toLocaleString("fa-IR")}
             </div>
-
         </div>
 
-
         <div class="stat">
-
             <div class="stat-label">
                 موارد بیماری
             </div>
-
             <div class="stat-value">
-                ${diseaseCases}
+                ${diseaseCases.toLocaleString("fa-IR")}
             </div>
-
         </div>
 
-
         <div class="stat">
-
             <div class="stat-label">
                 موارد مشکوک
             </div>
-
             <div class="stat-value">
-                ${suspected}
+                ${suspected.toLocaleString("fa-IR")}
             </div>
-
         </div>
 
-
         <div class="stat">
-
             <div class="stat-label">
                 موارد بحرانی
             </div>
-
             <div class="stat-value">
-                ${critical}
+                ${critical.toLocaleString("fa-IR")}
             </div>
-
         </div>
 
     `;
@@ -854,61 +762,38 @@ function renderSummary(
 }
 
 
-function getTypeLabel(
-    type
-) {
+
+function getTypeLabel(type) {
 
     const labels = {
 
-        mortality:
-            "تلفات",
-
-        disease:
-            "بیماری",
-
-        suspected:
-            "مشکوک",
-
-        other:
-            "سایر"
+        mortality: "تلفات",
+        disease: "بیماری",
+        suspected: "مشکوک",
+        other: "سایر"
 
     };
 
 
-    return (
-        labels[type] ||
-        type ||
-        "-"
-    );
+    return labels[type] || "-";
 
 }
 
 
-function getSeverityLabel(
-    severity
-) {
+
+function getSeverityLabel(severity) {
 
     const labels = {
 
-        low:
-            "خفیف",
-
-        medium:
-            "متوسط",
-
-        high:
-            "شدید",
-
-        critical:
-            "بحرانی"
+        low: "خفیف",
+        medium: "متوسط",
+        high: "شدید",
+        critical: "بحرانی"
 
     };
 
 
-    return (
-        labels[severity] ||
-        "-"
-    );
+    return labels[severity] || "-";
 
 }
 
@@ -918,5 +803,4 @@ renderRecords();
 </script>
 
 </body>
-
 </html>

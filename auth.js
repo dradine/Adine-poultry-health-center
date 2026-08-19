@@ -69,12 +69,26 @@
 
         async requireAuth() {
 
-            const user = await this.getUser();
 
-            if (!user) {
-                window.location.href = "login.html";
-                return null;
-            }
+    const {
+        data: {
+            session
+        }
+    } =
+    await supabaseClient.auth.getSession();
+
+
+    if (!session) {
+
+        window.location.href =
+            "login.html";
+
+        return null;
+    }
+
+
+    const user =
+        session.user;
 
             const profile = await this.getProfile(user.id);
 

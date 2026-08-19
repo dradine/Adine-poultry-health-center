@@ -30,26 +30,27 @@
 
 <header class="topbar">
 
-<div class="brand">
+    <div class="brand">
 
-<img
-    src="IMG_4309.png"
-    alt="آدینه"
->
+        <img
+            src="IMG_4309.png"
+            alt="مرکز تخصصی سلامت طیور آدینه"
+        >
 
-<span>
-گزارش‌ها و نمودارها
-</span>
+        <span>
+            گزارش‌ها و نمودارها
+        </span>
 
-</div>
+    </div>
 
 
-<button
-    class="btn btn-secondary"
-    onclick="location.href='Dashboard.html'"
->
-داشبورد
-</button>
+    <button
+        type="button"
+        class="btn btn-secondary"
+        onclick="location.href='Dashboard.html'"
+    >
+        داشبورد
+    </button>
 
 </header>
 
@@ -67,14 +68,18 @@
 <p
     id="flockInfo"
     class="page-description"
-></p>
+>
+</p>
 
 
+<!-- =====================================================
+     STANDARD
+===================================================== -->
 
 <section class="card">
 
 <h2 class="card-title">
-انتخاب استاندارد مقایسه
+استاندارد مقایسه
 </h2>
 
 
@@ -83,7 +88,7 @@
 
 <div class="form-group">
 
-<label>
+<label for="reportType">
 نوع گله
 </label>
 
@@ -116,7 +121,24 @@
 
 <div class="form-group">
 
-<label>
+<label for="reportGenetics">
+شرکت / ژنتیک
+</label>
+
+<select id="reportGenetics">
+
+<option value="">
+انتخاب کنید
+</option>
+
+</select>
+
+</div>
+
+
+<div class="form-group">
+
+<label for="reportStrain">
 سویه / نژاد
 </label>
 
@@ -131,49 +153,47 @@
 </div>
 
 
-<div class="form-group">
-
-<label>
-استاندارد
-</label>
-
-<select id="reportStandard">
-
-<option value="">
-انتخاب کنید
-</option>
-
-</select>
-
 </div>
 
 
+<div
+    id="standardStatus"
+    style="margin-top:16px"
+>
 </div>
+
 
 </section>
 
 
+<!-- =====================================================
+     SUMMARY
+===================================================== -->
 
 <section class="card">
 
 <h2 class="card-title">
-خلاصه عملکرد
+خلاصه عملکرد آخرین رکورد
 </h2>
 
 
 <div
     id="summary"
     class="stats-grid"
-></div>
+>
+</div>
 
 </section>
 
 
+<!-- =====================================================
+     WEIGHT
+===================================================== -->
 
 <section class="card">
 
 <h2 class="card-title">
-مقایسه وزن با استاندارد
+مقایسه وزن واقعی با استاندارد
 </h2>
 
 
@@ -186,11 +206,14 @@
 </section>
 
 
+<!-- =====================================================
+     CV
+===================================================== -->
 
 <section class="card">
 
 <h2 class="card-title">
-مقایسه CV
+روند CV
 </h2>
 
 
@@ -203,11 +226,14 @@
 </section>
 
 
+<!-- =====================================================
+     UNIFORMITY
+===================================================== -->
 
 <section class="card">
 
 <h2 class="card-title">
-یکنواختی ±10%
+روند یکنواختی
 </h2>
 
 
@@ -220,6 +246,9 @@
 </section>
 
 
+<!-- =====================================================
+     FEED WATER
+===================================================== -->
 
 <section class="card">
 
@@ -236,6 +265,25 @@
 
 </section>
 
+
+<!-- =====================================================
+     TABLE
+===================================================== -->
+
+<section class="card">
+
+<h2 class="card-title">
+جدول عملکرد هفتگی
+</h2>
+
+
+<div
+    id="weeklyTable"
+    style="overflow-x:auto"
+>
+</div>
+
+</section>
 
 
 </div>
@@ -255,6 +303,13 @@
 
 <script>
 
+"use strict";
+
+
+/* =====================================================
+   SELECTION
+===================================================== */
+
 const selection =
     getCurrentSelection();
 
@@ -262,7 +317,7 @@ const selection =
 if (!selection.flockId) {
 
     location.href =
-        "flocks.html";
+        "records.html";
 
 }
 
@@ -279,7 +334,7 @@ const flock =
 if (!flock) {
 
     location.href =
-        "flocks.html";
+        "records.html";
 
 }
 
@@ -306,190 +361,68 @@ document.getElementById(
     "flockInfo"
 ).textContent =
 
-    `${farm?.name || ""} | ` +
-    `${house?.name || ""} | ` +
-    `${flock.flockName} | ` +
-    `${flock.strain || ""}`;
-
+    `${farm?.name || "-"} | ` +
+    `${house?.name || "-"} | ` +
+    `${flock.flockName || "-"} | ` +
+    `${flock.strain || "-"}`;
 
 
 /* =====================================================
-   STANDARD DATA
+   SELECTORS
 ===================================================== */
 
-function getStandardList() {
-
-    if (
-        typeof getStandardsForType ===
-        "function"
-    ) {
-
-        return getStandardsForType(
-            document.getElementById(
-                "reportType"
-            ).value
-        );
-
-    }
+const reportType =
+    document.getElementById(
+        "reportType"
+    );
 
 
-    if (
-        typeof STANDARDS !==
-        "undefined"
-    ) {
-
-        return STANDARDS[
-            document.getElementById(
-                "reportType"
-            ).value
-        ] || [];
-
-    }
+const reportGenetics =
+    document.getElementById(
+        "reportGenetics"
+    );
 
 
-    return [];
-
-}
-
-
-
-function fillStrains() {
-
-    const type =
-        document.getElementById(
-            "reportType"
-        ).value;
+const reportStrain =
+    document.getElementById(
+        "reportStrain"
+    );
 
 
-    const strain =
-        document.getElementById(
-            "reportStrain"
-        );
+const standardStatus =
+    document.getElementById(
+        "standardStatus"
+    );
 
 
-    strain.innerHTML = `
+/* =====================================================
+   INITIAL VALUES
+===================================================== */
+
+reportType.value =
+    flock.productionType || "";
+
+
+/* =====================================================
+   GENETICS
+===================================================== */
+
+function loadGenetics() {
+
+    reportGenetics.innerHTML = `
+
         <option value="">
-            انتخاب کنید
+            انتخاب شرکت / ژنتیک
         </option>
+
     `;
 
 
-    if (!type) {
-
-        return;
-
-    }
-
-
-    const list =
-        getStandardList();
-
-
-    list.forEach(item => {
-
-        const option =
-            document.createElement(
-                "option"
-            );
-
-
-        option.value =
-            item.id ||
-            item.strain ||
-            item.name;
-
-
-        option.textContent =
-            item.name ||
-            item.strain ||
-            item.id;
-
-
-        strain.appendChild(
-            option
-        );
-
-    });
-
-
-    const current =
-        flock.strain;
-
-
-    const found =
-        [...strain.options]
-            .find(
-                option =>
-                    option.value ===
-                    current
-            );
-
-
-    if (found) {
-
-        strain.value =
-            found.value;
-
-    }
-
-
-    fillPrograms();
-
-}
-
-
-
-function fillPrograms() {
-
-    const strain =
-        document.getElementById(
-            "reportStrain"
-        ).value;
-
-
-    const program =
-        document.getElementById(
-            "reportStandard"
-        );
-
-
-    program.innerHTML = `
-        <option value="">
-            انتخاب کنید
-        </option>
-    `;
-
-
-    const list =
-        getStandardList();
-
-
-    const selected =
-        list.find(
-            item =>
-                (
-                    item.id ||
-                    item.strain ||
-                    item.name
-                ) === strain
-        );
-
-
-    if (!selected) {
-
-        return;
-
-    }
-
-
-    const programs =
-        selected.programs ||
-        selected.standards ||
-        [selected];
-
-
-    programs.forEach(
-        item => {
+    getGenetics(
+        reportType.value
+    )
+    .forEach(
+        genetics => {
 
             const option =
                 document.createElement(
@@ -498,76 +431,241 @@ function fillPrograms() {
 
 
             option.value =
-                item.id ||
-                item.name ||
-                strain;
+                genetics.id;
 
 
             option.textContent =
-                item.name ||
-                item.title ||
-                "استاندارد اصلی";
+                genetics.name;
 
 
-            program.appendChild(
+            reportGenetics.appendChild(
                 option
             );
 
         }
     );
 
+
+    if (
+        flock.genetics
+    ) {
+
+        reportGenetics.value =
+            flock.genetics;
+
+    }
+
+
+    loadStrains();
+
 }
 
 
+/* =====================================================
+   STRAINS
+===================================================== */
 
-document.getElementById(
-    "reportType"
-).value =
-    flock.productionType || "";
+function loadStrains() {
 
+    reportStrain.innerHTML = `
 
-document.getElementById(
-    "reportType"
-).addEventListener(
-    "change",
-    function() {
+        <option value="">
+            انتخاب سویه / نژاد
+        </option>
 
-        fillStrains();
-
-        renderCharts();
-
-    }
-);
+    `;
 
 
-document.getElementById(
-    "reportStrain"
-).addEventListener(
-    "change",
-    function() {
+    if (
+        !reportType.value ||
+        !reportGenetics.value
+    ) {
 
-        fillPrograms();
+        updateStandardStatus(
+            null
+        );
 
-        renderCharts();
+        return;
 
     }
-);
 
 
-document.getElementById(
-    "reportStandard"
-).addEventListener(
-    "change",
-    renderCharts
-);
+    getStrains(
+        reportType.value,
+        reportGenetics.value
+    )
+    .forEach(
+        strain => {
+
+            const option =
+                document.createElement(
+                    "option"
+                );
 
 
-fillStrains();
+            option.value =
+                strain;
 
+
+            option.textContent =
+                strain;
+
+
+            reportStrain.appendChild(
+                option
+            );
+
+        }
+    );
+
+
+    if (
+        flock.strain
+    ) {
+
+        const exists =
+            [...reportStrain.options]
+                .some(
+                    option =>
+                        option.value ===
+                        flock.strain
+                );
+
+
+        if (exists) {
+
+            reportStrain.value =
+                flock.strain;
+
+        }
+
+    }
+
+
+    updateStandard();
+
+}
 
 
 /* =====================================================
-   WEEKLY DATA
+   STANDARD
+===================================================== */
+
+function getSelectedStandard() {
+
+    if (
+        !reportType.value ||
+        !reportGenetics.value ||
+        !reportStrain.value
+    ) {
+
+        return null;
+
+    }
+
+
+    return getStandard(
+        reportType.value,
+        reportGenetics.value,
+        reportStrain.value
+    );
+
+}
+
+
+/* =====================================================
+   STATUS
+===================================================== */
+
+function updateStandardStatus(
+    standard
+) {
+
+    if (!standard) {
+
+        standardStatus.innerHTML = `
+
+            <div class="info-box">
+
+                برای انتخاب فعلی
+                استاندارد عددی معتبر
+                در سیستم ثبت نشده است.
+
+                <br>
+
+                هیچ عدد حدسی در نمودار
+                یا محاسبات وارد نمی‌شود.
+
+            </div>
+
+        `;
+
+        return;
+
+    }
+
+
+    standardStatus.innerHTML = `
+
+        <div class="info-box">
+
+            <strong>
+                استاندارد فعال:
+            </strong>
+
+            ${escapeHTML(
+                reportStrain.value
+            )}
+
+            <br>
+
+            <small>
+
+                منبع:
+                ${escapeHTML(
+                    standard.sourceStatus ||
+                    "-"
+                )}
+
+                |
+
+                سال:
+                ${escapeHTML(
+                    standard.sourceYear ||
+                    "-"
+                )}
+
+            </small>
+
+        </div>
+
+    `;
+
+}
+
+
+/* =====================================================
+   UPDATE STANDARD
+===================================================== */
+
+function updateStandard() {
+
+    const standard =
+        getSelectedStandard();
+
+
+    updateStandardStatus(
+        standard
+    );
+
+
+    renderAll();
+
+}
+
+
+/* =====================================================
+   RECORDS
 ===================================================== */
 
 function getRecords() {
@@ -579,57 +677,95 @@ function getRecords() {
 }
 
 
+/* =====================================================
+   STANDARD SERIES
+===================================================== */
 
-function findStandard() {
+function getStandardSeries(
+    standard,
+    metric
+) {
 
-    const type =
-        document.getElementById(
-            "reportType"
-        ).value;
+    if (!standard) {
 
-
-    const strain =
-        document.getElementById(
-            "reportStrain"
-        ).value;
-
-
-    const standard =
-        document.getElementById(
-            "reportStandard"
-        ).value;
-
-
-    if (
-        typeof findPoultryStandard ===
-        "function"
-    ) {
-
-        return findPoultryStandard(
-            type,
-            strain,
-            standard
-        );
+        return [];
 
     }
 
 
-    return null;
+    return getStandardSeriesSafe(
+        standard,
+        metric
+    );
 
 }
 
 
+/*
+    نام متفاوت برای جلوگیری از
+    تداخل احتمالی با تابع standards.js
+*/
+
+function getStandardSeriesSafe(
+    standard,
+    metric
+) {
+
+    if (
+        !standard ||
+        !Array.isArray(
+            standard.records
+        )
+    ) {
+
+        return [];
+
+    }
+
+
+    return standard.records
+        .filter(
+            record =>
+                record[metric] !==
+                null &&
+                record[metric] !==
+                undefined
+        )
+        .map(
+            record => ({
+
+                ageDays:
+                    Number(
+                        record.ageDays
+                    ),
+
+                value:
+                    Number(
+                        record[metric]
+                    )
+
+            })
+        );
+
+}
+
 
 /* =====================================================
-   CHARTS
+   CHART INSTANCES
 ===================================================== */
 
 let weightChart = null;
+
 let cvChart = null;
+
 let uniformityChart = null;
+
 let feedWaterChart = null;
 
 
+/* =====================================================
+   DESTROY
+===================================================== */
 
 function destroyCharts() {
 
@@ -653,100 +789,94 @@ function destroyCharts() {
 
 
     weightChart = null;
+
     cvChart = null;
+
     uniformityChart = null;
+
     feedWaterChart = null;
 
 }
 
 
+/* =====================================================
+   CHART DATA
+===================================================== */
 
-function renderCharts() {
+function createAgeLabels(
+    records
+) {
 
-    destroyCharts();
+    return records.map(
+        record =>
+            `هفته ${
+                Math.floor(
+                    Number(
+                        record.ageDays || 0
+                    ) / 7
+                )
+            }`
+    );
+
+}
 
 
-    const records =
-        getRecords();
+/* =====================================================
+   WEIGHT CHART
+===================================================== */
 
+function renderWeightChart(
+    records,
+    standard
+) {
 
     const labels =
-        records.map(
-            item =>
-                `روز ${item.ageDays || 0}`
+        createAgeLabels(
+            records
         );
 
 
-    const actualWeight =
+    const actual =
         records.map(
-            item =>
-                Number(
-                    item.averageWeight || 0
-                )
+            record =>
+                record.averageWeight ===
+                null
+                    ? null
+                    : Number(
+                        record.averageWeight
+                    )
         );
 
 
-    const actualCV =
-        records.map(
-            item =>
-                Number(
-                    item.cv || 0
-                )
+    const standardMap =
+        new Map(
+            getStandardSeries(
+                standard,
+                "bodyWeight"
+            )
+            .map(
+                item =>
+                    [
+                        Number(
+                            item.ageDays
+                        ),
+                        Number(
+                            item.value
+                        )
+                    ]
+            )
         );
 
 
-    const actualUniformity =
+    const standardValues =
         records.map(
-            item =>
-                Number(
-                    item.uniformity10 || 0
-                )
+            record =>
+                standardMap.get(
+                    Number(
+                        record.ageDays
+                    )
+                ) ?? null
         );
-
-
-    const feed =
-        records.map(
-            item =>
-                Number(
-                    item.feed || 0
-                )
-        );
-
-
-    const water =
-        records.map(
-            item =>
-                Number(
-                    item.water || 0
-                )
-        );
-
-
-    const standard =
-        findStandard();
-
-
-    const standardWeight =
-        records.map(
-            item =>
-                getStandardValue(
-                    standard,
-                    "weight",
-                    item.ageDays
-                )
-        );
-
-
-    const standardCV =
-        records.map(
-            item =>
-                getStandardValue(
-                    standard,
-                    "cv",
-                    item.ageDays
-                )
-        );
-
 
 
     weightChart =
@@ -769,10 +899,10 @@ function renderCharts() {
                                 "وزن واقعی",
 
                             data:
-                                actualWeight,
+                                actual,
 
                             tension:
-                                0.3
+                                0.25
                         },
 
                         {
@@ -780,13 +910,13 @@ function renderCharts() {
                                 "استاندارد",
 
                             data:
-                                standardWeight,
-
-                            borderDash:
-                                [6,6],
+                                standardValues,
 
                             tension:
-                                0.3
+                                0.25,
+
+                            borderDash:
+                                [7, 5]
                         }
 
                     ]
@@ -795,16 +925,53 @@ function renderCharts() {
 
                 options: {
 
-                    responsive: true,
+                    responsive:
+                        true,
 
                     maintainAspectRatio:
-                        false
+                        false,
+
+                    interaction: {
+
+                        mode:
+                            "index",
+
+                        intersect:
+                            false
+
+                    }
 
                 }
 
             }
         );
 
+}
+
+
+/* =====================================================
+   CV
+===================================================== */
+
+function renderCVChart(
+    records
+) {
+
+    const labels =
+        createAgeLabels(
+            records
+        );
+
+
+    const values =
+        records.map(
+            record =>
+                record.cv === null
+                    ? null
+                    : Number(
+                        record.cv
+                    )
+        );
 
 
     cvChart =
@@ -824,27 +991,14 @@ function renderCharts() {
 
                         {
                             label:
-                                "CV واقعی",
+                                "CV %",
 
                             data:
-                                actualCV,
+                                values,
 
                             tension:
-                                0.3
-                        },
+                                0.25
 
-                        {
-                            label:
-                                "CV استاندارد",
-
-                            data:
-                                standardCV,
-
-                            borderDash:
-                                [6,6],
-
-                            tension:
-                                0.3
                         }
 
                     ]
@@ -853,16 +1007,67 @@ function renderCharts() {
 
                 options: {
 
-                    responsive: true,
+                    responsive:
+                        true,
 
                     maintainAspectRatio:
-                        false
+                        false,
+
+                    scales: {
+
+                        y: {
+
+                            beginAtZero:
+                                true
+
+                        }
+
+                    }
 
                 }
 
             }
         );
 
+}
+
+
+/* =====================================================
+   UNIFORMITY
+===================================================== */
+
+function renderUniformityChart(
+    records
+) {
+
+    const labels =
+        createAgeLabels(
+            records
+        );
+
+
+    const u10 =
+        records.map(
+            record =>
+                record.uniformity10 ===
+                null
+                    ? null
+                    : Number(
+                        record.uniformity10
+                    )
+        );
+
+
+    const u15 =
+        records.map(
+            record =>
+                record.uniformity15 ===
+                null
+                    ? null
+                    : Number(
+                        record.uniformity15
+                    )
+        );
 
 
     uniformityChart =
@@ -885,10 +1090,23 @@ function renderCharts() {
                                 "یکنواختی ±10%",
 
                             data:
-                                actualUniformity,
+                                u10,
 
                             tension:
-                                0.3
+                                0.25
+
+                        },
+
+                        {
+                            label:
+                                "یکنواختی ±15%",
+
+                            data:
+                                u15,
+
+                            tension:
+                                0.25
+
                         }
 
                     ]
@@ -897,7 +1115,8 @@ function renderCharts() {
 
                 options: {
 
-                    responsive: true,
+                    responsive:
+                        true,
 
                     maintainAspectRatio:
                         false,
@@ -906,9 +1125,11 @@ function renderCharts() {
 
                         y: {
 
-                            min: 0,
+                            min:
+                                0,
 
-                            max: 100
+                            max:
+                                100
 
                         }
 
@@ -919,6 +1140,43 @@ function renderCharts() {
             }
         );
 
+}
+
+
+/* =====================================================
+   FEED / WATER
+===================================================== */
+
+function renderFeedWaterChart(
+    records
+) {
+
+    const labels =
+        createAgeLabels(
+            records
+        );
+
+
+    const feed =
+        records.map(
+            record =>
+                record.feed === null
+                    ? null
+                    : Number(
+                        record.feed
+                    )
+        );
+
+
+    const water =
+        records.map(
+            record =>
+                record.water === null
+                    ? null
+                    : Number(
+                        record.water
+                    )
+        );
 
 
     feedWaterChart =
@@ -944,7 +1202,8 @@ function renderCharts() {
                                 feed,
 
                             tension:
-                                0.3
+                                0.25
+
                         },
 
                         {
@@ -955,7 +1214,8 @@ function renderCharts() {
                                 water,
 
                             tension:
-                                0.3
+                                0.25
+
                         }
 
                     ]
@@ -964,7 +1224,8 @@ function renderCharts() {
 
                 options: {
 
-                    responsive: true,
+                    responsive:
+                        true,
 
                     maintainAspectRatio:
                         false
@@ -972,76 +1233,9 @@ function renderCharts() {
                 }
 
             }
-
         );
 
-
-    renderSummary(
-        records,
-        standard
-    );
-
 }
-
-
-
-function getStandardValue(
-    standard,
-    metric,
-    age
-) {
-
-    if (!standard) {
-
-        return null;
-
-    }
-
-
-    const data =
-        standard[metric] ||
-        standard.data?.[metric] ||
-        [];
-
-
-    if (
-        !Array.isArray(data)
-    ) {
-
-        return null;
-
-    }
-
-
-    const row =
-        data.find(
-            item =>
-                Number(
-                    item.age ||
-                    item.ageDays ||
-                    item.day
-                ) ===
-                Number(age)
-        );
-
-
-    if (!row) {
-
-        return null;
-
-    }
-
-
-    return Number(
-        row.value ??
-        row.weight ??
-        row.target ??
-        row.mean ??
-        0
-    );
-
-}
-
 
 
 /* =====================================================
@@ -1053,14 +1247,21 @@ function renderSummary(
     standard
 ) {
 
-    if (!records.length) {
-
+    const box =
         document.getElementById(
             "summary"
-        ).innerHTML = `
+        );
+
+
+    if (!records.length) {
+
+        box.innerHTML = `
 
             <div class="empty-state">
-                هنوز اطلاعات هفتگی ثبت نشده است.
+
+                هنوز اطلاعات هفتگی برای این گله
+                ثبت نشده است.
+
             </div>
 
         `;
@@ -1077,99 +1278,173 @@ function renderSummary(
 
 
     const standardWeight =
-        getStandardValue(
-            standard,
-            "weight",
-            last.ageDays
-        );
+        standard
+            ? getStandardValueAtAge(
+                standard,
+                "bodyWeight",
+                last.ageDays
+            )
+            : null;
 
 
-    let difference = null;
-
-
-    if (
-        standardWeight &&
-        last.averageWeight
-    ) {
-
-        difference =
-            (
-                (
-                    last.averageWeight -
-                    standardWeight
-                ) /
+    const difference =
+        standardWeight === null
+            ? null
+            : Number(
+                last.averageWeight
+            ) -
+            Number(
                 standardWeight
-            ) *
-            100;
-
-    }
+            );
 
 
-    document.getElementById(
-        "summary"
-    ).innerHTML = `
+    box.innerHTML = `
 
-        <div class="stat">
+        <div class="stat-card">
 
-            <div class="stat-label">
-                سن آخرین رکورد
-            </div>
+            <span>
+                سن
+            </span>
 
-            <div class="stat-value">
-                ${Number(
-                    last.ageDays || 0
-                ).toLocaleString("fa-IR")}
-                روز
-            </div>
+            <strong>
+                ${formatNumber(
+                    Number(
+                        last.ageDays || 0
+                    ) / 7,
+                    1
+                )}
+
+                هفته
+            </strong>
 
         </div>
 
 
-        <div class="stat">
+        <div class="stat-card">
 
-            <div class="stat-label">
-                وزن
-            </div>
+            <span>
+                میانگین وزن
+            </span>
 
-            <div class="stat-value">
-                ${Number(
-                    last.averageWeight || 0
-                ).toLocaleString("fa-IR")}
+            <strong>
+                ${formatNumber(
+                    last.averageWeight,
+                    0
+                )}
+
                 گرم
-            </div>
+            </strong>
 
         </div>
 
 
-        <div class="stat">
+        <div class="stat-card">
 
-            <div class="stat-label">
+            <span>
                 CV
-            </div>
+            </span>
 
-            <div class="stat-value">
-                ${Number(
-                    last.cv || 0
-                ).toFixed(2)}
-                %
-            </div>
+            <strong>
+                ${formatNumber(
+                    last.cv,
+                    1
+                )}%
+            </strong>
 
         </div>
 
 
-        <div class="stat">
+        <div class="stat-card">
 
-            <div class="stat-label">
-                انحراف از استاندارد
-            </div>
+            <span>
+                یکنواختی ±10%
+            </span>
 
-            <div class="stat-value">
+            <strong>
+                ${formatNumber(
+                    last.uniformity10,
+                    1
+                )}%
+            </strong>
+
+        </div>
+
+
+        <div class="stat-card">
+
+            <span>
+                یکنواختی ±15%
+            </span>
+
+            <strong>
+                ${formatNumber(
+                    last.uniformity15,
+                    1
+                )}%
+            </strong>
+
+        </div>
+
+
+        <div class="stat-card">
+
+            <span>
+                وزن استاندارد
+            </span>
+
+            <strong>
+
+                ${
+                    standardWeight === null
+                        ? "—"
+                        :
+                        `${formatNumber(
+                            standardWeight,
+                            0
+                        )} گرم`
+                }
+
+            </strong>
+
+        </div>
+
+
+        <div class="stat-card">
+
+            <span>
+                اختلاف با استاندارد
+            </span>
+
+            <strong>
+
                 ${
                     difference === null
-                        ? "-"
-                        : difference.toFixed(1) + "%"
+                        ? "—"
+                        :
+                        `${difference > 0 ? "+" : ""}
+                        ${formatNumber(
+                            difference,
+                            0
+                        )} گرم`
                 }
-            </div>
+
+            </strong>
+
+        </div>
+
+
+        <div class="stat-card">
+
+            <span>
+                FCR
+            </span>
+
+            <strong>
+                ${formatNumber(
+                    last.fcr,
+                    2
+                )}
+            </strong>
 
         </div>
 
@@ -1178,9 +1453,308 @@ function renderSummary(
 }
 
 
-renderCharts();
+/* =====================================================
+   TABLE
+===================================================== */
+
+function renderTable(
+    records,
+    standard
+) {
+
+    const box =
+        document.getElementById(
+            "weeklyTable"
+        );
+
+
+    if (!records.length) {
+
+        box.innerHTML = `
+
+            <div class="empty-state">
+                رکوردی وجود ندارد.
+            </div>
+
+        `;
+
+        return;
+
+    }
+
+
+    let html = `
+
+        <table class="data-table">
+
+            <thead>
+
+                <tr>
+
+                    <th>
+                        هفته
+                    </th>
+
+                    <th>
+                        وزن
+                    </th>
+
+                    <th>
+                        استاندارد
+                    </th>
+
+                    <th>
+                        اختلاف
+                    </th>
+
+                    <th>
+                        CV
+                    </th>
+
+                    <th>
+                        ±10%
+                    </th>
+
+                    <th>
+                        ±15%
+                    </th>
+
+                    <th>
+                        FCR
+                    </th>
+
+                    <th>
+                        تلفات
+                    </th>
+
+                </tr>
+
+            </thead>
+
+            <tbody>
+    `;
+
+
+    records.forEach(
+        record => {
+
+            const standardWeight =
+                standard
+                    ? getStandardValueAtAge(
+                        standard,
+                        "bodyWeight",
+                        record.ageDays
+                    )
+                    : null;
+
+
+            const difference =
+                standardWeight === null
+                    ? null
+                    : Number(
+                        record.averageWeight
+                    ) -
+                    Number(
+                        standardWeight
+                    );
+
+
+            html += `
+
+                <tr>
+
+                    <td>
+                        ${formatNumber(
+                            Number(
+                                record.ageDays
+                            ) / 7,
+                            1
+                        )}
+                    </td>
+
+                    <td>
+                        ${formatNumber(
+                            record.averageWeight,
+                            0
+                        )}
+                    </td>
+
+                    <td>
+                        ${formatNumber(
+                            standardWeight,
+                            0
+                        )}
+                    </td>
+
+                    <td>
+                        ${
+                            difference === null
+                                ? "—"
+                                :
+                                `${
+                                    difference > 0
+                                        ? "+"
+                                        : ""
+                                }${formatNumber(
+                                    difference,
+                                    0
+                                )}`
+                        }
+                    </td>
+
+                    <td>
+                        ${formatNumber(
+                            record.cv,
+                            1
+                        )}%
+                    </td>
+
+                    <td>
+                        ${formatNumber(
+                            record.uniformity10,
+                            1
+                        )}%
+                    </td>
+
+                    <td>
+                        ${formatNumber(
+                            record.uniformity15,
+                            1
+                        )}%
+                    </td>
+
+                    <td>
+                        ${formatNumber(
+                            record.fcr,
+                            2
+                        )}
+                    </td>
+
+                    <td>
+                        ${formatNumber(
+                            record.mortality,
+                            2
+                        )}%
+                    </td>
+
+                </tr>
+
+            `;
+
+        }
+    );
+
+
+    html += `
+
+            </tbody>
+
+        </table>
+
+    `;
+
+
+    box.innerHTML =
+        html;
+
+}
+
+
+/* =====================================================
+   RENDER ALL
+===================================================== */
+
+function renderAll() {
+
+    destroyCharts();
+
+
+    const records =
+        getRecords();
+
+
+    const standard =
+        getSelectedStandard();
+
+
+    renderSummary(
+        records,
+        standard
+    );
+
+
+    renderTable(
+        records,
+        standard
+    );
+
+
+    renderWeightChart(
+        records,
+        standard
+    );
+
+
+    renderCVChart(
+        records
+    );
+
+
+    renderUniformityChart(
+        records
+    );
+
+
+    renderFeedWaterChart(
+        records
+    );
+
+}
+
+
+/* =====================================================
+   EVENTS
+===================================================== */
+
+reportType.addEventListener(
+    "change",
+    function() {
+
+        loadGenetics();
+
+    }
+);
+
+
+reportGenetics.addEventListener(
+    "change",
+    function() {
+
+        loadStrains();
+
+    }
+);
+
+
+reportStrain.addEventListener(
+    "change",
+    function() {
+
+        updateStandard();
+
+    }
+);
+
+
+/* =====================================================
+   START
+===================================================== */
+
+loadGenetics();
 
 </script>
 
+
 </body>
+
 </html>

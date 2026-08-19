@@ -77,9 +77,10 @@ document.addEventListener("DOMContentLoaded", () => {
                         email,
                         {
                             redirectTo:
-                                window.location.origin +
-                                "/update-password.html"
-                        }
+    new URL(
+        "update-password.html",
+        window.location.href
+    ).href
                     );
 
 

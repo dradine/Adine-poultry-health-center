@@ -1,28 +1,24 @@
 /* =========================================================
    ADINE POULTRY HEALTH CENTER
-   APP CORE
+   CORE ENGINE
    ========================================================= */
 
 const APP_CONFIG = {
 
-    name:
-        "مرکز تخصصی سلامت طیور آدینه",
+    name: "مرکز تخصصی سلامت طیور آدینه",
 
-    shortName:
-        "آدینه",
+    shortName: "آدینه",
 
-    version:
-        "1.0.0",
+    version: "2.0.0",
 
-    storagePrefix:
-        "adine_poultry_"
+    storagePrefix: "adine_poultry_"
 
 };
 
 
 /* =========================================================
-   SAFE ID
-   ========================================================= */
+   ID
+========================================================= */
 
 function createId(prefix = "id") {
 
@@ -42,7 +38,7 @@ function createId(prefix = "id") {
         "_" +
         Math.random()
             .toString(36)
-            .substring(2, 10)
+            .slice(2, 10)
     );
 
 }
@@ -50,7 +46,7 @@ function createId(prefix = "id") {
 
 /* =========================================================
    STORAGE
-   ========================================================= */
+========================================================= */
 
 function storageKey(name) {
 
@@ -66,18 +62,18 @@ function readStorage(
 
     try {
 
-        const value =
+        const raw =
             localStorage.getItem(
                 storageKey(name)
             );
 
-        if (!value) {
+        if (!raw) {
 
             return fallback;
 
         }
 
-        return JSON.parse(value);
+        return JSON.parse(raw);
 
     }
 
@@ -127,7 +123,7 @@ function writeStorage(
 
 /* =========================================================
    FARMS
-   ========================================================= */
+========================================================= */
 
 function getFarms() {
 
@@ -139,13 +135,10 @@ function getFarms() {
 }
 
 
-function saveFarm(
-    farm
-) {
+function saveFarm(farm) {
 
     const farms =
         getFarms();
-
 
     const item = {
 
@@ -179,8 +172,7 @@ function saveFarm(
             ).trim(),
 
         type:
-            farm.type ||
-            "",
+            farm.type || "",
 
         capacity:
             Number(
@@ -188,8 +180,7 @@ function saveFarm(
             ),
 
         notes:
-            farm.notes ||
-            "",
+            farm.notes || "",
 
         createdAt:
             farm.createdAt ||
@@ -204,7 +195,8 @@ function saveFarm(
     const index =
         farms.findIndex(
             x =>
-                x.id === item.id
+                x.id ===
+                item.id
         );
 
 
@@ -217,9 +209,7 @@ function saveFarm(
 
     else {
 
-        farms.push(
-            item
-        );
+        farms.push(item);
 
     }
 
@@ -229,29 +219,25 @@ function saveFarm(
         farms
     );
 
-
     return item;
 
 }
 
 
-function deleteFarm(
-    farmId
-) {
+function deleteFarm(farmId) {
 
     const farms =
         getFarms()
             .filter(
                 farm =>
-                    farm.id !== farmId
+                    farm.id !==
+                    farmId
             );
-
 
     writeStorage(
         "farms",
         farms
     );
-
 
     return true;
 
@@ -260,7 +246,7 @@ function deleteFarm(
 
 /* =========================================================
    HOUSES
-   ========================================================= */
+========================================================= */
 
 function getHouses() {
 
@@ -286,13 +272,10 @@ function getFarmHouses(
 }
 
 
-function saveHouse(
-    house
-) {
+function saveHouse(house) {
 
     const houses =
         getHouses();
-
 
     const item = {
 
@@ -329,16 +312,13 @@ function saveHouse(
             ),
 
         ventilation:
-            house.ventilation ||
-            "",
+            house.ventilation || "",
 
         housingSystem:
-            house.housingSystem ||
-            "",
+            house.housingSystem || "",
 
         notes:
-            house.notes ||
-            "",
+            house.notes || "",
 
         createdAt:
             house.createdAt ||
@@ -353,7 +333,8 @@ function saveHouse(
     const index =
         houses.findIndex(
             x =>
-                x.id === item.id
+                x.id ===
+                item.id
         );
 
 
@@ -366,9 +347,7 @@ function saveHouse(
 
     else {
 
-        houses.push(
-            item
-        );
+        houses.push(item);
 
     }
 
@@ -378,7 +357,6 @@ function saveHouse(
         houses
     );
 
-
     return item;
 
 }
@@ -386,7 +364,7 @@ function saveHouse(
 
 /* =========================================================
    FLOCKS
-   ========================================================= */
+========================================================= */
 
 function getFlocks() {
 
@@ -412,13 +390,10 @@ function getHouseFlocks(
 }
 
 
-function saveFlock(
-    flock
-) {
+function saveFlock(flock) {
 
     const flocks =
         getFlocks();
-
 
     const item = {
 
@@ -443,24 +418,19 @@ function saveFlock(
             ).trim(),
 
         productionType:
-            flock.productionType ||
-            "",
+            flock.productionType || "",
 
         genetics:
-            flock.genetics ||
-            "",
+            flock.genetics || "",
 
         strain:
-            flock.strain ||
-            "",
+            flock.strain || "",
 
         program:
-            flock.program ||
-            "",
+            flock.program || "",
 
         sex:
-            flock.sex ||
-            "mixed",
+            flock.sex || "mixed",
 
         birdCount:
             Number(
@@ -468,8 +438,7 @@ function saveFlock(
             ),
 
         placementDate:
-            flock.placementDate ||
-            "",
+            flock.placementDate || "",
 
         startAgeDays:
             Number(
@@ -477,12 +446,10 @@ function saveFlock(
             ),
 
         status:
-            flock.status ||
-            "active",
+            flock.status || "active",
 
         notes:
-            flock.notes ||
-            "",
+            flock.notes || "",
 
         createdAt:
             flock.createdAt ||
@@ -497,7 +464,8 @@ function saveFlock(
     const index =
         flocks.findIndex(
             x =>
-                x.id === item.id
+                x.id ===
+                item.id
         );
 
 
@@ -510,9 +478,7 @@ function saveFlock(
 
     else {
 
-        flocks.push(
-            item
-        );
+        flocks.push(item);
 
     }
 
@@ -522,15 +488,36 @@ function saveFlock(
         flocks
     );
 
-
     return item;
+
+}
+
+
+function deleteFlock(
+    flockId
+) {
+
+    const flocks =
+        getFlocks()
+            .filter(
+                flock =>
+                    flock.id !==
+                    flockId
+            );
+
+    writeStorage(
+        "flocks",
+        flocks
+    );
+
+    return true;
 
 }
 
 
 /* =========================================================
    CURRENT SELECTION
-   ========================================================= */
+========================================================= */
 
 function getCurrentSelection() {
 
@@ -549,11 +536,8 @@ function setCurrentSelection(
     return writeStorage(
         "current_selection",
         {
-
             ...getCurrentSelection(),
-
             ...selection
-
         }
     );
 
@@ -573,20 +557,29 @@ function clearCurrentSelection() {
 
 /* =========================================================
    DATE
-   ========================================================= */
+========================================================= */
 
 function todayISO() {
 
-    return new Date()
-        .toISOString()
-        .split("T")[0];
+    const now =
+        new Date();
+
+    const offset =
+        now.getTimezoneOffset();
+
+    return new Date(
+        now.getTime() -
+        offset * 60000
+    )
+    .toISOString()
+    .slice(0, 10);
 
 }
 
 
 /* =========================================================
    AGE
-   ========================================================= */
+========================================================= */
 
 function calculateAgeDays(
     placementDate,
@@ -602,20 +595,17 @@ function calculateAgeDays(
 
     }
 
-
     const start =
         new Date(
             placementDate +
             "T00:00:00"
         );
 
-
     const target =
         new Date(
             targetDate +
             "T00:00:00"
         );
-
 
     if (
         Number.isNaN(
@@ -630,15 +620,13 @@ function calculateAgeDays(
 
     }
 
-
     return Math.max(
         0,
         Math.floor(
             (
                 target.getTime() -
                 start.getTime()
-            )
-            /
+            ) /
             86400000
         )
     );
@@ -646,43 +634,88 @@ function calculateAgeDays(
 }
 
 
-function daysToWeeks(
-    days
-) {
+function daysToWeeks(days) {
 
-    const d =
+    const value =
         Number(days);
 
-
     if (
-        !Number.isFinite(d)
+        !Number.isFinite(value)
     ) {
 
         return null;
 
     }
 
-
-    return d / 7;
+    return value / 7;
 
 }
 
 
 /* =========================================================
    ESCAPE HTML
-   ========================================================= */
+========================================================= */
 
-function escapeHTML(
-    value
-) {
+function escapeHTML(value) {
 
     return String(
         value ?? ""
     )
-    .replaceAll("&", "&amp;")
-    .replaceAll("<", "&lt;")
-    .replaceAll(">", "&gt;")
-    .replaceAll('"', "&quot;")
-    .replaceAll("'", "&#039;");
+    .replaceAll(
+        "&",
+        "&amp;"
+    )
+    .replaceAll(
+        "<",
+        "&lt;"
+    )
+    .replaceAll(
+        ">",
+        "&gt;"
+    )
+    .replaceAll(
+        '"',
+        "&quot;"
+    )
+    .replaceAll(
+        "'",
+        "&#039;"
+    );
+
+}
+
+
+/* =========================================================
+   NUMBER
+========================================================= */
+
+function safeNumber(
+    value,
+    fallback = 0
+) {
+
+    const number =
+        Number(value);
+
+    return Number.isFinite(number)
+        ? number
+        : fallback;
+
+}
+
+
+/* =========================================================
+   NORMALIZE
+========================================================= */
+
+function normalizeText(
+    value
+) {
+
+    return String(
+        value || ""
+    )
+    .trim()
+    .toLowerCase();
 
 }

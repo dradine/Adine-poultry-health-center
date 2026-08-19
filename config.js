@@ -5,8 +5,16 @@ const SUPABASE_URL =
 const SUPABASE_ANON_KEY =
     "sb_publishable_4jMgvqKI__-MsmMQtEiCig_M9WjhvN9";
 
+
 window.supabaseClient =
     window.supabase.createClient(
         SUPABASE_URL,
-        SUPABASE_ANON_KEY
+        SUPABASE_ANON_KEY,
+        {
+            auth: {
+                persistSession: true,
+                autoRefreshToken: true,
+                detectSessionInUrl: true
+            }
+        }
     );

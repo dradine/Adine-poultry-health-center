@@ -2,24 +2,16 @@
 document.addEventListener("DOMContentLoaded", () => {
 
     const form =
-        document.getElementById(
-            "resetForm"
-        );
+        document.getElementById("resetForm");
 
     const emailInput =
-        document.getElementById(
-            "email"
-        );
+        document.getElementById("email");
 
     const button =
-        document.getElementById(
-            "resetButton"
-        );
+        document.getElementById("resetButton");
 
     const message =
-        document.getElementById(
-            "message"
-        );
+        document.getElementById("message");
 
 
     function showMessage(
@@ -32,9 +24,7 @@ document.addEventListener("DOMContentLoaded", () => {
         message.className =
             "message " + type;
 
-        message.classList.remove(
-            "hidden"
-        );
+        message.classList.remove("hidden");
     }
 
 
@@ -69,18 +59,15 @@ document.addEventListener("DOMContentLoaded", () => {
 
             try {
 
-                const {
-                    error
-                } =
-                await supabaseClient.auth
-                    .resetPasswordForEmail(
-                        email,
-                        {
-                            redirectTo:
-    "https://dradine.github.io/Adine-poultry-health-center/update-password.html"
-    
-   
-                    );
+                const { error } =
+                    await supabaseClient.auth
+                        .resetPasswordForEmail(
+                            email,
+                            {
+                                redirectTo:
+                                    "https://dradine.github.io/Adine-poultry-health-center/update-password.html"
+                            }
+                        );
 
 
                 if (error) {

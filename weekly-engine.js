@@ -1,321 +1,163 @@
 /* =========================================================
    ADINE POULTRY HEALTH CENTER
-   WEEKLY FLOCK ENGINE
-   ========================================================= */
+   WEEKLY PERFORMANCE ENGINE
+========================================================= */
 
 
 /* =========================================================
-   CREATE WEEKLY RECORD
-   ========================================================= */
+   BUILD WEIGHT RECORD
+========================================================= */
 
-function createWeeklyFlockRecord(
-    data
-) {
+function buildWeeklyWeightRecord({
 
-    const record = {
+    flockId,
 
-        id:
-            data.id ||
-            createId("week"),
+    farmId,
 
-        farmId:
-            data.farmId,
+    houseId,
 
-        houseId:
-            data.houseId,
+    ageDays,
 
-        flockId:
-            data.flockId,
+    weights = [],
 
-        week:
-            Number(
-                data.week || 0
-            ),
+    feed = null,
 
-        ageDays:
-            Number(
-                data.ageDays || 0
-            ),
+    water = null,
 
-        date:
-            data.date ||
-            todayISO(),
+    mortalityCount = 0,
 
-        birdCount:
-            Number(
-                data.birdCount || 0
-            ),
+    initialBirdCount = null,
 
-        mortality:
-            Number(
-                data.mortality || 0
-            ),
+    date = todayISO(),
 
-        culls:
-            Number(
-                data.culls || 0
-            ),
+    notes = ""
 
-        averageWeight:
-            data.averageWeight !== ""
-                ? Number(
-                    data.averageWeight
-                )
-                : null,
-
-        sd:
-            data.sd !== ""
-                ? Number(
-                    data.sd
-                )
-                : null,
-
-        cv:
-            data.cv !== ""
-                ? Number(
-                    data.cv
-                )
-                : null,
-
-        uniformity10:
-            data.uniformity10 !== ""
-                ? Number(
-                    data.uniformity10
-                )
-                : null,
-
-        uniformity15:
-            data.uniformity15 !== ""
-                ? Number(
-                    data.uniformity15
-                )
-                : null,
-
-        feed:
-            Number(
-                data.feed || 0
-            ),
-
-        water:
-            Number(
-                data.water || 0
-            ),
-
-        waterFeedRatio:
-            null,
-
-        feedPerBird:
-            null,
-
-        waterPerBird:
-            null,
-
-        weightGain:
-            null,
-
-        fcr:
-            null,
-
-        notes:
-            data.notes ||
-            "",
-
-        createdAt:
-            new Date().toISOString()
-
-    };
-
-
-    return record;
-
-}
-
-
-/* =========================================================
-   CALCULATE WEEK
-   ========================================================= */
-
-function calculateWeeklyRecord(
-    current,
-    previous = null
-) {
-
-    const result =
-        {
-            ...current
-        };
-
-
-    const birds =
-        Number(
-            current.birdCount
-        );
-
-
-    const feed =
-        Number(
-            current.feed
-        );
-
-
-    const water =
-        Number(
-            current.water
-        );
-
-
-    result.feedPerBird =
-        perBird(
-            feed,
-            birds
-        );
-
-
-    result.waterPerBird =
-        perBird(
-            water,
-            birds
-        );
-
-
-    result.waterFeedRatio =
-        waterFeedRatio(
-            water,
-            feed
-        );
-
-
-    result.mortalityPercent =
-        calculateMortality(
-            birds,
-            current.mortality
-        );
-
-
-    result.livability =
-        calculateLivability(
-            birds,
-            current.mortality
-        );
-
-
-    if (
-        previous &&
-        Number.isFinite(
-            Number(
-                previous.averageWeight
-            )
-        ) &&
-        Number.isFinite(
-            Number(
-                current.averageWeight
-            )
-        )
-    ) {
-
-        result.weightGain =
-            Number(
-                current.averageWeight
-            ) -
-            Number(
-                previous.averageWeight
-            );
-
-    }
-
-
-    if (
-        result.weightGain !== null &&
-        result.feedPerBird !== null
-    ) {
-
-        result.fcr =
-            calculateFCR(
-                result.feedPerBird,
-                result.weightGain
-            );
-
-    }
-
-
-    return result;
-
-}
-
-
-/* =========================================================
-   WEIGHT SAMPLE
-   ========================================================= */
-
-function calculateWeightSample(
-    weights
-) {
+}) {
 
     const analysis =
-        analyzeWeights(
+        calculateWeightAnalysis(
             weights
         );
 
 
-    if (!analysis) {
+    const averageWeight =
+        analysis.mean;
 
-        return null;
 
-    }
+    const standard =
+        getStandardForCurrentFlock(
+            flockId
+        );
+
+
+    const standardWeight =
+        standard
+            ? getStandardValueAtAge(
+                standard,
+                "bodyWeight",
+                ageDays
+            )
+            : null;
+
+
+    const fcr =
+        calculateWeeklyFCR(
+            flockId,
+            averageWeight,
+            feed
+        );
+
+
+    const mortality =
+        calculateMortalityRate(
+            mortalityCount,
+            initialBirdCount
+        );
 
 
     return {
 
-        count:
+        id:
+            createId("weekly"),
+
+        flockId,
+
+        farmId,
+
+        houseId,
+
+        date,
+
+        ageDays:
+            Number(ageDays),
+
+        sampleCount:
             analysis.count,
 
-        average:
-            roundNumber(
-                analysis.average,
-                1
-            ),
+        averageWeight,
 
         sd:
-            roundNumber(
-                analysis.sd,
-                1
-            ),
+            analysis.sd,
 
         cv:
-            roundNumber(
-                analysis.cv,
-                2
-            ),
+            analysis.cv,
 
         uniformity10:
-            roundNumber(
-                analysis.uniformity10,
-                2
-            ),
+            analysis.uniformity10,
 
         uniformity15:
-            roundNumber(
-                analysis.uniformity15,
-                2
-            ),
+            analysis.uniformity15,
 
-        min:
-            roundNumber(
-                analysis.minimum,
-                1
-            ),
+        minWeight:
+            analysis.min,
 
-        max:
-            roundNumber(
-                analysis.maximum,
-                1
-            ),
+        maxWeight:
+            analysis.max,
 
-        distribution10:
-            analysis.distribution10,
+        feed:
+            feed === null
+                ? null
+                : Number(feed),
 
-        distribution15:
-            analysis.distribution15
+        water:
+            water === null
+                ? null
+                : Number(water),
+
+        fcr,
+
+        mortality,
+
+        livability:
+            mortality === null
+                ? null
+                : calculateLivability(
+                    mortality
+                ),
+
+        standardWeight,
+
+        weightDifference:
+            standardWeight === null ||
+            averageWeight === null
+                ? null
+                : averageWeight -
+                  standardWeight,
+
+        weightDifferencePercent:
+            standardWeight === null ||
+            averageWeight === null
+                ? null
+                : (
+                    (
+                        averageWeight -
+                        standardWeight
+                    ) /
+                    standardWeight
+                ) *
+                100,
+
+        notes
 
     };
 
@@ -323,55 +165,45 @@ function calculateWeightSample(
 
 
 /* =========================================================
-   STANDARD FOR WEEK
-   ========================================================= */
+   SAVE
+========================================================= */
 
-function getWeeklyStandard({
+function saveWeeklyWeightRecord(
+    data
+) {
 
-    type,
+    const record =
+        buildWeeklyWeightRecord(
+            data
+        );
 
-    genetics,
 
-    strain,
-
-    program,
-
-    age
-
-}) {
-
-    return getStandardRecord({
-
-        type,
-
-        genetics,
-
-        strain,
-
-        program,
-
-        age
-
-    });
+    return saveWeeklyRecord(
+        record
+    );
 
 }
 
 
 /* =========================================================
-   COMPARE WEEK
-   ========================================================= */
+   FCR
+========================================================= */
 
-function compareWeeklyRecord({
+function calculateWeeklyFCR(
+    flockId,
+    currentWeight,
+    currentFeed
+) {
 
-    record,
+    const feed =
+        Number(
+            currentFeed
+        );
 
-    standard
-
-}) {
 
     if (
-        !record ||
-        !standard
+        !Number.isFinite(feed) ||
+        currentWeight === null
     ) {
 
         return null;
@@ -379,32 +211,359 @@ function compareWeeklyRecord({
     }
 
 
-    return compareFlockToStandard({
+    const previous =
+        getFlockWeeklyRecords(
+            flockId
+        )
+        .filter(
+            item =>
+                Number(
+                    item.averageWeight
+                ) <
+                Number(
+                    currentWeight
+                )
+        )
+        .at(-1);
 
-        actual: {
 
-            bodyWeight:
-                record.averageWeight,
+    if (!previous) {
 
-            fcr:
-                record.fcr,
+        return null;
 
-            mortality:
-                record.mortalityPercent,
+    }
 
-            livability:
-                record.livability,
 
-            uniformity:
-                record.uniformity10,
+    const gain =
+        Number(
+            currentWeight
+        ) -
+        Number(
+            previous.averageWeight
+        );
 
-            cv:
+
+    if (
+        gain <= 0
+    ) {
+
+        return null;
+
+    }
+
+
+    return (
+        feed /
+        gain
+    );
+
+}
+
+
+/* =========================================================
+   STANDARD FOR FLOCK
+========================================================= */
+
+function getStandardForCurrentFlock(
+    flockId
+) {
+
+    const flock =
+        getFlocks()
+            .find(
+                item =>
+                    item.id ===
+                    flockId
+            );
+
+
+    if (!flock) {
+
+        return null;
+
+    }
+
+
+    return getStandard(
+        flock.productionType,
+        flock.genetics,
+        flock.strain
+    );
+
+}
+
+
+/* =========================================================
+   WEEKLY PERFORMANCE
+========================================================= */
+
+function getWeeklyPerformance(
+    flockId
+) {
+
+    const records =
+        getFlockWeeklyRecords(
+            flockId
+        );
+
+
+    return records.map(
+        record => {
+
+            const standard =
+                getStandardForCurrentFlock(
+                    flockId
+                );
+
+
+            const standardWeight =
+                standard
+                    ? getStandardValueAtAge(
+                        standard,
+                        "bodyWeight",
+                        record.ageDays
+                    )
+                    : null;
+
+
+            return {
+
+                ...record,
+
+                standardWeight,
+
+                weightDifference:
+                    standardWeight === null
+                        ? null
+                        : Number(
+                            record.averageWeight
+                        ) -
+                          standardWeight,
+
+                weightDifferencePercent:
+                    standardWeight === null
+                        ? null
+                        : (
+                            (
+                                Number(
+                                    record.averageWeight
+                                ) -
+                                standardWeight
+                            ) /
+                            standardWeight
+                        ) *
+                        100
+
+            };
+
+        }
+    );
+
+}
+
+
+/* =========================================================
+   LATEST
+========================================================= */
+
+function getLatestWeeklyPerformance(
+    flockId
+) {
+
+    const records =
+        getWeeklyPerformance(
+            flockId
+        );
+
+
+    return records.length
+        ? records.at(-1)
+        : null;
+
+}
+
+
+/* =========================================================
+   HEALTH INDEX
+========================================================= */
+
+function calculateFlockHealthIndex(
+    record
+) {
+
+    if (!record) {
+
+        return null;
+
+    }
+
+
+    let score = 100;
+
+
+    if (
+        Number.isFinite(
+            Number(
                 record.cv
+            )
+        )
+    ) {
 
-        },
+        if (
+            Number(record.cv) >
+            20
+        ) {
 
-        standard
+            score -= 25;
 
-    });
+        }
+
+        else if (
+            Number(record.cv) >
+            15
+        ) {
+
+            score -= 15;
+
+        }
+
+        else if (
+            Number(record.cv) >
+            10
+        ) {
+
+            score -= 5;
+
+        }
+
+    }
+
+
+    if (
+        Number.isFinite(
+            Number(
+                record.uniformity10
+            )
+        )
+    ) {
+
+        if (
+            Number(
+                record.uniformity10
+            ) <
+            70
+        ) {
+
+            score -= 25;
+
+        }
+
+        else if (
+            Number(
+                record.uniformity10
+            ) <
+            80
+        ) {
+
+            score -= 15;
+
+        }
+
+        else if (
+            Number(
+                record.uniformity10
+            ) <
+            85
+        ) {
+
+            score -= 5;
+
+        }
+
+    }
+
+
+    if (
+        Number.isFinite(
+            Number(
+                record.weightDifferencePercent
+            )
+        )
+    ) {
+
+        const deviation =
+            Math.abs(
+                Number(
+                    record.weightDifferencePercent
+                )
+            );
+
+
+        if (
+            deviation >
+            15
+        ) {
+
+            score -= 20;
+
+        }
+
+        else if (
+            deviation >
+            10
+        ) {
+
+            score -= 10;
+
+        }
+
+        else if (
+            deviation >
+            5
+        ) {
+
+            score -= 5;
+
+        }
+
+    }
+
+
+    return Math.max(
+        0,
+        Math.min(
+            100,
+            score
+        )
+    );
+
+}
+
+
+/* =========================================================
+   DUPLICATE AGE CHECK
+========================================================= */
+
+function hasWeeklyRecordAtAge(
+    flockId,
+    ageDays,
+    excludeId = null
+) {
+
+    return getFlockWeeklyRecords(
+        flockId
+    )
+    .some(
+        record =>
+
+            record.id !==
+                excludeId &&
+
+            Number(
+                record.ageDays
+            ) ===
+            Number(ageDays)
+
+    );
 
 }

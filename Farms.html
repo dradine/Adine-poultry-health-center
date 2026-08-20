@@ -29,614 +29,369 @@
 
 <body>
 
+<div class="app-shell">
 
-<header class="topbar">
 
-    <div class="brand">
+    <!-- =================================================
+         TOP BAR
+    ================================================== -->
 
-        <img
-            src="IMG_4309.png"
-            alt="آدینه"
+    <header class="topbar">
+
+        <div class="brand">
+
+            <img
+                src="IMG_4309.png"
+                alt="مرکز تخصصی سلامت طیور آدینه"
+            >
+
+            <span>
+                ثبت فارم
+            </span>
+
+        </div>
+
+
+        <button
+            type="button"
+            class="btn btn-secondary"
+            onclick="location.href='Dashboard.html'"
         >
+            داشبورد
+        </button>
 
-        <span>
-            ثبت فارم
-        </span>
+    </header>
 
-    </div>
 
+    <!-- =================================================
+         MAIN
+    ================================================== -->
 
-    <button
-        type="button"
-        class="btn btn-secondary"
-        onclick="location.href='Dashboard.html'"
-    >
-        داشبورد
-    </button>
+    <main class="page">
 
-</header>
+        <div class="container">
 
 
+            <h1 class="page-title">
+                ثبت و مدیریت فارم
+            </h1>
 
-<main class="page">
 
-<div class="container">
+            <p class="page-description">
+                اطلاعات پایه فارم را وارد کنید.
+            </p>
 
 
-    <h1 class="page-title">
-        ثبت و مدیریت فارم
-    </h1>
+            <!-- =========================================
+                 FARM FORM
+            ========================================== -->
 
-
-    <p class="page-description">
-        اطلاعات پایه فارم را وارد کنید.
-    </p>
-
-
-
-    <!-- FORM -->
-
-    <form
-        id="farmForm"
-        class="card"
-    >
-
-
-        <div class="form-grid">
-
-
-            <!-- نام -->
-
-            <div class="form-group">
-
-                <label for="farmName">
-                    نام فارم
-                </label>
-
-                <input
-                    id="farmName"
-                    type="text"
-                    required
-                    autocomplete="off"
-                    placeholder="مثلاً فارم شماره ۱"
-                >
-
-            </div>
-
-
-
-            <!-- کد -->
-
-            <div class="form-group">
-
-                <label for="farmCode">
-                    کد فارم
-                </label>
-
-                <input
-                    id="farmCode"
-                    type="text"
-                    autocomplete="off"
-                    placeholder="مثلاً F01"
-                >
-
-            </div>
-
-
-
-            <!-- موقعیت -->
-
-            <div class="form-group">
-
-                <label for="farmLocation">
-                    موقعیت
-                </label>
-
-                <input
-                    id="farmLocation"
-                    type="text"
-                    autocomplete="off"
-                    placeholder="شهر / منطقه"
-                >
-
-            </div>
-
-
-
-            <!-- مالک -->
-
-            <div class="form-group">
-
-                <label for="farmOwner">
-                    مالک
-                </label>
-
-                <input
-                    id="farmOwner"
-                    type="text"
-                    autocomplete="off"
-                >
-
-            </div>
-
-
-
-            <!-- مسئول -->
-
-            <div class="form-group">
-
-                <label for="farmManager">
-                    مسئول فارم
-                </label>
-
-                <input
-                    id="farmManager"
-                    type="text"
-                    autocomplete="off"
-                >
-
-            </div>
-
-
-
-            <!-- ظرفیت -->
-
-            <div class="form-group">
-
-                <label for="farmCapacity">
-                    ظرفیت کل
-                </label>
-
-                <input
-                    id="farmCapacity"
-                    type="number"
-                    min="0"
-                    inputmode="numeric"
-                >
-
-            </div>
-
-
-
-            <!-- توضیحات -->
-
-            <div class="form-group full">
-
-                <label for="farmNotes">
-                    توضیحات
-                </label>
-
-                <textarea
-                    id="farmNotes"
-                    placeholder="توضیحات مربوط به فارم..."
-                ></textarea>
-
-            </div>
-
-
-        </div>
-
-
-
-        <div class="button-row">
-
-
-            <button
-                class="btn btn-primary"
-                type="submit"
+            <form
+                id="farmForm"
+                class="card"
             >
-                ذخیره فارم
-            </button>
 
+                <div class="form-grid">
 
-            <button
-                class="btn btn-secondary"
-                type="button"
-                onclick="location.href='Dashboard.html'"
-            >
-                بازگشت
-            </button>
 
+                    <!-- نام فارم -->
 
-        </div>
+                    <div class="form-group">
 
+                        <label
+                            for="farmName"
+                        >
+                            نام فارم *
+                        </label>
 
-    </form>
-
-
-
-    <!-- FARM LIST -->
-
-    <section class="card">
-
-        <h2 class="card-title">
-            فارم‌های ثبت‌شده
-        </h2>
-
-
-        <div id="farmsList">
-
-            در حال بارگذاری...
-
-        </div>
-
-    </section>
-
-
-</div>
-
-</main>
-
-
-
-<!-- CORE -->
-
-<script src="standards.js"></script>
-<script src="standard-data.js"></script>
-<script src="poultry-utils.js"></script>
-<script src="weekly-storage.js"></script>
-<script src="comparison-engine.js"></script>
-<script src="app-core.js"></script>
-<script src="genetics-ui.js"></script>
-<script src="weekly-engine.js"></script>
-
-
-
-<script>
-
-
-/* =========================================================
-   FORM
-   ========================================================= */
-
-const farmForm =
-    document.getElementById(
-        "farmForm"
-    );
-
-
-farmForm.addEventListener(
-    "submit",
-    function(event) {
-
-        event.preventDefault();
-
-
-        const farm =
-            saveFarm({
-
-                name:
-                    document.getElementById(
-                        "farmName"
-                    ).value,
-
-                code:
-                    document.getElementById(
-                        "farmCode"
-                    ).value,
-
-                location:
-                    document.getElementById(
-                        "farmLocation"
-                    ).value,
-
-                owner:
-                    document.getElementById(
-                        "farmOwner"
-                    ).value,
-
-                manager:
-                    document.getElementById(
-                        "farmManager"
-                    ).value,
-
-                capacity:
-                    document.getElementById(
-                        "farmCapacity"
-                    ).value,
-
-                notes:
-                    document.getElementById(
-                        "farmNotes"
-                    ).value
-
-            });
-
-
-        if (!farm) {
-
-            alert(
-                "خطا در ذخیره فارم."
-            );
-
-            return;
-
-        }
-
-
-        setCurrentSelection({
-
-            farmId:
-                farm.id,
-
-            houseId:
-                null,
-
-            flockId:
-                null
-
-        });
-
-
-        farmForm.reset();
-
-
-        renderFarms();
-
-
-        alert(
-            "فارم با موفقیت ذخیره شد."
-        );
-
-    }
-);
-
-
-
-/* =========================================================
-   RENDER
-   ========================================================= */
-
-function renderFarms() {
-
-    const container =
-        document.getElementById(
-            "farmsList"
-        );
-
-
-    const farms =
-        getFarms();
-
-
-    if (
-        !farms ||
-        farms.length === 0
-    ) {
-
-        container.innerHTML = `
-
-            <div class="card">
-
-                <p>
-                    هنوز فارمی ثبت نشده است.
-                </p>
-
-            </div>
-
-        `;
-
-        return;
-
-    }
-
-
-
-    container.innerHTML =
-
-        farms
-        .map(
-            function(farm) {
-
-                return `
-
-                    <div class="card">
-
-                        <strong>
-                            ${escapeHTML(
-                                farm.name
-                            )}
-                        </strong>
-
-
-                        <p>
-
-                            کد فارم:
-                            ${
-                                escapeHTML(
-                                    farm.code ||
-                                    "-"
-                                )
-                            }
-
-                        </p>
-
-
-                        <p>
-
-                            موقعیت:
-                            ${
-                                escapeHTML(
-                                    farm.location ||
-                                    "-"
-                                )
-                            }
-
-                        </p>
-
-
-                        <p>
-
-                            ظرفیت:
-                            ${
-                                farm.capacity ||
-                                "-"
-                            }
-
-                        </p>
-
-
-                        <div class="button-row">
-
-
-                            <button
-                                type="button"
-                                class="btn btn-primary"
-                                onclick="
-                                    selectFarm(
-                                        '${farm.id}'
-                                    )
-                                "
-                            >
-                                انتخاب فارم
-                            </button>
-
-
-                            <button
-                                type="button"
-                                class="btn btn-danger"
-                                onclick="
-                                    removeFarm(
-                                        '${farm.id}'
-                                    )
-                                "
-                            >
-                                حذف
-                            </button>
-
-
-                        </div>
+                        <input
+                            id="farmName"
+                            type="text"
+                            required
+                            autocomplete="off"
+                            placeholder="مثلاً فارم شماره ۱"
+                        >
 
                     </div>
 
-                `;
 
-            }
-        )
-        .join("");
+                    <!-- کد فارم -->
 
-}
+                    <div class="form-group">
 
+                        <label
+                            for="farmCode"
+                        >
+                            کد فارم
+                        </label>
 
+                        <input
+                            id="farmCode"
+                            type="text"
+                            autocomplete="off"
+                            placeholder="مثلاً F01"
+                        >
 
-/* =========================================================
-   SELECT FARM
-   ========================================================= */
-
-function selectFarm(
-    id
-) {
-
-    const farm =
-        getFarms()
-        .find(
-            function(item) {
-
-                return item.id === id;
-
-            }
-        );
+                    </div>
 
 
-    if (!farm) {
+                    <!-- موقعیت -->
 
-        return;
+                    <div class="form-group">
 
-    }
+                        <label
+                            for="farmLocation"
+                        >
+                            موقعیت
+                        </label>
 
+                        <input
+                            id="farmLocation"
+                            type="text"
+                            autocomplete="off"
+                            placeholder="شهر / منطقه"
+                        >
 
-    setCurrentSelection({
-
-        farmId:
-            farm.id,
-
-        houseId:
-            null,
-
-        flockId:
-            null
-
-    });
-
-
-    location.href =
-        "flocks.html";
-
-}
+                    </div>
 
 
+                    <!-- مالک -->
 
-/* =========================================================
-   DELETE FARM
-   ========================================================= */
+                    <div class="form-group">
 
-function removeFarm(
-    id
-) {
+                        <label
+                            for="farmOwner"
+                        >
+                            نام مالک
+                        </label>
 
-    const farm =
-        getFarms()
-        .find(
-            function(item) {
+                        <input
+                            id="farmOwner"
+                            type="text"
+                            autocomplete="off"
+                        >
 
-                return item.id === id;
-
-            }
-        );
-
-
-    if (!farm) {
-
-        return;
-
-    }
+                    </div>
 
 
-    const confirmed =
-        confirm(
-            `آیا از حذف فارم «${farm.name}» مطمئن هستید؟`
-        );
+                    <!-- مسئول -->
+
+                    <div class="form-group">
+
+                        <label
+                            for="farmManager"
+                        >
+                            مسئول فارم
+                        </label>
+
+                        <input
+                            id="farmManager"
+                            type="text"
+                            autocomplete="off"
+                        >
+
+                    </div>
 
 
-    if (!confirmed) {
+                    <!-- ظرفیت -->
 
-        return;
+                    <div class="form-group">
 
-    }
+                        <label
+                            for="farmCapacity"
+                        >
+                            ظرفیت کل
+                        </label>
 
+                        <input
+                            id="farmCapacity"
+                            type="number"
+                            min="0"
+                            inputmode="numeric"
+                            placeholder="مثلاً 50000"
+                        >
 
-    deleteFarm(
-        id
-    );
-
-
-    const selection =
-        getCurrentSelection();
-
-
-    if (
-        selection.farmId === id
-    ) {
-
-        clearCurrentSelection();
-
-    }
+                    </div>
 
 
-    renderFarms();
+                    <!-- توضیحات -->
 
-}
+                    <div class="form-group full">
+
+                        <label
+                            for="farmNotes"
+                        >
+                            توضیحات
+                        </label>
+
+                        <textarea
+                            id="farmNotes"
+                            rows="4"
+                            placeholder="توضیحات مربوط به فارم..."
+                        ></textarea>
+
+                    </div>
+
+                </div>
 
 
+                <div class="button-row">
 
-/* =========================================================
-   INITIALIZE
-   ========================================================= */
+                    <button
+                        class="btn btn-primary"
+                        type="submit"
+                    >
+                        ذخیره فارم
+                    </button>
 
-renderFarms();
+
+                    <button
+                        class="btn btn-secondary"
+                        type="button"
+                        onclick="location.href='Dashboard.html'"
+                    >
+                        بازگشت
+                    </button>
+
+                </div>
+
+            </form>
 
 
-</script>
+            <!-- =========================================
+                 FARM LIST
+            ========================================== -->
+
+            <section class="card">
+
+                <h2 class="card-title">
+                    فارم‌های ثبت‌شده
+                </h2>
+
+
+                <div id="farmsList">
+
+                    در حال بارگذاری...
+
+                </div>
+
+            </section>
+
+
+        </div>
+
+    </main>
+
+
+    <!-- =================================================
+         BOTTOM NAV
+    ================================================== -->
+
+    <nav class="bottom-nav">
+
+        <button
+            type="button"
+            onclick="location.href='Dashboard.html'"
+        >
+            🏠
+            <br>
+            خانه
+        </button>
+
+
+        <button
+            class="active"
+            type="button"
+            onclick="location.href='Farms.html'"
+        >
+            🏭
+            <br>
+            فارم‌ها
+        </button>
+
+
+        <button
+            type="button"
+            onclick="location.href='weekly.html'"
+        >
+            ⚖️
+            <br>
+            هفتگی
+        </button>
+
+
+        <button
+            type="button"
+            onclick="location.href='reports.html'"
+        >
+            📊
+            <br>
+            گزارش
+        </button>
+
+    </nav>
+
+</div>
+
+
+<!-- =====================================================
+     SUPABASE
+====================================================== -->
+
+<script
+    src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"
+></script>
+
+
+<script
+    src="supabase-config.js"
+></script>
+
+
+<!-- =====================================================
+     CORE
+====================================================== -->
+
+<script
+    src="standards.js"
+></script>
+
+<script
+    src="standard-data.js"
+></script>
+
+<script
+    src="poultry-utils.js"
+></script>
+
+<script
+    src="weekly-storage.js"
+></script>
+
+<script
+    src="comparison-engine.js"
+></script>
+
+<script
+    src="app-core.js"
+></script>
+
+<script
+    src="genetics-ui.js"
+></script>
+
+<script
+    src="weekly-engine.js"
+></script>
+
+
+<!-- =====================================================
+     FARMS
+====================================================== -->
+
+<script
+    src="Farms.js"
+></script>
 
 
 </body>

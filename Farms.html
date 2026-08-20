@@ -94,13 +94,9 @@
                 <div class="form-grid">
 
 
-                    <!-- نام فارم -->
-
                     <div class="form-group">
 
-                        <label
-                            for="farmName"
-                        >
+                        <label for="farmName">
                             نام فارم *
                         </label>
 
@@ -115,13 +111,9 @@
                     </div>
 
 
-                    <!-- کد فارم -->
-
                     <div class="form-group">
 
-                        <label
-                            for="farmCode"
-                        >
+                        <label for="farmCode">
                             کد فارم
                         </label>
 
@@ -135,13 +127,9 @@
                     </div>
 
 
-                    <!-- موقعیت -->
-
                     <div class="form-group">
 
-                        <label
-                            for="farmLocation"
-                        >
+                        <label for="farmLocation">
                             موقعیت
                         </label>
 
@@ -155,13 +143,9 @@
                     </div>
 
 
-                    <!-- مالک -->
-
                     <div class="form-group">
 
-                        <label
-                            for="farmOwner"
-                        >
+                        <label for="farmOwner">
                             نام مالک
                         </label>
 
@@ -174,13 +158,9 @@
                     </div>
 
 
-                    <!-- مسئول -->
-
                     <div class="form-group">
 
-                        <label
-                            for="farmManager"
-                        >
+                        <label for="farmManager">
                             مسئول فارم
                         </label>
 
@@ -193,34 +173,26 @@
                     </div>
 
 
-                    <!-- ظرفیت -->
-
                     <div class="form-group">
 
-                        <label
-                            for="farmCapacity"
-                        >
+                        <label for="farmCapacity">
                             ظرفیت کل
                         </label>
 
                         <input
                             id="farmCapacity"
-                            type="number"
-                            min="0"
+                            type="text"
                             inputmode="numeric"
-                            placeholder="مثلاً 50000"
+                            autocomplete="off"
+                            placeholder="مثلاً ۵۰۰۰۰"
                         >
 
                     </div>
 
 
-                    <!-- توضیحات -->
-
                     <div class="form-group full">
 
-                        <label
-                            for="farmNotes"
-                        >
+                        <label for="farmNotes">
                             توضیحات
                         </label>
 
@@ -334,64 +306,30 @@
 </div>
 
 
-<!-- =====================================================
-     SUPABASE
-====================================================== -->
+<!-- SUPABASE -->
 
 <script
     src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"
 ></script>
 
-
-<script
-    src="supabase-config.js"
-></script>
+<script src="supabase-config.js"></script>
 
 
-<!-- =====================================================
-     CORE
-====================================================== -->
+<!-- CORE -->
 
-<script
-    src="standards.js"
-></script>
-
-<script
-    src="standard-data.js"
-></script>
-
-<script
-    src="poultry-utils.js"
-></script>
-
-<script
-    src="weekly-storage.js"
-></script>
-
-<script
-    src="comparison-engine.js"
-></script>
-
-<script
-    src="app-core.js"
-></script>
-
-<script
-    src="genetics-ui.js"
-></script>
-
-<script
-    src="weekly-engine.js"
-></script>
+<script src="standards.js"></script>
+<script src="standard-data.js"></script>
+<script src="poultry-utils.js"></script>
+<script src="weekly-storage.js"></script>
+<script src="comparison-engine.js"></script>
+<script src="app-core.js"></script>
+<script src="genetics-ui.js"></script>
+<script src="weekly-engine.js"></script>
 
 
-<!-- =====================================================
-     FARMS
-====================================================== -->
+<!-- FARMS -->
 
-<script
-    src="Farms.js"
-></script>
+<script src="Farms.js"></script>
 
 
 </body>

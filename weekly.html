@@ -2,7 +2,6 @@
 <html lang="fa" dir="rtl">
 
 <head>
-
     <meta charset="UTF-8">
 
     <meta
@@ -10,19 +9,11 @@
         content="width=device-width, initial-scale=1, viewport-fit=cover"
     >
 
-    <meta
-        name="theme-color"
-        content="#173f35"
-    >
+    <meta name="theme-color" content="#173f35">
 
-    <title>
-        ثبت هفتگی | مرکز تخصصی سلامت طیور آدینه
-    </title>
+    <title>ثبت هفتگی | مرکز تخصصی سلامت طیور آدینه</title>
 
-    <link
-        rel="stylesheet"
-        href="app.css"
-    >
+    <link rel="stylesheet" href="app.css">
 
     <style>
         /* =====================================================
@@ -37,8 +28,11 @@
         #evaluationDate {
             width: 100%;
             box-sizing: border-box;
-            cursor: pointer;
             padding-left: 48px;
+            cursor: pointer;
+            direction: ltr;
+            text-align: center;
+            font-size: 16px;
         }
 
         .jalali-calendar-button {
@@ -46,104 +40,112 @@
             left: 8px;
             top: 50%;
             transform: translateY(-50%);
+            width: 38px;
+            height: 38px;
             border: 0;
-            background: transparent;
-            font-size: 21px;
+            border-radius: 10px;
+            background: #173f35;
+            color: white;
+            font-size: 19px;
             cursor: pointer;
             z-index: 2;
         }
 
         .jalali-calendar {
+            display: none;
             position: absolute;
             top: calc(100% + 8px);
             right: 0;
-            width: min(100%, 360px);
+            width: 100%;
+            max-width: 360px;
             background: #fff;
-            border: 1px solid #e3e3e3;
             border-radius: 16px;
             box-shadow: 0 12px 35px rgba(0,0,0,.18);
+            border: 1px solid #e5e5e5;
             overflow: hidden;
-            z-index: 9999;
-            direction: rtl;
+            z-index: 99999;
         }
 
         .jalali-calendar-header {
+            height: 55px;
             display: flex;
             align-items: center;
             justify-content: space-between;
-            padding: 12px;
+            padding: 0 8px;
             background: #173f35;
-            color: #fff;
-        }
-
-        .jalali-nav-button {
-            width: 38px;
-            height: 38px;
-            border: 0;
-            border-radius: 10px;
-            background: rgba(255,255,255,.12);
-            color: #fff;
-            font-size: 26px;
-            line-height: 1;
-            cursor: pointer;
-        }
-
-        .jalali-nav-button:active {
-            transform: scale(.94);
+            color: white;
         }
 
         .jalali-month-title {
             font-size: 15px;
-            font-weight: 700;
+            font-weight: bold;
         }
 
-        .jalali-weekdays,
+        .jalali-nav-button {
+            width: 42px;
+            height: 42px;
+            border: 0;
+            background: transparent;
+            color: white;
+            font-size: 28px;
+            cursor: pointer;
+            border-radius: 10px;
+        }
+
+        .jalali-nav-button:active {
+            background: rgba(255,255,255,.15);
+        }
+
+        .jalali-weekdays {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            padding: 12px 10px 6px;
+            color: #777;
+            font-size: 12px;
+            text-align: center;
+            font-weight: bold;
+        }
+
         .jalali-days {
             display: grid;
             grid-template-columns: repeat(7, 1fr);
             gap: 5px;
-            padding: 9px;
-        }
-
-        .jalali-weekdays {
-            padding-bottom: 3px;
-            color: #777;
-            font-size: 12px;
-            text-align: center;
+            padding: 8px 10px 12px;
         }
 
         .jalali-day {
-            height: 38px;
+            width: 100%;
+            aspect-ratio: 1;
             border: 0;
             border-radius: 10px;
             background: transparent;
-            color: #222;
-            font-size: 14px;
             cursor: pointer;
+            font-size: 14px;
+            color: #222;
         }
 
         .jalali-day:hover {
-            background: #eef5f2;
+            background: #edf4f1;
         }
 
         .jalali-day.today {
-            border: 1px solid #173f35;
-            font-weight: 700;
+            border: 2px solid #173f35;
+            font-weight: bold;
         }
 
         .jalali-day.selected {
             background: #173f35;
-            color: #fff;
-            font-weight: 700;
+            color: white;
+            font-weight: bold;
         }
 
-        .jalali-day.empty {
-            pointer-events: none;
+        .jalali-day.today.selected {
+            border-color: #173f35;
         }
 
         .jalali-calendar-footer {
             border-top: 1px solid #eee;
-            padding: 9px;
+            padding: 10px;
             text-align: center;
         }
 
@@ -151,9 +153,20 @@
             border: 0;
             background: transparent;
             color: #173f35;
-            font-weight: 700;
+            font-weight: bold;
             cursor: pointer;
-            padding: 6px 15px;
+            padding: 7px 20px;
+            border-radius: 8px;
+        }
+
+        .jalali-today-button:hover {
+            background: #edf4f1;
+        }
+
+        @media (max-width: 480px) {
+            .jalali-calendar {
+                max-width: none;
+            }
         }
     </style>
 
@@ -174,9 +187,7 @@
             alt="مرکز تخصصی سلامت طیور آدینه"
         >
 
-        <span>
-            ثبت هفتگی
-        </span>
+        <span>ثبت هفتگی</span>
 
     </div>
 
@@ -207,8 +218,6 @@
 </p>
 
 
-<!-- CURRENT FLOCK -->
-
 <section class="card">
 
 <h2 class="card-title">
@@ -221,8 +230,6 @@
 
 </section>
 
-
-<!-- WEEK -->
 
 <section class="card">
 
@@ -263,7 +270,6 @@
     تاریخ ارزیابی
 </label>
 
-
 <div
     class="jalali-date-wrapper"
     id="jalaliDateWrapper"
@@ -279,11 +285,10 @@
     readonly
 >
 
-
 <button
     type="button"
     class="jalali-calendar-button"
-    onclick="toggleJalaliCalendar(event)"
+    id="jalaliCalendarButton"
     aria-label="انتخاب تاریخ"
 >
     📅
@@ -293,15 +298,14 @@
 <div
     id="jalaliCalendar"
     class="jalali-calendar"
-    style="display:none;"
 >
 
 <div class="jalali-calendar-header">
 
 <button
     type="button"
+    id="jalaliPrevButton"
     class="jalali-nav-button"
-    onclick="jalaliPreviousMonth(event)"
 >
     ‹
 </button>
@@ -317,8 +321,8 @@
 
 <button
     type="button"
+    id="jalaliNextButton"
     class="jalali-nav-button"
-    onclick="jalaliNextMonth(event)"
 >
     ›
 </button>
@@ -349,8 +353,8 @@
 
 <button
     type="button"
+    id="jalaliTodayButton"
     class="jalali-today-button"
-    onclick="jalaliToday(event)"
 >
     امروز
 </button>
@@ -400,8 +404,6 @@
 
 </section>
 
-
-<!-- WEIGHT -->
 
 <section class="card">
 
@@ -467,8 +469,6 @@
 </section>
 
 
-<!-- RESULTS -->
-
 <section
     id="resultsCard"
     class="card"
@@ -497,8 +497,6 @@
 
 </section>
 
-
-<!-- FEED / WATER -->
 
 <section class="card">
 
@@ -579,8 +577,6 @@
 </section>
 
 
-<!-- NOTES -->
-
 <section class="card">
 
 <h2 class="card-title">
@@ -618,8 +614,6 @@
 
 </section>
 
-
-<!-- HISTORY -->
 
 <section class="card">
 
@@ -709,17 +703,15 @@
 
 
 <!-- =====================================================
-     یک تقویم شمسی - بدون کتابخانه خارجی
-====================================================== -->
+     تقویم شمسی
+     بدون کتابخانه خارجی
+     ===================================================== -->
 
 <script>
 
 (function () {
 
     "use strict";
-
-    let calendarYear = 0;
-    let calendarMonth = 0;
 
     const monthNames = [
         "فروردین",
@@ -736,46 +728,48 @@
         "اسفند"
     ];
 
+    let calendarYear = 1405;
+    let calendarMonth = 1;
 
-    /*
-     * تبدیل اعداد فارسی و عربی به انگلیسی
-     * برای محاسبات و ذخیره‌سازی
-     */
-
-    function normalizeDigits(value) {
-
-        return String(value ?? "")
-            .replace(/[۰-۹]/g, function (d) {
-                return String(
-                    d.charCodeAt(0) - 1776
-                );
-            })
-            .replace(/[٠-٩]/g, function (d) {
-                return String(
-                    d.charCodeAt(0) - 1632
-                );
-            });
-
-    }
-
-
-    /*
-     * فقط برای نمایش
-     */
 
     function toPersianDigits(value) {
 
-        return String(value)
-            .replace(/\d/g, function (d) {
-                return "۰۱۲۳۴۵۶۷۸۹"[Number(d)];
-            });
+        return String(value).replace(
+            /\d/g,
+            function (digit) {
+                return "۰۱۲۳۴۵۶۷۸۹"[Number(digit)];
+            }
+        );
+
+    }
+
+
+    function normalizeDigits(value) {
+
+        return String(value || "")
+            .replace(
+                /[۰-۹]/g,
+                function (digit) {
+                    return String(
+                        digit.charCodeAt(0) - 1776
+                    );
+                }
+            )
+            .replace(
+                /[٠-٩]/g,
+                function (digit) {
+                    return String(
+                        digit.charCodeAt(0) - 1632
+                    );
+                }
+            );
 
     }
 
 
     /*
-     * امروز به تقویم شمسی
-     * بدون نیاز به persianDate
+     * استفاده از تقویم فارسی داخلی مرورگر
+     * برای تبدیل دقیق تاریخ امروز
      */
 
     function getTodayJalali() {
@@ -795,31 +789,25 @@
         const parts =
             formatter.formatToParts(now);
 
-
-        const get =
-            function (type) {
-
-                const item =
-                    parts.find(
-                        p => p.type === type
-                    );
-
-                return item
-                    ? Number(
-                        normalizeDigits(
-                            item.value
-                        )
-                    )
-                    : 0;
-
-            };
-
-
         return {
 
-            year: get("year"),
-            month: get("month"),
-            day: get("day")
+            year: Number(
+                parts.find(
+                    p => p.type === "year"
+                ).value
+            ),
+
+            month: Number(
+                parts.find(
+                    p => p.type === "month"
+                ).value
+            ),
+
+            day: Number(
+                parts.find(
+                    p => p.type === "day"
+                ).value
+            )
 
         };
 
@@ -827,10 +815,10 @@
 
 
     /*
-     * طول ماه
+     * تعداد روزهای ماه
      */
 
-    function jalaliMonthLength(
+    function daysInJalaliMonth(
         year,
         month
     ) {
@@ -843,16 +831,15 @@
             return 30;
         }
 
-
         /*
-         * برای اسفند، با استفاده از فاصله
-         * اول فروردین سال بعد و اول فروردین امسال
+         * تشخیص اسفند با مقایسه
+         * اول فروردین سال بعد
          */
 
         const current =
             jalaliToGregorian(
                 year,
-                1,
+                12,
                 1
             );
 
@@ -863,39 +850,36 @@
                 1
             );
 
+        const currentDate =
+            new Date(
+                current.gy,
+                current.gm - 1,
+                current.gd
+            );
+
+        const nextDate =
+            new Date(
+                next.gy,
+                next.gm - 1,
+                next.gd
+            );
 
         const diff =
             Math.round(
                 (
-                    new Date(
-                        next.gy,
-                        next.gm - 1,
-                        next.gd
-                    ).getTime()
-                    -
-                    new Date(
-                        current.gy,
-                        current.gm - 1,
-                        current.gd
-                    ).getTime()
-                )
-                /
+                    nextDate -
+                    currentDate
+                ) /
                 86400000
             );
 
-
-        return diff >= 366
-            ? 30
-            : 29;
+        return diff;
 
     }
 
 
     /*
      * تبدیل جلالی به میلادی
-     *
-     * این تابع برای تعیین روز هفته
-     * استفاده می‌شود.
      */
 
     function jalaliToGregorian(
@@ -904,80 +888,163 @@
         jd
     ) {
 
-        let jy2 = jy;
+        let gy =
+            jy + 621;
 
-        let days =
-            -355668
-            +
-            365 * jy2
-            +
-            Math.floor(
-                jy2 / 33
-            ) * 8
-            +
+        const breaks = [
+            -61, 9, 38, 199, 426, 686,
+            756, 818, 1111, 1181, 1210,
+            1635, 2060, 2097, 2192, 2262,
+            2324, 2394, 2456, 3178
+        ];
+
+        let leapJ = -14;
+
+        let jp = breaks[0];
+
+        let jump = 0;
+
+        for (
+            let i = 1;
+            i < breaks.length;
+            i++
+        ) {
+
+            const jm2 = breaks[i];
+
+            jump = jm2 - jp;
+
+            if (jy < jm2) {
+                break;
+            }
+
+            leapJ +=
+                Math.floor(jump / 33) * 8 +
+                Math.floor((jump % 33) / 4);
+
+            jp = jm2;
+
+        }
+
+        let n =
+            jy - jp;
+
+        if (n === jump) {
+
+            leapJ +=
+                Math.floor(jump / 33);
+
+        }
+
+        let leapG =
+            Math.floor(gy / 4) -
             Math.floor(
                 (
-                    (jy2 % 33) + 3
-                ) / 4
-            )
-            +
-            jd;
+                    Math.floor(gy / 100) + 1
+                ) * 3 / 4
+            ) -
+            150;
 
+        let march =
+            20 +
+            leapJ -
+            leapG;
+
+        let days;
 
         if (jm <= 6) {
 
-            days +=
-                (jm - 1) * 31;
+            days =
+                (jm - 1) * 31 +
+                (jd - 1);
 
         } else {
 
-            days +=
+            days =
                 186 +
-                (jm - 7) * 30;
+                (jm - 7) * 30 +
+                (jd - 1);
 
         }
 
-
-        let gy =
-            400 *
-            Math.floor(
-                days / 146097
+        const date =
+            new Date(
+                gy,
+                2,
+                march
             );
 
+        date.setDate(
+            date.getDate() +
+            days
+        );
 
-        days %= 146097;
+        return {
 
+            gy: date.getFullYear(),
+            gm: date.getMonth() + 1,
+            gd: date.getDate()
 
-        if (days > 36524) {
+        };
 
-            gy +=
-                100 *
-                Math.floor(
-                    --days / 36524
-                );
-
-            days %= 36524;
-
-            if (days >= 365) {
-                days++;
-            }
-
-        }
+    }
 
 
-        gy +=
+    /*
+     * تبدیل میلادی به جلالی
+     */
+
+    function gregorianToJalali(
+        gy,
+        gm,
+        gd
+    ) {
+
+        const gdm = [
+            0, 31, 59, 90, 120, 151,
+            181, 212, 243, 273, 304, 334
+        ];
+
+        let gy2 =
+            gm > 2
+                ? gy + 1
+                : gy;
+
+        let days =
+            355666 +
+            (365 * gy) +
+            Math.floor(
+                (gy2 + 3) / 4
+            ) -
+            Math.floor(
+                (gy2 + 99) / 100
+            ) +
+            Math.floor(
+                (gy2 + 399) / 400
+            ) +
+            gd +
+            gdm[gm - 1];
+
+        let jy =
+            -1595 +
+            33 *
+            Math.floor(
+                days / 12053
+            );
+
+        days %= 12053;
+
+        jy +=
             4 *
             Math.floor(
                 days / 1461
             );
 
-
         days %= 1461;
-
 
         if (days > 365) {
 
-            gy +=
+            jy +=
                 Math.floor(
                     (days - 1) / 365
                 );
@@ -987,112 +1054,56 @@
 
         }
 
+        let jm;
 
-        let gd =
-            days + 1;
+        if (days < 186) {
 
+            jm =
+                1 +
+                Math.floor(
+                    days / 31
+                );
 
-        const leap =
-            (
-                gy % 4 === 0 &&
-                gy % 100 !== 0
-            )
-            ||
-            gy % 400 === 0;
+        } else {
 
-
-        const monthDays = [
-            31,
-            leap ? 29 : 28,
-            31,
-            30,
-            31,
-            30,
-            31,
-            31,
-            30,
-            31,
-            30,
-            31
-        ];
-
-
-        let gm = 1;
-
-
-        while (
-            gm <= 12 &&
-            gd > monthDays[gm - 1]
-        ) {
-
-            gd -=
-                monthDays[gm - 1];
-
-            gm++;
+            jm =
+                7 +
+                Math.floor(
+                    (days - 186) / 30
+                );
 
         }
 
+        let jd;
+
+        if (days < 186) {
+
+            jd =
+                1 +
+                (days % 31);
+
+        } else {
+
+            jd =
+                1 +
+                (
+                    (days - 186) % 30
+                );
+
+        }
 
         return {
-            gy: gy,
-            gm: gm,
-            gd: gd
+            year: jy,
+            month: jm,
+            day: jd
         };
 
     }
 
 
-    /*
-     * روز اول ماه
-     *
-     * شنبه = 0
-     */
-
-    function getFirstDay(
-        year,
-        month
-    ) {
-
-        const g =
-            jalaliToGregorian(
-                year,
-                month,
-                1
-            );
-
-
-        const date =
-            new Date(
-                g.gy,
-                g.gm - 1,
-                g.gd
-            );
-
-
-        /*
-         * JS:
-         * Sunday = 0
-         * Saturday = 6
-         *
-         * تبدیل:
-         * Saturday -> 0
-         * Sunday -> 1
-         */
-
-        return (
-            date.getDay() + 1
-        ) % 7;
-
-    }
-
-
-    /*
-     * نمایش تقویم
-     */
-
     function renderCalendar() {
 
-        const daysContainer =
+        const days =
             document.getElementById(
                 "jalaliDays"
             );
@@ -1102,42 +1113,61 @@
                 "jalaliMonthTitle"
             );
 
-
-        if (
-            !daysContainer ||
-            !title
-        ) {
-
+        if (!days || !title) {
             return;
-
         }
-
 
         title.textContent =
             monthNames[
                 calendarMonth - 1
-            ]
-            +
-            " "
-            +
+            ] +
+            " " +
             toPersianDigits(
                 calendarYear
             );
 
+        days.innerHTML = "";
 
-        daysContainer.innerHTML = "";
 
+        /*
+         * روز اول ماه
+         */
 
-        const firstDay =
-            getFirstDay(
+        const first =
+            jalaliToGregorian(
                 calendarYear,
-                calendarMonth
+                calendarMonth,
+                1
             );
+
+        const firstDate =
+            new Date(
+                first.gy,
+                first.gm - 1,
+                first.gd
+            );
+
+
+        /*
+         * JS:
+         * Sunday = 0
+         * Monday = 1
+         * ...
+         * Saturday = 6
+         *
+         * تقویم ما:
+         * Saturday = 0
+         */
+
+        const start =
+            (
+                firstDate.getDay() + 1
+            ) % 7;
 
 
         for (
             let i = 0;
-            i < firstDay;
+            i < start;
             i++
         ) {
 
@@ -1146,21 +1176,22 @@
                     "div"
                 );
 
-            empty.className =
-                "jalali-day empty";
-
-            daysContainer.appendChild(
+            days.appendChild(
                 empty
             );
 
         }
 
 
-        const totalDays =
-            jalaliMonthLength(
+        const total =
+            daysInJalaliMonth(
                 calendarYear,
                 calendarMonth
             );
+
+
+        const today =
+            getTodayJalali();
 
 
         const input =
@@ -1169,36 +1200,25 @@
             );
 
 
-        const value =
-            normalizeDigits(
-                input?.dataset?.value ||
-                ""
-            );
-
-
         const selected =
-            value.split("/");
+            normalizeDigits(
+                input?.value || ""
+            ).split("/");
 
 
         const selectedYear =
             Number(selected[0]);
 
-
         const selectedMonth =
             Number(selected[1]);
-
 
         const selectedDay =
             Number(selected[2]);
 
 
-        const today =
-            getTodayJalali();
-
-
         for (
             let day = 1;
-            day <= totalDays;
+            day <= total;
             day++
         ) {
 
@@ -1207,14 +1227,10 @@
                     "button"
                 );
 
-
-            button.type =
-                "button";
-
+            button.type = "button";
 
             button.className =
                 "jalali-day";
-
 
             button.textContent =
                 toPersianDigits(
@@ -1252,11 +1268,9 @@
                 "click",
                 function (event) {
 
-                    event.preventDefault();
                     event.stopPropagation();
 
-
-                    selectJalaliDate(
+                    selectDate(
                         calendarYear,
                         calendarMonth,
                         day
@@ -1266,7 +1280,7 @@
             );
 
 
-            daysContainer.appendChild(
+            days.appendChild(
                 button
             );
 
@@ -1275,18 +1289,7 @@
     }
 
 
-    /*
-     * انتخاب تاریخ
-     *
-     * نکته مهم:
-     *
-     * value برای نمایش فارسی است.
-     *
-     * dataset.value برای ذخیره و پردازش
-     * با اعداد انگلیسی نگه داشته می‌شود.
-     */
-
-    function selectJalaliDate(
+    function selectDate(
         year,
         month,
         day
@@ -1297,31 +1300,21 @@
                 "evaluationDate"
             );
 
-
         if (!input) {
             return;
         }
 
-
-        const normalized =
-            String(year)
-            +
-            "/"
-            +
-            String(month).padStart(2, "0")
-            +
-            "/"
-            +
+        const value =
+            String(year) +
+            "/" +
+            String(month).padStart(2, "0") +
+            "/" +
             String(day).padStart(2, "0");
-
-
-        input.dataset.value =
-            normalized;
 
 
         input.value =
             toPersianDigits(
-                normalized
+                value
             );
 
 
@@ -1330,186 +1323,64 @@
     }
 
 
-    /*
-     * باز کردن
-     */
-
-    window.toggleJalaliCalendar =
-        function (event) {
-
-            if (event) {
-                event.preventDefault();
-                event.stopPropagation();
-            }
-
-
-            const calendar =
-                document.getElementById(
-                    "jalaliCalendar"
-                );
-
-
-            if (!calendar) {
-                return;
-            }
-
-
-            if (
-                calendar.style.display ===
-                "block"
-            ) {
-
-                closeCalendar();
-
-                return;
-
-            }
-
-
-            const input =
-                document.getElementById(
-                    "evaluationDate"
-                );
-
-
-            const stored =
-                normalizeDigits(
-                    input?.dataset?.value ||
-                    ""
-                );
-
-
-            const parts =
-                stored.split("/");
-
-
-            if (
-                parts.length === 3 &&
-                Number(parts[0]) &&
-                Number(parts[1])
-            ) {
-
-                calendarYear =
-                    Number(parts[0]);
-
-                calendarMonth =
-                    Number(parts[1]);
-
-            } else {
-
-                const today =
-                    getTodayJalali();
-
-
-                calendarYear =
-                    today.year;
-
-                calendarMonth =
-                    today.month;
-
-            }
-
-
-            renderCalendar();
-
-
-            calendar.style.display =
-                "block";
-
-        };
-
-
-    /*
-     * ماه قبل
-     */
-
-    window.jalaliPreviousMonth =
-        function (event) {
-
-            if (event) {
-                event.preventDefault();
-                event.stopPropagation();
-            }
-
-
-            calendarMonth--;
-
-
-            if (
-                calendarMonth < 1
-            ) {
-
-                calendarMonth = 12;
-                calendarYear--;
-
-            }
-
-
-            renderCalendar();
-
-        };
-
-
-    /*
-     * ماه بعد
-     */
-
-    window.jalaliNextMonth =
-        function (event) {
-
-            if (event) {
-                event.preventDefault();
-                event.stopPropagation();
-            }
-
-
-            calendarMonth++;
-
-
-            if (
-                calendarMonth > 12
-            ) {
-
-                calendarMonth = 1;
-                calendarYear++;
-
-            }
-
-
-            renderCalendar();
-
-        };
-
-
-    /*
-     * امروز
-     */
-
-    window.jalaliToday =
-        function (event) {
-
-            if (event) {
-                event.preventDefault();
-                event.stopPropagation();
-            }
-
-
-            const today =
-                getTodayJalali();
-
-
-            selectJalaliDate(
-                today.year,
-                today.month,
-                today.day
+    function openCalendar() {
+
+        const calendar =
+            document.getElementById(
+                "jalaliCalendar"
             );
 
-        };
+        const input =
+            document.getElementById(
+                "evaluationDate"
+            );
 
 
-    /*
-     * بستن
-     */
+        if (!calendar) {
+            return;
+        }
+
+
+        const today =
+            getTodayJalali();
+
+
+        const current =
+            normalizeDigits(
+                input?.value || ""
+            ).split("/");
+
+
+        if (
+            current.length === 3 &&
+            Number(current[0]) &&
+            Number(current[1])
+        ) {
+
+            calendarYear =
+                Number(current[0]);
+
+            calendarMonth =
+                Number(current[1]);
+
+        } else {
+
+            calendarYear =
+                today.year;
+
+            calendarMonth =
+                today.month;
+
+        }
+
+
+        renderCalendar();
+
+        calendar.style.display =
+            "block";
+
+    }
+
 
     function closeCalendar() {
 
@@ -1517,7 +1388,6 @@
             document.getElementById(
                 "jalaliCalendar"
             );
-
 
         if (calendar) {
 
@@ -1529,48 +1399,53 @@
     }
 
 
-    window.closeJalaliCalendar =
-        closeCalendar;
+    function previousMonth() {
 
+        calendarMonth--;
 
-    /*
-     * جلوگیری از تداخل کلیک
-     */
+        if (calendarMonth < 1) {
 
-    document.addEventListener(
-        "click",
-        function (event) {
+            calendarMonth = 12;
 
-            const wrapper =
-                document.getElementById(
-                    "jalaliDateWrapper"
-                );
-
-            const calendar =
-                document.getElementById(
-                    "jalaliCalendar"
-                );
-
-
-            if (
-                wrapper &&
-                calendar &&
-                !wrapper.contains(
-                    event.target
-                )
-            ) {
-
-                closeCalendar();
-
-            }
+            calendarYear--;
 
         }
-    );
+
+        renderCalendar();
+
+    }
 
 
-    /*
-     * مقدار اولیه امروز
-     */
+    function nextMonth() {
+
+        calendarMonth++;
+
+        if (calendarMonth > 12) {
+
+            calendarMonth = 1;
+
+            calendarYear++;
+
+        }
+
+        renderCalendar();
+
+    }
+
+
+    function today() {
+
+        const value =
+            getTodayJalali();
+
+        selectDate(
+            value.year,
+            value.month,
+            value.day
+        );
+
+    }
+
 
     document.addEventListener(
         "DOMContentLoaded",
@@ -1581,44 +1456,178 @@
                     "evaluationDate"
                 );
 
+            const calendarButton =
+                document.getElementById(
+                    "jalaliCalendarButton"
+                );
 
-            if (
-                input &&
-                !input.dataset.value
-            ) {
+            const calendar =
+                document.getElementById(
+                    "jalaliCalendar"
+                );
 
-                const today =
+            const previous =
+                document.getElementById(
+                    "jalaliPrevButton"
+                );
+
+            const next =
+                document.getElementById(
+                    "jalaliNextButton"
+                );
+
+            const todayButton =
+                document.getElementById(
+                    "jalaliTodayButton"
+                );
+
+
+            if (!input || !calendar) {
+                return;
+            }
+
+
+            /*
+             * تاریخ امروز فقط اگر خالی باشد
+             */
+
+            if (!input.value) {
+
+                const value =
                     getTodayJalali();
-
-
-                const normalized =
-                    String(today.year)
-                    +
-                    "/"
-                    +
-                    String(today.month)
-                        .padStart(2, "0")
-                    +
-                    "/"
-                    +
-                    String(today.day)
-                        .padStart(2, "0");
-
-
-                input.dataset.value =
-                    normalized;
-
 
                 input.value =
                     toPersianDigits(
-                        normalized
+                        value.year +
+                        "/" +
+                        String(
+                            value.month
+                        ).padStart(2, "0") +
+                        "/" +
+                        String(
+                            value.day
+                        ).padStart(2, "0")
                     );
 
             }
 
+
+            input.addEventListener(
+                "click",
+                function (event) {
+
+                    event.stopPropagation();
+
+                    openCalendar();
+
+                }
+            );
+
+
+            input.addEventListener(
+                "focus",
+                function () {
+
+                    openCalendar();
+
+                }
+            );
+
+
+            calendarButton.addEventListener(
+                "click",
+                function (event) {
+
+                    event.stopPropagation();
+
+                    if (
+                        calendar.style.display ===
+                        "block"
+                    ) {
+
+                        closeCalendar();
+
+                    } else {
+
+                        openCalendar();
+
+                    }
+
+                }
+            );
+
+
+            previous.addEventListener(
+                "click",
+                function (event) {
+
+                    event.stopPropagation();
+
+                    previousMonth();
+
+                }
+            );
+
+
+            next.addEventListener(
+                "click",
+                function (event) {
+
+                    event.stopPropagation();
+
+                    nextMonth();
+
+                }
+            );
+
+
+            todayButton.addEventListener(
+                "click",
+                function (event) {
+
+                    event.stopPropagation();
+
+                    today();
+
+                }
+            );
+
+
+            calendar.addEventListener(
+                "click",
+                function (event) {
+
+                    event.stopPropagation();
+
+                }
+            );
+
+
+            document.addEventListener(
+                "click",
+                function (event) {
+
+                    const wrapper =
+                        document.getElementById(
+                            "jalaliDateWrapper"
+                        );
+
+                    if (
+                        wrapper &&
+                        !wrapper.contains(
+                            event.target
+                        )
+                    ) {
+
+                        closeCalendar();
+
+                    }
+
+                }
+            );
+
         }
     );
-
 
 })();
 
@@ -1626,12 +1635,10 @@
 
 
 <!-- =====================================================
-     WEEKLY.JS
-     فقط یک بار
+     فقط یک بار weekly.js
 ====================================================== -->
 
 <script src="weekly.js"></script>
-
 
 </body>
 

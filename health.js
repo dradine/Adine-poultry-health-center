@@ -658,47 +658,78 @@ async function loadVaccines() {
 
 async function loadMedications() {
 
-    const {
-        data,
-        error
-    } =
-        await supabaseClient
-            .from("medications")
-            .select("*")
-            .order("name");
-
-
-    if (error) {
-
-        console.warn(
-            "Medications catalog:",
-            error.message
-        );
-
-        return;
-    }
-
-
     const select =
         document.getElementById(
             "treatmentMedication"
         );
 
-
     if (!select) {
         return;
     }
 
-
+    // حالت اولیه
     select.innerHTML = `
         <option value="">
-            انتخاب دارو
+            در حال بارگذاری داروها...
         </option>
     `;
 
 
-    (data || []).forEach(
-        medication => {
+    try {
+
+        const {
+            data,
+            error
+        } =
+            await supabaseClient
+                .from("medications")
+                .select("*")
+                .order("name", {
+                    ascending: true
+                });
+
+
+        if (error) {
+
+            console.error(
+                "خطا در دریافت لیست داروها:",
+                error
+            );
+
+            select.innerHTML = `
+                <option value="">
+                    خطا در بارگذاری داروها
+                </option>
+            `;
+
+            return;
+        }
+
+
+        select.innerHTML = `
+            <option value="">
+                انتخاب دارو
+            </option>
+        `;
+
+
+        if (!data || data.length === 0) {
+
+            select.innerHTML = `
+                <option value="">
+                    دارویی ثبت نشده است
+                </option>
+            `;
+
+            console.warn(
+                "جدول medications خالی است."
+            );
+
+            return;
+        }
+
+
+        data.forEach(function (medication) {
 
             const option =
                 document.createElement(
@@ -720,53 +751,76 @@ async function loadMedications() {
                 option
             );
 
-        }
-    );
+        });
 
 
-    select.onchange = function () {
+        /*
+           با انتخاب دارو،
+           نام و ماده مؤثره هم خودکار پر شود.
+        */
 
-        const selected =
-            (data || []).find(
-                item =>
-                    String(item.id) ===
-                    String(this.value)
-            );
+        select.onchange = function () {
 
-
-        if (!selected) {
-            return;
-        }
-
-
-        const nameInput =
-            document.getElementById(
-                "treatmentMedicationName"
-            );
+            const selected =
+                data.find(
+                    item =>
+                        String(item.id) ===
+                        String(this.value)
+                );
 
 
-        const activeInput =
-            document.getElementById(
-                "treatmentActive"
-            );
+            if (!selected) {
+                return;
+            }
 
 
-        if (nameInput) {
+            const nameInput =
+                document.getElementById(
+                    "treatmentMedicationName"
+                );
 
-            nameInput.value =
-                selected.name || "";
-        }
+
+            const activeInput =
+                document.getElementById(
+                    "treatmentActive"
+                );
 
 
-        if (activeInput) {
+            if (nameInput) {
 
-            activeInput.value =
-                selected.active_ingredient || "";
-        }
+                nameInput.value =
+                    selected.name || "";
 
-    };
+            }
+
+
+            if (activeInput) {
+
+                activeInput.value =
+                    selected.active_ingredient || "";
+
+            }
+
+        };
+
+    }
+
+    catch (error) {
+
+        console.error(
+            "Medication loading error:",
+            error
+        );
+
+        select.innerHTML = `
+            <option value="">
+                خطا در بارگذاری داروها
+            </option>
+        `;
+
+    }
+
 }
-
 
 /* =========================================================
    VACCINATION

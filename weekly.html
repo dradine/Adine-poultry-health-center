@@ -1478,7 +1478,688 @@
 })();
 
 </script>
+<script>
+/* =========================================================
+   BEAUTIFUL JALALI CALENDAR
+   فقط ظاهر و انتخاب تاریخ
+   ========================================================= */
 
+(function () {
+
+    let calendarYear = 0;
+    let calendarMonth = 0;
+
+    const monthNames = [
+        "فروردین",
+        "اردیبهشت",
+        "خرداد",
+        "تیر",
+        "مرداد",
+        "شهریور",
+        "مهر",
+        "آبان",
+        "آذر",
+        "دی",
+        "بهمن",
+        "اسفند"
+    ];
+
+
+    function normalizeDigits(value) {
+
+        return String(value ?? "")
+            .replace(/[۰-۹]/g, function (d) {
+                return String(
+                    d.charCodeAt(0) - 1776
+                );
+            })
+            .replace(/[٠-٩]/g, function (d) {
+                return String(
+                    d.charCodeAt(0) - 1632
+                );
+            });
+
+    }
+
+
+    function toPersianDigits(value) {
+
+        return String(value)
+            .replace(/\d/g, function (d) {
+                return "۰۱۲۳۴۵۶۷۸۹"[Number(d)];
+            });
+
+    }
+
+
+    function getTodayJalali() {
+
+        const now = new Date();
+
+        const formatter =
+            new Intl.DateTimeFormat(
+                "en-US-u-ca-persian",
+                {
+                    year: "numeric",
+                    month: "numeric",
+                    day: "numeric"
+                }
+            );
+
+        const parts =
+            formatter.formatToParts(now);
+
+        return {
+
+            year: Number(
+                parts.find(
+                    p => p.type === "year"
+                ).value
+            ),
+
+            month: Number(
+                parts.find(
+                    p => p.type === "month"
+                ).value
+            ),
+
+            day: Number(
+                parts.find(
+                    p => p.type === "day"
+                ).value
+            )
+
+        };
+
+    }
+
+
+    function jalaliMonthLength(
+        year,
+        month
+    ) {
+
+        if (month <= 6) {
+
+            return 31;
+
+        }
+
+        if (month <= 11) {
+
+            return 30;
+
+        }
+
+
+        /*
+         * برای اسفند از persianDate استفاده می‌کنیم
+         */
+        try {
+
+            if (
+                typeof persianDate ===
+                "function"
+            ) {
+
+                const end =
+                    new persianDate()
+                        .year(year)
+                        .month(11)
+                        .date(30);
+
+                if (
+                    end.year() === year &&
+                    end.month() === 11 &&
+                    end.date() === 30
+                ) {
+
+                    return 30;
+
+                }
+
+            }
+
+        } catch (e) {}
+
+
+        return 29;
+
+    }
+
+
+    function getFirstDayOfJalaliMonth(
+        year,
+        month
+    ) {
+
+        try {
+
+            if (
+                typeof persianDate ===
+                "function"
+            ) {
+
+                const date =
+                    new persianDate()
+                        .year(year)
+                        .month(month - 1)
+                        .date(1);
+
+
+                /*
+                 * persianDate:
+                 * شنبه = 0
+                 * یکشنبه = 1
+                 * ...
+                 * جمعه = 6
+                 */
+
+                return date.day();
+
+            }
+
+        } catch (e) {
+
+            console.error(e);
+
+        }
+
+
+        return 0;
+
+    }
+
+
+    function renderCalendar() {
+
+        const daysContainer =
+            document.getElementById(
+                "jalaliDays"
+            );
+
+        const title =
+            document.getElementById(
+                "jalaliMonthTitle"
+            );
+
+
+        if (
+            !daysContainer ||
+            !title
+        ) {
+
+            return;
+
+        }
+
+
+        title.textContent =
+            `${monthNames[calendarMonth - 1]} ${toPersianDigits(calendarYear)}`;
+
+
+        daysContainer.innerHTML =
+            "";
+
+
+        let firstDay =
+            getFirstDayOfJalaliMonth(
+                calendarYear,
+                calendarMonth
+            );
+
+
+        /*
+         * برای تقویم فارسی:
+         * شنبه اولین ستون است.
+         */
+        firstDay =
+            Number(firstDay) || 0;
+
+
+        for (
+            let i = 0;
+            i < firstDay;
+            i++
+        ) {
+
+            const empty =
+                document.createElement(
+                    "div"
+                );
+
+            empty.className =
+                "jalali-day empty";
+
+            daysContainer.appendChild(
+                empty
+            );
+
+        }
+
+
+        const length =
+            jalaliMonthLength(
+                calendarYear,
+                calendarMonth
+            );
+
+
+        const today =
+            getTodayJalali();
+
+
+        const input =
+            document.getElementById(
+                "evaluationDate"
+            );
+
+
+        const currentValue =
+            normalizeDigits(
+                input?.value || ""
+            );
+
+
+        const selectedParts =
+            currentValue.split("/");
+
+
+        const selectedYear =
+            Number(
+                selectedParts[0]
+            );
+
+
+        const selectedMonth =
+            Number(
+                selectedParts[1]
+            );
+
+
+        const selectedDay =
+            Number(
+                selectedParts[2]
+            );
+
+
+        for (
+            let day = 1;
+            day <= length;
+            day++
+        ) {
+
+            const button =
+                document.createElement(
+                    "button"
+                );
+
+
+            button.type =
+                "button";
+
+
+            button.className =
+                "jalali-day";
+
+
+            button.textContent =
+                toPersianDigits(
+                    day
+                );
+
+
+            if (
+                today.year ===
+                    calendarYear &&
+                today.month ===
+                    calendarMonth &&
+                today.day ===
+                    day
+            ) {
+
+                button.classList.add(
+                    "today"
+                );
+
+            }
+
+
+            if (
+                selectedYear ===
+                    calendarYear &&
+                selectedMonth ===
+                    calendarMonth &&
+                selectedDay ===
+                    day
+            ) {
+
+                button.classList.add(
+                    "selected"
+                );
+
+            }
+
+
+            button.addEventListener(
+                "click",
+                function (event) {
+
+                    event.stopPropagation();
+
+                    selectJalaliDate(
+                        calendarYear,
+                        calendarMonth,
+                        day
+                    );
+
+                }
+            );
+
+
+            daysContainer.appendChild(
+                button
+            );
+
+        }
+
+    }
+
+
+    function selectJalaliDate(
+        year,
+        month,
+        day
+    ) {
+
+        const input =
+            document.getElementById(
+                "evaluationDate"
+            );
+
+
+        if (!input) {
+
+            return;
+
+        }
+
+
+        const y =
+            String(year);
+
+
+        const m =
+            String(month).padStart(
+                2,
+                "0"
+            );
+
+
+        const d =
+            String(day).padStart(
+                2,
+                "0"
+            );
+
+
+        input.value =
+            toPersianDigits(
+                `${y}/${m}/${d}`
+            );
+
+
+        closeJalaliCalendar();
+
+    }
+
+
+    window.toggleJalaliCalendar =
+        function () {
+
+            const calendar =
+                document.getElementById(
+                    "jalaliCalendar"
+                );
+
+
+            if (!calendar) {
+
+                return;
+
+            }
+
+
+            if (
+                calendar.style.display ===
+                "block"
+            ) {
+
+                closeJalaliCalendar();
+
+                return;
+
+            }
+
+
+            const today =
+                getTodayJalali();
+
+
+            const input =
+                document.getElementById(
+                    "evaluationDate"
+                );
+
+
+            const value =
+                normalizeDigits(
+                    input?.value || ""
+                );
+
+
+            const parts =
+                value.split("/");
+
+
+            if (
+                parts.length === 3 &&
+                Number(parts[0]) &&
+                Number(parts[1])
+            ) {
+
+                calendarYear =
+                    Number(parts[0]);
+
+                calendarMonth =
+                    Number(parts[1]);
+
+            }
+
+            else {
+
+                calendarYear =
+                    today.year;
+
+                calendarMonth =
+                    today.month;
+
+            }
+
+
+            calendar.style.display =
+                "block";
+
+
+            renderCalendar();
+
+        };
+
+
+    window.jalaliPreviousMonth =
+        function (event) {
+
+            if (event) {
+                event.stopPropagation();
+            }
+
+
+            calendarMonth--;
+
+
+            if (
+                calendarMonth < 1
+            ) {
+
+                calendarMonth = 12;
+
+                calendarYear--;
+
+            }
+
+
+            renderCalendar();
+
+        };
+
+
+    window.jalaliNextMonth =
+        function (event) {
+
+            if (event) {
+                event.stopPropagation();
+            }
+
+
+            calendarMonth++;
+
+
+            if (
+                calendarMonth > 12
+            ) {
+
+                calendarMonth = 1;
+
+                calendarYear++;
+
+            }
+
+
+            renderCalendar();
+
+        };
+
+
+    window.jalaliToday =
+        function (event) {
+
+            if (event) {
+                event.stopPropagation();
+            }
+
+
+            const today =
+                getTodayJalali();
+
+
+            selectJalaliDate(
+                today.year,
+                today.month,
+                today.day
+            );
+
+        };
+
+
+    window.closeJalaliCalendar =
+        function () {
+
+            const calendar =
+                document.getElementById(
+                    "jalaliCalendar"
+                );
+
+
+            if (calendar) {
+
+                calendar.style.display =
+                    "none";
+
+            }
+
+        };
+
+
+    document.addEventListener(
+        "click",
+        function (event) {
+
+            const wrapper =
+                document.getElementById(
+                    "jalaliDateWrapper"
+                );
+
+
+            const calendar =
+                document.getElementById(
+                    "jalaliCalendar"
+                );
+
+
+            if (
+                wrapper &&
+                calendar &&
+                !wrapper.contains(
+                    event.target
+                )
+            ) {
+
+                calendar.style.display =
+                    "none";
+
+            }
+
+        }
+    );
+
+
+    /*
+     * مقدار امروز را فقط در صورتی تنظیم می‌کنیم
+     * که weekly.js خودش مقدار نداده باشد.
+     */
+    document.addEventListener(
+        "DOMContentLoaded",
+        function () {
+
+            const input =
+                document.getElementById(
+                    "evaluationDate"
+                );
+
+
+            if (
+                input &&
+                !input.value
+            ) {
+
+                const today =
+                    getTodayJalali();
+
+
+                input.value =
+                    toPersianDigits(
+                        `${today.year}/${String(today.month).padStart(2,"0")}/${String(today.day).padStart(2,"0")}`
+                    );
+
+            }
+
+        }
+    );
+
+})();
+</script>
+
+<script src="weekly.js"></script>
 
 <script src="weekly.js"></script>
 

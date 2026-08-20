@@ -485,3 +485,127 @@
     };
 
 })();
+/* =========================================================
+   SMALL JALALI CALENDAR FOR HEALTH DATE FIELDS
+========================================================= */
+
+(function () {
+
+    "use strict";
+
+    function initHealthCalendar() {
+
+        if (
+            typeof window.jQuery === "undefined" ||
+            typeof window.jQuery.fn.persianDatepicker !== "function"
+        ) {
+            console.warn("Persian datepicker is not loaded yet.");
+            return;
+        }
+
+        const $ = window.jQuery;
+
+        $(".jalali-input").each(function () {
+
+            const input = this;
+
+            if (input.dataset.calendarInitialized === "true") {
+                return;
+            }
+
+            input.dataset.calendarInitialized = "true";
+
+            $(input).persianDatepicker({
+
+                format: "YYYY/MM/DD",
+
+                autoClose: true,
+
+                initialValue: false,
+
+                observer: true,
+
+                calendarType: "persian",
+
+                calendar: {
+                    persian: {
+                        locale: "fa",
+                        leapYearMode: "algorithmic"
+                    }
+                },
+
+                toolbox: {
+                    calendarSwitch: false,
+                    todayButton: {
+                        enabled: true,
+                        text: {
+                            fa: "امروز"
+                        }
+                    }
+                },
+
+                navigator: {
+                    enabled: true,
+                    scroll: {
+                        enabled: false
+                    }
+                },
+
+                responsive: true,
+
+                timePicker: {
+                    enabled: false
+                }
+
+            });
+
+        });
+
+    }
+
+
+    /*
+       چون کتابخانه تقویم بعد از health-date.js
+       لود می‌شود، کمی صبر می‌کنیم.
+    */
+
+    function waitForCalendar() {
+
+        if (
+            typeof window.jQuery !== "undefined" &&
+            typeof window.jQuery.fn.persianDatepicker === "function"
+        ) {
+
+            initHealthCalendar();
+
+        } else {
+
+            setTimeout(
+                waitForCalendar,
+                200
+            );
+
+        }
+
+    }
+
+
+    if (document.readyState === "loading") {
+
+        document.addEventListener(
+            "DOMContentLoaded",
+            waitForCalendar
+        );
+
+    } else {
+
+        waitForCalendar();
+
+    }
+
+
+    window.initHealthCalendar =
+        initHealthCalendar;
+
+})();
+

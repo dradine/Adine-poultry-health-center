@@ -4,7 +4,6 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-
 <meta name="theme-color" content="#173f35">
 
 <title>سلامت گله | مرکز تخصصی سلامت طیور آدینه</title>
@@ -12,7 +11,6 @@
 <link rel="stylesheet" href="app.css">
 
 <style>
-
 .health-tabs{
     display:flex;
     gap:8px;
@@ -92,10 +90,13 @@
     white-space:nowrap;
 }
 
+.jalali-input{
+    direction:ltr;
+    text-align:right;
+    font-family:inherit;
+}
 </style>
-
 </head>
-
 
 <body>
 
@@ -139,58 +140,43 @@
 </div>
 
 
-<!-- =====================================================
+<!-- =========================
      TABS
-===================================================== -->
+========================= -->
 
 <div class="health-tabs">
 
 <button class="health-tab active"
         data-tab="vaccination">
-
 💉 واکسیناسیون
-
 </button>
-
 
 <button class="health-tab"
         data-tab="antibody">
-
 🩸 تیتر آنتی‌بادی
-
 </button>
-
 
 <button class="health-tab"
         data-tab="laboratory">
-
 🧪 آزمایش
-
 </button>
-
 
 <button class="health-tab"
         data-tab="treatment">
-
 💊 درمان و دارو
-
 </button>
-
 
 <button class="health-tab"
         data-tab="history">
-
 📋 سوابق
-
 </button>
 
 </div>
 
 
-
-<!-- =====================================================
+<!-- =========================
      VACCINATION
-===================================================== -->
+========================= -->
 
 <section
     id="panel-vaccination"
@@ -200,11 +186,9 @@
 ثبت واکسیناسیون
 </h2>
 
-
 <form id="vaccinationForm">
 
 <div class="form-grid">
-
 
 <div class="form-group">
 
@@ -214,7 +198,11 @@
 
 <input
     id="vaccinationDate"
-    type="date"
+    class="jalali-input"
+    type="text"
+    inputmode="numeric"
+    placeholder="۱۴۰۵/۰۵/۲۹"
+    autocomplete="off"
     required>
 
 </div>
@@ -343,7 +331,11 @@
 
 <input
     id="vaccinationExpiry"
-    type="date">
+    class="jalali-input"
+    type="text"
+    inputmode="numeric"
+    placeholder="۱۴۰۵/۰۵/۲۹"
+    autocomplete="off">
 
 </div>
 
@@ -358,7 +350,6 @@
     id="vaccinationNotes"></textarea>
 
 </div>
-
 
 </div>
 
@@ -380,10 +371,9 @@
 </section>
 
 
-
-<!-- =====================================================
+<!-- =========================
      ANTIBODY
-===================================================== -->
+========================= -->
 
 <section
     id="panel-antibody"
@@ -393,18 +383,14 @@
 ثبت تیتر آنتی‌بادی
 </h2>
 
-
 <p class="small-note">
-
 برای تیتر مادری، قبل واکسیناسیون و تیتر پس از واکسیناسیون استفاده شود.
-
 </p>
 
 
 <form id="antibodyForm">
 
 <div class="form-grid">
-
 
 <div class="form-group">
 
@@ -414,7 +400,11 @@
 
 <input
     id="antibodyDate"
-    type="date"
+    class="jalali-input"
+    type="text"
+    inputmode="numeric"
+    placeholder="۱۴۰۵/۰۵/۲۹"
+    autocomplete="off"
     required>
 
 </div>
@@ -606,7 +596,6 @@ CV%
 
 </div>
 
-
 </div>
 
 
@@ -627,10 +616,9 @@ CV%
 </section>
 
 
-
-<!-- =====================================================
-     LAB
-===================================================== -->
+<!-- =========================
+     LABORATORY
+========================= -->
 
 <section
     id="panel-laboratory"
@@ -640,11 +628,9 @@ CV%
 ثبت آزمایش
 </h2>
 
-
 <form id="labForm">
 
 <div class="form-grid">
-
 
 <div class="form-group">
 
@@ -654,7 +640,11 @@ CV%
 
 <input
     id="labDate"
-    type="date"
+    class="jalali-input"
+    type="text"
+    inputmode="numeric"
+    placeholder="۱۴۰۵/۰۵/۲۹"
+    autocomplete="off"
     required>
 
 </div>
@@ -703,8 +693,7 @@ PCR
 بیماری / عامل
 </label>
 
-<select
-    id="labDisease">
+<select id="labDisease">
 
 <option value="">
 انتخاب کنید
@@ -819,7 +808,6 @@ Ct
 
 </div>
 
-
 </div>
 
 
@@ -840,10 +828,9 @@ Ct
 </section>
 
 
-
-<!-- =====================================================
+<!-- =========================
      TREATMENT
-===================================================== -->
+========================= -->
 
 <section
     id="panel-treatment"
@@ -853,11 +840,9 @@ Ct
 ثبت درمان و دارو
 </h2>
 
-
 <form id="treatmentForm">
 
 <div class="form-grid">
-
 
 <div class="form-group">
 
@@ -867,7 +852,11 @@ Ct
 
 <input
     id="treatmentDate"
-    type="date"
+    class="jalali-input"
+    type="text"
+    inputmode="numeric"
+    placeholder="۱۴۰۵/۰۵/۲۹"
+    autocomplete="off"
     required>
 
 </div>
@@ -881,7 +870,11 @@ Ct
 
 <input
     id="treatmentEnd"
-    type="date">
+    class="jalali-input"
+    type="text"
+    inputmode="numeric"
+    placeholder="۱۴۰۵/۰۵/۲۹"
+    autocomplete="off">
 
 </div>
 
@@ -1060,7 +1053,6 @@ Ct
 
 </div>
 
-
 </div>
 
 
@@ -1081,10 +1073,9 @@ Ct
 </section>
 
 
-
-<!-- =====================================================
+<!-- =========================
      HISTORY
-===================================================== -->
+========================= -->
 
 <section
     id="panel-history"
@@ -1093,7 +1084,6 @@ Ct
 <h2 class="card-title">
 سوابق سلامت گله
 </h2>
-
 
 <div class="table-wrapper">
 
@@ -1117,15 +1107,12 @@ Ct
 
 </thead>
 
-
 <tbody id="healthTable">
 
 <tr>
 
 <td colspan="5">
-
 در حال دریافت اطلاعات...
-
 </td>
 
 </tr>
@@ -1138,7 +1125,6 @@ Ct
 
 </section>
 
-
 </div>
 
 </main>
@@ -1150,8 +1136,9 @@ Ct
 
 <script src="app-core.js"></script>
 
+<script src="health-date.js"></script>
+
 <script src="health.js"></script>
 
 </body>
-
 </html>

@@ -1,12 +1,11 @@
 /* =========================================================
    ADINE POULTRY HEALTH CENTER
-   WEEKLY MONITORING - STABLE CALCULATION VERSION
+   WEEKLY MONITORING
+   STABLE CALCULATION VERSION
    Persian / Arabic / English Numbers
    Shamsi Date
-   Uniformity ±10 / ±15
-   SD Sample
-   CV
    Supabase
+   Editing Records
    ========================================================= */
 
 
@@ -15,9 +14,13 @@
    ========================================================= */
 
 let currentUser = null;
+
 let currentFlock = null;
+
 let weeklyRecords = [];
+
 let weightChart = null;
+
 let editingRecordId = null;
 
 
@@ -27,18 +30,19 @@ let editingRecordId = null;
 
 document.addEventListener(
     "DOMContentLoaded",
-    weeklyInitialize
+    initializeWeekly
 );
 
 
-async function weeklyInitialize() {
+async function initializeWeekly() {
 
     try {
 
-        weeklyPrepareNumericInputs();
+        prepareNumericInputs();
 
         const access =
             await checkUserAccess();
+
 
         if (!access.authenticated) {
 
@@ -49,6 +53,7 @@ async function weeklyInitialize() {
                 );
 
             return;
+
         }
 
 
@@ -61,6 +66,7 @@ async function weeklyInitialize() {
             await logoutUser();
 
             return;
+
         }
 
 
@@ -68,31 +74,188 @@ async function weeklyInitialize() {
             access.user;
 
 
-        weeklySetToday();
+        setToday();
 
-        await weeklyLoadCurrentFlock();
+
+        await loadCurrentFlock();
 
     }
 
     catch (error) {
 
         console.error(
-            "Weekly initialization error:",
+            "Weekly initialization:",
             error
         );
 
         alert(
             "خطا در راه‌اندازی ثبت هفتگی."
         );
+
     }
+
 }
 
 
 /* =========================================================
-   NUMBER NORMALIZATION
+   NUMERIC INPUTS
    ========================================================= */
 
-function weeklyNormalizeNumber(value) {
+function prepareNumericInputs() {
+
+    const numericIds = [
+
+        "weekNumber",
+        "liveBirds",
+        "mortalityWeek",
+        "feedTotal",
+        "waterTotal",
+        "feedPerBird",
+        "waterPerBird"
+
+    ];
+
+
+    numericIds.forEach(
+        id => {
+
+            const input =
+                document.getElementById(id);
+
+
+            if (!input) {
+
+                return;
+
+            }
+
+
+            input.type =
+                "text";
+
+
+            input.inputMode =
+                "decimal";
+
+
+            input.setAttribute(
+                "autocomplete",
+                "off"
+            );
+
+
+            attachNumberInputHandler(
+                input
+            );
+
+        }
+    );
+
+
+    document
+        .querySelectorAll(
+            ".bird-weight"
+        )
+        .forEach(
+            input => {
+
+                prepareWeightInput(
+                    input
+                );
+
+            }
+        );
+
+}
+
+
+/* =========================================================
+   WEIGHT INPUT
+   ========================================================= */
+
+function prepareWeightInput(
+    input
+) {
+
+    if (!input) {
+
+        return;
+
+    }
+
+
+    input.type =
+        "text";
+
+
+    input.inputMode =
+        "decimal";
+
+
+    input.setAttribute(
+        "autocomplete",
+        "off"
+    );
+
+
+    attachNumberInputHandler(
+        input
+    );
+
+}
+
+
+/* =========================================================
+   NUMBER INPUT HANDLER
+   ========================================================= */
+
+function attachNumberInputHandler(
+    input
+) {
+
+    if (!input) {
+
+        return;
+
+    }
+
+
+    if (
+        input.dataset.numberPrepared ===
+        "true"
+    ) {
+
+        return;
+
+    }
+
+
+    input.dataset.numberPrepared =
+        "true";
+
+
+    input.addEventListener(
+        "input",
+        function () {
+
+            this.value =
+                normalizeNumberString(
+                    this.value
+                );
+
+        }
+    );
+
+}
+
+
+/* =========================================================
+   NORMALIZE NUMBER
+   ========================================================= */
+
+function normalizeNumberString(
+    value
+) {
 
     if (
         value === null ||
@@ -100,6 +263,7 @@ function weeklyNormalizeNumber(value) {
     ) {
 
         return "";
+
     }
 
 
@@ -115,7 +279,8 @@ function weeklyNormalizeNumber(value) {
             /[۰-۹]/g,
             digit =>
                 String(
-                    digit.charCodeAt(0) - 1776
+                    digit.charCodeAt(0) -
+                    1776
                 )
         );
 
@@ -128,43 +293,59 @@ function weeklyNormalizeNumber(value) {
             /[٠-٩]/g,
             digit =>
                 String(
-                    digit.charCodeAt(0) - 1632
+                    digit.charCodeAt(0) -
+                    1632
                 )
         );
 
 
     /*
-     * Thousands separators
+     * Persian thousands separator
      */
     text =
-        text.replace(
-            /[٬,]/g,
+        text.replaceAll(
+            "٬",
             ""
         );
 
 
     /*
-     * Persian / Arabic decimal separators
+     * English thousands separator
      */
     text =
-        text.replace(
-            /[٫،]/g,
+        text.replaceAll(
+            ",",
+            ""
+        );
+
+
+    /*
+     * Persian decimal separator
+     */
+    text =
+        text.replaceAll(
+            "٫",
             "."
         );
 
 
     /*
-     * Remove spaces
+     * Arabic comma as decimal separator
+     *
+     * فقط اگر داخل عدد استفاده شده باشد
      */
     text =
-        text.replace(
-            /\s+/g,
-            ""
+        text.replaceAll(
+            "،",
+            "."
         );
 
 
     /*
-     * Keep only digits, decimal point and minus
+     * Remove everything except:
+     * digits
+     * decimal point
+     * minus
      */
     text =
         text.replace(
@@ -174,20 +355,19 @@ function weeklyNormalizeNumber(value) {
 
 
     /*
-     * Keep only the first decimal point
+     * Keep only first decimal point
      */
     const firstDot =
         text.indexOf(".");
 
 
-    if (firstDot >= 0) {
+    if (firstDot !== -1) {
 
         text =
             text.substring(
                 0,
                 firstDot + 1
             ) +
-
             text
                 .substring(
                     firstDot + 1
@@ -196,13 +376,16 @@ function weeklyNormalizeNumber(value) {
                     /\./g,
                     ""
                 );
+
     }
 
 
     /*
      * Keep minus only at beginning
      */
-    if (text.includes("-")) {
+    if (
+        text.includes("-")
+    ) {
 
         text =
             (
@@ -214,93 +397,12 @@ function weeklyNormalizeNumber(value) {
                 /-/g,
                 ""
             );
+
     }
 
 
     return text;
-}
 
-
-/* =========================================================
-   NUMBER PREPARATION
-   ========================================================= */
-
-function weeklyPrepareNumericInputs() {
-
-    const ids = [
-
-        "weekNumber",
-        "liveBirds",
-        "mortalityWeek",
-        "feedTotal",
-        "waterTotal",
-        "feedPerBird",
-        "waterPerBird"
-
-    ];
-
-
-    ids.forEach(
-        id => {
-
-            const input =
-                document.getElementById(id);
-
-            if (!input) return;
-
-            input.type = "text";
-            input.inputMode = "decimal";
-            input.autocomplete = "off";
-
-            weeklyAttachNumberHandler(
-                input
-            );
-        }
-    );
-}
-
-
-function weeklyPrepareWeightInput(input) {
-
-    if (!input) return;
-
-    input.type = "text";
-    input.inputMode = "decimal";
-    input.autocomplete = "off";
-
-    weeklyAttachNumberHandler(
-        input
-    );
-}
-
-
-function weeklyAttachNumberHandler(input) {
-
-    if (!input) return;
-
-    if (
-        input.dataset.weeklyNumberReady ===
-        "true"
-    ) {
-
-        return;
-    }
-
-
-    input.dataset.weeklyNumberReady =
-        "true";
-
-
-    input.addEventListener(
-        "input",
-        function () {
-
-            this.value =
-                weeklyNormalizeNumber(
-                    this.value
-                );
-        }
-    );
 }
 
 
@@ -308,7 +410,7 @@ function weeklyAttachNumberHandler(input) {
    CURRENT FLOCK
    ========================================================= */
 
-async function weeklyLoadCurrentFlock() {
+async function loadCurrentFlock() {
 
     const selection =
         getCurrentSelection();
@@ -320,7 +422,11 @@ async function weeklyLoadCurrentFlock() {
         );
 
 
-    if (!container) return;
+    if (!container) {
+
+        return;
+
+    }
 
 
     if (!selection.flockId) {
@@ -342,6 +448,7 @@ async function weeklyLoadCurrentFlock() {
         `;
 
         return;
+
     }
 
 
@@ -353,8 +460,12 @@ async function weeklyLoadCurrentFlock() {
             .from("flocks")
             .select(`
                 *,
-                farms(name),
-                houses(name)
+                farms (
+                    name
+                ),
+                houses (
+                    name
+                )
             `)
             .eq(
                 "id",
@@ -370,17 +481,19 @@ async function weeklyLoadCurrentFlock() {
     if (error || !data) {
 
         console.error(
-            "Current flock error:",
             error
         );
 
         container.innerHTML = `
+
             <p>
                 گله پیدا نشد.
             </p>
+
         `;
 
         return;
+
     }
 
 
@@ -394,7 +507,7 @@ async function weeklyLoadCurrentFlock() {
 
             <strong>
                 🐔
-                ${weeklyEscapeHTML(
+                ${escapeHTML(
                     data.flock_name
                 )}
             </strong>
@@ -402,14 +515,14 @@ async function weeklyLoadCurrentFlock() {
             <br>
 
             فارم:
-            ${weeklyEscapeHTML(
+            ${escapeHTML(
                 data.farms?.name || "-"
             )}
 
             <br>
 
             سالن:
-            ${weeklyEscapeHTML(
+            ${escapeHTML(
                 data.houses?.name || "-"
             )}
 
@@ -423,7 +536,7 @@ async function weeklyLoadCurrentFlock() {
             <br>
 
             سویه:
-            ${weeklyEscapeHTML(
+            ${escapeHTML(
                 data.genetics || "-"
             )}
 
@@ -432,15 +545,16 @@ async function weeklyLoadCurrentFlock() {
     `;
 
 
-    await weeklyLoadHistory();
+    await loadHistory();
+
 }
 
 
 /* =========================================================
-   DATE
+   TODAY - SHAMSI
    ========================================================= */
 
-function weeklySetToday() {
+function setToday() {
 
     const input =
         document.getElementById(
@@ -448,7 +562,11 @@ function weeklySetToday() {
         );
 
 
-    if (!input) return;
+    if (!input) {
+
+        return;
+
+    }
 
 
     const today =
@@ -459,9 +577,14 @@ function weeklySetToday() {
         new Intl.DateTimeFormat(
             "fa-IR-u-ca-persian",
             {
-                year: "numeric",
-                month: "2-digit",
-                day: "2-digit"
+                year:
+                    "numeric",
+
+                month:
+                    "2-digit",
+
+                day:
+                    "2-digit"
             }
         );
 
@@ -474,32 +597,38 @@ function weeklySetToday() {
 
     const year =
         parts.find(
-            p => p.type === "year"
+            item =>
+                item.type === "year"
         )?.value || "";
 
 
     const month =
         parts.find(
-            p => p.type === "month"
+            item =>
+                item.type === "month"
         )?.value || "";
 
 
     const day =
         parts.find(
-            p => p.type === "day"
+            item =>
+                item.type === "day"
         )?.value || "";
 
 
     input.value =
         `${year}/${month}/${day}`;
+
 }
 
 
 /* =========================================================
-   WEIGHT INPUTS
+   ADD WEIGHT
    ========================================================= */
 
-function addWeightInput(value = "") {
+function addWeightInput(
+    value = ""
+) {
 
     const container =
         document.getElementById(
@@ -507,7 +636,11 @@ function addWeightInput(value = "") {
         );
 
 
-    if (!container) return;
+    if (!container) {
+
+        return;
+
+    }
 
 
     const index =
@@ -535,8 +668,8 @@ function addWeightInput(value = "") {
             inputmode="decimal"
             class="bird-weight"
             placeholder="گرم"
-            value="${weeklyEscapeAttribute(
-                weeklyNormalizeNumber(
+            value="${escapeHTMLAttribute(
+                normalizeNumberString(
                     value
                 )
             )}"
@@ -550,13 +683,22 @@ function addWeightInput(value = "") {
     );
 
 
-    weeklyPrepareWeightInput(
+    const input =
         wrapper.querySelector(
             ".bird-weight"
-        )
+        );
+
+
+    prepareWeightInput(
+        input
     );
+
 }
 
+
+/* =========================================================
+   ADD 20 WEIGHTS
+   ========================================================= */
 
 function addTwentyWeights() {
 
@@ -567,9 +709,15 @@ function addTwentyWeights() {
     ) {
 
         addWeightInput();
+
     }
+
 }
 
+
+/* =========================================================
+   CLEAR WEIGHTS
+   ========================================================= */
 
 function clearWeights() {
 
@@ -581,20 +729,23 @@ function clearWeights() {
 
     if (container) {
 
-        container.innerHTML = "";
+        container.innerHTML =
+            "";
+
     }
 
 
-    const results =
+    const resultsCard =
         document.getElementById(
             "resultsCard"
         );
 
 
-    if (results) {
+    if (resultsCard) {
 
-        results.style.display =
+        resultsCard.style.display =
             "none";
+
     }
 
 
@@ -604,7 +755,9 @@ function clearWeights() {
 
         weightChart =
             null;
+
     }
+
 }
 
 
@@ -612,7 +765,7 @@ function clearWeights() {
    GET WEIGHTS
    ========================================================= */
 
-function weeklyGetWeights() {
+function getWeights() {
 
     const inputs =
         document.querySelectorAll(
@@ -627,7 +780,7 @@ function weeklyGetWeights() {
         input => {
 
             const normalized =
-                weeklyNormalizeNumber(
+                normalizeNumberString(
                     input.value
                 );
 
@@ -636,7 +789,13 @@ function weeklyGetWeights() {
                 normalized;
 
 
-            if (!normalized) return;
+            if (
+                normalized === ""
+            ) {
+
+                return;
+
+            }
 
 
             const value =
@@ -653,33 +812,106 @@ function weeklyGetWeights() {
                 weights.push(
                     value
                 );
+
             }
+
         }
     );
 
 
     return weights;
+
 }
 
 
 /* =========================================================
-   IMPORTANT:
-   REAL WEIGHT STATISTICS
+   CALCULATE WEEKLY
    ========================================================= */
 
-function weeklyCalculateWeightStatistics(
-    inputWeights
+function calculateWeekly() {
+
+    const weights =
+        getWeights();
+
+
+    if (weights.length < 2) {
+
+        alert(
+            "حداقل دو وزن برای محاسبه لازم است."
+        );
+
+        return;
+
+    }
+
+
+    const result =
+        calculateWeightStatistics(
+            weights
+        );
+
+
+    console.log(
+        "WEIGHTS:",
+        weights
+    );
+
+    console.log(
+        "STATISTICS:",
+        result
+    );
+
+
+    renderResults(
+        result
+    );
+
+
+    drawWeightChart(
+        weights,
+        result
+    );
+
+
+    const resultsCard =
+        document.getElementById(
+            "resultsCard"
+        );
+
+
+    if (resultsCard) {
+
+        resultsCard.style.display =
+            "block";
+
+    }
+
+}
+
+
+/* =========================================================
+   WEIGHT STATISTICS
+   ========================================================= */
+
+function calculateWeightStatistics(
+    weights
 ) {
 
     /*
-     * Defensive copy
+     * بسیار مهم:
+     * اینجا فقط وزن‌ها وارد محاسبات می‌شوند.
+     *
+     * تاریخ، هفته، Supabase و اعداد نمایشی
+     * هیچ دخالتی در محاسبات ندارند.
      */
-    const weights =
-        inputWeights
+
+
+    const validWeights =
+        weights
             .map(
                 value =>
                     Number(
-                        weeklyNormalizeNumber(
+                        normalizeNumberString(
                             value
                         )
                     )
@@ -692,14 +924,51 @@ function weeklyCalculateWeightStatistics(
 
 
     const n =
-        weights.length;
+        validWeights.length;
 
 
     if (n < 2) {
 
-        throw new Error(
-            "حداقل دو وزن معتبر لازم است."
-        );
+        return {
+
+            count:
+                n,
+
+            mean:
+                0,
+
+            sd:
+                0,
+
+            cv:
+                0,
+
+            uniformity10:
+                0,
+
+            uniformity15:
+                0,
+
+            min:
+                0,
+
+            max:
+                0,
+
+            lower10:
+                0,
+
+            upper10:
+                0,
+
+            lower15:
+                0,
+
+            upper15:
+                0
+
+        };
+
     }
 
 
@@ -707,12 +976,12 @@ function weeklyCalculateWeightStatistics(
      * MEAN
      */
     const sum =
-        weights.reduce(
+        validWeights.reduce(
             (
                 total,
-                value
+                weight
             ) =>
-                total + value,
+                total + weight,
             0
         );
 
@@ -722,25 +991,22 @@ function weeklyCalculateWeightStatistics(
 
 
     /*
-     * SAMPLE STANDARD DEVIATION
+     * VARIANCE
      *
-     * SD = sqrt(
-     *   Σ(x-mean)^2 / (n-1)
-     * )
-     *
-     * برای گزارش آماری نمونه گله
+     * همان روش نسخه قبلی:
+     * تقسیم بر n
      */
     const squaredDifferences =
-        weights.map(
-            value =>
+        validWeights.map(
+            weight =>
                 Math.pow(
-                    value - mean,
+                    weight - mean,
                     2
                 )
         );
 
 
-    const squaredSum =
+    const variance =
         squaredDifferences.reduce(
             (
                 total,
@@ -748,14 +1014,12 @@ function weeklyCalculateWeightStatistics(
             ) =>
                 total + value,
             0
-        );
+        ) / n;
 
 
-    const variance =
-        squaredSum /
-        (n - 1);
-
-
+    /*
+     * STANDARD DEVIATION
+     */
     const sd =
         Math.sqrt(
             variance
@@ -763,22 +1027,22 @@ function weeklyCalculateWeightStatistics(
 
 
     /*
-     * CV
+     * COEFFICIENT OF VARIATION
+     *
+     * CV = SD / Mean × 100
      */
     const cv =
         mean > 0
             ? (
-                sd / mean
+                sd /
+                mean
             ) * 100
             : 0;
 
 
     /*
-     * =====================================================
-     * UNIFORMITY ±10%
-     * =====================================================
+     * ±10%
      */
-
     const lower10 =
         mean * 0.90;
 
@@ -787,26 +1051,9 @@ function weeklyCalculateWeightStatistics(
         mean * 1.10;
 
 
-    const count10 =
-        weights.filter(
-            weight =>
-                weight >= lower10 &&
-                weight <= upper10
-        ).length;
-
-
-    const uniformity10 =
-        (
-            count10 / n
-        ) * 100;
-
-
     /*
-     * =====================================================
-     * UNIFORMITY ±15%
-     * =====================================================
+     * ±15%
      */
-
     const lower15 =
         mean * 0.85;
 
@@ -815,8 +1062,29 @@ function weeklyCalculateWeightStatistics(
         mean * 1.15;
 
 
-    const count15 =
-        weights.filter(
+    /*
+     * UNIFORMITY ±10
+     */
+    const uniformCount10 =
+        validWeights.filter(
+            weight =>
+                weight >= lower10 &&
+                weight <= upper10
+        ).length;
+
+
+    const uniformity10 =
+        (
+            uniformCount10 /
+            n
+        ) * 100;
+
+
+    /*
+     * UNIFORMITY ±15
+     */
+    const uniformCount15 =
+        validWeights.filter(
             weight =>
                 weight >= lower15 &&
                 weight <= upper15
@@ -825,25 +1093,39 @@ function weeklyCalculateWeightStatistics(
 
     const uniformity15 =
         (
-            count15 / n
+            uniformCount15 /
+            n
         ) * 100;
 
 
     /*
-     * =====================================================
-     * RESULT
-     * =====================================================
+     * MIN / MAX
      */
+    const min =
+        Math.min(
+            ...validWeights
+        );
+
+
+    const max =
+        Math.max(
+            ...validWeights
+        );
+
 
     return {
 
-        count: n,
+        count:
+            n,
 
-        mean: mean,
+        mean:
+            mean,
 
-        sd: sd,
+        sd:
+            sd,
 
-        cv: cv,
+        cv:
+            cv,
 
         uniformity10:
             uniformity10,
@@ -851,21 +1133,11 @@ function weeklyCalculateWeightStatistics(
         uniformity15:
             uniformity15,
 
-        count10:
-            count10,
-
-        count15:
-            count15,
-
         min:
-            Math.min(
-                ...weights
-            ),
+            min,
 
         max:
-            Math.max(
-                ...weights
-            ),
+            max,
 
         lower10:
             lower10,
@@ -877,112 +1149,10 @@ function weeklyCalculateWeightStatistics(
             lower15,
 
         upper15:
-            upper15,
+            upper15
 
-        weights:
-            weights
     };
-}
 
-
-/* =========================================================
-   CALCULATE WEEKLY
-   ========================================================= */
-
-function calculateWeekly() {
-
-    try {
-
-        const weights =
-            weeklyGetWeights();
-
-
-        if (weights.length < 2) {
-
-            alert(
-                "حداقل دو وزن معتبر برای محاسبه لازم است."
-            );
-
-            return;
-        }
-
-
-        const result =
-            weeklyCalculateWeightStatistics(
-                weights
-            );
-
-
-        console.log(
-            "WEEKLY CALCULATION:",
-            {
-                weights:
-                    weights,
-
-                count:
-                    result.count,
-
-                mean:
-                    result.mean,
-
-                sd:
-                    result.sd,
-
-                cv:
-                    result.cv,
-
-                uniformity10:
-                    result.uniformity10,
-
-                uniformity15:
-                    result.uniformity15,
-
-                count10:
-                    result.count10,
-
-                count15:
-                    result.count15
-            }
-        );
-
-
-        weeklyRenderResults(
-            result
-        );
-
-
-        weeklyDrawWeightChart(
-            weights,
-            result
-        );
-
-
-        const card =
-            document.getElementById(
-                "resultsCard"
-            );
-
-
-        if (card) {
-
-            card.style.display =
-                "block";
-        }
-
-    }
-
-    catch (error) {
-
-        console.error(
-            "Calculation error:",
-            error
-        );
-
-        alert(
-            error.message ||
-            "خطا در محاسبه."
-        );
-    }
 }
 
 
@@ -990,7 +1160,9 @@ function calculateWeekly() {
    RESULTS
    ========================================================= */
 
-function weeklyRenderResults(result) {
+function renderResults(
+    result
+) {
 
     const container =
         document.getElementById(
@@ -998,106 +1170,92 @@ function weeklyRenderResults(result) {
         );
 
 
-    if (!container) return;
+    if (!container) {
 
+        return;
+
+    }
+
+
+    /*
+     * تعداد نمونه عمداً حذف شده است.
+     */
 
     container.innerHTML = `
 
-        ${weeklyMetric(
-            "تعداد نمونه",
-            weeklyFormatNumber(
-                result.count,
-                0
-            )
-        )}
-
-        ${weeklyMetric(
+        ${metric(
             "میانگین وزن",
-            weeklyFormatNumber(
+            formatNumber(
                 result.mean,
                 1
-            ) + " گرم"
+            ) +
+            " گرم"
         )}
 
-        ${weeklyMetric(
+        ${metric(
             "SD",
-            weeklyFormatNumber(
+            formatNumber(
                 result.sd,
                 1
-            ) + " گرم"
+            ) +
+            " گرم"
         )}
 
-        ${weeklyMetric(
+        ${metric(
             "CV",
-            weeklyFormatNumber(
+            formatNumber(
                 result.cv,
                 2
-            ) + "%"
+            ) +
+            "%"
         )}
 
-        ${weeklyMetric(
+        ${metric(
             "یکنواختی ±10%",
-            weeklyFormatNumber(
+            formatNumber(
                 result.uniformity10,
                 1
-            ) + "%"
+            ) +
+            "%"
         )}
 
-        ${weeklyMetric(
+        ${metric(
             "یکنواختی ±15%",
-            weeklyFormatNumber(
+            formatNumber(
                 result.uniformity15,
                 1
-            ) + "%"
-        )}
-
-        ${weeklyMetric(
-            "تعداد داخل ±10%",
-            weeklyFormatNumber(
-                result.count10,
-                0
             ) +
-            " از " +
-            weeklyFormatNumber(
-                result.count,
-                0
-            )
+            "%"
         )}
 
-        ${weeklyMetric(
-            "تعداد داخل ±15%",
-            weeklyFormatNumber(
-                result.count15,
-                0
-            ) +
-            " از " +
-            weeklyFormatNumber(
-                result.count,
-                0
-            )
-        )}
-
-        ${weeklyMetric(
+        ${metric(
             "حداقل وزن",
-            weeklyFormatNumber(
+            formatNumber(
                 result.min,
                 1
-            ) + " گرم"
+            ) +
+            " گرم"
         )}
 
-        ${weeklyMetric(
+        ${metric(
             "حداکثر وزن",
-            weeklyFormatNumber(
+            formatNumber(
                 result.max,
                 1
-            ) + " گرم"
+            ) +
+            " گرم"
         )}
 
     `;
+
 }
 
 
-function weeklyMetric(
+/* =========================================================
+   METRIC
+   ========================================================= */
+
+function metric(
     title,
     value
 ) {
@@ -1117,14 +1275,15 @@ function weeklyMetric(
         </div>
 
     `;
+
 }
 
 
 /* =========================================================
-   CHART
+   WEIGHT CHART
    ========================================================= */
 
-function weeklyDrawWeightChart(
+function drawWeightChart(
     weights,
     result
 ) {
@@ -1135,6 +1294,7 @@ function weeklyDrawWeightChart(
     ) {
 
         return;
+
     }
 
 
@@ -1144,12 +1304,20 @@ function weeklyDrawWeightChart(
         );
 
 
-    if (!canvas) return;
+    if (!canvas) {
+
+        return;
+
+    }
 
 
     if (weightChart) {
 
         weightChart.destroy();
+
+        weightChart =
+            null;
+
     }
 
 
@@ -1168,7 +1336,8 @@ function weeklyDrawWeightChart(
             canvas,
             {
 
-                type: "line",
+                type:
+                    "line",
 
                 data: {
 
@@ -1202,7 +1371,10 @@ function weeklyDrawWeightChart(
                                 ),
 
                             borderDash:
-                                [6, 6],
+                                [
+                                    6,
+                                    6
+                                ],
 
                             pointRadius:
                                 0
@@ -1221,7 +1393,10 @@ function weeklyDrawWeightChart(
                                 ),
 
                             borderDash:
-                                [4, 4],
+                                [
+                                    4,
+                                    4
+                                ],
 
                             pointRadius:
                                 0
@@ -1240,7 +1415,10 @@ function weeklyDrawWeightChart(
                                 ),
 
                             borderDash:
-                                [4, 4],
+                                [
+                                    4,
+                                    4
+                                ],
 
                             pointRadius:
                                 0
@@ -1248,6 +1426,7 @@ function weeklyDrawWeightChart(
                         }
 
                     ]
+
                 },
 
                 options: {
@@ -1259,8 +1438,10 @@ function weeklyDrawWeightChart(
                         false
 
                 }
+
             }
         );
+
 }
 
 
@@ -1287,6 +1468,7 @@ function editWeeklyRecord(
         );
 
         return;
+
     }
 
 
@@ -1294,13 +1476,58 @@ function editWeeklyRecord(
         record.id;
 
 
-    weeklySetField(
+    /*
+     * عددها
+     */
+    setField(
         "weekNumber",
         record.week_number
     );
 
 
-    weeklySetField(
+    setField(
+        "liveBirds",
+        record.live_birds
+    );
+
+
+    setField(
+        "mortalityWeek",
+        record.mortality_count
+    );
+
+
+    setField(
+        "feedTotal",
+        record.feed_total_kg
+    );
+
+
+    setField(
+        "waterTotal",
+        record.water_total_liter
+    );
+
+
+    setField(
+        "feedPerBird",
+        record.feed_per_bird_g
+    );
+
+
+    setField(
+        "waterPerBird",
+        record.water_per_bird_ml
+    );
+
+
+    /*
+     * تاریخ جداگانه
+     *
+     * بسیار مهم:
+     * تاریخ نباید از normalizeNumberString عبور کند.
+     */
+    setDateField(
         "evaluationDate",
         convertDatabaseDateToShamsi(
             record.evaluation_date
@@ -1308,58 +1535,29 @@ function editWeeklyRecord(
     );
 
 
-    weeklySetField(
-        "liveBirds",
-        record.live_birds
-    );
-
-
-    weeklySetField(
-        "mortalityWeek",
-        record.mortality_count
-    );
-
-
-    weeklySetField(
-        "feedTotal",
-        record.feed_total_kg
-    );
-
-
-    weeklySetField(
-        "waterTotal",
-        record.water_total_liter
-    );
-
-
-    weeklySetField(
-        "feedPerBird",
-        record.feed_per_bird_g
-    );
-
-
-    weeklySetField(
-        "waterPerBird",
-        record.water_per_bird_ml
-    );
-
-
-    weeklySetField(
+    /*
+     * متن
+     */
+    setTextField(
         "weeklyNotes",
         record.notes
     );
 
 
-    const container =
+    /*
+     * وزن‌ها
+     */
+    const weightsContainer =
         document.getElementById(
             "weightsContainer"
         );
 
 
-    if (container) {
+    if (weightsContainer) {
 
-        container.innerHTML =
+        weightsContainer.innerHTML =
             "";
+
     }
 
 
@@ -1381,11 +1579,18 @@ function editWeeklyRecord(
 
         }
 
-        catch {
+        catch (error) {
+
+            console.error(
+                "Weight JSON parse error:",
+                error
+            );
 
             savedWeights =
                 [];
+
         }
+
     }
 
 
@@ -1396,40 +1601,56 @@ function editWeeklyRecord(
     ) {
 
         savedWeights.forEach(
-            weight =>
-                addWeightInput(
-                    weight
-                )
+            weight => {
+
+                if (
+                    Number(weight) > 0
+                ) {
+
+                    addWeightInput(
+                        weight
+                    );
+
+                }
+
+            }
         );
+
     }
 
 
     if (
-        !container ||
-        !container.children.length
+        !weightsContainer ||
+        weightsContainer.children.length === 0
     ) {
 
         addWeightInput();
+
     }
 
 
     if (
-        weeklyGetWeights().length >= 2
+        getWeights().length >= 2
     ) {
 
         calculateWeekly();
+
     }
 
 
-    weeklyShowEditMode();
+    showEditMode();
 
 
     window.scrollTo(
         {
-            top: 0,
-            behavior: "smooth"
+            top:
+                0,
+
+            behavior:
+                "smooth"
         }
     );
+
 }
 
 
@@ -1437,7 +1658,7 @@ function editWeeklyRecord(
    EDIT MODE
    ========================================================= */
 
-function weeklyShowEditMode() {
+function showEditMode() {
 
     const saveButton =
         document.querySelector(
@@ -1447,30 +1668,34 @@ function weeklyShowEditMode() {
 
     if (saveButton) {
 
+        saveButton.disabled =
+            false;
+
         saveButton.textContent =
             "ذخیره تغییرات";
+
     }
 
 
-    let notice =
+    let editNotice =
         document.getElementById(
             "editModeNotice"
         );
 
 
-    if (!notice) {
+    if (!editNotice) {
 
-        notice =
+        editNotice =
             document.createElement(
                 "div"
             );
 
 
-        notice.id =
+        editNotice.id =
             "editModeNotice";
 
 
-        notice.style.cssText = `
+        editNotice.style.cssText = `
             margin-bottom:15px;
             padding:12px;
             border-radius:10px;
@@ -1481,11 +1706,13 @@ function weeklyShowEditMode() {
         `;
 
 
-        notice.innerHTML = `
+        editNotice.innerHTML = `
 
             ✏️ در حال ویرایش گزارش هفته
 
-            <span id="editingWeekText"></span>
+            <span
+                id="editingWeekText"
+            ></span>
 
             <button
                 type="button"
@@ -1508,15 +1735,17 @@ function weeklyShowEditMode() {
         if (firstCard) {
 
             firstCard.parentNode.insertBefore(
-                notice,
+                editNotice,
                 firstCard
             );
+
         }
+
     }
 
 
     const week =
-        weeklyGetValue(
+        getValue(
             "weekNumber"
         );
 
@@ -1531,15 +1760,22 @@ function weeklyShowEditMode() {
 
         weekText.textContent =
             week
-                ? ` — هفته ${week}`
+                ? ` — هفته ${convertDigitsToPersian(week)}`
                 : "";
+
     }
+
 }
 
 
+/* =========================================================
+   CANCEL EDIT
+   ========================================================= */
+
 function cancelEditWeeklyRecord() {
 
-    weeklyClearForm();
+    clearWeeklyForm();
+
 }
 
 
@@ -1547,21 +1783,29 @@ function cancelEditWeeklyRecord() {
    CLEAR FORM
    ========================================================= */
 
-function weeklyClearForm() {
+function clearWeeklyForm() {
 
-    weeklySetToday();
+    editingRecordId =
+        null;
 
 
-    [
+    setToday();
+
+
+    const fields = [
+
         "weekNumber",
         "liveBirds",
         "mortalityWeek",
         "feedTotal",
         "waterTotal",
         "feedPerBird",
-        "waterPerBird",
-        "weeklyNotes"
-    ].forEach(
+        "waterPerBird"
+
+    ];
+
+
+    fields.forEach(
         id => {
 
             const element =
@@ -1569,38 +1813,49 @@ function weeklyClearForm() {
                     id
                 );
 
+
             if (element) {
 
                 element.value =
                     "";
+
             }
+
         }
     );
 
 
-    const container =
+    setTextField(
+        "weeklyNotes",
+        ""
+    );
+
+
+    const weightsContainer =
         document.getElementById(
             "weightsContainer"
         );
 
 
-    if (container) {
+    if (weightsContainer) {
 
-        container.innerHTML =
+        weightsContainer.innerHTML =
             "";
+
     }
 
 
-    const results =
+    const resultsCard =
         document.getElementById(
             "resultsCard"
         );
 
 
-    if (results) {
+    if (resultsCard) {
 
-        results.style.display =
+        resultsCard.style.display =
             "none";
+
     }
 
 
@@ -1610,11 +1865,8 @@ function weeklyClearForm() {
 
         weightChart =
             null;
+
     }
-
-
-    editingRecordId =
-        null;
 
 
     const saveButton =
@@ -1630,6 +1882,7 @@ function weeklyClearForm() {
 
         saveButton.textContent =
             "ذخیره گزارش هفتگی";
+
     }
 
 
@@ -1642,15 +1895,17 @@ function weeklyClearForm() {
     if (notice) {
 
         notice.remove();
+
     }
+
 }
 
 
 /* =========================================================
-   SET FIELD
+   SET NUMERIC FIELD
    ========================================================= */
 
-function weeklySetField(
+function setField(
     id,
     value
 ) {
@@ -1661,51 +1916,149 @@ function weeklySetField(
         );
 
 
-    if (!element) return;
+    if (!element) {
+
+        return;
+
+    }
 
 
     if (
         value === null ||
-        value === undefined
+        value === undefined ||
+        value === ""
     ) {
 
         element.value =
             "";
 
         return;
+
     }
 
 
-    if (id === "evaluationDate") {
-
-        element.value =
-            String(value);
-
-        return;
-    }
-
-
+    /*
+     * فقط برای فیلد عددی
+     */
     element.value =
-        weeklyNormalizeNumber(
+        normalizeNumberString(
             value
         );
+
 }
 
 
 /* =========================================================
-   SAVE DATE
+   SET DATE FIELD
+   ========================================================= */
+
+function setDateField(
+    id,
+    value
+) {
+
+    const element =
+        document.getElementById(
+            id
+        );
+
+
+    if (!element) {
+
+        return;
+
+    }
+
+
+    element.value =
+        value || "";
+
+}
+
+
+/* =========================================================
+   SET TEXT FIELD
+   ========================================================= */
+
+function setTextField(
+    id,
+    value
+) {
+
+    const element =
+        document.getElementById(
+            id
+        );
+
+
+    if (!element) {
+
+        return;
+
+    }
+
+
+    element.value =
+        value === null ||
+        value === undefined
+            ? ""
+            : String(value);
+
+}
+
+
+/* =========================================================
+   GET GREGORIAN DATE FOR SUPABASE
    ========================================================= */
 
 function getGregorianDateForSupabase(
     value
 ) {
 
-    if (!value) return null;
+    if (!value) {
+
+        return null;
+
+    }
 
 
-    const text =
-        weeklyNormalizeNumber(
-            value
+    let text =
+        String(value)
+            .trim();
+
+
+    /*
+     * Convert Persian / Arabic digits
+     */
+    text =
+        text.replace(
+            /[۰-۹]/g,
+            digit =>
+                String(
+                    digit.charCodeAt(0) -
+                    1776
+                )
+        );
+
+
+    text =
+        text.replace(
+            /[٠-٩]/g,
+            digit =>
+                String(
+                    digit.charCodeAt(0) -
+                    1632
+                )
+        );
+
+
+    /*
+     * فقط slash استاندارد
+     */
+    text =
+        text.replace(
+            /[-.]/g,
+            "/"
         );
 
 
@@ -1718,8 +2071,9 @@ function getGregorianDateForSupabase(
     ) {
 
         throw new Error(
-            "فرمت تاریخ صحیح نیست."
+            "فرمت تاریخ صحیح نیست. مثال: ۱۴۰۵/۰۵/۲۹"
         );
+
     }
 
 
@@ -1738,16 +2092,49 @@ function getGregorianDateForSupabase(
     if (
         !Number.isInteger(jy) ||
         !Number.isInteger(jm) ||
-        !Number.isInteger(jd) ||
-        jm < 1 ||
-        jm > 12 ||
-        jd < 1 ||
-        jd > 31
+        !Number.isInteger(jd)
     ) {
 
         throw new Error(
             "تاریخ شمسی واردشده صحیح نیست."
         );
+
+    }
+
+
+    if (
+        jy < 1300 ||
+        jy > 1500
+    ) {
+
+        throw new Error(
+            "سال تاریخ شمسی صحیح نیست."
+        );
+
+    }
+
+
+    if (
+        jm < 1 ||
+        jm > 12
+    ) {
+
+        throw new Error(
+            "ماه تاریخ شمسی صحیح نیست."
+        );
+
+    }
+
+
+    if (
+        jd < 1 ||
+        jd > 31
+    ) {
+
+        throw new Error(
+            "روز تاریخ شمسی صحیح نیست."
+        );
+
     }
 
 
@@ -1759,9 +2146,14 @@ function getGregorianDateForSupabase(
         throw new Error(
             "کتابخانه تاریخ شمسی بارگذاری نشده است."
         );
+
     }
 
 
+    /*
+     * persian-date:
+     * month is zero-based
+     */
     const date =
         new persianDate()
             .year(jy)
@@ -1770,10 +2162,13 @@ function getGregorianDateForSupabase(
 
 
     return date
-        .toCalendar("gregorian")
+        .toCalendar(
+            "gregorian"
+        )
         .format(
             "YYYY-MM-DD"
         );
+
 }
 
 
@@ -1782,6 +2177,12 @@ function getGregorianDateForSupabase(
    ========================================================= */
 
 async function saveWeeklyRecord() {
+
+    const saveButton =
+        document.querySelector(
+            'button[onclick="saveWeeklyRecord()"]'
+        );
+
 
     try {
 
@@ -1792,11 +2193,12 @@ async function saveWeeklyRecord() {
             );
 
             return;
+
         }
 
 
         const week =
-            weeklyGetNumber(
+            getNumber(
                 "weekNumber"
             );
 
@@ -1811,37 +2213,90 @@ async function saveWeeklyRecord() {
             );
 
             return;
+
         }
 
 
+        /*
+         * وزن‌ها
+         */
         const weights =
-            weeklyGetWeights();
+            getWeights();
 
 
         if (weights.length < 2) {
 
             alert(
-                "برای ذخیره گزارش حداقل دو وزن معتبر وارد کنید."
+                "برای ذخیره گزارش حداقل دو وزن وارد کنید."
             );
 
             return;
+
         }
 
 
+        /*
+         * محاسبات
+         */
         const stats =
-            weeklyCalculateWeightStatistics(
+            calculateWeightStatistics(
                 weights
             );
 
 
+        /*
+         * سایر اعداد
+         */
+        const liveBirds =
+            getNumber(
+                "liveBirds"
+            );
+
+
+        const mortality =
+            getNumber(
+                "mortalityWeek"
+            );
+
+
+        const feedTotal =
+            getNumber(
+                "feedTotal"
+            );
+
+
+        const waterTotal =
+            getNumber(
+                "waterTotal"
+            );
+
+
+        const feedPerBird =
+            getNumber(
+                "feedPerBird"
+            );
+
+
+        const waterPerBird =
+            getNumber(
+                "waterPerBird"
+            );
+
+
+        /*
+         * تاریخ شمسی → میلادی
+         */
         const evaluationDate =
             getGregorianDateForSupabase(
-                weeklyGetValue(
+                getValue(
                     "evaluationDate"
                 )
             );
 
 
+        /*
+         * ویرایش
+         */
         const editingRecord =
             editingRecordId
                 ? weeklyRecords.find(
@@ -1852,12 +2307,30 @@ async function saveWeeklyRecord() {
                 : null;
 
 
+        const recordId =
+            editingRecord
+                ? editingRecord.id
+                : null;
+
+
+        /*
+         * متن یادداشت
+         */
+        const notes =
+            getValue(
+                "weeklyNotes"
+            );
+
+
+        /*
+         * PAYLOAD
+         */
         const payload = {
 
-            ...(editingRecord
+            ...(recordId
                 ? {
                     id:
-                        editingRecord.id
+                        recordId
                 }
                 : {}),
 
@@ -1879,6 +2352,10 @@ async function saveWeeklyRecord() {
             evaluation_date:
                 evaluationDate,
 
+
+            /*
+             * WEIGHT STATISTICS
+             */
             sample_count:
                 stats.count,
 
@@ -1903,58 +2380,58 @@ async function saveWeeklyRecord() {
             max_weight_g:
                 stats.max,
 
+
+            /*
+             * FLOCK
+             */
             live_birds:
-                weeklyGetNumber(
-                    "liveBirds"
-                ),
+                liveBirds,
 
             mortality_count:
-                weeklyGetNumber(
-                    "mortalityWeek"
-                ),
+                mortality,
 
+
+            /*
+             * FEED / WATER
+             */
             feed_total_kg:
-                weeklyGetNumber(
-                    "feedTotal"
-                ),
+                feedTotal,
 
             water_total_liter:
-                weeklyGetNumber(
-                    "waterTotal"
-                ),
+                waterTotal,
 
             feed_per_bird_g:
-                weeklyGetNumber(
-                    "feedPerBird"
-                ),
+                feedPerBird,
 
             water_per_bird_ml:
-                weeklyGetNumber(
-                    "waterPerBird"
-                ),
+                waterPerBird,
 
+
+            /*
+             * NOTES
+             */
             notes:
-                weeklyGetValue(
-                    "weeklyNotes"
-                ),
+                notes,
 
+
+            /*
+             * RAW WEIGHTS
+             */
             weights:
                 weights
+
         };
 
 
         console.log(
-            "FINAL WEEKLY PAYLOAD:",
+            "WEEKLY PAYLOAD:",
             payload
         );
 
 
-        const saveButton =
-            document.querySelector(
-                'button[onclick="saveWeeklyRecord()"]'
-            );
-
-
+        /*
+         * Disable save button
+         */
         if (saveButton) {
 
             saveButton.disabled =
@@ -1962,9 +2439,13 @@ async function saveWeeklyRecord() {
 
             saveButton.textContent =
                 "در حال ذخیره...";
+
         }
 
 
+        /*
+         * SAVE
+         */
         const {
             data,
             error
@@ -1987,7 +2468,7 @@ async function saveWeeklyRecord() {
         if (error) {
 
             console.error(
-                "Supabase save error:",
+                "Save weekly error:",
                 error
             );
 
@@ -2001,6 +2482,7 @@ async function saveWeeklyRecord() {
                     editingRecordId
                         ? "ذخیره تغییرات"
                         : "ذخیره گزارش هفتگی";
+
             }
 
 
@@ -2009,26 +2491,48 @@ async function saveWeeklyRecord() {
                 error.message
             );
 
+
             return;
+
         }
 
 
         console.log(
-            "Saved weekly record:",
+            "WEEKLY RECORD SAVED:",
             data
         );
 
 
-        alert(
-            editingRecordId
-                ? "گزارش هفتگی با موفقیت ویرایش شد."
-                : "گزارش هفتگی با موفقیت ذخیره شد."
-        );
+        const wasEditing =
+            Boolean(
+                editingRecordId
+            );
 
 
-        weeklyClearForm();
+        if (wasEditing) {
 
-        await weeklyLoadHistory();
+            alert(
+                "گزارش هفتگی با موفقیت ویرایش شد."
+            );
+
+        }
+
+        else {
+
+            alert(
+                "گزارش هفتگی با موفقیت ذخیره شد."
+            );
+
+        }
+
+
+        /*
+         * Reset
+         */
+        clearWeeklyForm();
+
+
+        await loadHistory();
 
     }
 
@@ -2049,12 +2553,6 @@ async function saveWeeklyRecord() {
         );
 
 
-        const saveButton =
-            document.querySelector(
-                'button[onclick="saveWeeklyRecord()"]'
-            );
-
-
         if (saveButton) {
 
             saveButton.disabled =
@@ -2064,18 +2562,25 @@ async function saveWeeklyRecord() {
                 editingRecordId
                     ? "ذخیره تغییرات"
                     : "ذخیره گزارش هفتگی";
+
         }
+
     }
+
 }
 
 
 /* =========================================================
-   HISTORY
+   LOAD HISTORY
    ========================================================= */
 
-async function weeklyLoadHistory() {
+async function loadHistory() {
 
-    if (!currentFlock) return;
+    if (!currentFlock) {
+
+        return;
+
+    }
 
 
     const {
@@ -2098,7 +2603,8 @@ async function weeklyLoadHistory() {
             .order(
                 "week_number",
                 {
-                    ascending: true
+                    ascending:
+                        true
                 }
             );
 
@@ -2111,20 +2617,27 @@ async function weeklyLoadHistory() {
         );
 
 
-        const container =
+        const history =
             document.getElementById(
                 "weeklyHistory"
             );
 
 
-        if (container) {
+        if (history) {
 
-            container.innerHTML =
-                "<p>خطا در دریافت سوابق.</p>";
+            history.innerHTML = `
+
+                <p>
+                    خطا در دریافت سوابق.
+                </p>
+
+            `;
+
         }
 
 
         return;
+
     }
 
 
@@ -2132,7 +2645,8 @@ async function weeklyLoadHistory() {
         data || [];
 
 
-    weeklyRenderHistory();
+    renderHistory();
+
 }
 
 
@@ -2140,7 +2654,7 @@ async function weeklyLoadHistory() {
    HISTORY UI
    ========================================================= */
 
-function weeklyRenderHistory() {
+function renderHistory() {
 
     const container =
         document.getElementById(
@@ -2148,24 +2662,35 @@ function weeklyRenderHistory() {
         );
 
 
-    if (!container) return;
+    if (!container) {
+
+        return;
+
+    }
 
 
     if (!weeklyRecords.length) {
 
         container.innerHTML = `
+
             <p>
                 هنوز گزارش هفتگی ثبت نشده است.
             </p>
+
         `;
 
         return;
+
     }
 
 
     container.innerHTML = `
 
-        <div style="overflow-x:auto;">
+        <div
+            style="
+                overflow-x:auto;
+            "
+        >
 
             <table>
 
@@ -2173,17 +2698,49 @@ function weeklyRenderHistory() {
 
                     <tr>
 
-                        <th>هفته</th>
-                        <th>تاریخ</th>
-                        <th>میانگین</th>
-                        <th>SD</th>
-                        <th>CV</th>
-                        <th>یکنواختی ±10</th>
-                        <th>یکنواختی ±15</th>
-                        <th>تلفات</th>
-                        <th>دان</th>
-                        <th>آب</th>
-                        <th>عملیات</th>
+                        <th>
+                            هفته
+                        </th>
+
+                        <th>
+                            تاریخ
+                        </th>
+
+                        <th>
+                            میانگین
+                        </th>
+
+                        <th>
+                            SD
+                        </th>
+
+                        <th>
+                            CV
+                        </th>
+
+                        <th>
+                            یکنواختی ±10
+                        </th>
+
+                        <th>
+                            یکنواختی ±15
+                        </th>
+
+                        <th>
+                            تلفات
+                        </th>
+
+                        <th>
+                            دان
+                        </th>
+
+                        <th>
+                            آب
+                        </th>
+
+                        <th>
+                            عملیات
+                        </th>
 
                     </tr>
 
@@ -2199,7 +2756,7 @@ function weeklyRenderHistory() {
                                     <tr>
 
                                         <td>
-                                            ${weeklyFormatNumber(
+                                            ${formatNumber(
                                                 record.week_number,
                                                 0
                                             )}
@@ -2212,56 +2769,56 @@ function weeklyRenderHistory() {
                                         </td>
 
                                         <td>
-                                            ${weeklyFormatNumber(
+                                            ${formatNumber(
                                                 record.average_weight_g,
                                                 1
                                             )}
                                         </td>
 
                                         <td>
-                                            ${weeklyFormatNumber(
+                                            ${formatNumber(
                                                 record.sd_weight_g,
                                                 1
                                             )}
                                         </td>
 
                                         <td>
-                                            ${weeklyFormatNumber(
+                                            ${formatNumber(
                                                 record.cv_percent,
                                                 2
                                             )}%
                                         </td>
 
                                         <td>
-                                            ${weeklyFormatNumber(
+                                            ${formatNumber(
                                                 record.uniformity_10_percent,
                                                 1
                                             )}%
                                         </td>
 
                                         <td>
-                                            ${weeklyFormatNumber(
+                                            ${formatNumber(
                                                 record.uniformity_15_percent,
                                                 1
                                             )}%
                                         </td>
 
                                         <td>
-                                            ${weeklyFormatNumber(
+                                            ${formatNumber(
                                                 record.mortality_count,
                                                 0
                                             )}
                                         </td>
 
                                         <td>
-                                            ${weeklyFormatNumber(
+                                            ${formatNumber(
                                                 record.feed_total_kg,
                                                 1
                                             )}
                                         </td>
 
                                         <td>
-                                            ${weeklyFormatNumber(
+                                            ${formatNumber(
                                                 record.water_total_liter,
                                                 1
                                             )}
@@ -2272,7 +2829,7 @@ function weeklyRenderHistory() {
                                             <button
                                                 type="button"
                                                 class="btn btn-secondary"
-                                                onclick="editWeeklyRecord('${weeklyEscapeAttribute(record.id)}')"
+                                                onclick="editWeeklyRecord('${escapeHTMLAttribute(record.id)}')"
                                             >
                                                 ✏️ ویرایش
                                             </button>
@@ -2293,6 +2850,7 @@ function weeklyRenderHistory() {
         </div>
 
     `;
+
 }
 
 
@@ -2300,20 +2858,32 @@ function weeklyRenderHistory() {
    DATE DISPLAY
    ========================================================= */
 
-function formatDateDisplay(date) {
+function formatDateDisplay(
+    date
+) {
 
-    if (!date) return "-";
+    if (!date) {
+
+        return "-";
+
+    }
 
 
     const text =
         String(date);
 
 
-    if (text.includes("/")) {
+    /*
+     * اگر از قبل شمسی باشد
+     */
+    if (
+        text.includes("/")
+    ) {
 
-        return weeklyToPersianDigits(
+        return convertDigitsToPersian(
             text
         );
+
     }
 
 
@@ -2325,9 +2895,10 @@ function formatDateDisplay(date) {
         parts.length !== 3
     ) {
 
-        return weeklyToPersianDigits(
+        return convertDigitsToPersian(
             text
         );
+
     }
 
 
@@ -2338,23 +2909,26 @@ function formatDateDisplay(date) {
             "function"
         ) {
 
-            const gregorian =
+            const gregorianDate =
                 new persianDate(
                     `${parts[0]}-${parts[1]}-${parts[2]}`
                 );
 
 
             const shamsi =
-                gregorian
-                    .toCalendar("persian")
+                gregorianDate
+                    .toCalendar(
+                        "persian"
+                    )
                     .format(
                         "YYYY/MM/DD"
                     );
 
 
-            return weeklyToPersianDigits(
+            return convertDigitsToPersian(
                 shamsi
             );
+
         }
 
     }
@@ -2362,23 +2936,33 @@ function formatDateDisplay(date) {
     catch (error) {
 
         console.error(
-            "Date display error:",
+            "Persian date display error:",
             error
         );
+
     }
 
 
-    return weeklyToPersianDigits(
+    return convertDigitsToPersian(
         text
     );
+
 }
 
+
+/* =========================================================
+   DATABASE DATE → SHAMSI
+   ========================================================= */
 
 function convertDatabaseDateToShamsi(
     date
 ) {
 
-    if (!date) return "";
+    if (!date) {
+
+        return "";
+
+    }
 
 
     const parts =
@@ -2390,6 +2974,7 @@ function convertDatabaseDateToShamsi(
     ) {
 
         return String(date);
+
     }
 
 
@@ -2408,15 +2993,18 @@ function convertDatabaseDateToShamsi(
 
             const shamsi =
                 gregorian
-                    .toCalendar("persian")
+                    .toCalendar(
+                        "persian"
+                    )
                     .format(
                         "YYYY/MM/DD"
                     );
 
 
-            return weeklyToPersianDigits(
+            return convertDigitsToPersian(
                 shamsi
             );
+
         }
 
     }
@@ -2427,60 +3015,111 @@ function convertDatabaseDateToShamsi(
             "Date conversion error:",
             error
         );
+
     }
 
 
-    return weeklyToPersianDigits(
+    return convertDigitsToPersian(
         date
     );
+
 }
 
 
 /* =========================================================
-   HELPERS
+   DIGITS TO PERSIAN
    ========================================================= */
 
-function weeklyGetValue(id) {
+function convertDigitsToPersian(
+    value
+) {
+
+    return String(
+        value ?? ""
+    ).replace(
+        /\d/g,
+        digit =>
+            "۰۱۲۳۴۵۶۷۸۹"[
+                Number(digit)
+            ]
+    );
+
+}
+
+
+/* =========================================================
+   GET VALUE
+   ========================================================= */
+
+function getValue(
+    id
+) {
 
     const element =
-        document.getElementById(id);
+        document.getElementById(
+            id
+        );
 
 
-    if (!element) return "";
+    if (!element) {
+
+        return "";
+
+    }
 
 
     return String(
         element.value || ""
     ).trim();
+
 }
 
 
-function weeklyGetNumber(id) {
+/* =========================================================
+   GET NUMBER
+   ========================================================= */
+
+function getNumber(
+    id
+) {
 
     const value =
-        weeklyGetValue(id);
+        getValue(id);
 
 
-    if (!value) return 0;
+    if (!value) {
+
+        return 0;
+
+    }
 
 
     const normalized =
-        weeklyNormalizeNumber(
+        normalizeNumberString(
             value
         );
 
 
     const number =
-        Number(normalized);
+        Number(
+            normalized
+        );
 
 
-    return Number.isFinite(number)
+    return Number.isFinite(
+        number
+    )
         ? number
         : 0;
+
 }
 
 
-function weeklyFormatNumber(
+/* =========================================================
+   FORMAT NUMBER
+   ========================================================= */
+
+function formatNumber(
     value,
     decimals = 1
 ) {
@@ -2492,6 +3131,7 @@ function weeklyFormatNumber(
     ) {
 
         return "-";
+
     }
 
 
@@ -2500,60 +3140,136 @@ function weeklyFormatNumber(
 
 
     if (
-        !Number.isFinite(number)
+        !Number.isFinite(
+            number
+        )
     ) {
 
         return "-";
+
     }
 
 
     return number.toLocaleString(
         "fa-IR",
         {
+
             minimumFractionDigits:
                 decimals,
 
             maximumFractionDigits:
                 decimals
+
         }
     );
+
 }
 
 
-function weeklyToPersianDigits(value) {
+/* =========================================================
+   PRODUCTION LABEL
+   ========================================================= */
 
-    return String(
-        value ?? ""
-    ).replace(
-        /\d/g,
-        digit =>
-            "۰۱۲۳۴۵۶۷۸۹"[
-                Number(digit)
-            ]
+function getProductionLabel(
+    type
+) {
+
+    const labels = {
+
+        broiler:
+            "گوشتی",
+
+        layer:
+            "تخم‌گذار",
+
+        pullet:
+            "پولت",
+
+        breeder:
+            "مرغ مادر"
+
+    };
+
+
+    return (
+        labels[type] ||
+        type ||
+        "-"
     );
+
 }
 
 
-function weeklyEscapeHTML(value) {
+/* =========================================================
+   ESCAPE HTML
+   ========================================================= */
+
+function escapeHTML(
+    value
+) {
 
     return String(
         value ?? ""
     )
-        .replaceAll("&", "&amp;")
-        .replaceAll("<", "&lt;")
-        .replaceAll(">", "&gt;")
-        .replaceAll('"', "&quot;")
-        .replaceAll("'", "&#039;");
+
+    .replaceAll(
+        "&",
+        "&amp;"
+    )
+
+    .replaceAll(
+        "<",
+        "&lt;"
+    )
+
+    .replaceAll(
+        ">",
+        "&gt;"
+    )
+
+    .replaceAll(
+        '"',
+        "&quot;"
+    )
+
+    .replaceAll(
+        "'",
+        "&#039;"
+    );
+
 }
 
 
-function weeklyEscapeAttribute(value) {
+/* =========================================================
+   ESCAPE HTML ATTRIBUTE
+   ========================================================= */
+
+function escapeHTMLAttribute(
+    value
+) {
 
     return String(
         value ?? ""
     )
-        .replaceAll("\\", "\\\\")
-        .replaceAll("'", "\\'")
-        .replaceAll("\n", "\\n")
-        .replaceAll("\r", "\\r");
+
+    .replaceAll(
+        "\\",
+        "\\\\"
+    )
+
+    .replaceAll(
+        "'",
+        "\\'"
+    )
+
+    .replaceAll(
+        "\n",
+        "\\n"
+    )
+
+    .replaceAll(
+        "\r",
+        "\\r"
+    );
+
 }

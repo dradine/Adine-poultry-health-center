@@ -715,60 +715,175 @@ async function loadVaccines() {
    MEDICATIONS
 ========================================================= */
 
-async function loadMedications() {
+/* =========================================================
+   MEDICATION CATALOG
+   مستقل از جدول medications
+========================================================= */
 
-    const {
-        data,
-        error
-    } =
-        await supabaseClient
-            .from("medications")
-            .select("*")
-            .order(
-                "name"
-            );
+const LOCAL_MEDICATION_CATALOG = [
 
+    {
+        name: "آموکسی‌سیلین",
+        active: "Amoxicillin"
+    },
 
-    if (error) {
-        throw error;
+    {
+        name: "آمپی‌سیلین",
+        active: "Ampicillin"
+    },
+
+    {
+        name: "فلورفنیکل",
+        active: "Florfenicol"
+    },
+
+    {
+        name: "داکسی‌سایکلین",
+        active: "Doxycycline"
+    },
+
+    {
+        name: "اکسی‌تتراسایکلین",
+        active: "Oxytetracycline"
+    },
+
+    {
+        name: "کلرتتراسایکلین",
+        active: "Chlortetracycline"
+    },
+
+    {
+        name: "تیامولین",
+        active: "Tiamulin"
+    },
+
+    {
+        name: "تایلوزین",
+        active: "Tylosin"
+    },
+
+    {
+        name: "تایل‌والوزین",
+        active: "Tylvalosin"
+    },
+
+    {
+        name: "لینکومایسین",
+        active: "Lincomycin"
+    },
+
+    {
+        name: "اسپکتینومایسین",
+        active: "Spectinomycin"
+    },
+
+    {
+        name: "جنتامایسین",
+        active: "Gentamicin"
+    },
+
+    {
+        name: "سیپروفلوکساسین",
+        active: "Ciprofloxacin"
+    },
+
+    {
+        name: "تریمتوپریم + سولفامتوکسازول",
+        active: "Trimethoprim + Sulfamethoxazole"
+    },
+
+    {
+        name: "سولفادیازین",
+        active: "Sulfadiazine"
+    },
+
+    {
+        name: "سولفاکینوکزالین",
+        active: "Sulfaquinoxaline"
+    },
+
+    {
+        name: "نئومایسین",
+        active: "Neomycin"
+    },
+
+    {
+        name: "کولیسـتین",
+        active: "Colistin"
+    },
+
+    {
+        name: "آلبندازول",
+        active: "Albendazole"
+    },
+
+    {
+        name: "لوامیزول",
+        active: "Levamisole"
+    },
+
+    {
+        name: "تولترازوریل",
+        active: "Toltrazuril"
+    },
+
+    {
+        name: "دیکلازوریل",
+        active: "Diclazuril"
+    },
+
+    {
+        name: "نیستاتین",
+        active: "Nystatin"
+    },
+
+    {
+        name: "آمفوتریسین B",
+        active: "Amphotericin B"
     }
 
+];
+
+
+function loadMedications() {
 
     const select =
         document.getElementById(
             "treatmentMedication"
         );
 
-
     if (!select) {
         return;
     }
 
-
-    select.innerHTML =
-        `<option value="">
+    select.innerHTML = `
+        <option value="">
             انتخاب دارو
-        </option>`;
+        </option>
+    `;
 
 
-    (data || [])
-        .forEach(medication => {
+    LOCAL_MEDICATION_CATALOG
+        .forEach((medication, index) => {
 
             const option =
                 document.createElement(
                     "option"
                 );
 
-
             option.value =
-                medication.id;
-
+                "local-" + index;
 
             option.textContent =
-                medication.active_ingredient
-                    ? `${medication.name} — ${medication.active_ingredient}`
-                    : medication.name;
+                medication.name +
+                " — " +
+                medication.active;
 
+            option.dataset.name =
+                medication.name;
+
+            option.dataset.active =
+                medication.active;
 
             select.appendChild(
                 option
@@ -780,25 +895,19 @@ async function loadMedications() {
     select.onchange =
         function () {
 
-            const selected =
-                (data || [])
-                    .find(
-                        item =>
-                            String(item.id) ===
-                            String(this.value)
-                    );
+            const option =
+                this.options[
+                    this.selectedIndex
+                ];
 
-
-            if (!selected) {
+            if (!option) {
                 return;
             }
-
 
             const nameInput =
                 document.getElementById(
                     "treatmentMedicationName"
                 );
-
 
             const activeInput =
                 document.getElementById(
@@ -809,7 +918,7 @@ async function loadMedications() {
             if (nameInput) {
 
                 nameInput.value =
-                    selected.name || "";
+                    option.dataset.name || "";
 
             }
 
@@ -817,15 +926,12 @@ async function loadMedications() {
             if (activeInput) {
 
                 activeInput.value =
-                    selected.active_ingredient || "";
+                    option.dataset.active || "";
 
             }
 
         };
-
 }
-
-
 /* =========================================================
    VACCINATION
    CURRENT SCHEMA:

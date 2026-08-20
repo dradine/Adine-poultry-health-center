@@ -47,17 +47,35 @@ body {
         Arial,
         sans-serif;
 
+
     background:
-        #f4f7f5;
+        linear-gradient(
+            rgba(244,247,245,0.90),
+            rgba(244,247,245,0.96)
+        ),
+        url("IMG_4317.jpeg");
+
+
+    background-size:
+        cover;
+
+
+    background-position:
+        center;
+
+
+    background-attachment:
+        fixed;
+
 
     color:
         #173f35;
+
 
     direction:
         rtl;
 
 }
-
 
 /* =========================================================
    LINKS

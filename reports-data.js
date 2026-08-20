@@ -303,6 +303,18 @@ function normalizeReportRecord(
                     record.water_per_bird_ml
                 ),
 
+        fcr:
+            null,
+
+        standardWeight:
+            null,
+
+        weightDifference:
+            null,
+
+        weightDifferencePercent:
+            null,
+
         notes:
             record.notes ||
             ""
@@ -355,12 +367,80 @@ async function getCompleteReportData(
                     b.weekNumber
             );
 
+    /*
+     * Calculate standard weight and weekly FCR on the report
+     * side so old database rows also receive the new metrics
+     * without requiring a database migration.
+     */
+    const standard =
+        typeof getStandard === "function"
+            ? getStandard(
+                flock.production_type,
+                flock.genetics,
+                flock.strain || flock.genetics
+            )
+            : null;
+
+    let previous = null;
+
+    records.forEach(
+        record => {
+
+            record.standardWeight =
+                standard &&
+                typeof getStandardValueAtAge === "function"
+                    ? getStandardValueAtAge(
+                        standard,
+                        "bodyWeight",
+                        record.ageDays
+                    )
+                    : null;
+
+            if (
+                record.standardWeight !== null &&
+                record.averageWeight !== null
+            ) {
+
+                record.weightDifference =
+                    record.averageWeight -
+                    record.standardWeight;
+
+                record.weightDifferencePercent =
+                    record.standardWeight !== 0
+                        ? (
+                            record.weightDifference /
+                            record.standardWeight
+                        ) * 100
+                        : null;
+
+            }
+
+            record.fcr =
+                calculateReportFCR(
+                    previous,
+                    record,
+                    flock.production_type
+                );
+
+            record.standardFCR =
+                standard && typeof getStandardValueAtAge === "function"
+                    ? getStandardValueAtAge(standard, "fcr", record.ageDays)
+                    : null;
+
+            previous =
+                record;
+
+        }
+    );
+
 
     return {
 
         flock,
 
-        records
+        records,
+
+        standard
 
     };
 
@@ -370,6 +450,29 @@ async function getCompleteReportData(
 /* =========================================================
    LAST RECORD
    ========================================================= */
+
+/* =========================================================
+   FCR
+========================================================= */
+
+function calculateReportFCR(previous, current, productionType='broiler') {
+    const type=String(productionType||'').toLowerCase();
+    if (type && type!=='broiler' && type!=='گوشتی') return null;
+    if (!previous||!current) return null;
+    const feed=Number(current.feedTotalKg), ow=Number(previous.averageWeight), cw=Number(current.averageWeight), ob=Number(previous.liveBirds), cb=Number(current.liveBirds);
+    if (![feed,ow,cw,ob,cb].every(Number.isFinite)||feed<=0||ow<0||cw<=0||ob<=0||cb<=0) {
+        const gain=cw-ow, dailyFeed=Number(current.feedPerBirdG);
+        return gain>0&&dailyFeed>0?Number(((dailyFeed*7)/gain).toFixed(3)):null;
+    }
+    if (typeof calculateBroilerFCR==='function') return calculateBroilerFCR({feedKg:feed,openingBirds:ob,closingBirds:cb,openingAverageWeightG:ow,closingAverageWeightG:cw});
+    const gainKg=(cb*cw-ob*ow)/1000;
+    return gainKg>0?Number((feed/gainKg).toFixed(3)):null;
+}
+
+
+/* =========================================================
+   LAST RECORD
+========================================================= */
 
 function getLastReportRecord(
     records

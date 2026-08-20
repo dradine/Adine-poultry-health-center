@@ -128,16 +128,39 @@
     تاریخ ارزیابی
 </label>
 
-<input
-    id="evaluationDate"
-    type="text"
-    inputmode="numeric"
-    autocomplete="off"
-    placeholder="۱۴۰۵/۰۵/۲۹"
-    maxlength="10"
+<div style="position:relative;">
 
->
+    <input
+        id="evaluationDate"
+        type="text"
+        inputmode="numeric"
+        autocomplete="off"
+        placeholder="۱۴۰۵/۰۵/۲۹"
+        maxlength="10"
+        readonly
+        onclick="openJalaliCalendar()"
+        style="cursor:pointer;"
+    >
 
+    <button
+        type="button"
+        onclick="openJalaliCalendar()"
+        style="
+            position:absolute;
+            left:8px;
+            top:50%;
+            transform:translateY(-50%);
+            border:0;
+            background:transparent;
+            font-size:20px;
+            cursor:pointer;
+        "
+        aria-label="انتخاب تاریخ"
+    >
+        📅
+    </button>
+
+</div>
 </div>
 
 
@@ -495,7 +518,8 @@
 <script src="genetics-ui.js"></script>
 
 <script src="weekly-engine.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></<script src="https://cdn.jsdelivr.net/npm/persian-date@1.1.0/dist/persian-date.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/persian-datepicker@1.2.0/dist/js/persian-datepicker.min.js"></script> 
 <script src="weekly.js"></script>
 
 

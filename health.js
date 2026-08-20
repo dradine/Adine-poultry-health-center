@@ -2,134 +2,12 @@
    ADINE POULTRY HEALTH CENTER
    HEALTH MODULE
    Compatible with current Supabase schema
-   ========================================================= */
+========================================================= */
 
 let currentUser = null;
 let currentFlock = null;
 let currentFarm = null;
 let currentHouse = null;
-
-const MEDICATION_CATALOG = [
-
-    {
-        name: "آموکسی‌سیلین",
-        active: "Amoxicillin",
-        route: "water",
-        indication: "عفونت‌های باکتریایی حساس"
-    },
-
-    {
-        name: "داکسی‌سایکلین",
-        active: "Doxycycline",
-        route: "water",
-        indication: "عفونت‌های تنفسی"
-    },
-
-    {
-        name: "اکسی‌تتراسایکلین",
-        active: "Oxytetracycline",
-        route: "water",
-        indication: "عفونت‌های باکتریایی"
-    },
-
-    {
-        name: "تیامولین",
-        active: "Tiamulin",
-        route: "water",
-        indication: "مایکوپلاسما و بیماری تنفسی"
-    },
-
-    {
-        name: "تایلوزین",
-        active: "Tylosin",
-        route: "water",
-        indication: "مایکوپلاسما"
-    },
-
-    {
-        name: "فلورفنیکل",
-        active: "Florfenicol",
-        route: "water",
-        indication: "عفونت‌های باکتریایی حساس"
-    },
-
-    {
-        name: "انروفلوکساسین",
-        active: "Enrofloxacin",
-        route: "water",
-        indication: "عفونت‌های باکتریایی حساس"
-    },
-
-    {
-        name: "سولفادیمتوکسین",
-        active: "Sulfadimethoxine",
-        route: "water",
-        indication: "برخی عفونت‌های باکتریایی و کوکسیدیوز"
-    },
-
-    {
-        name: "آمپرولیوم",
-        active: "Amprolium",
-        route: "water",
-        indication: "کوکسیدیوز"
-    },
-
-    {
-        name: "دیکلازوریل",
-        active: "Diclazuril",
-        route: "feed",
-        indication: "کوکسیدیوز"
-    },
-
-    {
-        name: "تولترازوریل",
-        active: "Toltrazuril",
-        route: "water",
-        indication: "کوکسیدیوز"
-    },
-
-    {
-        name: "نیستاتین",
-        active: "Nystatin",
-        route: "oral",
-        indication: "کاندیدیاز"
-    },
-
-    {
-        name: "ویتامین AD3E",
-        active: "Vitamin A+D3+E",
-        route: "water",
-        indication: "حمایت تغذیه‌ای"
-    },
-
-    {
-        name: "ویتامین‌های گروه B",
-        active: "Vitamin B Complex",
-        route: "water",
-        indication: "حمایت تغذیه‌ای"
-    },
-
-    {
-        name: "الکترولیت",
-        active: "Electrolytes",
-        route: "water",
-        indication: "استرس و کم‌آبی"
-    },
-
-    {
-        name: "پروبیوتیک",
-        active: "Probiotic",
-        route: "water",
-        indication: "حمایت فلور روده"
-    },
-
-    {
-        name: "جاذب مایکوتوکسین",
-        active: "Mycotoxin Binder",
-        route: "feed",
-        indication: "ریسک مایکوتوکسین"
-    }
-];
 
 
 /* =========================================================
@@ -149,9 +27,11 @@ async function initHealth() {
         const {
             data,
             error
-        } = await supabaseClient
-            .auth
-            .getSession();
+        } =
+            await supabaseClient
+                .auth
+                .getSession();
+
 
         if (
             error ||
@@ -167,8 +47,10 @@ async function initHealth() {
             return;
         }
 
+
         currentUser =
             data.session.user;
+
 
         await loadSelection();
 
@@ -176,7 +58,20 @@ async function initHealth() {
 
         setupForms();
 
-        setupDatePickers();
+        setupPrintButton();
+
+
+        if (
+            window.jalaliDate &&
+            typeof window.jalaliDate
+                .prepareDateFields === "function"
+        ) {
+
+            window.jalaliDate
+                .prepareDateFields();
+
+        }
+
 
         setDefaultDates();
 
@@ -189,7 +84,7 @@ async function initHealth() {
     catch (error) {
 
         console.error(
-            "Health initialization:",
+            "Health initialization error:",
             error
         );
 
@@ -203,7 +98,7 @@ async function initHealth() {
 
 
 /* =========================================================
-   FLOCK
+   LOAD FLOCK
 ========================================================= */
 
 async function loadSelection() {
@@ -212,6 +107,7 @@ async function loadSelection() {
         typeof getCurrentSelection === "function"
             ? getCurrentSelection()
             : {};
+
 
     if (!selection.flockId) {
 
@@ -225,25 +121,29 @@ async function loadSelection() {
         return;
     }
 
+
     const {
         data: flock,
         error
-    } = await supabaseClient
-        .from("flocks")
-        .select("*")
-        .eq(
-            "id",
-            selection.flockId
-        )
-        .eq(
-            "owner_id",
-            currentUser.id
-        )
-        .maybeSingle();
+    } =
+        await supabaseClient
+            .from("flocks")
+            .select("*")
+            .eq(
+                "id",
+                selection.flockId
+            )
+            .eq(
+                "owner_id",
+                currentUser.id
+            )
+            .maybeSingle();
+
 
     if (error) {
         throw error;
     }
+
 
     if (!flock) {
 
@@ -256,6 +156,7 @@ async function loadSelection() {
 
         return;
     }
+
 
     currentFlock =
         flock;
@@ -275,7 +176,9 @@ async function loadSelection() {
             )
             .maybeSingle();
 
+
     if (!farmResult.error) {
+
         currentFarm =
             farmResult.data;
     }
@@ -295,7 +198,9 @@ async function loadSelection() {
             )
             .maybeSingle();
 
+
     if (!houseResult.error) {
+
         currentHouse =
             houseResult.data;
     }
@@ -304,8 +209,11 @@ async function loadSelection() {
     const info = [
 
         currentFarm?.name,
+
         currentHouse?.name,
+
         currentFlock.flock_name,
+
         currentFlock.strain
 
     ]
@@ -313,13 +221,15 @@ async function loadSelection() {
     .join(" | ");
 
 
-    const infoEl =
+    const infoElement =
         document.getElementById(
             "flockInfo"
         );
 
-    if (infoEl) {
-        infoEl.textContent =
+
+    if (infoElement) {
+
+        infoElement.textContent =
             info || "گله انتخاب‌شده";
     }
 
@@ -340,7 +250,9 @@ function calculateAge() {
         return;
     }
 
+
     let age = null;
+
 
     if (
         typeof calculateAgeDays ===
@@ -353,12 +265,14 @@ function calculateAge() {
             );
     }
 
+
     if (
         age === null ||
         age === undefined
     ) {
         return;
     }
+
 
     [
         "vaccinationAge",
@@ -369,6 +283,7 @@ function calculateAge() {
         const el =
             document.getElementById(id);
 
+
         if (
             el &&
             !el.value
@@ -377,6 +292,7 @@ function calculateAge() {
             el.value =
                 age;
         }
+
     });
 }
 
@@ -400,6 +316,7 @@ function setupTabs() {
                     const tab =
                         this.dataset.tab;
 
+
                     document
                         .querySelectorAll(
                             ".health-tab"
@@ -411,6 +328,7 @@ function setupTabs() {
                             );
 
                         });
+
 
                     document
                         .querySelectorAll(
@@ -424,22 +342,28 @@ function setupTabs() {
 
                         });
 
+
                     this.classList.add(
                         "active"
                     );
+
 
                     const panel =
                         document.getElementById(
                             "panel-" + tab
                         );
 
+
                     if (panel) {
+
                         panel.classList.add(
                             "active"
                         );
                     }
+
                 }
             );
+
         });
 }
 
@@ -455,6 +379,7 @@ function setupForms() {
             "vaccinationForm"
         );
 
+
     if (vaccinationForm) {
 
         vaccinationForm.addEventListener(
@@ -468,6 +393,7 @@ function setupForms() {
         document.getElementById(
             "antibodyForm"
         );
+
 
     if (antibodyForm) {
 
@@ -483,6 +409,7 @@ function setupForms() {
             "labForm"
         );
 
+
     if (labForm) {
 
         labForm.addEventListener(
@@ -497,6 +424,7 @@ function setupForms() {
             "treatmentForm"
         );
 
+
     if (treatmentForm) {
 
         treatmentForm.addEventListener(
@@ -508,97 +436,24 @@ function setupForms() {
 
 
 /* =========================================================
-   DATE PICKER
+   DATES
 ========================================================= */
 
-function setupDatePickers() {
+function setDefaultDates() {
+
+    let today = "";
+
 
     if (
         window.jalaliDate &&
         typeof window.jalaliDate
-            .prepareDateFields ===
-        "function"
+            .todayJalali === "function"
     ) {
 
-        window.jalaliDate
-            .prepareDateFields();
+        today =
+            window.jalaliDate
+                .todayJalali();
     }
-
-    if (
-        typeof window.jQuery !==
-        "undefined" &&
-        typeof window.jQuery.fn
-            .persianDatepicker ===
-        "function"
-    ) {
-
-        jQuery(".jalali-input")
-            .each(function () {
-
-                const el =
-                    jQuery(this);
-
-                if (
-                    el.data(
-                        "datepicker"
-                    )
-                ) {
-                    return;
-                }
-
-                el.persianDatepicker({
-
-                    format:
-                        "YYYY/MM/DD",
-
-                    autoClose:
-                        true,
-
-                    initialValue:
-                        false,
-
-                    observer:
-                        true,
-
-                    calendarType:
-                        "persian",
-
-                    toolbox: {
-
-                        calendarSwitch:
-                            false
-
-                    },
-
-                    navigator: {
-
-                        enabled:
-                            true
-
-                    },
-
-                    responsive:
-                        true,
-
-                    timePicker: {
-
-                        enabled:
-                            false
-
-                    }
-                });
-            });
-    }
-}
-
-
-function setDefaultDates() {
-
-    const today =
-        window.jalaliDate
-            ? window.jalaliDate
-                .todayJalali()
-            : "";
 
 
     [
@@ -610,9 +465,8 @@ function setDefaultDates() {
     .forEach(id => {
 
         const el =
-            document.getElementById(
-                id
-            );
+            document.getElementById(id);
+
 
         if (
             el &&
@@ -622,6 +476,7 @@ function setDefaultDates() {
             el.value =
                 today;
         }
+
     });
 }
 
@@ -635,7 +490,9 @@ async function loadCatalogs() {
     await Promise.all([
 
         loadDiseases(),
+
         loadVaccines(),
+
         loadMedications()
 
     ]);
@@ -654,19 +511,15 @@ async function loadDiseases() {
     } =
         await supabaseClient
             .from("diseases")
-            .select(
-                "code,name_fa,name_en,category,active"
-            )
+            .select("*")
             .eq(
                 "active",
                 true
             )
             .order(
                 "category"
-            )
-            .order(
-                "name_fa"
             );
+
 
     if (error) {
         throw error;
@@ -684,6 +537,7 @@ async function loadDiseases() {
         const select =
             document.getElementById(id);
 
+
         if (!select) {
             return;
         }
@@ -696,67 +550,30 @@ async function loadDiseases() {
         `;
 
 
-        let currentCategory =
-            null;
-
-
-        (data || [])
-            .forEach(disease => {
-
-                if (
-                    disease.category !==
-                    currentCategory
-                ) {
-
-                    currentCategory =
-                        disease.category;
-
-                    const group =
-                        document.createElement(
-                            "optgroup"
-                        );
-
-                    group.label =
-                        categoryLabel(
-                            currentCategory
-                        );
-
-                    select.appendChild(
-                        group
-                    );
-
-                    disease._group =
-                        group;
-                }
-
+        (data || []).forEach(
+            disease => {
 
                 const option =
                     document.createElement(
                         "option"
                     );
 
+
                 option.value =
                     disease.code;
+
 
                 option.textContent =
                     disease.name_fa;
 
-                const groups =
-                    select.querySelectorAll(
-                        "optgroup"
-                    );
 
-                const last =
-                    groups[
-                        groups.length - 1
-                    ];
+                select.appendChild(
+                    option
+                );
 
-                if (last) {
-                    last.appendChild(
-                        option
-                    );
-                }
-            });
+            }
+        );
+
     });
 }
 
@@ -773,9 +590,7 @@ async function loadVaccines() {
     } =
         await supabaseClient
             .from("vaccines")
-            .select(
-                "id,name,manufacturer,vaccine_type,route,target_codes,notes,active"
-            )
+            .select("*")
             .eq(
                 "active",
                 true
@@ -783,6 +598,7 @@ async function loadVaccines() {
             .order(
                 "name"
             );
+
 
     if (error) {
         throw error;
@@ -793,6 +609,7 @@ async function loadVaccines() {
         document.getElementById(
             "vaccinationVaccine"
         );
+
 
     if (!select) {
         return;
@@ -806,80 +623,29 @@ async function loadVaccines() {
     `;
 
 
-    (data || [])
-        .forEach(vaccine => {
+    (data || []).forEach(
+        vaccine => {
 
             const option =
                 document.createElement(
                     "option"
                 );
 
+
             option.value =
                 vaccine.id;
+
 
             option.textContent =
                 vaccine.manufacturer
                     ? `${vaccine.name} — ${vaccine.manufacturer}`
                     : vaccine.name;
 
-            option.dataset.name =
-                vaccine.name || "";
-
-            option.dataset.route =
-                vaccine.route || "";
 
             select.appendChild(
                 option
             );
-        });
 
-
-    select.addEventListener(
-        "change",
-        function () {
-
-            const selected =
-                this.options[
-                    this.selectedIndex
-                ];
-
-            if (!selected) {
-                return;
-            }
-
-
-            const route =
-                selected.dataset.route;
-
-
-            const routeSelect =
-                document.getElementById(
-                    "vaccinationRoute"
-                );
-
-
-            if (
-                route &&
-                routeSelect
-            ) {
-
-                const values = [
-                    "water",
-                    "spray",
-                    "eye",
-                    "wing",
-                    "injection"
-                ];
-
-
-                if (
-                    values.includes(route)
-                ) {
-
-                    routeSelect.value =
-                        route;
-                }
-            }
         }
     );
 }
@@ -887,14 +653,37 @@ async function loadVaccines() {
 
 /* =========================================================
    MEDICATIONS
-   ========================================================= */
+   No "active" column is assumed.
+========================================================= */
 
 async function loadMedications() {
+
+    const {
+        data,
+        error
+    } =
+        await supabaseClient
+            .from("medications")
+            .select("*")
+            .order("name");
+
+
+    if (error) {
+
+        console.warn(
+            "Medications catalog:",
+            error.message
+        );
+
+        return;
+    }
+
 
     const select =
         document.getElementById(
             "treatmentMedication"
         );
+
 
     if (!select) {
         return;
@@ -908,91 +697,89 @@ async function loadMedications() {
     `;
 
 
-    MEDICATION_CATALOG
-        .forEach((medication, index) => {
+    (data || []).forEach(
+        medication => {
 
             const option =
                 document.createElement(
                     "option"
                 );
 
+
             option.value =
-                String(index);
+                medication.id;
+
 
             option.textContent =
-                medication.name +
-                (
-                    medication.active
-                        ? " — " +
-                          medication.active
-                        : ""
-                );
+                medication.active_ingredient
+                    ? `${medication.name} — ${medication.active_ingredient}`
+                    : medication.name;
+
 
             select.appendChild(
                 option
             );
-        });
 
-
-    select.addEventListener(
-        "change",
-        function () {
-
-            const index =
-                Number(this.value);
-
-            const selected =
-                MEDICATION_CATALOG[index];
-
-            if (!selected) {
-                return;
-            }
-
-
-            const name =
-                document.getElementById(
-                    "treatmentMedicationName"
-                );
-
-            const active =
-                document.getElementById(
-                    "treatmentActive"
-                );
-
-            const route =
-                document.getElementById(
-                    "treatmentRoute"
-                );
-
-
-            if (name) {
-                name.value =
-                    selected.name;
-            }
-
-            if (active) {
-                active.value =
-                    selected.active;
-            }
-
-            if (
-                route &&
-                selected.route
-            ) {
-                route.value =
-                    selected.route;
-            }
         }
     );
+
+
+    select.onchange = function () {
+
+        const selected =
+            (data || []).find(
+                item =>
+                    String(item.id) ===
+                    String(this.value)
+            );
+
+
+        if (!selected) {
+            return;
+        }
+
+
+        const nameInput =
+            document.getElementById(
+                "treatmentMedicationName"
+            );
+
+
+        const activeInput =
+            document.getElementById(
+                "treatmentActive"
+            );
+
+
+        if (nameInput) {
+
+            nameInput.value =
+                selected.name || "";
+        }
+
+
+        if (activeInput) {
+
+            activeInput.value =
+                selected.active_ingredient || "";
+        }
+
+    };
 }
 
 
 /* =========================================================
    VACCINATION
-   REAL DB:
+   Uses actual current schema:
    vaccine_date
    vaccine_name
    disease
+   manufacturer
+   batch_number
+   route
+   dose
+   dose_unit
+   administered_by
 ========================================================= */
 
 async function saveVaccination(event) {
@@ -1002,34 +789,49 @@ async function saveVaccination(event) {
 
     try {
 
-        const vaccineSelect =
-            document.getElementById(
+        const vaccineId =
+            value(
                 "vaccinationVaccine"
             );
 
-        const vaccineOption =
-            vaccineSelect
-                ?.options[
-                    vaccineSelect.selectedIndex
-                ];
+
+        let vaccineName = "";
+        let manufacturer = "";
 
 
-        const vaccineName =
-            vaccineOption
-                ?.dataset
-                ?.name ||
-            vaccineOption
-                ?.textContent ||
-            null;
+        if (vaccineId) {
+
+            const {
+                data
+            } =
+                await supabaseClient
+                    .from("vaccines")
+                    .select(
+                        "name,manufacturer"
+                    )
+                    .eq(
+                        "id",
+                        vaccineId
+                    )
+                    .maybeSingle();
+
+
+            vaccineName =
+                data?.name || "";
+
+
+            manufacturer =
+                data?.manufacturer || "";
+        }
 
 
         const payload = {
 
-            flock_id:
-                currentFlock.id,
-
             owner_id:
                 currentUser.id,
+
+            flock_id:
+                currentFlock.id,
 
             vaccine_date:
                 value(
@@ -1045,7 +847,7 @@ async function saveVaccination(event) {
                 ),
 
             manufacturer:
-                null,
+                manufacturer,
 
             batch_number:
                 value(
@@ -1058,19 +860,24 @@ async function saveVaccination(event) {
                 ),
 
             dose:
-                parseDose(
+                numberOrNull(
                     "vaccinationDose"
                 ),
 
             dose_unit:
-                "dose",
+                value(
+                    "vaccinationDoseUnit"
+                ),
 
             administered_by:
-                null,
+                value(
+                    "vaccinationAdministeredBy"
+                ),
 
             notes:
-                buildVaccinationNotes()
-
+                value(
+                    "vaccinationNotes"
+                )
         };
 
 
@@ -1133,34 +940,6 @@ async function saveVaccination(event) {
 }
 
 
-function buildVaccinationNotes() {
-
-    const notes =
-        value(
-            "vaccinationNotes"
-        );
-
-    const expiry =
-        value(
-            "vaccinationExpiry"
-        );
-
-
-    return [
-
-        expiry
-            ? "تاریخ انقضا: " +
-              displayHealthDate(expiry)
-            : "",
-
-        notes || ""
-
-    ]
-    .filter(Boolean)
-    .join(" | ");
-}
-
-
 /* =========================================================
    ANTIBODY
 ========================================================= */
@@ -1217,7 +996,9 @@ async function saveAntibody(event) {
                 ),
 
             mean_value:
-                null,
+                numberOrNull(
+                    "antibodyMean"
+                ),
 
             gmt:
                 numberOrNull(
@@ -1288,7 +1069,7 @@ async function saveAntibody(event) {
 
 
         showStatus(
-            "تیتر آنتی‌بادی با موفقیت ثبت شد.",
+            "تیتر آنتی‌بادی ثبت شد.",
             "success"
         );
 
@@ -1450,16 +1231,15 @@ async function saveLab(event) {
 
 /* =========================================================
    TREATMENT
-   REAL DB:
-   start_date
-   end_date
+   Uses actual current schema:
    medicine_name
    active_ingredient
-   dose numeric
+   dose
    dose_unit
    route
    indication
    withdrawal_days
+   veterinarian
 ========================================================= */
 
 async function saveTreatment(event) {
@@ -1469,36 +1249,85 @@ async function saveTreatment(event) {
 
     try {
 
+        const medicationId =
+            value(
+                "treatmentMedication"
+            );
+
+
+        let selectedMedication = null;
+
+
+        if (medicationId) {
+
+            const {
+                data
+            } =
+                await supabaseClient
+                    .from("medications")
+                    .select("*")
+                    .eq(
+                        "id",
+                        medicationId
+                    )
+                    .maybeSingle();
+
+
+            selectedMedication =
+                data || null;
+        }
+
+
         const medicationName =
             value(
                 "treatmentMedicationName"
-            );
+            ) ||
+            selectedMedication?.name ||
+            "";
 
 
-        const diseaseCode =
+        const activeIngredient =
             value(
-                "treatmentDisease"
+                "treatmentActive"
+            ) ||
+            selectedMedication?.active_ingredient ||
+            "";
+
+
+        const withdrawalText =
+            value(
+                "treatmentWithdrawal"
             );
 
 
-        const indication =
-            [
-                diseaseCode,
-                value(
-                    "treatmentNotes"
-                )
-            ]
-            .filter(Boolean)
-            .join(" | ");
+        let withdrawalDays = null;
+
+
+        if (withdrawalText !== null) {
+
+            const parsed =
+                Number(
+                    withdrawalText
+                );
+
+
+            if (
+                Number.isFinite(parsed)
+            ) {
+
+                withdrawalDays =
+                    parsed;
+            }
+        }
 
 
         const payload = {
 
-            flock_id:
-                currentFlock.id,
-
             owner_id:
                 currentUser.id,
+
+            flock_id:
+                currentFlock.id,
 
             start_date:
                 value(
@@ -1514,19 +1343,15 @@ async function saveTreatment(event) {
                 medicationName,
 
             active_ingredient:
-                value(
-                    "treatmentActive"
-                ),
+                activeIngredient,
 
             dose:
-                parseNumericDose(
+                numberOrNull(
                     "treatmentDose"
                 ),
 
             dose_unit:
-                detectDoseUnit(
-                    "treatmentDose"
-                ),
+                null,
 
             route:
                 value(
@@ -1534,21 +1359,22 @@ async function saveTreatment(event) {
                 ),
 
             indication:
-                indication,
-
-            withdrawal_days:
-                parseWithdrawalDays(
-                    "treatmentWithdrawal"
+                value(
+                    "treatmentDisease"
                 ),
 
+            withdrawal_days:
+                withdrawalDays,
+
             veterinarian:
-                null,
+                value(
+                    "treatmentVeterinarian"
+                ),
 
             notes:
                 value(
                     "treatmentNotes"
                 )
-
         };
 
 
@@ -1570,14 +1396,91 @@ async function saveTreatment(event) {
             error
         } =
             await supabaseClient
-                .from("treatments")
+                .from("treatment_records")
                 .insert(
                     payload
                 );
 
 
+        /*
+         * اگر جدول اصلی پروژه نام treatments داشته باشد
+         * در مرحله بعد قابل تغییر است.
+         */
+
+
         if (error) {
-            throw error;
+
+            /*
+             * تلاش دوم برای ساختار قدیمی
+             */
+
+            const fallback =
+                await supabaseClient
+                    .from("treatments")
+                    .insert({
+
+                        owner_id:
+                            currentUser.id,
+
+                        farm_id:
+                            currentFlock.farm_id,
+
+                        house_id:
+                            currentFlock.house_id,
+
+                        flock_id:
+                            currentFlock.id,
+
+                        treatment_date:
+                            payload.start_date,
+
+                        end_date:
+                            payload.end_date,
+
+                        disease_code:
+                            payload.indication,
+
+                        medication_id:
+                            medicationId,
+
+                        medication_name:
+                            payload.medicine_name,
+
+                        active_ingredient:
+                            payload.active_ingredient,
+
+                        dose:
+                            value(
+                                "treatmentDose"
+                            ),
+
+                        route:
+                            payload.route,
+
+                        duration:
+                            value(
+                                "treatmentDuration"
+                            ),
+
+                        withdrawal_period:
+                            value(
+                                "treatmentWithdrawal"
+                            ),
+
+                        result:
+                            value(
+                                "treatmentResult"
+                            ),
+
+                        notes:
+                            payload.notes
+                    });
+
+
+            if (fallback.error) {
+
+                throw error;
+            }
         }
 
 
@@ -1620,6 +1523,7 @@ async function loadHistory() {
             "healthTable"
         );
 
+
     if (!table) {
         return;
     }
@@ -1644,17 +1548,7 @@ async function loadHistory() {
 
             supabaseClient
                 .from("vaccinations")
-                .select(`
-                    id,
-                    vaccine_date,
-                    vaccine_name,
-                    disease,
-                    dose,
-                    dose_unit,
-                    route,
-                    batch_number,
-                    notes
-                `)
+                .select("*")
                 .eq(
                     "owner_id",
                     currentUser.id
@@ -1663,6 +1557,7 @@ async function loadHistory() {
                     "flock_id",
                     currentFlock.id
                 ),
+
 
             supabaseClient
                 .from("antibody_tests")
@@ -1676,6 +1571,7 @@ async function loadHistory() {
                     currentFlock.id
                 ),
 
+
             supabaseClient
                 .from("lab_tests")
                 .select("*")
@@ -1688,21 +1584,14 @@ async function loadHistory() {
                     currentFlock.id
                 ),
 
+
+            /*
+             * جدول واقعی جدید
+             */
+
             supabaseClient
-                .from("treatments")
-                .select(`
-                    id,
-                    start_date,
-                    end_date,
-                    medicine_name,
-                    active_ingredient,
-                    dose,
-                    dose_unit,
-                    route,
-                    indication,
-                    withdrawal_days,
-                    notes
-                `)
+                .from("treatment_records")
+                .select("*")
                 .eq(
                     "owner_id",
                     currentUser.id
@@ -1711,22 +1600,59 @@ async function loadHistory() {
                     "flock_id",
                     currentFlock.id
                 )
+
         ]);
 
 
-    const errors = [
+    /*
+     * اگر treatment_records وجود نداشت
+     * از جدول treatments استفاده می‌کنیم.
+     */
 
-        vaccinationsResult.error,
-        antibodiesResult.error,
-        labsResult.error,
+    let treatmentData =
+        treatmentsResult.data || [];
+
+
+    if (
         treatmentsResult.error
+    ) {
 
-    ].filter(Boolean);
+        const fallback =
+            await supabaseClient
+                .from("treatments")
+                .select("*")
+                .eq(
+                    "owner_id",
+                    currentUser.id
+                )
+                .eq(
+                    "flock_id",
+                    currentFlock.id
+                );
 
 
-    if (errors.length) {
+        if (!fallback.error) {
 
-        console.error(errors);
+            treatmentData =
+                fallback.data || [];
+
+        }
+
+    }
+
+
+    if (
+        vaccinationsResult.error ||
+        antibodiesResult.error ||
+        labsResult.error
+    ) {
+
+        console.error(
+            vaccinationsResult.error,
+            antibodiesResult.error,
+            labsResult.error
+        );
+
 
         table.innerHTML = `
             <tr>
@@ -1736,6 +1662,7 @@ async function loadHistory() {
             </tr>
         `;
 
+
         return;
     }
 
@@ -1743,7 +1670,9 @@ async function loadHistory() {
     const rows = [];
 
 
-    /* واکسن */
+    /* =====================================================
+       VACCINATIONS
+    ===================================================== */
 
     (vaccinationsResult.data || [])
         .forEach(item => {
@@ -1756,24 +1685,26 @@ async function loadHistory() {
                 table:
                     "vaccinations",
 
-                rawDate:
-                    item.vaccine_date,
-
                 date:
                     displayHealthDate(
                         item.vaccine_date
                     ),
 
+                sortDate:
+                    item.vaccine_date || "",
+
                 type:
                     "واکسیناسیون",
 
                 item:
-                    item.vaccine_name,
+                    item.vaccine_name ||
+                    "واکسن",
 
                 details:
                     [
                         item.disease,
-                        item.dose
+                        item.manufacturer,
+                        item.dose !== null
                             ? "دوز: " +
                               item.dose +
                               (
@@ -1787,18 +1718,25 @@ async function loadHistory() {
                             item.route
                         ),
                         item.batch_number
-                            ? "سری ساخت: " +
+                            ? "سری: " +
                               item.batch_number
+                            : "",
+                        item.administered_by
+                            ? "مجری: " +
+                              item.administered_by
                             : "",
                         item.notes
                     ]
                     .filter(Boolean)
                     .join(" | ")
             });
+
         });
 
 
-    /* تیتر */
+    /* =====================================================
+       ANTIBODIES
+    ===================================================== */
 
     (antibodiesResult.data || [])
         .forEach(item => {
@@ -1811,19 +1749,21 @@ async function loadHistory() {
                 table:
                     "antibody_tests",
 
-                rawDate:
-                    item.test_date,
-
                 date:
                     displayHealthDate(
                         item.test_date
                     ),
 
+                sortDate:
+                    item.test_date || "",
+
                 type:
                     "تیتر آنتی‌بادی",
 
                 item:
-                    item.disease_code,
+                    diseaseName(
+                        item.disease_code
+                    ),
 
                 details:
                     [
@@ -1833,31 +1773,50 @@ async function loadHistory() {
 
                         item.test_type,
 
-                        item.gmt !== null &&
-                        item.gmt !== undefined
+                        item.sample_count
+                            ? "نمونه: " +
+                              item.sample_count
+                            : "",
+
+                        item.mean_value !== null
+                            ? "Mean: " +
+                              item.mean_value
+                            : "",
+
+                        item.gmt !== null
                             ? "GMT: " +
                               item.gmt
                             : "",
 
-                        item.cv_percent !== null &&
-                        item.cv_percent !== undefined
+                        item.cv_percent !== null
                             ? "CV: " +
                               item.cv_percent +
                               "%"
                             : "",
 
-                        item.sample_count
-                            ? "نمونه: " +
-                              item.sample_count
-                            : ""
+                        item.min_value !== null
+                            ? "Min: " +
+                              item.min_value
+                            : "",
+
+                        item.max_value !== null
+                            ? "Max: " +
+                              item.max_value
+                            : "",
+
+                        item.lab_name
                     ]
                     .filter(Boolean)
                     .join(" | ")
+
             });
+
         });
 
 
-    /* آزمایش */
+    /* =====================================================
+       LAB
+    ===================================================== */
 
     (labsResult.data || [])
         .forEach(item => {
@@ -1870,48 +1829,96 @@ async function loadHistory() {
                 table:
                     "lab_tests",
 
-                rawDate:
-                    item.test_date,
-
                 date:
                     displayHealthDate(
                         item.test_date
                     ),
 
+                sortDate:
+                    item.test_date || "",
+
                 type:
                     "آزمایش",
 
                 item:
-                    item.test_type,
+                    item.disease_code
+                        ? diseaseName(
+                            item.disease_code
+                        )
+                        : item.test_type,
 
                 details:
                     [
-                        item.disease_code,
-                        item.sample_type,
+                        item.test_type,
+
+                        item.sample_type
+                            ? "نمونه: " +
+                              item.sample_type
+                            : "",
+
+                        item.sample_count
+                            ? "تعداد: " +
+                              item.sample_count
+                            : "",
+
+                        item.positive_count !== null
+                            ? "مثبت: " +
+                              item.positive_count
+                            : "",
+
                         item.result,
 
-                        item.ct_value !== null &&
-                        item.ct_value !== undefined
+                        item.ct_value !== null
                             ? "Ct: " +
                               item.ct_value
                             : "",
 
-                        item.positive_count !== null &&
-                        item.positive_count !== undefined
-                            ? "مثبت: " +
-                              item.positive_count
-                            : ""
+                        item.laboratory
                     ]
                     .filter(Boolean)
                     .join(" | ")
+
             });
+
         });
 
 
-    /* درمان */
+    /* =====================================================
+       TREATMENTS
+    ===================================================== */
 
-    (treatmentsResult.data || [])
+    treatmentData
         .forEach(item => {
+
+            const isNew =
+                Object.prototype.hasOwnProperty
+                    .call(
+                        item,
+                        "medicine_name"
+                    );
+
+
+            const date =
+                isNew
+                    ? item.start_date
+                    : item.treatment_date;
+
+
+            const medicine =
+                isNew
+                    ? item.medicine_name
+                    : item.medication_name;
+
+
+            const route =
+                item.route;
+
+
+            const indication =
+                isNew
+                    ? item.indication
+                    : item.disease_code;
+
 
             rows.push({
 
@@ -1919,56 +1926,71 @@ async function loadHistory() {
                     item.id,
 
                 table:
-                    "treatments",
-
-                rawDate:
-                    item.start_date,
+                    isNew
+                        ? "treatment_records"
+                        : "treatments",
 
                 date:
                     displayHealthDate(
-                        item.start_date
+                        date
                     ),
+
+                sortDate:
+                    date || "",
 
                 type:
                     "درمان",
 
                 item:
-                    item.medicine_name,
+                    medicine ||
+                    "دارو",
 
                 details:
                     [
+                        indication
+                            ? diseaseName(
+                                indication
+                            )
+                            : "",
+
                         item.active_ingredient,
 
                         item.dose !== null &&
                         item.dose !== undefined
                             ? "دوز: " +
-                              item.dose +
-                              (
-                                  item.dose_unit
-                                      ? " " +
-                                        item.dose_unit
-                                      : ""
-                              )
+                              item.dose
                             : "",
 
                         routeLabel(
-                            item.route
+                            route
                         ),
 
-                        item.withdrawal_days !== null &&
-                        item.withdrawal_days !== undefined
+                        isNew &&
+                        item.withdrawal_days !== null
                             ? "منع مصرف: " +
                               item.withdrawal_days +
                               " روز"
                             : "",
 
+                        isNew
+                            ? item.veterinarian
+                            : "",
+
+                        item.result,
+
                         item.notes
                     ]
                     .filter(Boolean)
                     .join(" | ")
+
             });
+
         });
 
+
+    /* =====================================================
+       EMPTY
+    ===================================================== */
 
     if (!rows.length) {
 
@@ -1984,14 +2006,22 @@ async function loadHistory() {
     }
 
 
+    /* =====================================================
+       SORT
+    ===================================================== */
+
     rows.sort(
-        (a,b) =>
-            String(b.rawDate)
+        (a, b) =>
+            String(b.sortDate)
                 .localeCompare(
-                    String(a.rawDate)
+                    String(a.sortDate)
                 )
     );
 
+
+    /* =====================================================
+       RENDER
+    ===================================================== */
 
     table.innerHTML =
         rows
@@ -2000,23 +2030,37 @@ async function loadHistory() {
                 <tr>
 
                     <td>
-                        ${escapeSafe(row.date)}
+                        ${escapeSafe(
+                            row.date
+                        )}
                     </td>
 
                     <td>
+
                         <span class="badge">
-                            ${escapeSafe(row.type)}
+
+                            ${escapeSafe(
+                                row.type
+                            )}
+
                         </span>
+
                     </td>
 
                     <td>
-                        ${escapeSafe(row.item)}
+
+                        ${escapeSafe(
+                            row.item
+                        )}
+
                     </td>
 
                     <td>
+
                         ${escapeSafe(
                             row.details || "-"
                         )}
+
                     </td>
 
                     <td>
@@ -2024,12 +2068,9 @@ async function loadHistory() {
                         <button
                             type="button"
                             class="btn btn-danger"
-                            onclick="
-                                deleteRecord(
-                                    '${row.id}',
-                                    '${row.table}'
-                                )
-                            ">
+                            data-delete-id="${escapeSafe(row.id)}"
+                            data-delete-table="${escapeSafe(row.table)}"
+                        >
 
                             حذف
 
@@ -2041,6 +2082,192 @@ async function loadHistory() {
 
             `)
             .join("");
+
+
+    /*
+     * حذف‌ها
+     */
+
+    table
+        .querySelectorAll(
+            "[data-delete-id]"
+        )
+        .forEach(button => {
+
+            button.addEventListener(
+                "click",
+                function () {
+
+                    deleteRecord(
+                        this.dataset.deleteId,
+                        this.dataset.deleteTable
+                    );
+
+                }
+            );
+
+        });
+}
+
+
+/* =========================================================
+   PRINT
+========================================================= */
+
+function setupPrintButton() {
+
+    const button =
+        document.getElementById(
+            "printHealthHistoryBtn"
+        );
+
+
+    if (!button) {
+        return;
+    }
+
+
+    button.addEventListener(
+        "click",
+        printHealthHistory
+    );
+}
+
+
+function printHealthHistory() {
+
+    if (!currentFlock) {
+
+        showStatus(
+            "ابتدا یک گله را انتخاب کنید.",
+            "error"
+        );
+
+        return;
+    }
+
+
+    /*
+     * اطلاعات گله
+     */
+
+    const flockInfo =
+        document.getElementById(
+            "printFlockInfo"
+        );
+
+
+    if (flockInfo) {
+
+        const parts = [
+
+            currentFarm?.name
+                ? "فارم: " +
+                  currentFarm.name
+                : "",
+
+            currentHouse?.name
+                ? "سالن: " +
+                  currentHouse.name
+                : "",
+
+            currentFlock?.flock_name
+                ? "گله: " +
+                  currentFlock.flock_name
+                : "",
+
+            currentFlock?.strain
+                ? "نژاد: " +
+                  currentFlock.strain
+                : ""
+
+        ]
+        .filter(Boolean);
+
+
+        flockInfo.textContent =
+            parts.join(" | ");
+    }
+
+
+    /*
+     * تاریخ چاپ شمسی
+     */
+
+    const printDate =
+        document.getElementById(
+            "printDate"
+        );
+
+
+    if (printDate) {
+
+        let today = "";
+
+
+        if (
+            window.jalaliDate &&
+            typeof window.jalaliDate
+                .todayJalali === "function"
+        ) {
+
+            today =
+                window.jalaliDate
+                    .todayJalali();
+        }
+
+
+        printDate.textContent =
+            today
+                ? "تاریخ چاپ: " +
+                  today
+                : "";
+    }
+
+
+    /*
+     * فقط تب سوابق فعال باشد
+     */
+
+    document
+        .querySelectorAll(
+            ".health-panel"
+        )
+        .forEach(panel => {
+
+            panel.classList.remove(
+                "active"
+            );
+
+        });
+
+
+    const historyPanel =
+        document.getElementById(
+            "panel-history"
+        );
+
+
+    if (historyPanel) {
+
+        historyPanel.classList.add(
+            "active"
+        );
+    }
+
+
+    /*
+     * چاپ
+     */
+
+    setTimeout(
+        () => {
+
+            window.print();
+
+        },
+        100
+    );
 }
 
 
@@ -2058,6 +2285,7 @@ async function deleteRecord(
             "آیا این رکورد حذف شود؟"
         )
     ) {
+
         return;
     }
 
@@ -2065,9 +2293,14 @@ async function deleteRecord(
     const allowedTables = [
 
         "vaccinations",
+
         "antibody_tests",
+
         "lab_tests",
-        "treatments"
+
+        "treatments",
+
+        "treatment_records"
 
     ];
 
@@ -2077,6 +2310,7 @@ async function deleteRecord(
             tableName
         )
     ) {
+
         return;
     }
 
@@ -2128,6 +2362,7 @@ function value(id) {
     const el =
         document.getElementById(id);
 
+
     if (!el) {
         return null;
     }
@@ -2147,10 +2382,13 @@ function value(id) {
     const dateIds = [
 
         "vaccinationDate",
-        "vaccinationExpiry",
+
         "antibodyDate",
+
         "labDate",
+
         "treatmentDate",
+
         "treatmentEnd"
 
     ];
@@ -2160,13 +2398,23 @@ function value(id) {
         dateIds.includes(id)
     ) {
 
+        if (
+            !window.jalaliDate ||
+            typeof window.jalaliDate
+                .jalaliToISO !== "function"
+        ) {
+
+            throw new Error(
+                "سیستم تاریخ شمسی بارگذاری نشده است."
+            );
+        }
+
+
         const iso =
             window.jalaliDate
-                ? window.jalaliDate
-                    .jalaliToISO(
-                        normalizeDigits(result)
-                    )
-                : null;
+                .jalaliToISO(
+                    result
+                );
 
 
         if (!iso) {
@@ -2185,168 +2433,26 @@ function value(id) {
 }
 
 
-function normalizeDigits(text) {
-
-    return String(text)
-        .replace(
-            /[۰-۹]/g,
-            d =>
-                String(
-                    "۰۱۲۳۴۵۶۷۸۹"
-                        .indexOf(d)
-                )
-        )
-        .replace(
-            /[٠-٩]/g,
-            d =>
-                String(
-                    "٠١٢٣٤٥٦٧٨٩"
-                        .indexOf(d)
-                )
-        );
-}
-
-
 function numberOrNull(id) {
 
     const v =
         value(id);
 
+
     if (
         v === null
     ) {
+
         return null;
     }
 
 
     const number =
-        Number(
-            normalizeDigits(v)
-        );
+        Number(v);
 
 
     return Number.isFinite(number)
         ? number
-        : null;
-}
-
-
-function parseNumericDose(id) {
-
-    const raw =
-        document.getElementById(id)
-            ?.value || "";
-
-
-    const normalized =
-        normalizeDigits(
-            raw
-        );
-
-
-    const match =
-        normalized.match(
-            /-?\d+(?:\.\d+)?/
-        );
-
-
-    if (!match) {
-        return null;
-    }
-
-
-    const n =
-        Number(
-            match[0]
-        );
-
-
-    return Number.isFinite(n)
-        ? n
-        : null;
-}
-
-
-function parseDose(id) {
-
-    return parseNumericDose(id);
-}
-
-
-function detectDoseUnit(id) {
-
-    const raw =
-        String(
-            document.getElementById(id)
-                ?.value || ""
-        );
-
-
-    const normalized =
-        normalizeDigits(
-            raw
-        )
-        .toLowerCase();
-
-
-    if (
-        normalized.includes("ml") ||
-        normalized.includes("میلی")
-    ) {
-        return "ml";
-    }
-
-    if (
-        normalized.includes("mg") ||
-        normalized.includes("میلی‌گرم") ||
-        normalized.includes("میلی گرم")
-    ) {
-        return "mg";
-    }
-
-    if (
-        normalized.includes("g") ||
-        normalized.includes("گرم")
-    ) {
-        return "g";
-    }
-
-    return "dose";
-}
-
-
-function parseWithdrawalDays(id) {
-
-    const raw =
-        document.getElementById(id)
-            ?.value || "";
-
-
-    const normalized =
-        normalizeDigits(
-            raw
-        );
-
-
-    const match =
-        normalized.match(
-            /\d+/
-        );
-
-
-    if (!match) {
-        return null;
-    }
-
-
-    const n =
-        Number(
-            match[0]
-        );
-
-
-    return Number.isFinite(n)
-        ? n
         : null;
 }
 
@@ -2363,8 +2469,7 @@ function displayHealthDate(
     if (
         window.jalaliDate &&
         typeof window.jalaliDate
-            .isoToJalali ===
-        "function"
+            .isoToJalali === "function"
     ) {
 
         return window.jalaliDate
@@ -2377,6 +2482,35 @@ function displayHealthDate(
     return isoDate;
 }
 
+
+/* =========================================================
+   DISEASE NAME
+========================================================= */
+
+const diseaseCache = {};
+
+
+function diseaseName(code) {
+
+    if (!code) {
+        return "";
+    }
+
+
+    /*
+     * برای جلوگیری از query اضافه
+     * فعلاً خود code را برمی‌گردانیم.
+     *
+     * گزینه select در فرم نام فارسی را نشان می‌دهد.
+     */
+
+    return code;
+}
+
+
+/* =========================================================
+   ROUTE
+========================================================= */
 
 function routeLabel(route) {
 
@@ -2416,15 +2550,19 @@ function routeLabel(route) {
 }
 
 
+/* =========================================================
+   STAGE
+========================================================= */
+
 function stageLabel(stage) {
 
     const map = {
 
         maternal:
-            "تیتر مادری",
+            "مادری",
 
         pre_vaccination:
-            "قبل از واکسیناسیون",
+            "قبل واکسیناسیون",
 
         post_vaccination:
             "پس از واکسیناسیون",
@@ -2442,34 +2580,9 @@ function stageLabel(stage) {
 }
 
 
-function categoryLabel(category) {
-
-    const map = {
-
-        viral:
-            "ویروسی",
-
-        bacterial:
-            "باکتریایی",
-
-        fungal:
-            "قارچی",
-
-        parasitic:
-            "انگلی",
-
-        metabolic:
-            "متابولیک"
-
-    };
-
-
-    return (
-        map[category] ||
-        category
-    );
-}
-
+/* =========================================================
+   ESCAPE
+========================================================= */
 
 function escapeSafe(value) {
 
@@ -2510,6 +2623,10 @@ function escapeSafe(value) {
 }
 
 
+/* =========================================================
+   STATUS
+========================================================= */
+
 function showStatus(
     message,
     type
@@ -2547,5 +2664,12 @@ function showStatus(
 }
 
 
+/* =========================================================
+   GLOBAL
+========================================================= */
+
 window.deleteRecord =
     deleteRecord;
+
+window.printHealthHistory =
+    printHealthHistory;

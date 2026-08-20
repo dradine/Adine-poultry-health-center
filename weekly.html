@@ -128,58 +128,108 @@
 
 <div class="form-group">
 
-<label for="evaluationDate">
-    تاریخ ارزیابی
-</label>
+    <label for="evaluationDate">
+        تاریخ ارزیابی
+    </label>
+
+    <div
+        class="jalali-date-wrapper"
+        id="jalaliDateWrapper"
+    >
+
+        <input
+            id="evaluationDate"
+            type="text"
+            inputmode="numeric"
+            autocomplete="off"
+            placeholder="۱۴۰۵/۰۵/۲۹"
+            maxlength="10"
+            readonly
+            onclick="toggleJalaliCalendar()"
+        >
+
+        <button
+            type="button"
+            class="jalali-calendar-button"
+            onclick="toggleJalaliCalendar()"
+            aria-label="انتخاب تاریخ"
+        >
+            📅
+        </button>
 
 
-<div
-    style="
-        position:relative;
-        width:100%;
-    "
->
+        <div
+            id="jalaliCalendar"
+            class="jalali-calendar"
+            style="display:none;"
+        >
 
-<input
-    id="evaluationDate"
-    type="text"
-    inputmode="numeric"
-    autocomplete="off"
-    placeholder="۱۴۰۵/۰۵/۲۹"
-    maxlength="10"
-    readonly
-    style="
-        width:100%;
-        box-sizing:border-box;
-        cursor:pointer;
-        padding-left:45px;
-    "
-    onclick="openJalaliCalendar()"
->
+            <div class="jalali-calendar-header">
+
+                <button
+                    type="button"
+                    onclick="jalaliPreviousMonth(event)"
+                    class="jalali-nav-button"
+                >
+                    ‹
+                </button>
 
 
-<button
-    type="button"
-    onclick="openJalaliCalendar()"
-    aria-label="انتخاب تاریخ"
-    style="
-        position:absolute;
-        left:8px;
-        top:50%;
-        transform:translateY(-50%);
-        border:0;
-        background:transparent;
-        font-size:20px;
-        cursor:pointer;
-        padding:4px;
-    "
->
-    📅
-</button>
+                <div
+                    id="jalaliMonthTitle"
+                    class="jalali-month-title"
+                >
+                    -
+                </div>
+
+
+                <button
+                    type="button"
+                    onclick="jalaliNextMonth(event)"
+                    class="jalali-nav-button"
+                >
+                    ›
+                </button>
+
+            </div>
+
+
+            <div class="jalali-weekdays">
+
+                <div>ش</div>
+                <div>ی</div>
+                <div>د</div>
+                <div>س</div>
+                <div>چ</div>
+                <div>پ</div>
+                <div>ج</div>
+
+            </div>
+
+
+            <div
+                id="jalaliDays"
+                class="jalali-days"
+            ></div>
+
+
+            <div class="jalali-calendar-footer">
+
+                <button
+                    type="button"
+                    onclick="jalaliToday(event)"
+                    class="jalali-today-button"
+                >
+                    امروز
+                </button>
+
+            </div>
+
+        </div>
+
+    </div>
 
 </div>
-
-
 <!-- تقویم -->
 
 <div

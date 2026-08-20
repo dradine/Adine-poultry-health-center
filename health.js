@@ -662,42 +662,168 @@ async function loadMedications() {
         document.getElementById("treatmentMedication");
 
     if (!select) {
+        console.error(
+            "❌ treatmentMedication پیدا نشد."
+        );
         return;
     }
 
     select.innerHTML = `
         <option value="">
-            در حال بارگذاری داروها...
+            در حال بررسی لیست داروها...
         </option>
     `;
 
     try {
+
+        console.log("=================================");
+        console.log("MEDICATIONS TEST START");
+        console.log("=================================");
+
+
+        /*
+         * تست 1:
+         * آیا اتصال Supabase فعال است؟
+         */
+
+        console.log(
+            "supabaseClient:",
+            supabaseClient
+        );
+
+
+        /*
+         * تست 2:
+         * آیا کاربر فعلی شناخته شده؟
+         */
+
+        const {
+            data: userData,
+            error: userError
+        } =
+            await supabaseClient
+                .auth
+                .getUser();
+
+
+        console.log(
+            "CURRENT USER:",
+            userData
+        );
+
+        console.log(
+            "USER ERROR:",
+            userError
+        );
+
+
+        /*
+         * تست 3:
+         * خواندن جدول medications
+         */
 
         const result =
             await supabaseClient
                 .from("medications")
                 .select("*");
 
-        console.log("MEDICATIONS RESULT:", result);
 
-        const data = result.data;
-        const error = result.error;
+        console.log(
+            "MEDICATION QUERY RESULT:",
+            result
+        );
 
-        if (error) {
+
+        console.log(
+            "MEDICATION DATA:",
+            result.data
+        );
+
+
+        console.log(
+            "MEDICATION ERROR:",
+            result.error
+        );
+
+
+        /*
+         * اگر Supabase خطا داده
+         */
+
+        if (result.error) {
+
+            const e =
+                result.error;
 
             console.error(
-                "MEDICATIONS ERROR:",
-                error
+                "❌ REAL SUPABASE ERROR"
             );
+
+            console.error(
+                "message:",
+                e.message
+            );
+
+            console.error(
+                "details:",
+                e.details
+            );
+
+            console.error(
+                "hint:",
+                e.hint
+            );
+
+            console.error(
+                "code:",
+                e.code
+            );
+
 
             select.innerHTML = `
                 <option value="">
-                    خطا در دریافت داروها
+                    خطای Supabase: ${e.message || "نامشخص"}
                 </option>
             `;
 
+
             return;
         }
+
+
+        /*
+         * اگر Query موفق بود
+         */
+
+        const data =
+            result.data || [];
+
+
+        console.log(
+            "تعداد داروها:",
+            data.length
+        );
+
+
+        if (data.length === 0) {
+
+            select.innerHTML = `
+                <option value="">
+                    جدول داروها خالی است
+                </option>
+            `;
+
+            console.warn(
+                "⚠️ جدول medications قابل دسترسی است ولی رکورد ندارد."
+            );
+
+            return;
+        }
+
+
+        /*
+         * نمایش داروها
+         */
 
         select.innerHTML = `
             <option value="">
@@ -705,105 +831,125 @@ async function loadMedications() {
             </option>
         `;
 
-        if (!data || data.length === 0) {
 
-            select.innerHTML = `
-                <option value="">
-                    دارویی ثبت نشده است
-                </option>
-            `;
+        data.forEach(
+            medication => {
 
-            return;
-        }
-
-        data.forEach(function (medication) {
-
-            const option =
-                document.createElement("option");
-
-            option.value =
-                medication.id ?? "";
-
-            const name =
-                medication.name ||
-                medication.medicine_name ||
-                medication.medication_name ||
-                medication.title ||
-                "";
-
-            const active =
-                medication.active_ingredient ||
-                "";
-
-            option.textContent =
-                active
-                    ? `${name} — ${active}`
-                    : name;
-
-            select.appendChild(option);
-
-        });
-
-        select.onchange = function () {
-
-            const selected =
-                data.find(function (item) {
-
-                    return String(item.id) ===
-                           String(select.value);
-
-                });
-
-            if (!selected) {
-                return;
-            }
-
-            const nameInput =
-                document.getElementById(
-                    "treatmentMedicationName"
+                console.log(
+                    "MEDICATION:",
+                    medication
                 );
 
-            const activeInput =
-                document.getElementById(
-                    "treatmentActive"
+
+                const option =
+                    document.createElement(
+                        "option"
+                    );
+
+
+                option.value =
+                    medication.id || "";
+
+
+                option.textContent =
+                    medication.name ||
+                    medication.medicine_name ||
+                    medication.medication_name ||
+                    "داروی بدون نام";
+
+
+                select.appendChild(
+                    option
                 );
 
-            if (nameInput) {
-
-                nameInput.value =
-                    selected.name ||
-                    selected.medicine_name ||
-                    selected.medication_name ||
-                    selected.title ||
-                    "";
-
             }
+        );
 
-            if (activeInput) {
 
-                activeInput.value =
-                    selected.active_ingredient ||
-                    "";
+        /*
+         * انتخاب دارو
+         */
 
-            }
+        select.onchange =
+            function () {
 
-        };
+                const selected =
+                    data.find(
+                        item =>
+                            String(item.id) ===
+                            String(this.value)
+                    );
 
-    } catch (error) {
+
+                if (!selected) {
+                    return;
+                }
+
+
+                const nameInput =
+                    document.getElementById(
+                        "treatmentMedicationName"
+                    );
+
+
+                const activeInput =
+                    document.getElementById(
+                        "treatmentActive"
+                    );
+
+
+                if (nameInput) {
+
+                    nameInput.value =
+                        selected.name ||
+                        selected.medicine_name ||
+                        selected.medication_name ||
+                        "";
+
+                }
+
+
+                if (activeInput) {
+
+                    activeInput.value =
+                        selected.active_ingredient ||
+                        "";
+
+                }
+
+            };
+
+
+        console.log(
+            "================================="
+        );
+
+        console.log(
+            "✅ MEDICATIONS LOADED SUCCESSFULLY"
+        );
+
+        console.log(
+            "================================="
+        );
+
+    }
+
+    catch (error) {
 
         console.error(
-            "MEDICATIONS EXCEPTION:",
+            "❌ MEDICATION EXCEPTION:",
             error
         );
 
+
         select.innerHTML = `
             <option value="">
-                خطا در دریافت داروها
+                خطای غیرمنتظره در داروها
             </option>
         `;
+
     }
 }
-
 /* =========================================================
    VACCINATION
    Uses actual current schema:

@@ -1,391 +1,1157 @@
-/* =========================================================
-   ADINE — HEALTH (Vaccination & Medicine)
-   ========================================================= */
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
 
-let currentUser = null;
-let currentFlock = null;
-let currentFarm = null;
-let currentHouse = null;
-let healthRecords = [];
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
 
-document.addEventListener("DOMContentLoaded", initHealth);
+<meta name="theme-color" content="#173f35">
 
-async function waitForSession(maxTries = 8) {
-  for (let i = 0; i < maxTries; i++) {
-    const { data, error } = await supabaseClient.auth.getSession();
+<title>سلامت گله | مرکز تخصصی سلامت طیور آدینه</title>
 
-    if (error) {
-      console.warn("getSession error:", error);
-    }
+<link rel="stylesheet" href="app.css">
 
-    if (data?.session?.user) {
-      return data.session;
-    }
+<style>
 
-    // صبر کوتاه برای بازیابی session از localStorage
-    await new Promise((r) => setTimeout(r, 200));
-  }
-  return null;
+.health-tabs{
+    display:flex;
+    gap:8px;
+    flex-wrap:wrap;
+    margin-bottom:20px;
 }
 
-async function initHealth() {
-  try {
-    if (typeof window.supabase === "undefined") {
-      alert("کتابخانه Supabase لود نشده است.");
-      return;
-    }
-
-    if (typeof supabaseClient === "undefined") {
-      alert("supabase-config.js لود نشده است.");
-      return;
-    }
-
-    const session = await waitForSession();
-
-    if (!session) {
-      console.error("No session found after retries");
-      location.href =
-        "login.html?message=" +
-        encodeURIComponent("نشست شما منقضی شده. دوباره وارد شوید.");
-      return;
-    }
-
-    currentUser = session.user;
-    console.log("Health auth OK:", currentUser.id);
-
-    // ---- انتخاب گله ----
-    const selection =
-      typeof getCurrentSelection === "function"
-        ? getCurrentSelection()
-        : {};
-
-    if (!selection.flockId) {
-      alert("ابتدا از بخش سالن و گله، یک گله را انتخاب کنید.");
-      location.href = "flocks.html";
-      return;
-    }
-
-    // گله‌ها در Supabase هستند؛ از selection استفاده می‌کنیم
-    currentFlock = {
-      id: selection.flockId,
-      farmId: selection.farmId || null,
-      houseId: selection.houseId || null,
-      flockName: selection.flockName || "گله انتخاب‌شده",
-      strain: selection.strain || "",
-      placementDate: selection.placementDate || ""
-    };
-
-    // اگر از localStorage هم بود، اطلاعات بیشتر بگیر
-    if (typeof getFlocks === "function") {
-      const local = getFlocks().find((f) => f.id === selection.flockId);
-      if (local) {
-        currentFlock = {
-          id: local.id,
-          farmId: local.farmId || local.farm_id || selection.farmId,
-          houseId: local.houseId || local.house_id || selection.houseId,
-          flockName: local.flockName || local.name || local.flock_name,
-          strain: local.strain || "",
-          placementDate: local.placementDate || local.placement_date || ""
-        };
-      }
-    }
-
-    const infoEl = document.getElementById("flockInfo");
-    if (infoEl) {
-      infoEl.textContent = [
-        currentFlock.flockName || "",
-        currentFlock.strain || "",
-        "شناسه: " + String(currentFlock.id).slice(0, 8)
-      ]
-        .filter(Boolean)
-        .join(" | ");
-    }
-
-    const today =
-      typeof todayISO === "function"
-        ? todayISO()
-        : new Date().toISOString().slice(0, 10);
-
-    const vDate = document.getElementById("vaccineDate");
-    const mStart = document.getElementById("medicineStart");
-    if (vDate) vDate.value = today;
-    if (mStart) mStart.value = today;
-
-    if (
-      currentFlock.placementDate &&
-      typeof calculateAgeDays === "function"
-    ) {
-      const age = calculateAgeDays(currentFlock.placementDate, today);
-      const ageInput = document.getElementById("vaccineAge");
-      if (ageInput && age !== null) ageInput.value = age;
-    }
-
-    setupForms();
-    await loadHealthRecords();
-  } catch (err) {
-    console.error("Health init error:", err);
-    alert("خطا در بخش سلامت:\n" + (err.message || err));
-  }
+.health-tab{
+    border:0;
+    padding:11px 16px;
+    border-radius:12px;
+    background:#eef2f0;
+    cursor:pointer;
+    font-family:inherit;
 }
 
-function setupForms() {
-  const vaccineForm = document.getElementById("vaccineForm");
-  const medicineForm = document.getElementById("medicineForm");
-
-  if (vaccineForm) {
-    vaccineForm.addEventListener("submit", saveVaccination);
-  }
-  if (medicineForm) {
-    medicineForm.addEventListener("submit", saveMedicine);
-  }
+.health-tab.active{
+    background:#173f35;
+    color:#fff;
 }
 
-async function loadHealthRecords() {
-  const tbody = document.getElementById("healthTable");
-  if (tbody) {
-    tbody.innerHTML =
-      '<tr><td colspan="5">در حال دریافت سوابق...</td></tr>';
-  }
-
-  const { data, error } = await supabaseClient
-    .from("health_records")
-    .select("*")
-    .eq("owner_id", currentUser.id)
-    .eq("flock_id", String(currentFlock.id))
-    .order("record_date", { ascending: false });
-
-  if (error) {
-    console.error("Load health error:", error);
-    if (tbody) {
-      tbody.innerHTML =
-        '<tr><td colspan="5">خطا: ' +
-        escapeSafe(error.message) +
-        "</td></tr>";
-    }
-    return;
-  }
-
-  healthRecords = data || [];
-  renderHealth();
+.health-panel{
+    display:none;
 }
 
-async function saveVaccination(event) {
-  event.preventDefault();
-  const btn = event.target.querySelector('button[type="submit"]');
-  if (btn) {
-    btn.disabled = true;
-    btn.textContent = "در حال ذخیره...";
-  }
-
-  try {
-    const name = document.getElementById("vaccineName").value.trim();
-    const record_date = document.getElementById("vaccineDate").value;
-
-    if (!name || !record_date) {
-      alert("تاریخ و نام واکسن الزامی است.");
-      return;
-    }
-
-    const payload = {
-      owner_id: currentUser.id,
-      farm_id: currentFlock.farmId || null,
-      house_id: currentFlock.houseId || null,
-      flock_id: String(currentFlock.id),
-      flock_name: currentFlock.flockName || null,
-      type: "vaccination",
-      record_date,
-      age_days: Number(document.getElementById("vaccineAge").value || 0),
-      disease: document.getElementById("vaccineDisease").value || null,
-      name,
-      manufacturer:
-        document.getElementById("vaccineManufacturer").value.trim() || null,
-      route: document.getElementById("vaccineRoute").value || null,
-      notes: document.getElementById("vaccineNotes").value.trim() || null
-    };
-
-    const { error } = await supabaseClient
-      .from("health_records")
-      .insert(payload);
-
-    if (error) {
-      alert("ذخیره واکسیناسیون انجام نشد:\n" + error.message);
-      return;
-    }
-
-    event.target.reset();
-    document.getElementById("vaccineDate").value =
-      typeof todayISO === "function"
-        ? todayISO()
-        : new Date().toISOString().slice(0, 10);
-
-    await loadHealthRecords();
-    alert("واکسیناسیون ثبت شد.");
-  } finally {
-    if (btn) {
-      btn.disabled = false;
-      btn.textContent = "ثبت واکسیناسیون";
-    }
-  }
+.health-panel.active{
+    display:block;
 }
 
-async function saveMedicine(event) {
-  event.preventDefault();
-  const btn = event.target.querySelector('button[type="submit"]');
-  if (btn) {
-    btn.disabled = true;
-    btn.textContent = "در حال ذخیره...";
-  }
-
-  try {
-    const name = document.getElementById("medicineName").value.trim();
-    const record_date = document.getElementById("medicineStart").value;
-
-    if (!name || !record_date) {
-      alert("تاریخ شروع و نام دارو الزامی است.");
-      return;
-    }
-
-    const payload = {
-      owner_id: currentUser.id,
-      farm_id: currentFlock.farmId || null,
-      house_id: currentFlock.houseId || null,
-      flock_id: String(currentFlock.id),
-      flock_name: currentFlock.flockName || null,
-      type: "medicine",
-      record_date,
-      end_date: document.getElementById("medicineEnd").value || null,
-      name,
-      active_ingredient:
-        document.getElementById("medicineActive").value.trim() || null,
-      reason: document.getElementById("medicineReason").value.trim() || null,
-      route: document.getElementById("medicineRoute").value || null,
-      dose: document.getElementById("medicineDose").value.trim() || null,
-      duration: document.getElementById("medicineDuration").value.trim() || null,
-      notes: document.getElementById("medicineNotes").value.trim() || null
-    };
-
-    const { error } = await supabaseClient
-      .from("health_records")
-      .insert(payload);
-
-    if (error) {
-      alert("ذخیره درمان انجام نشد:\n" + error.message);
-      return;
-    }
-
-    event.target.reset();
-    document.getElementById("medicineStart").value =
-      typeof todayISO === "function"
-        ? todayISO()
-        : new Date().toISOString().slice(0, 10);
-
-    await loadHealthRecords();
-    alert("درمان ثبت شد.");
-  } finally {
-    if (btn) {
-      btn.disabled = false;
-      btn.textContent = "ثبت درمان";
-    }
-  }
+.small-note{
+    font-size:13px;
+    color:#68736f;
+    margin-top:5px;
 }
 
-async function deleteHealthRecord(id) {
-  if (!confirm("حذف این رکورد؟")) return;
-
-  const { error } = await supabaseClient
-    .from("health_records")
-    .delete()
-    .eq("id", id)
-    .eq("owner_id", currentUser.id);
-
-  if (error) {
-    alert("حذف انجام نشد:\n" + error.message);
-    return;
-  }
-
-  await loadHealthRecords();
+.health-status{
+    padding:12px;
+    border-radius:10px;
+    margin-bottom:15px;
+    display:none;
 }
 
-function escapeSafe(value) {
-  if (typeof escapeHTML === "function") return escapeHTML(value);
-  return String(value ?? "")
-    .replaceAll("&", "&amp;")
-    .replaceAll("<", "&lt;")
-    .replaceAll(">", "&gt;")
-    .replaceAll('"', "&quot;");
+.health-status.success{
+    display:block;
+    background:#e8f5e9;
+    color:#1b5e20;
 }
 
-function renderHealth() {
-  const table = document.getElementById("healthTable");
-  if (!table) return;
-
-  if (!healthRecords.length) {
-    table.innerHTML =
-      '<tr><td colspan="5">هنوز رکوردی ثبت نشده است.</td></tr>';
-    return;
-  }
-
-  const diseaseMap = {
-    ND: "نیوکاسل",
-    IB: "برونشیت عفونی",
-    IBD: "گامبورو",
-    AI: "آنفلوانزا",
-    ILT: "لارنگوتراکئیت",
-    Marek: "مارک",
-    Other: "سایر"
-  };
-
-  const routeMap = {
-    water: "آب آشامیدنی",
-    spray: "اسپری",
-    eye: "قطره چشمی",
-    wing: "بال‌زدن",
-    injection: "تزریقی",
-    feed: "دان",
-    oral: "خوراکی",
-    other: "سایر"
-  };
-
-  table.innerHTML = healthRecords
-    .map((r) => {
-      const typeLabel =
-        r.type === "vaccination" ? "واکسیناسیون" : "دارو / درمان";
-      let note = "-";
-
-      if (r.type === "vaccination") {
-        note = [
-          r.disease ? diseaseMap[r.disease] || r.disease : "",
-          r.route ? routeMap[r.route] || r.route : "",
-          r.notes || ""
-        ]
-          .filter(Boolean)
-          .join(" | ");
-      } else {
-        note = [
-          r.reason || "",
-          r.dose || "",
-          r.route ? routeMap[r.route] || r.route : "",
-          r.notes || ""
-        ]
-          .filter(Boolean)
-          .join(" | ");
-      }
-
-      if (!note) note = "-";
-
-      return `
-        <tr>
-          <td>${escapeSafe(r.record_date || "-")}</td>
-          <td>${typeLabel}</td>
-          <td>${escapeSafe(r.name || "-")}</td>
-          <td>${escapeSafe(note)}</td>
-          <td>
-            <button type="button" class="btn btn-danger"
-              onclick="deleteHealthRecord('${r.id}')">حذف</button>
-          </td>
-        </tr>`;
-    })
-    .join("");
+.health-status.error{
+    display:block;
+    background:#ffebee;
+    color:#b71c1c;
 }
 
-window.deleteHealthRecord = deleteHealthRecord;
+.badge{
+    display:inline-block;
+    padding:4px 8px;
+    border-radius:8px;
+    font-size:12px;
+    background:#edf1ef;
+}
+
+.table-wrapper{
+    overflow-x:auto;
+}
+
+.data-table{
+    width:100%;
+    border-collapse:collapse;
+}
+
+.data-table th,
+.data-table td{
+    padding:10px;
+    border-bottom:1px solid #e5e7e6;
+    text-align:right;
+    white-space:nowrap;
+}
+
+</style>
+
+</head>
+
+
+<body>
+
+<header class="topbar">
+
+    <div class="brand">
+
+        <img src="IMG_4309.png" alt="آدینه">
+
+        <span>سلامت گله</span>
+
+    </div>
+
+    <button
+        type="button"
+        class="btn btn-secondary"
+        onclick="location.href='Dashboard.html'">
+
+        داشبورد
+
+    </button>
+
+</header>
+
+
+<main class="page">
+
+<div class="container">
+
+<h1 class="page-title">
+سلامت گله
+</h1>
+
+<p id="flockInfo" class="page-description">
+در حال دریافت اطلاعات گله...
+</p>
+
+
+<div id="healthStatus"
+     class="health-status">
+</div>
+
+
+<!-- =====================================================
+     TABS
+===================================================== -->
+
+<div class="health-tabs">
+
+<button class="health-tab active"
+        data-tab="vaccination">
+
+💉 واکسیناسیون
+
+</button>
+
+
+<button class="health-tab"
+        data-tab="antibody">
+
+🩸 تیتر آنتی‌بادی
+
+</button>
+
+
+<button class="health-tab"
+        data-tab="laboratory">
+
+🧪 آزمایش
+
+</button>
+
+
+<button class="health-tab"
+        data-tab="treatment">
+
+💊 درمان و دارو
+
+</button>
+
+
+<button class="health-tab"
+        data-tab="history">
+
+📋 سوابق
+
+</button>
+
+</div>
+
+
+
+<!-- =====================================================
+     VACCINATION
+===================================================== -->
+
+<section
+    id="panel-vaccination"
+    class="card health-panel active">
+
+<h2 class="card-title">
+ثبت واکسیناسیون
+</h2>
+
+
+<form id="vaccinationForm">
+
+<div class="form-grid">
+
+
+<div class="form-group">
+
+<label>
+تاریخ واکسیناسیون
+</label>
+
+<input
+    id="vaccinationDate"
+    type="date"
+    required>
+
+</div>
+
+
+<div class="form-group">
+
+<label>
+سن گله
+</label>
+
+<input
+    id="vaccinationAge"
+    type="number"
+    min="0"
+    placeholder="روز">
+
+</div>
+
+
+<div class="form-group">
+
+<label>
+بیماری / هدف
+</label>
+
+<select
+    id="vaccinationDisease"
+    required>
+
+<option value="">
+انتخاب کنید
+</option>
+
+</select>
+
+</div>
+
+
+<div class="form-group">
+
+<label>
+واکسن
+</label>
+
+<select
+    id="vaccinationVaccine"
+    required>
+
+<option value="">
+انتخاب واکسن
+</option>
+
+</select>
+
+</div>
+
+
+<div class="form-group">
+
+<label>
+دوز
+</label>
+
+<input
+    id="vaccinationDose"
+    placeholder="مثلاً 1 دوز">
+
+</div>
+
+
+<div class="form-group">
+
+<label>
+روش مصرف
+</label>
+
+<select id="vaccinationRoute">
+
+<option value="">
+انتخاب کنید
+</option>
+
+<option value="water">
+آب آشامیدنی
+</option>
+
+<option value="spray">
+اسپری
+</option>
+
+<option value="eye">
+قطره چشمی
+</option>
+
+<option value="wing">
+بال‌زدن
+</option>
+
+<option value="injection">
+تزریقی
+</option>
+
+</select>
+
+</div>
+
+
+<div class="form-group">
+
+<label>
+شماره سری ساخت
+</label>
+
+<input
+    id="vaccinationBatch">
+
+</div>
+
+
+<div class="form-group">
+
+<label>
+تاریخ انقضا
+</label>
+
+<input
+    id="vaccinationExpiry"
+    type="date">
+
+</div>
+
+
+<div class="form-group full">
+
+<label>
+توضیحات
+</label>
+
+<textarea
+    id="vaccinationNotes"></textarea>
+
+</div>
+
+
+</div>
+
+
+<div class="button-row">
+
+<button
+    class="btn btn-primary"
+    type="submit">
+
+ثبت واکسیناسیون
+
+</button>
+
+</div>
+
+</form>
+
+</section>
+
+
+
+<!-- =====================================================
+     ANTIBODY
+===================================================== -->
+
+<section
+    id="panel-antibody"
+    class="card health-panel">
+
+<h2 class="card-title">
+ثبت تیتر آنتی‌بادی
+</h2>
+
+
+<p class="small-note">
+
+برای تیتر مادری، قبل واکسیناسیون و تیتر پس از واکسیناسیون استفاده شود.
+
+</p>
+
+
+<form id="antibodyForm">
+
+<div class="form-grid">
+
+
+<div class="form-group">
+
+<label>
+تاریخ آزمایش
+</label>
+
+<input
+    id="antibodyDate"
+    type="date"
+    required>
+
+</div>
+
+
+<div class="form-group">
+
+<label>
+سن گله
+</label>
+
+<input
+    id="antibodyAge"
+    type="number"
+    min="0">
+
+</div>
+
+
+<div class="form-group">
+
+<label>
+بیماری
+</label>
+
+<select
+    id="antibodyDisease"
+    required>
+
+<option value="">
+انتخاب کنید
+</option>
+
+</select>
+
+</div>
+
+
+<div class="form-group">
+
+<label>
+نوع تیتر
+</label>
+
+<select
+    id="antibodyStage"
+    required>
+
+<option value="maternal">
+تیتر مادری
+</option>
+
+<option value="pre_vaccination">
+قبل از واکسیناسیون
+</option>
+
+<option value="post_vaccination">
+پس از واکسیناسیون
+</option>
+
+<option value="routine">
+پایش روتین
+</option>
+
+</select>
+
+</div>
+
+
+<div class="form-group">
+
+<label>
+روش آزمایش
+</label>
+
+<select id="antibodyTestType">
+
+<option value="ELISA">
+ELISA
+</option>
+
+<option value="HI">
+HI
+</option>
+
+<option value="other">
+سایر
+</option>
+
+</select>
+
+</div>
+
+
+<div class="form-group">
+
+<label>
+تعداد نمونه
+</label>
+
+<input
+    id="antibodySamples"
+    type="number"
+    min="1">
+
+</div>
+
+
+<div class="form-group">
+
+<label>
+GMT
+</label>
+
+<input
+    id="antibodyGMT"
+    type="number"
+    min="0"
+    step="any">
+
+</div>
+
+
+<div class="form-group">
+
+<label>
+CV%
+</label>
+
+<input
+    id="antibodyCV"
+    type="number"
+    min="0"
+    step="any">
+
+</div>
+
+
+<div class="form-group">
+
+<label>
+حداقل تیتر
+</label>
+
+<input
+    id="antibodyMin"
+    type="number"
+    min="0"
+    step="any">
+
+</div>
+
+
+<div class="form-group">
+
+<label>
+حداکثر تیتر
+</label>
+
+<input
+    id="antibodyMax"
+    type="number"
+    min="0"
+    step="any">
+
+</div>
+
+
+<div class="form-group">
+
+<label>
+نام آزمایشگاه
+</label>
+
+<input
+    id="antibodyLab">
+
+</div>
+
+
+<div class="form-group full">
+
+<label>
+توضیحات
+</label>
+
+<textarea
+    id="antibodyNotes"></textarea>
+
+</div>
+
+
+</div>
+
+
+<div class="button-row">
+
+<button
+    class="btn btn-primary"
+    type="submit">
+
+ثبت تیتر
+
+</button>
+
+</div>
+
+</form>
+
+</section>
+
+
+
+<!-- =====================================================
+     LAB
+===================================================== -->
+
+<section
+    id="panel-laboratory"
+    class="card health-panel">
+
+<h2 class="card-title">
+ثبت آزمایش
+</h2>
+
+
+<form id="labForm">
+
+<div class="form-grid">
+
+
+<div class="form-group">
+
+<label>
+تاریخ
+</label>
+
+<input
+    id="labDate"
+    type="date"
+    required>
+
+</div>
+
+
+<div class="form-group">
+
+<label>
+نوع آزمایش
+</label>
+
+<select id="labType">
+
+<option value="PCR">
+PCR
+</option>
+
+<option value="culture">
+کشت
+</option>
+
+<option value="antibiogram">
+آنتی‌بیوگرام
+</option>
+
+<option value="necropsy">
+کالبدگشایی
+</option>
+
+<option value="mycotoxin">
+مایکوتوکسین
+</option>
+
+<option value="other">
+سایر
+</option>
+
+</select>
+
+</div>
+
+
+<div class="form-group">
+
+<label>
+بیماری / عامل
+</label>
+
+<select
+    id="labDisease">
+
+<option value="">
+انتخاب کنید
+</option>
+
+</select>
+
+</div>
+
+
+<div class="form-group">
+
+<label>
+نوع نمونه
+</label>
+
+<input
+    id="labSampleType"
+    placeholder="سوآب، خون، مدفوع...">
+
+</div>
+
+
+<div class="form-group">
+
+<label>
+تعداد نمونه
+</label>
+
+<input
+    id="labSampleCount"
+    type="number"
+    min="1">
+
+</div>
+
+
+<div class="form-group">
+
+<label>
+تعداد مثبت
+</label>
+
+<input
+    id="labPositiveCount"
+    type="number"
+    min="0">
+
+</div>
+
+
+<div class="form-group">
+
+<label>
+Ct
+</label>
+
+<input
+    id="labCT"
+    type="number"
+    step="any">
+
+</div>
+
+
+<div class="form-group">
+
+<label>
+نتیجه
+</label>
+
+<input
+    id="labResult"
+    placeholder="مثبت / منفی / مشکوک">
+
+</div>
+
+
+<div class="form-group full">
+
+<label>
+نتیجه آنتی‌بیوگرام
+</label>
+
+<textarea
+    id="labSensitivity"
+    placeholder="نام باکتری و حساسیت دارویی"></textarea>
+
+</div>
+
+
+<div class="form-group">
+
+<label>
+آزمایشگاه
+</label>
+
+<input
+    id="labLaboratory">
+
+</div>
+
+
+<div class="form-group full">
+
+<label>
+توضیحات
+</label>
+
+<textarea
+    id="labNotes"></textarea>
+
+</div>
+
+
+</div>
+
+
+<div class="button-row">
+
+<button
+    class="btn btn-primary"
+    type="submit">
+
+ثبت آزمایش
+
+</button>
+
+</div>
+
+</form>
+
+</section>
+
+
+
+<!-- =====================================================
+     TREATMENT
+===================================================== -->
+
+<section
+    id="panel-treatment"
+    class="card health-panel">
+
+<h2 class="card-title">
+ثبت درمان و دارو
+</h2>
+
+
+<form id="treatmentForm">
+
+<div class="form-grid">
+
+
+<div class="form-group">
+
+<label>
+تاریخ شروع
+</label>
+
+<input
+    id="treatmentDate"
+    type="date"
+    required>
+
+</div>
+
+
+<div class="form-group">
+
+<label>
+تاریخ پایان
+</label>
+
+<input
+    id="treatmentEnd"
+    type="date">
+
+</div>
+
+
+<div class="form-group">
+
+<label>
+بیماری / علت
+</label>
+
+<select
+    id="treatmentDisease">
+
+<option value="">
+انتخاب کنید
+</option>
+
+</select>
+
+</div>
+
+
+<div class="form-group">
+
+<label>
+دارو
+</label>
+
+<select
+    id="treatmentMedication">
+
+<option value="">
+انتخاب دارو
+</option>
+
+</select>
+
+</div>
+
+
+<div class="form-group">
+
+<label>
+نام دارو
+</label>
+
+<input
+    id="treatmentMedicationName"
+    placeholder="در صورت نبودن در فهرست">
+
+</div>
+
+
+<div class="form-group">
+
+<label>
+ماده مؤثره
+</label>
+
+<input
+    id="treatmentActive">
+
+</div>
+
+
+<div class="form-group">
+
+<label>
+دوز
+</label>
+
+<input
+    id="treatmentDose">
+
+</div>
+
+
+<div class="form-group">
+
+<label>
+روش مصرف
+</label>
+
+<select id="treatmentRoute">
+
+<option value="">
+انتخاب کنید
+</option>
+
+<option value="water">
+آب آشامیدنی
+</option>
+
+<option value="feed">
+دان
+</option>
+
+<option value="oral">
+خوراکی
+</option>
+
+<option value="injection">
+تزریقی
+</option>
+
+<option value="other">
+سایر
+</option>
+
+</select>
+
+</div>
+
+
+<div class="form-group">
+
+<label>
+مدت درمان
+</label>
+
+<input
+    id="treatmentDuration">
+
+</div>
+
+
+<div class="form-group">
+
+<label>
+دوره منع مصرف
+</label>
+
+<input
+    id="treatmentWithdrawal">
+
+</div>
+
+
+<div class="form-group">
+
+<label>
+نتیجه درمان
+</label>
+
+<select id="treatmentResult">
+
+<option value="">
+ثبت نشده
+</option>
+
+<option value="improved">
+بهبود
+</option>
+
+<option value="partial">
+بهبود نسبی
+</option>
+
+<option value="failed">
+عدم پاسخ
+</option>
+
+</select>
+
+</div>
+
+
+<div class="form-group full">
+
+<label>
+توضیحات
+</label>
+
+<textarea
+    id="treatmentNotes"></textarea>
+
+</div>
+
+
+</div>
+
+
+<div class="button-row">
+
+<button
+    class="btn btn-primary"
+    type="submit">
+
+ثبت درمان
+
+</button>
+
+</div>
+
+</form>
+
+</section>
+
+
+
+<!-- =====================================================
+     HISTORY
+===================================================== -->
+
+<section
+    id="panel-history"
+    class="card health-panel">
+
+<h2 class="card-title">
+سوابق سلامت گله
+</h2>
+
+
+<div class="table-wrapper">
+
+<table class="data-table">
+
+<thead>
+
+<tr>
+
+<th>تاریخ</th>
+
+<th>نوع</th>
+
+<th>مورد</th>
+
+<th>جزئیات</th>
+
+<th>حذف</th>
+
+</tr>
+
+</thead>
+
+
+<tbody id="healthTable">
+
+<tr>
+
+<td colspan="5">
+
+در حال دریافت اطلاعات...
+
+</td>
+
+</tr>
+
+</tbody>
+
+</table>
+
+</div>
+
+</section>
+
+
+</div>
+
+</main>
+
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+<script src="supabase-config.js"></script>
+
+<script src="app-core.js"></script>
+
+<script src="health.js"></script>
+
+</body>
+
+</html>

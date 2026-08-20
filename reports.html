@@ -528,42 +528,7 @@
                     id="fcrDescription"
                     style="margin-top:5px;"
                 >
-                    FCR بر اساس دان مصرفی و افزایش وزن بین دو ارزیابی متوالی محاسبه می‌شود.
-                </p>
-
-                <div
-                    style="
-                        position:relative;
-                        height:300px;
-                    "
-                >
-                    <canvas
-                        id="fcrChart"
-                    ></canvas>
-                </div>
-
-            </section>
-
-
-            <!-- =================================================
-                 FCR CHART
-                 ================================================= -->
-
-            <section
-                id="fcrCard"
-                class="card"
-                style="display:none;"
-            >
-
-                <h2>
-                    روند FCR هفتگی
-                </h2>
-
-                <p
-                    id="fcrDescription"
-                    style="margin-top:5px;"
-                >
-                    FCR بر اساس دان مصرفی و افزایش وزن بین دو ارزیابی متوالی محاسبه می‌شود.
+                    FCR تجمعی برای مقایسه با FCR تجمعی استاندارد سویه نمایش داده می‌شود؛ FCR هفتگی نیز در داده گزارش حفظ می‌شود.
                 </p>
 
                 <div
@@ -937,73 +902,29 @@ async function loadReport(
    ========================================================= */
 
 function renderFlockInfo() {
+    const box=document.getElementById("flockInfo");
+    if(!box){return;}
+    if(!reportFlock){box.innerHTML="اطلاعات گله موجود نیست.";return;}
 
-    const box =
-        document.getElementById(
-            "flockInfo"
-        );
+    const type=reportFlock.production_type||reportFlock.productionType||null;
+    const genetics=reportFlock.genetics||reportFlock.genetics_id||null;
+    const strain=reportFlock.strain||reportFlock.strain_name||null;
+    reportStandard=typeof getStandard==="function" ? getStandard(type,genetics,strain) : null;
 
+    const standardLine=reportStandard
+        ? `<span style="color:green;font-weight:700;">استاندارد رسمی سویه متصل است</span>`
+        : `<span style="color:#b45309;font-weight:700;">برای این ترکیب، استاندارد رسمی واردشده در سامانه وجود ندارد؛ مقایسه ژنتیکی انجام نمی‌شود.</span>`;
 
-    if (!reportFlock) {
-
-        box.innerHTML =
-            "اطلاعات گله موجود نیست.";
-
-        return;
-
-    }
-
-
-    box.innerHTML = `
-
-        <strong>
-            ${escapeHTML(
-                reportFlock.flock_name ||
-                "-"
-            )}
-        </strong>
-
-        <br>
-
-        فارم:
-        ${escapeHTML(
-            reportFlock.farms?.name ||
-            "-"
-        )}
-
-        <br>
-
-        سالن:
-        ${escapeHTML(
-            reportFlock.houses?.name ||
-            "-"
-        )}
-
-        <br>
-
-        نوع:
-        ${escapeHTML(
-            reportFlock.production_type ||
-            "-"
-        )}
-
-        <br>
-
-        سویه:
-        ${escapeHTML(
-            reportFlock.genetics ||
-            "-"
-        )}
-
+    box.innerHTML=`
+        <strong>${escapeHTML(reportFlock.flock_name||"-")}</strong><br>
+        فارم: ${escapeHTML(reportFlock.farms?.name||"-")}<br>
+        سالن: ${escapeHTML(reportFlock.houses?.name||"-")}<br>
+        نوع: ${escapeHTML(type||"-")}<br>
+        شرکت/برنامه ژنتیکی: ${escapeHTML(genetics||"-")}<br>
+        سویه: ${escapeHTML(strain||"-")}<br>
+        ${standardLine}
     `;
-
 }
-
-
-/* =========================================================
-   SUMMARY
-   ========================================================= */
-
 function renderSummary() {
 
     const card =
@@ -1297,377 +1218,65 @@ function renderCharts() {
    ========================================================= */
 
 function renderWeightChart() {
+    const card=document.getElementById("weightCard");
+    const ctx=document.getElementById("weightChart");
+    if(!card || !ctx) return;
+    card.style.display="block";
+    if(reportWeightChart) reportWeightChart.destroy();
 
-    document.getElementById(
-        "weightCard"
-    ).style.display =
-        "block";
+    const labels=reportRecords.map(r=>"هفته "+r.weekNumber);
+    const hasStandard=reportRecords.some(r=>Number.isFinite(Number(r.standardWeight)));
+    const hasRange=reportRecords.some(r=>r.standardWeightRange && Number.isFinite(Number(r.standardWeightRange.low)) && Number.isFinite(Number(r.standardWeightRange.high)));
 
+    const datasets=[{
+        label:"میانگین وزن واقعی (گرم)",
+        data:reportRecords.map(r=>Number.isFinite(Number(r.averageWeight))?Number(r.averageWeight):null),
+        tension:0.25,spanGaps:false,pointRadius:3
+    }];
 
-    const ctx =
-        document.getElementById(
-            "weightChart"
-        );
-
-
-    if (reportWeightChart) {
-
-        reportWeightChart.destroy();
-
+    if(hasRange){
+        datasets.push({label:"حد پایین استاندارد",data:reportRecords.map(r=>r.standardWeightRange?.low??null),tension:0.25,spanGaps:true,borderDash:[4,4],pointRadius:0});
+        datasets.push({label:"حد بالای استاندارد",data:reportRecords.map(r=>r.standardWeightRange?.high??null),tension:0.25,spanGaps:true,borderDash:[4,4],pointRadius:0,fill:"-1"});
+    }
+    if(hasStandard){
+        datasets.push({label:"هدف/میانگین استاندارد سویه",data:reportRecords.map(r=>r.standardWeight??null),tension:0.25,spanGaps:true,borderDash:[8,5],pointRadius:2});
     }
 
-
-    reportWeightChart =
-        new Chart(
-            ctx,
-            {
-
-                type:
-                    "line",
-
-                data: {
-
-                    labels:
-                        reportRecords.map(
-                            r =>
-                                "هفته " +
-                                r.weekNumber
-                        ),
-
-                    datasets: [
-
-                        {
-
-                            label:
-                                "میانگین وزن واقعی (گرم)",
-
-                            data:
-                                reportRecords.map(
-                                    r =>
-                                        r.averageWeight
-                                ),
-
-                            tension:
-                                0.3,
-
-                            spanGaps:
-                                true
-
-                        },
-
-                        {
-
-                            label:
-                                "استاندارد مرجع (گرم)",
-
-                            data:
-                                reportRecords.map(
-                                    r =>
-                                        r.standardWeight
-                                ),
-
-                            tension:
-                                0.3,
-
-                            spanGaps:
-                                true,
-
-                            borderDash:
-                                [
-                                    7,
-                                    5
-                                ],
-
-                            pointRadius:
-                                2
-
-                        }
-
-                    ]
-
-                },
-
-                options: {
-
-                    responsive:
-                        true,
-
-                    maintainAspectRatio:
-                        false,
-
-                    plugins: {
-
-                        legend: {
-                            display:
-                                true
-                        }
-
-                    },
-
-                    scales: {
-
-                        y: {
-
-                            beginAtZero:
-                                false,
-
-                            title: {
-
-                                display:
-                                    true,
-
-                                text:
-                                    "گرم"
-
-                            }
-
-                        }
-
-                    }
-
-                }
-
-            }
-        );
-
+    reportWeightChart=new Chart(ctx,{type:"line",data:{labels,datasets},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:true}},scales:{y:{beginAtZero:false,title:{display:true,text:"گرم"}}}}});
 }
-
-
-/* =========================================================
-   CV
-   ========================================================= */
-
 function renderCVChart() {
-
-    document.getElementById(
-        "cvCard"
-    ).style.display =
-        "block";
-
-
-    const ctx =
-        document.getElementById(
-            "cvChart"
-        );
-
-
-    if (reportCVChart) {
-
-        reportCVChart.destroy();
-
-    }
-
-
-    reportCVChart =
-        new Chart(
-            ctx,
-            {
-
-                type:
-                    "line",
-
-                data: {
-
-                    labels:
-                        reportRecords.map(
-                            r =>
-                                "هفته " +
-                                r.weekNumber
-                        ),
-
-                    datasets: [
-
-                        {
-
-                            label:
-                                "CV (%)",
-
-                            data:
-                                reportRecords.map(
-                                    r =>
-                                        r.cv
-                                ),
-
-                            tension:
-                                0.3,
-
-                            spanGaps:
-                                true
-
-                        }
-
-                    ]
-
-                },
-
-                options: {
-
-                    responsive:
-                        true,
-
-                    maintainAspectRatio:
-                        false,
-
-                    scales: {
-
-                        y: {
-
-                            beginAtZero:
-                                true,
-
-                            title: {
-
-                                display:
-                                    true,
-
-                                text:
-                                    "درصد"
-
-                            }
-
-                        }
-
-                    }
-
-                }
-
-            }
-        );
-
+    const card=document.getElementById("cvCard");
+    const ctx=document.getElementById("cvChart");
+    if(!card || !ctx) return;
+    const hasActual=reportRecords.some(r=>Number.isFinite(Number(r.cv)));
+    const hasStandard=reportRecords.some(r=>Number.isFinite(Number(r.standardCV)));
+    const hasTarget=reportRecords.some(r=>Number.isFinite(Number(r.managementCVTarget)));
+    card.style.display=(hasActual||hasStandard||hasTarget)?"block":"none";
+    if(!hasActual&&!hasStandard&&!hasTarget) return;
+    if(reportCVChart) reportCVChart.destroy();
+    const datasets=[{label:"CV واقعی (%)",data:reportRecords.map(r=>r.cv??null),tension:0.25,spanGaps:false,pointRadius:3}];
+    if(hasStandard) datasets.push({label:"CV استاندارد سویه (%)",data:reportRecords.map(r=>r.standardCV??null),tension:0.25,spanGaps:true,borderDash:[8,5],pointRadius:2});
+    if(hasTarget) datasets.push({label:"حد هدف مدیریتی CV (%)",data:reportRecords.map(r=>r.managementCVTarget??null),tension:0,spanGaps:true,borderDash:[3,3],pointRadius:0});
+    reportCVChart=new Chart(ctx,{type:"line",data:{labels:reportRecords.map(r=>"هفته "+r.weekNumber),datasets},options:{responsive:true,maintainAspectRatio:false,scales:{y:{beginAtZero:true,title:{display:true,text:"درصد"}}}}});
 }
-
-
-/* =========================================================
-   UNIFORMITY
-   ========================================================= */
-
 function renderUniformityChart() {
-
-    document.getElementById(
-        "uniformityCard"
-    ).style.display =
-        "block";
-
-
-    const ctx =
-        document.getElementById(
-            "uniformityChart"
-        );
-
-
-    if (reportUniformityChart) {
-
-        reportUniformityChart.destroy();
-
-    }
-
-
-    reportUniformityChart =
-        new Chart(
-            ctx,
-            {
-
-                type:
-                    "line",
-
-                data: {
-
-                    labels:
-                        reportRecords.map(
-                            r =>
-                                "هفته " +
-                                r.weekNumber
-                        ),
-
-                    datasets: [
-
-                        {
-
-                            label:
-                                "یکنواختی ±10%",
-
-                            data:
-                                reportRecords.map(
-                                    r =>
-                                        r.uniformity10
-                                ),
-
-                            tension:
-                                0.3,
-
-                            spanGaps:
-                                true
-
-                        },
-
-                        {
-
-                            label:
-                                "یکنواختی ±15%",
-
-                            data:
-                                reportRecords.map(
-                                    r =>
-                                        r.uniformity15
-                                ),
-
-                            tension:
-                                0.3,
-
-                            spanGaps:
-                                true
-
-                        }
-
-                    ]
-
-                },
-
-                options: {
-
-                    responsive:
-                        true,
-
-                    maintainAspectRatio:
-                        false,
-
-                    scales: {
-
-                        y: {
-
-                            beginAtZero:
-                                true,
-
-                            suggestedMax:
-                                100,
-
-                            title: {
-
-                                display:
-                                    true,
-
-                                text:
-                                    "درصد"
-
-                            }
-
-                        }
-
-                    }
-
-                }
-
-            }
-
-        );
-
+    const card=document.getElementById("uniformityCard");
+    const ctx=document.getElementById("uniformityChart");
+    if(!card || !ctx) return;
+    const hasActual=reportRecords.some(r=>Number.isFinite(Number(r.uniformity10))||Number.isFinite(Number(r.uniformity15)));
+    const hasStandard=reportRecords.some(r=>Number.isFinite(Number(r.standardUniformity10)));
+    const hasTarget=reportRecords.some(r=>Number.isFinite(Number(r.managementUniformity10Target)));
+    card.style.display=(hasActual||hasStandard||hasTarget)?"block":"none";
+    if(!hasActual&&!hasStandard&&!hasTarget) return;
+    if(reportUniformityChart) reportUniformityChart.destroy();
+    const datasets=[
+        {label:"یکنواختی واقعی ±10%",data:reportRecords.map(r=>r.uniformity10??null),tension:0.25,spanGaps:false,pointRadius:3},
+        {label:"یکنواختی واقعی ±15%",data:reportRecords.map(r=>r.uniformity15??null),tension:0.25,spanGaps:false,pointRadius:3}
+    ];
+    if(hasStandard) datasets.push({label:"یکنواختی استاندارد سویه ±10%",data:reportRecords.map(r=>r.standardUniformity10??null),tension:0.25,spanGaps:true,borderDash:[8,5],pointRadius:2});
+    if(hasTarget) datasets.push({label:"حد هدف مدیریتی ±10%",data:reportRecords.map(r=>r.managementUniformity10Target??null),tension:0,spanGaps:true,borderDash:[3,3],pointRadius:0});
+    reportUniformityChart=new Chart(ctx,{type:"line",data:{labels:reportRecords.map(r=>"هفته "+r.weekNumber),datasets},options:{responsive:true,maintainAspectRatio:false,scales:{y:{beginAtZero:true,suggestedMax:100,title:{display:true,text:"درصد"}}}}});
 }
-
-
-/* =========================================================
-   FEED / WATER
-   ========================================================= */
-
 function renderConsumptionChart() {
 
     document.getElementById(
@@ -1772,136 +1381,18 @@ function renderConsumptionChart() {
    ========================================================= */
 
 function renderFCRChart() {
-
-    const card =
-        document.getElementById(
-            "fcrCard"
-        );
-
-    if (!card) {
-        return;
-    }
-
-    const hasFCR =
-        reportRecords.some(
-            r =>
-                r.fcr !== null &&
-                Number.isFinite(
-                    Number(r.fcr)
-                )
-        );
-
-    card.style.display =
-        hasFCR
-            ? "block"
-            : "none";
-
-    if (!hasFCR) {
-        return;
-    }
-
-    const ctx =
-        document.getElementById(
-            "fcrChart"
-        );
-
-    if (reportFCRChart) {
-        reportFCRChart.destroy();
-    }
-
-    reportFCRChart =
-        new Chart(
-            ctx,
-            {
-
-                type:
-                    "line",
-
-                data: {
-
-                    labels:
-                        reportRecords.map(
-                            r =>
-                                "هفته " +
-                                r.weekNumber
-                        ),
-
-                    datasets: [
-
-                        {
-
-                            label:
-                                "FCR واقعی",
-
-                            data:
-                                reportRecords.map(
-                                    r =>
-                                        r.fcr
-                                ),
-
-                            tension:
-                                0.3,
-
-                            spanGaps:
-                                true
-
-                        },
-
-                        {
-                            label: "FCR استاندارد",
-                            data: reportRecords.map(r => r.standardFCR ?? null),
-                            tension: 0.3,
-                            spanGaps: true,
-                            borderDash: [7, 5],
-                            pointRadius: 2
-                        }
-
-                    ]
-
-                },
-
-                options: {
-
-                    responsive:
-                        true,
-
-                    maintainAspectRatio:
-                        false,
-
-                    scales: {
-
-                        y: {
-
-                            beginAtZero:
-                                false,
-
-                            title: {
-
-                                display:
-                                    true,
-
-                                text:
-                                    "kg feed / kg gain"
-
-                            }
-
-                        }
-
-                    }
-
-                }
-
-            }
-        );
-
+    const card=document.getElementById("fcrCard");
+    const ctx=document.getElementById("fcrChart");
+    if(!card || !ctx) return;
+    const hasActual=reportRecords.some(r=>Number.isFinite(Number(r.cumulativeFCR))||Number.isFinite(Number(r.fcr)));
+    const hasStandard=reportRecords.some(r=>Number.isFinite(Number(r.standardFCR)));
+    card.style.display=(hasActual||hasStandard)?"block":"none";
+    if(!hasActual&&!hasStandard) return;
+    if(reportFCRChart) reportFCRChart.destroy();
+    const datasets=[{label:"FCR تجمعی واقعی",data:reportRecords.map(r=>r.cumulativeFCR??r.fcr??null),tension:0.25,spanGaps:false,pointRadius:3}];
+    if(hasStandard) datasets.push({label:"FCR تجمعی استاندارد سویه",data:reportRecords.map(r=>r.standardFCR??null),tension:0.25,spanGaps:true,borderDash:[8,5],pointRadius:2});
+    reportFCRChart=new Chart(ctx,{type:"line",data:{labels:reportRecords.map(r=>"هفته "+r.weekNumber),datasets},options:{responsive:true,maintainAspectRatio:false,scales:{y:{beginAtZero:false,title:{display:true,text:"kg feed / kg gain"}}}}});
 }
-
-
-/* =========================================================
-   HELPERS
-   ========================================================= */
-
-
 function showLoading(
     visible
 ) {

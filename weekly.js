@@ -1350,7 +1350,183 @@ function setField(
 /* =========================================================
    SAVE TO SUPABASE
    ========================================================= */
+/* =========================================================
+   JALALI DATE → GREGORIAN ISO
+   فقط برای ذخیره در Supabase
+   ========================================================= */
 
+function jalaliToGregorianISO(value) {
+
+    if (!value) {
+        return null;
+    }
+
+    const normalized =
+        String(value)
+            .replace(/[۰-۹]/g, function(d) {
+                return String(
+                    d.charCodeAt(0) - 1776
+                );
+            })
+            .replace(/[٠-٩]/g, function(d) {
+                return String(
+                    d.charCodeAt(0) - 1632
+                );
+            })
+            .replaceAll("-", "/")
+            .trim();
+
+    const parts =
+        normalized.split("/");
+
+    if (parts.length !== 3) {
+        return null;
+    }
+
+    const jy = Number(parts[0]);
+    const jm = Number(parts[1]);
+    const jd = Number(parts[2]);
+
+    if (
+        !Number.isInteger(jy) ||
+        !Number.isInteger(jm) ||
+        !Number.isInteger(jd)
+    ) {
+        return null;
+    }
+
+    /*
+     * تبدیل تقویم جلالی به میلادی
+     */
+
+    let gy;
+
+    if (jy > 979) {
+
+        gy = 1600;
+        jy -= 979;
+
+    } else {
+
+        gy = 621;
+
+    }
+
+    const days =
+        365 * jy +
+        Math.floor(jy / 33) * 8 +
+        Math.floor(
+            ((jy % 33) + 3) / 4
+        ) +
+        78 +
+        jd +
+        (
+            jm < 7
+                ? (jm - 1) * 31
+                : ((jm - 7) * 30) + 186
+        );
+
+    gy +=
+        400 *
+        Math.floor(
+            days / 146097
+        );
+
+    let dayOfCycle =
+        days % 146097;
+
+    if (dayOfCycle > 36524) {
+
+        dayOfCycle--;
+
+        gy +=
+            100 *
+            Math.floor(
+                dayOfCycle / 36524
+            );
+
+        dayOfCycle =
+            dayOfCycle % 36524;
+
+        if (dayOfCycle >= 365) {
+            dayOfCycle++;
+        }
+
+    }
+
+    gy +=
+        4 *
+        Math.floor(
+            dayOfCycle / 1461
+        );
+
+    dayOfCycle =
+        dayOfCycle % 1461;
+
+    if (dayOfCycle > 365) {
+
+        gy +=
+            Math.floor(
+                (dayOfCycle - 1) / 365
+            );
+
+        dayOfCycle =
+            (dayOfCycle - 1) % 365;
+
+    }
+
+    let gd =
+        dayOfCycle + 1;
+
+    const leap =
+        (
+            gy % 4 === 0 &&
+            gy % 100 !== 0
+        ) ||
+        gy % 400 === 0;
+
+    const monthDays = [
+
+        31,
+        leap ? 29 : 28,
+        31,
+        30,
+        31,
+        30,
+        31,
+        31,
+        30,
+        31,
+        30,
+        31
+
+    ];
+
+    let gm = 1;
+
+    while (
+        gd >
+        monthDays[gm - 1]
+    ) {
+
+        gd -=
+            monthDays[gm - 1];
+
+        gm++;
+
+    }
+
+    return (
+
+        gy +
+        "-" +
+        String(gm).padStart(2, "0") +
+        "-" +
+        String(gd).padStart(2, "0")
+
+    );
+
+}
 async function saveWeeklyRecord() {
 
     if (!currentFlock) {
@@ -1497,9 +1673,11 @@ async function saveWeeklyRecord() {
             week,
 
         evaluation_date:
-            getValue(
-                "evaluationDate"
-            ) || null,
+    jalaliToGregorianISO(
+        getValue(
+            "evaluationDate"
+        )
+    ),
 
 
         /* =========================

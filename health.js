@@ -536,14 +536,48 @@ function dateValue(id) {
 
 async function loadCatalogs() {
 
-    await Promise.all([
-        loadDiseases(),
-        loadVaccines(),
-        loadMedications()
-    ]);
+    try {
+
+        await loadDiseases();
+
+    } catch (error) {
+
+        console.error(
+            "Disease catalog error:",
+            error
+        );
+
+    }
+
+
+    try {
+
+        await loadVaccines();
+
+    } catch (error) {
+
+        console.error(
+            "Vaccine catalog error:",
+            error
+        );
+
+    }
+
+
+    try {
+
+        loadMedications();
+
+    } catch (error) {
+
+        console.error(
+            "Medication catalog error:",
+            error
+        );
+
+    }
 
 }
-
 
 /* =========================================================
    DISEASES
@@ -1010,10 +1044,9 @@ async function saveVaccination(event) {
                 ),
 
             dose_unit:
-                "dose",
-
+    value("vaccinationDoseUnit") || "dose",
             administered_by:
-                null,
+    value("vaccinationAdministeredBy"),
 
             notes:
                 value(

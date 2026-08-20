@@ -1,30 +1,34 @@
 /* =========================================================
    ADINE POULTRY HEALTH CENTER
    WEEKLY PERFORMANCE ENGINE
-========================================================= */
+   ========================================================= */
 
 "use strict";
 
 
 /* =========================================================
-   BUILD WEIGHT RECORD
-========================================================= */
+   BUILD WEEKLY WEIGHT RECORD
+   ========================================================= */
 
 function buildWeeklyWeightRecord({
 
     flockId,
 
-    farmId,
+    farmId = null,
 
-    houseId,
+    houseId = null,
 
     ageDays,
+
+    weekNumber = null,
 
     weights = [],
 
     feed = null,
 
     water = null,
+
+    liveBirds = null,
 
     mortalityCount = 0,
 
@@ -46,6 +50,10 @@ function buildWeeklyWeightRecord({
         analysis.mean;
 
 
+    /* -----------------------------------------------------
+       STANDARD
+       ----------------------------------------------------- */
+
     const standard =
         getStandardForCurrentFlock(
             flockId
@@ -62,21 +70,48 @@ function buildWeeklyWeightRecord({
             : null;
 
 
+    /* -----------------------------------------------------
+       FCR
+       ----------------------------------------------------- */
+
     const fcr =
         calculateWeeklyFCR(
             flockId,
             averageWeight,
-            feed,
-            ageDays
+            feed
         );
 
 
-    const mortality =
+    /* -----------------------------------------------------
+       MORTALITY
+       ----------------------------------------------------- */
+
+    const mortalityRate =
         calculateMortalityRate(
             mortalityCount,
             initialBirdCount
         );
 
+
+    /* -----------------------------------------------------
+       WEEK NUMBER
+       ----------------------------------------------------- */
+
+    const calculatedWeekNumber =
+        weekNumber !== null &&
+        weekNumber !== undefined &&
+        Number.isFinite(
+            Number(weekNumber)
+        )
+            ? Number(weekNumber)
+            : Math.round(
+                Number(ageDays || 0) / 7
+            );
+
+
+    /* -----------------------------------------------------
+       RETURN
+       ----------------------------------------------------- */
 
     return {
 
@@ -91,13 +126,34 @@ function buildWeeklyWeightRecord({
 
         date,
 
+        evaluationDate:
+            date,
+
         ageDays:
-            Number(ageDays),
+            Number(ageDays || 0),
+
+        weekNumber:
+            calculatedWeekNumber,
 
         sampleCount:
             analysis.count,
 
-        averageWeight,
+        liveBirds:
+            liveBirds === null ||
+            liveBirds === undefined ||
+            liveBirds === ""
+                ? null
+                : Number(liveBirds),
+
+        mortalityCount:
+            mortalityCount === null ||
+            mortalityCount === undefined ||
+            mortalityCount === ""
+                ? null
+                : Number(mortalityCount),
+
+        averageWeight:
+            analysis.mean,
 
         sd:
             analysis.sd,
@@ -117,9 +173,9 @@ function buildWeeklyWeightRecord({
         maxWeight:
             analysis.max,
 
-        /* -----------------------------------------
-           مصرف
-           ----------------------------------------- */
+        /* -------------------------------------------------
+           FEED
+           ------------------------------------------------- */
 
         feed:
             feed === null ||
@@ -128,6 +184,17 @@ function buildWeeklyWeightRecord({
                 ? null
                 : Number(feed),
 
+        feedPerBirdG:
+            feed === null ||
+            feed === undefined ||
+            feed === ""
+                ? null
+                : Number(feed),
+
+        /* -------------------------------------------------
+           WATER
+           ------------------------------------------------- */
+
         water:
             water === null ||
             water === undefined ||
@@ -135,24 +202,36 @@ function buildWeeklyWeightRecord({
                 ? null
                 : Number(water),
 
+        waterPerBirdMl:
+            water === null ||
+            water === undefined ||
+            water === ""
+                ? null
+                : Number(water),
+
+        /* -------------------------------------------------
+           FCR
+           ------------------------------------------------- */
+
         fcr,
 
-        /* -----------------------------------------
-           تلفات
-           ----------------------------------------- */
+        /* -------------------------------------------------
+           MORTALITY / LIVABILITY
+           ------------------------------------------------- */
 
-        mortality,
+        mortality:
+            mortalityRate,
 
         livability:
-            mortality === null
+            mortalityRate === null
                 ? null
                 : calculateLivability(
-                    mortality
+                    mortalityRate
                 ),
 
-        /* -----------------------------------------
-           استاندارد
-           ----------------------------------------- */
+        /* -------------------------------------------------
+           STANDARD COMPARISON
+           ------------------------------------------------- */
 
         standardWeight,
 
@@ -160,21 +239,31 @@ function buildWeeklyWeightRecord({
             standardWeight === null ||
             averageWeight === null
                 ? null
-                : averageWeight -
-                  standardWeight,
+                : Number(
+                    averageWeight
+                ) -
+                  Number(
+                    standardWeight
+                ),
 
         weightDifferencePercent:
             standardWeight === null ||
-            averageWeight === null
+            averageWeight === null ||
+            Number(standardWeight) === 0
                 ? null
                 : (
                     (
-                        averageWeight -
-                        standardWeight
+                        Number(
+                            averageWeight
+                        ) -
+                        Number(
+                            standardWeight
+                        )
                     ) /
-                    standardWeight
-                ) *
-                100,
+                    Number(
+                        standardWeight
+                    )
+                ) * 100,
 
         notes:
             notes || ""
@@ -185,8 +274,8 @@ function buildWeeklyWeightRecord({
 
 
 /* =========================================================
-   SAVE
-========================================================= */
+   SAVE WEEKLY WEIGHT RECORD
+   ========================================================= */
 
 function saveWeeklyWeightRecord(
     data
@@ -207,14 +296,12 @@ function saveWeeklyWeightRecord(
 
 /* =========================================================
    FCR
-   Feed / Weight Gain
-========================================================= */
+   ========================================================= */
 
 function calculateWeeklyFCR(
     flockId,
     currentWeight,
-    currentFeed,
-    currentAgeDays = null
+    currentFeed
 ) {
 
     const feed =
@@ -240,88 +327,41 @@ function calculateWeeklyFCR(
     }
 
 
-    const records =
+    const previousRecords =
         getFlockWeeklyRecords(
             flockId
+        )
+        .filter(
+            item =>
+                Number.isFinite(
+                    Number(
+                        item.averageWeight
+                    )
+                ) &&
+                Number(
+                    item.averageWeight
+                ) < weight
+        )
+        .sort(
+            (
+                a,
+                b
+            ) =>
+                Number(
+                    a.ageDays || 0
+                ) -
+                Number(
+                    b.ageDays || 0
+                )
         );
 
 
-    if (
-        !Array.isArray(records) ||
-        records.length === 0
-    ) {
-
-        return null;
-
-    }
-
-
-    let previous = null;
-
-
-    /* -----------------------------------------
-       پیدا کردن رکورد سنی قبلی
-       ----------------------------------------- */
-
-    if (
-        currentAgeDays !== null &&
-        currentAgeDays !== undefined
-    ) {
-
-        previous =
-            records
-                .filter(
-                    item =>
-
-                        Number(
-                            item.ageDays
-                        ) <
-                        Number(
-                            currentAgeDays
-                        ) &&
-
-                        Number.isFinite(
-                            Number(
-                                item.averageWeight
-                            )
-                        )
-                )
-                .sort(
-                    (
-                        a,
-                        b
-                    ) =>
-                        Number(
-                            b.ageDays
-                        ) -
-                        Number(
-                            a.ageDays
-                        )
-                )[0] || null;
-
-    }
-
-
-    /* -----------------------------------------
-       اگر سن موجود نبود،
-       آخرین رکورد قبلی را بگیر
-       ----------------------------------------- */
-
-    if (!previous) {
-
-        previous =
-            records
-                .filter(
-                    item =>
-                        Number.isFinite(
-                            Number(
-                                item.averageWeight
-                            )
-                        )
-                )
-                .at(-1) || null;
-
-    }
+    const previous =
+        previousRecords.length
+            ? previousRecords[
+                previousRecords.length - 1
+            ]
+            : null;
 
 
     if (!previous) {
@@ -337,23 +377,13 @@ function calculateWeeklyFCR(
         );
 
 
-    if (
-        !Number.isFinite(
-            previousWeight
-        )
-    ) {
-
-        return null;
-
-    }
-
-
     const gain =
         weight -
         previousWeight;
 
 
     if (
+        !Number.isFinite(gain) ||
         gain <= 0
     ) {
 
@@ -369,22 +399,54 @@ function calculateWeeklyFCR(
 
 /* =========================================================
    STANDARD FOR FLOCK
-========================================================= */
+   ========================================================= */
 
 function getStandardForCurrentFlock(
     flockId
 ) {
 
+    if (
+        typeof getFlocks !==
+        "function"
+    ) {
+
+        return null;
+
+    }
+
+
+    const flocks =
+        getFlocks();
+
+
+    if (
+        !Array.isArray(flocks)
+    ) {
+
+        return null;
+
+    }
+
+
     const flock =
-        getFlocks()
-            .find(
-                item =>
-                    item.id ===
-                    flockId
-            );
+        flocks.find(
+            item =>
+                item.id ===
+                flockId
+        );
 
 
     if (!flock) {
+
+        return null;
+
+    }
+
+
+    if (
+        typeof getStandard !==
+        "function"
+    ) {
 
         return null;
 
@@ -402,7 +464,7 @@ function getStandardForCurrentFlock(
 
 /* =========================================================
    WEEKLY PERFORMANCE
-========================================================= */
+   ========================================================= */
 
 function getWeeklyPerformance(
     flockId
@@ -412,6 +474,15 @@ function getWeeklyPerformance(
         getFlockWeeklyRecords(
             flockId
         );
+
+
+    if (
+        !Array.isArray(records)
+    ) {
+
+        return [];
+
+    }
 
 
     const standard =
@@ -433,35 +504,50 @@ function getWeeklyPerformance(
                     : null;
 
 
+            const averageWeight =
+                Number(
+                    record.averageWeight
+                );
+
+
+            const weightDifference =
+                standardWeight === null ||
+                !Number.isFinite(
+                    averageWeight
+                )
+                    ? null
+                    : averageWeight -
+                      Number(
+                          standardWeight
+                      );
+
+
+            const weightDifferencePercent =
+                standardWeight === null ||
+                !Number.isFinite(
+                    averageWeight
+                ) ||
+                Number(
+                    standardWeight
+                ) === 0
+                    ? null
+                    : (
+                        weightDifference /
+                        Number(
+                            standardWeight
+                        )
+                    ) * 100;
+
+
             return {
 
                 ...record,
 
                 standardWeight,
 
-                weightDifference:
-                    standardWeight === null ||
-                    record.averageWeight === null
-                        ? null
-                        : Number(
-                            record.averageWeight
-                        ) -
-                          standardWeight,
+                weightDifference,
 
-                weightDifferencePercent:
-                    standardWeight === null ||
-                    record.averageWeight === null
-                        ? null
-                        : (
-                            (
-                                Number(
-                                    record.averageWeight
-                                ) -
-                                standardWeight
-                            ) /
-                            standardWeight
-                        ) *
-                        100
+                weightDifferencePercent
 
             };
 
@@ -472,8 +558,8 @@ function getWeeklyPerformance(
 
 
 /* =========================================================
-   LATEST
-========================================================= */
+   LATEST WEEKLY PERFORMANCE
+   ========================================================= */
 
 function getLatestWeeklyPerformance(
     flockId
@@ -485,16 +571,25 @@ function getLatestWeeklyPerformance(
         );
 
 
-    return records.length
-        ? records.at(-1)
-        : null;
+    if (
+        !records.length
+    ) {
+
+        return null;
+
+    }
+
+
+    return records[
+        records.length - 1
+    ];
 
 }
 
 
 /* =========================================================
    HEALTH INDEX
-========================================================= */
+   ========================================================= */
 
 function calculateFlockHealthIndex(
     record
@@ -507,12 +602,13 @@ function calculateFlockHealthIndex(
     }
 
 
-    let score = 100;
+    let score =
+        100;
 
 
-    /* -----------------------------------------
+    /* -----------------------------------------------------
        CV
-       ----------------------------------------- */
+       ----------------------------------------------------- */
 
     if (
         Number.isFinite(
@@ -522,28 +618,25 @@ function calculateFlockHealthIndex(
         )
     ) {
 
-        if (
-            Number(record.cv) >
-            20
-        ) {
+        const cv =
+            Number(
+                record.cv
+            );
+
+
+        if (cv > 20) {
 
             score -= 25;
 
         }
 
-        else if (
-            Number(record.cv) >
-            15
-        ) {
+        else if (cv > 15) {
 
             score -= 15;
 
         }
 
-        else if (
-            Number(record.cv) >
-            10
-        ) {
+        else if (cv > 10) {
 
             score -= 5;
 
@@ -552,9 +645,9 @@ function calculateFlockHealthIndex(
     }
 
 
-    /* -----------------------------------------
-       Uniformity
-       ----------------------------------------- */
+    /* -----------------------------------------------------
+       UNIFORMITY
+       ----------------------------------------------------- */
 
     if (
         Number.isFinite(
@@ -564,34 +657,25 @@ function calculateFlockHealthIndex(
         )
     ) {
 
-        if (
+        const uniformity =
             Number(
                 record.uniformity10
-            ) <
-            70
-        ) {
+            );
+
+
+        if (uniformity < 70) {
 
             score -= 25;
 
         }
 
-        else if (
-            Number(
-                record.uniformity10
-            ) <
-            80
-        ) {
+        else if (uniformity < 80) {
 
             score -= 15;
 
         }
 
-        else if (
-            Number(
-                record.uniformity10
-            ) <
-            85
-        ) {
+        else if (uniformity < 85) {
 
             score -= 5;
 
@@ -600,9 +684,9 @@ function calculateFlockHealthIndex(
     }
 
 
-    /* -----------------------------------------
-       Weight deviation
-       ----------------------------------------- */
+    /* -----------------------------------------------------
+       WEIGHT DIFFERENCE
+       ----------------------------------------------------- */
 
     if (
         Number.isFinite(
@@ -620,28 +704,58 @@ function calculateFlockHealthIndex(
             );
 
 
-        if (
-            deviation >
-            15
-        ) {
+        if (deviation > 15) {
 
             score -= 20;
 
         }
 
-        else if (
-            deviation >
-            10
-        ) {
+        else if (deviation > 10) {
 
             score -= 10;
 
         }
 
-        else if (
-            deviation >
-            5
-        ) {
+        else if (deviation > 5) {
+
+            score -= 5;
+
+        }
+
+    }
+
+
+    /* -----------------------------------------------------
+       MORTALITY
+       ----------------------------------------------------- */
+
+    if (
+        Number.isFinite(
+            Number(
+                record.mortality
+            )
+        )
+    ) {
+
+        const mortality =
+            Number(
+                record.mortality
+            );
+
+
+        if (mortality > 5) {
+
+            score -= 20;
+
+        }
+
+        else if (mortality > 3) {
+
+            score -= 10;
+
+        }
+
+        else if (mortality > 1) {
 
             score -= 5;
 
@@ -663,7 +777,7 @@ function calculateFlockHealthIndex(
 
 /* =========================================================
    DUPLICATE AGE CHECK
-========================================================= */
+   ========================================================= */
 
 function hasWeeklyRecordAtAge(
     flockId,
@@ -671,20 +785,100 @@ function hasWeeklyRecordAtAge(
     excludeId = null
 ) {
 
-    return getFlockWeeklyRecords(
-        flockId
-    )
-    .some(
+    const records =
+        getFlockWeeklyRecords(
+            flockId
+        );
+
+
+    if (
+        !Array.isArray(records)
+    ) {
+
+        return false;
+
+    }
+
+
+    return records.some(
         record =>
 
             record.id !==
-                excludeId &&
+            excludeId &&
 
             Number(
                 record.ageDays
             ) ===
-            Number(ageDays)
+            Number(
+                ageDays
+            )
 
     );
+
+}
+
+
+/* =========================================================
+   GET WEEKLY RECORD BY WEEK
+   ========================================================= */
+
+function getFlockRecordByWeek(
+    flockId,
+    weekNumber
+) {
+
+    const records =
+        getFlockWeeklyRecords(
+            flockId
+        );
+
+
+    return records.find(
+        record =>
+            Number(
+                record.weekNumber
+            ) ===
+            Number(
+                weekNumber
+            )
+    ) || null;
+
+}
+
+
+/* =========================================================
+   GET WEEKLY RECORD BY DATE
+   ========================================================= */
+
+function getFlockRecordByDate(
+    flockId,
+    date
+) {
+
+    const records =
+        getFlockWeeklyRecords(
+            flockId
+        );
+
+
+    return records.find(
+        record =>
+            String(
+                record.date ||
+                record.evaluationDate ||
+                ""
+            )
+            .slice(
+                0,
+                10
+            ) ===
+            String(
+                date || ""
+            )
+            .slice(
+                0,
+                10
+            )
+    ) || null;
 
 }

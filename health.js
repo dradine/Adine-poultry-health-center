@@ -1,7 +1,5 @@
 /* =========================================================
-   ADINE POULTRY HEALTH CENTER
-   HEALTH MODULE — Vaccination & Medicine
-   SUPABASE VERSION
+   ADINE — HEALTH (Vaccination & Medicine) — SUPABASE
    ========================================================= */
 
 let currentUser = null;
@@ -14,58 +12,77 @@ document.addEventListener("DOMContentLoaded", initHealth);
 
 async function initHealth() {
   try {
-    const access = await checkUserAccess();
+    // بررسی وجود supabase
+    if (typeof supabaseClient === "undefined") {
+      alert("خطا: supabaseClient لود نشده. فایل supabase-config.js را چک کنید.");
+      return;
+    }
 
-    if (!access.authenticated) {
+    // اول Session را چک می‌کنیم (قابل‌اطمینان‌تر از getUser)
+    const { data: sessionData, error: sessionError } =
+      await supabaseClient.auth.getSession();
+
+    if (sessionError) {
+      console.error("Session error:", sessionError);
+    }
+
+    if (!sessionData?.session) {
       location.href =
         "login.html?message=" +
         encodeURIComponent("ابتدا وارد سامانه شوید.");
       return;
     }
 
-    if (!access.allowed) {
-      alert("حساب شما هنوز توسط مدیریت تأیید نشده است.");
-      await logoutUser();
-      return;
+    currentUser = sessionData.session.user;
+
+    // پروفایل اختیاری — اگر نبود بیرون نینداز
+    let profile = null;
+    try {
+      if (typeof getCurrentProfile === "function") {
+        profile = await getCurrentProfile();
+      }
+    } catch (e) {
+      console.warn("Profile load warning:", e);
     }
 
-    currentUser = access.user;
-
-    // انتخاب فعلی گله از localStorage (مثل بقیه صفحات)
-    const selection = getCurrentSelection();
+    // انتخاب گله
+    const selection =
+      typeof getCurrentSelection === "function"
+        ? getCurrentSelection()
+        : {};
 
     if (!selection.flockId) {
-      alert("ابتدا یک گله انتخاب کنید.");
+      alert("ابتدا از بخش «سالن و گله» یک گله انتخاب کنید.");
       location.href = "flocks.html";
       return;
     }
 
-    // بارگذاری اطلاعات گله از localStorage یا Supabase
-    // اگر flocks هنوز در localStorage است:
-    const flocks = typeof getFlocks === "function" ? getFlocks() : [];
-    currentFlock = flocks.find((f) => f.id === selection.flockId);
+    const flocks =
+      typeof getFlocks === "function" ? getFlocks() : [];
+    const farms =
+      typeof getFarms === "function" ? getFarms() : [];
+    const houses =
+      typeof getHouses === "function" ? getHouses() : [];
 
-    if (!currentFlock) {
-      // اگر گله در localStorage نبود، حداقل با flockId ادامه می‌دهیم
-      currentFlock = {
+    currentFlock =
+      flocks.find((f) => f.id === selection.flockId) || {
         id: selection.flockId,
         farmId: selection.farmId || null,
         houseId: selection.houseId || null,
         flockName: selection.flockName || "گله انتخاب‌شده",
-        strain: selection.strain || ""
+        strain: selection.strain || "",
+        placementDate: selection.placementDate || ""
       };
-    }
 
-    const farms = typeof getFarms === "function" ? getFarms() : [];
-    const houses = typeof getHouses === "function" ? getHouses() : [];
-
-    currentFarm = farms.find((f) => f.id === currentFlock.farmId) || null;
-    currentHouse = houses.find((h) => h.id === currentFlock.houseId) || null;
+    currentFarm =
+      farms.find((f) => f.id === currentFlock.farmId) || null;
+    currentHouse =
+      houses.find((h) => h.id === currentFlock.houseId) || null;
 
     const infoEl = document.getElementById("flockInfo");
     if (infoEl) {
       infoEl.textContent = [
-        currentFarm?.name || currentFarm?.name || "",
+        currentFarm?.name || "",
         currentHouse?.name || "",
         currentFlock.flockName || currentFlock.name || "",
         currentFlock.strain || ""
@@ -74,16 +91,24 @@ async function initHealth() {
         .join(" | ");
     }
 
-    // تاریخ پیش‌فرض
-    const today = todayISO();
+    const today =
+      typeof todayISO === "function"
+        ? todayISO()
+        : new Date().toISOString().slice(0, 10);
+
     const vDate = document.getElementById("vaccineDate");
     const mStart = document.getElementById("medicineStart");
     if (vDate) vDate.value = today;
     if (mStart) mStart.value = today;
 
-    // محاسبه سن گله
-    if (currentFlock.placementDate && vDate) {
-      const age = calculateAgeDays(currentFlock.placementDate, today);
+    if (
+      currentFlock.placementDate &&
+      typeof calculateAgeDays === "function"
+    ) {
+      const age = calculateAgeDays(
+        currentFlock.placementDate,
+        today
+      );
       const ageInput = document.getElementById("vaccineAge");
       if (ageInput && age !== null) ageInput.value = age;
     }
@@ -92,7 +117,7 @@ async function initHealth() {
     await loadHealthRecords();
   } catch (err) {
     console.error("Health init error:", err);
-    alert("خطا در راه‌اندازی بخش سلامت.");
+    alert("خطا در راه‌اندازی بخش سلامت:\n" + (err.message || err));
   }
 }
 
@@ -108,16 +133,11 @@ function setupForms() {
   }
 }
 
-/* =========================================================
-   LOAD
-========================================================= */
-
 async function loadHealthRecords() {
   const tbody = document.getElementById("healthTable");
   if (tbody) {
-    tbody.innerHTML = `
-      <tr><td colspan="5">در حال دریافت سوابق...</td></tr>
-    `;
+    tbody.innerHTML =
+      '<tr><td colspan="5">در حال دریافت سوابق...</td></tr>';
   }
 
   const { data, error } = await supabaseClient
@@ -130,9 +150,10 @@ async function loadHealthRecords() {
   if (error) {
     console.error("Load health error:", error);
     if (tbody) {
-      tbody.innerHTML = `
-        <tr><td colspan="5">خطا در دریافت سوابق: ${escapeHTML(error.message)}</td></tr>
-      `;
+      tbody.innerHTML =
+        "<tr><td colspan=\"5\">خطا در دریافت سوابق: " +
+        escapeSafe(error.message) +
+        "</td></tr>";
     }
     return;
   }
@@ -140,10 +161,6 @@ async function loadHealthRecords() {
   healthRecords = data || [];
   renderHealth();
 }
-
-/* =========================================================
-   SAVE VACCINATION
-========================================================= */
 
 async function saveVaccination(event) {
   event.preventDefault();
@@ -155,26 +172,37 @@ async function saveVaccination(event) {
   }
 
   try {
+    const name = document.getElementById("vaccineName").value.trim();
+    const record_date = document.getElementById("vaccineDate").value;
+
+    if (!name || !record_date) {
+      alert("تاریخ و نام واکسن الزامی است.");
+      return;
+    }
+
     const payload = {
       owner_id: currentUser.id,
       farm_id: currentFlock.farmId || null,
       house_id: currentFlock.houseId || null,
       flock_id: String(currentFlock.id),
-      flock_name: currentFlock.flockName || currentFlock.name || null,
+      flock_name:
+        currentFlock.flockName || currentFlock.name || null,
       type: "vaccination",
-      record_date: document.getElementById("vaccineDate").value,
-      age_days: Number(document.getElementById("vaccineAge").value || 0),
-      disease: document.getElementById("vaccineDisease").value || null,
-      name: document.getElementById("vaccineName").value.trim(),
-      manufacturer: document.getElementById("vaccineManufacturer").value.trim() || null,
-      route: document.getElementById("vaccineRoute").value || null,
-      notes: document.getElementById("vaccineNotes").value.trim() || null
+      record_date,
+      age_days: Number(
+        document.getElementById("vaccineAge").value || 0
+      ),
+      disease:
+        document.getElementById("vaccineDisease").value || null,
+      name,
+      manufacturer:
+        document.getElementById("vaccineManufacturer").value.trim() ||
+        null,
+      route:
+        document.getElementById("vaccineRoute").value || null,
+      notes:
+        document.getElementById("vaccineNotes").value.trim() || null
     };
-
-    if (!payload.name || !payload.record_date) {
-      alert("تاریخ و نام واکسن الزامی است.");
-      return;
-    }
 
     const { error } = await supabaseClient
       .from("health_records")
@@ -187,7 +215,11 @@ async function saveVaccination(event) {
     }
 
     event.target.reset();
-    document.getElementById("vaccineDate").value = todayISO();
+    document.getElementById("vaccineDate").value =
+      typeof todayISO === "function"
+        ? todayISO()
+        : new Date().toISOString().slice(0, 10);
+
     await loadHealthRecords();
     alert("واکسیناسیون با موفقیت ثبت شد.");
   } finally {
@@ -197,10 +229,6 @@ async function saveVaccination(event) {
     }
   }
 }
-
-/* =========================================================
-   SAVE MEDICINE
-========================================================= */
 
 async function saveMedicine(event) {
   event.preventDefault();
@@ -212,28 +240,42 @@ async function saveMedicine(event) {
   }
 
   try {
+    const name = document.getElementById("medicineName").value.trim();
+    const record_date = document.getElementById("medicineStart").value;
+
+    if (!name || !record_date) {
+      alert("تاریخ شروع و نام دارو الزامی است.");
+      return;
+    }
+
     const payload = {
       owner_id: currentUser.id,
       farm_id: currentFlock.farmId || null,
       house_id: currentFlock.houseId || null,
       flock_id: String(currentFlock.id),
-      flock_name: currentFlock.flockName || currentFlock.name || null,
+      flock_name:
+        currentFlock.flockName || currentFlock.name || null,
       type: "medicine",
-      record_date: document.getElementById("medicineStart").value,
-      end_date: document.getElementById("medicineEnd").value || null,
-      name: document.getElementById("medicineName").value.trim(),
-      active_ingredient: document.getElementById("medicineActive").value.trim() || null,
-      reason: document.getElementById("medicineReason").value.trim() || null,
-      route: document.getElementById("medicineRoute").value || null,
-      dose: document.getElementById("medicineDose").value.trim() || null,
-      duration: document.getElementById("medicineDuration").value.trim() || null,
-      notes: document.getElementById("medicineNotes").value.trim() || null
+      record_date,
+      end_date:
+        document.getElementById("medicineEnd").value || null,
+      name,
+      active_ingredient:
+        document.getElementById("medicineActive").value.trim() ||
+        null,
+      reason:
+        document.getElementById("medicineReason").value.trim() ||
+        null,
+      route:
+        document.getElementById("medicineRoute").value || null,
+      dose:
+        document.getElementById("medicineDose").value.trim() || null,
+      duration:
+        document.getElementById("medicineDuration").value.trim() ||
+        null,
+      notes:
+        document.getElementById("medicineNotes").value.trim() || null
     };
-
-    if (!payload.name || !payload.record_date) {
-      alert("تاریخ شروع و نام دارو الزامی است.");
-      return;
-    }
 
     const { error } = await supabaseClient
       .from("health_records")
@@ -246,7 +288,11 @@ async function saveMedicine(event) {
     }
 
     event.target.reset();
-    document.getElementById("medicineStart").value = todayISO();
+    document.getElementById("medicineStart").value =
+      typeof todayISO === "function"
+        ? todayISO()
+        : new Date().toISOString().slice(0, 10);
+
     await loadHealthRecords();
     alert("درمان با موفقیت ثبت شد.");
   } finally {
@@ -256,10 +302,6 @@ async function saveMedicine(event) {
     }
   }
 }
-
-/* =========================================================
-   DELETE
-========================================================= */
 
 async function deleteHealthRecord(id) {
   if (!confirm("آیا از حذف این رکورد مطمئن هستید؟")) return;
@@ -279,18 +321,25 @@ async function deleteHealthRecord(id) {
   await loadHealthRecords();
 }
 
-/* =========================================================
-   RENDER
-========================================================= */
+function escapeSafe(value) {
+  if (typeof escapeHTML === "function") {
+    return escapeHTML(value);
+  }
+  return String(value ?? "")
+    .replaceAll("&", "&amp;")
+    .replaceAll("<", "&lt;")
+    .replaceAll(">", "&gt;")
+    .replaceAll('"', "&quot;")
+    .replaceAll("'", "&#039;");
+}
 
 function renderHealth() {
   const table = document.getElementById("healthTable");
   if (!table) return;
 
   if (!healthRecords.length) {
-    table.innerHTML = `
-      <tr><td colspan="5">هنوز رکوردی ثبت نشده است.</td></tr>
-    `;
+    table.innerHTML =
+      '<tr><td colspan="5">هنوز رکوردی ثبت نشده است.</td></tr>';
     return;
   }
 
@@ -317,31 +366,38 @@ function renderHealth() {
 
   table.innerHTML = healthRecords
     .map((r) => {
-      const typeLabel = r.type === "vaccination" ? "واکسیناسیون" : "دارو / درمان";
+      const typeLabel =
+        r.type === "vaccination" ? "واکسیناسیون" : "دارو / درمان";
       const item = r.name || "-";
       let note = "-";
 
       if (r.type === "vaccination") {
-        note =
-          (r.disease ? diseaseMap[r.disease] || r.disease : "") +
-          (r.route ? " | " + (routeMap[r.route] || r.route) : "") +
-          (r.notes ? " | " + r.notes : "");
+        note = [
+          r.disease ? diseaseMap[r.disease] || r.disease : "",
+          r.route ? routeMap[r.route] || r.route : "",
+          r.notes || ""
+        ]
+          .filter(Boolean)
+          .join(" | ");
       } else {
-        note =
-          (r.reason || "") +
-          (r.dose ? " | " + r.dose : "") +
-          (r.route ? " | " + (routeMap[r.route] || r.route) : "") +
-          (r.notes ? " | " + r.notes : "");
+        note = [
+          r.reason || "",
+          r.dose || "",
+          r.route ? routeMap[r.route] || r.route : "",
+          r.notes || ""
+        ]
+          .filter(Boolean)
+          .join(" | ");
       }
 
-      note = note.replace(/^\s*\|\s*|\s*\|\s*$/g, "").trim() || "-";
+      if (!note) note = "-";
 
       return `
         <tr>
-          <td>${escapeHTML(r.record_date || "-")}</td>
+          <td>${escapeSafe(r.record_date || "-")}</td>
           <td>${typeLabel}</td>
-          <td>${escapeHTML(item)}</td>
-          <td>${escapeHTML(note)}</td>
+          <td>${escapeSafe(item)}</td>
+          <td>${escapeSafe(note)}</td>
           <td>
             <button type="button" class="btn btn-danger"
               onclick="deleteHealthRecord('${r.id}')">
@@ -354,5 +410,4 @@ function renderHealth() {
     .join("");
 }
 
-// برای onclick در HTML
 window.deleteHealthRecord = deleteHealthRecord;

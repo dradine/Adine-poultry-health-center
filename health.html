@@ -1,20 +1,25 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="fa" dir="rtl">
 
 <head>
 
-<meta charset="utf-8">
+<meta charset="UTF-8">
 
 <meta
     name="viewport"
-    content="width=device-width,initial-scale=1,viewport-fit=cover"
+    content="width=device-width, initial-scale=1"
+>
+
+<meta
+    name="theme-color"
+    content="#173f35"
 >
 
 <title>
-پایش سلامت | مرکز تخصصی سلامت طیور آدینه
+سلامت گله | مرکز تخصصی سلامت طیور آدینه
 </title>
 
-<link rel="stylesheet" href="Style.css">
+<link rel="stylesheet" href="app.css">
 
 <style>
 
@@ -22,1568 +27,1514 @@
    HEALTH PAGE
 ========================================================= */
 
-.health-page {
-    max-width: 1200px;
-    margin: 0 auto;
-    padding: 18px;
+.health-tabs{
+
+    display:flex;
+    gap:8px;
+    flex-wrap:wrap;
+    margin-bottom:20px;
 }
 
-.health-header {
-    margin-bottom: 18px;
+.health-tab{
+
+    border:0;
+    padding:11px 16px;
+    border-radius:12px;
+    background:#eef2f0;
+    cursor:pointer;
+    font-family:inherit;
+    font-size:14px;
 }
 
-.health-header h2 {
-    margin: 0 0 8px;
+.health-tab.active{
+
+    background:#173f35;
+    color:#fff;
 }
 
-.health-flock-info {
-    background: #f4f7f9;
-    border-radius: 12px;
-    padding: 12px 14px;
-    font-size: 14px;
-    line-height: 1.8;
+.health-panel{
+
+    display:none;
 }
 
-/* =========================================================
-   TABS
-========================================================= */
+.health-panel.active{
 
-.health-tabs {
-    display: grid;
-    grid-template-columns: repeat(4, 1fr);
-    gap: 8px;
-    margin-bottom: 15px;
+    display:block;
 }
 
-.health-tab {
-    border: 0;
-    border-radius: 10px;
-    padding: 13px 8px;
-    cursor: pointer;
-    background: #edf1f4;
-    color: #333;
-    font-family: inherit;
-    font-size: 14px;
-    font-weight: 700;
+.small-note{
+
+    font-size:13px;
+    color:#68736f;
+    margin-top:5px;
 }
 
-.health-tab.active {
-    background: #1f6f4a;
-    color: white;
+.health-status{
+
+    padding:12px;
+    border-radius:10px;
+    margin-bottom:15px;
+    display:none;
 }
 
-/* =========================================================
-   PANELS
-========================================================= */
+.health-status.success{
 
-.health-panel {
-    display: none;
+    display:block;
+    background:#e8f5e9;
+    color:#1b5e20;
 }
 
-.health-panel.active {
-    display: block;
+.health-status.error{
+
+    display:block;
+    background:#ffebee;
+    color:#b71c1c;
 }
 
-.health-card {
-    background: white;
-    border-radius: 14px;
-    padding: 18px;
-    margin-bottom: 18px;
-    box-shadow: 0 2px 12px rgba(0,0,0,.06);
+.badge{
+
+    display:inline-block;
+    padding:4px 8px;
+    border-radius:8px;
+    font-size:12px;
+    background:#edf1ef;
 }
 
-.health-card h3 {
-    margin-top: 0;
+.table-wrapper{
+
+    overflow-x:auto;
 }
 
-/* =========================================================
-   FORM
-========================================================= */
+.data-table{
 
-.health-form-grid {
-    display: grid;
-    grid-template-columns: repeat(2, minmax(0,1fr));
-    gap: 12px;
+    width:100%;
+    border-collapse:collapse;
 }
 
-.health-field {
-    display: flex;
-    flex-direction: column;
-    gap: 6px;
+.data-table th,
+.data-table td{
+
+    padding:10px;
+    border-bottom:1px solid #e5e7e6;
+    text-align:right;
+    white-space:nowrap;
 }
 
-.health-field.full {
-    grid-column: 1 / -1;
-}
+.jalali-input{
 
-.health-field label {
-    font-weight: 700;
-    font-size: 13px;
-}
+    direction:ltr;
+    text-align:right;
+    font-family:inherit;
+    background:#fff !important;
+    cursor:pointer;
+    min-height:44px;
+    font-size:14px;
+    padding-right:42px !important;
 
-.health-field input,
-.health-field select,
-.health-field textarea {
-    width: 100%;
-    box-sizing: border-box;
-    border: 1px solid #d7dde2;
-    border-radius: 9px;
-    padding: 11px;
-    font-family: inherit;
-    font-size: 14px;
-    background: #fff;
-}
+    background-image:
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='20' height='20' viewBox='0 0 24 24' fill='none' stroke='%23173f35' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Crect x='3' y='4' width='18' height='18' rx='2'/%3E%3Cline x1='16' y1='2' x2='16' y2='6'/%3E%3Cline x1='8' y1='2' x2='8' y2='6'/%3E%3Cline x1='3' y1='10' x2='21' y2='10'/%3E%3C/svg%3E");
 
-.health-field textarea {
-    min-height: 90px;
-    resize: vertical;
-}
+    background-repeat:no-repeat;
 
-.health-actions {
-    margin-top: 16px;
-    display: flex;
-    gap: 10px;
-}
+    background-position:right 12px center;
 
-.health-submit {
-    border: 0;
-    border-radius: 10px;
-    padding: 12px 22px;
-    background: #1f6f4a;
-    color: white;
-    font-family: inherit;
-    font-weight: 700;
-    cursor: pointer;
-}
-
-.health-submit:disabled {
-    opacity: .6;
-    cursor: wait;
+    background-size:20px 20px;
 }
 
 /* =========================================================
-   JALALI DATE
+   PRINT
 ========================================================= */
 
-.jalali-date-wrap {
-    position: relative;
+.history-actions{
+
+    display:flex;
+    justify-content:flex-start;
+    margin-bottom:15px;
 }
 
-.jalali-date-row {
-    display: flex;
-    gap: 6px;
-}
+.print-header{
 
-.jalali-date-row input {
-    flex: 1;
-}
-
-.jalali-calendar-btn {
-    width: 46px;
-    min-width: 46px;
-    border: 1px solid #d7dde2;
-    border-radius: 9px;
-    background: #f7f8f9;
-    cursor: pointer;
-    font-size: 18px;
-}
-
-.jalali-calendar {
-    position: absolute;
-    z-index: 1000;
-    top: calc(100% + 6px);
-    right: 0;
-    width: 300px;
-    max-width: calc(100vw - 36px);
-    background: white;
-    border: 1px solid #ddd;
-    border-radius: 14px;
-    box-shadow: 0 10px 35px rgba(0,0,0,.15);
-    padding: 12px;
-    display: none;
-}
-
-.jalali-calendar.open {
-    display: block;
-}
-
-.jalali-calendar-header {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    margin-bottom: 10px;
-}
-
-.jalali-calendar-header button {
-    border: 0;
-    background: #edf1f4;
-    border-radius: 8px;
-    width: 34px;
-    height: 34px;
-    cursor: pointer;
-}
-
-.jalali-calendar-title {
-    font-weight: 700;
-}
-
-.jalali-calendar-weekdays,
-.jalali-calendar-days {
-    display: grid;
-    grid-template-columns: repeat(7, 1fr);
-    gap: 4px;
-}
-
-.jalali-calendar-weekdays div {
-    text-align: center;
-    font-size: 11px;
-    color: #777;
-    padding: 5px 0;
-}
-
-.jalali-calendar-days button {
-    border: 0;
-    background: transparent;
-    border-radius: 7px;
-    padding: 8px 0;
-    cursor: pointer;
-    font-family: inherit;
-}
-
-.jalali-calendar-days button:hover {
-    background: #e9f4ee;
-}
-
-.jalali-calendar-days button.today {
-    background: #1f6f4a;
-    color: white;
-    font-weight: bold;
+    display:none;
 }
 
 /* =========================================================
-   STATUS
+   MOBILE DATEPICKER
 ========================================================= */
 
-.health-status {
-    display: none;
-    margin-bottom: 15px;
-    padding: 12px;
-    border-radius: 10px;
-    font-size: 14px;
-    font-weight: 700;
+.datepicker-plot-area{
+
+    width:290px !important;
+    min-width:290px !important;
+    max-width:calc(100vw - 20px) !important;
+
+    font-family:inherit !important;
+
+    border-radius:14px !important;
+
+    padding:6px !important;
+
+    box-shadow:
+        0 10px 35px rgba(0,0,0,.18) !important;
 }
 
-.health-status.success,
-.health-status.error {
-    display: block;
+.datepicker-plot-area
+.datepicker-header{
+
+    padding:4px 2px !important;
 }
 
-.health-status.success {
-    background: #e7f6ed;
-    color: #17643d;
+.datepicker-plot-area
+.table-days{
+
+    width:100% !important;
 }
 
-.health-status.error {
-    background: #fdeaea;
-    color: #a02020;
+.datepicker-plot-area
+.table-days td{
+
+    width:14.28% !important;
+    height:32px !important;
+    padding:2px !important;
+}
+
+.datepicker-plot-area
+.table-days td span{
+
+    width:28px !important;
+    height:28px !important;
+
+    line-height:28px !important;
+
+    font-size:12px !important;
+
+    margin:auto !important;
+
+    border-radius:50% !important;
+}
+
+.datepicker-plot-area
+.datepicker-footer{
+
+    padding:5px 0 !important;
 }
 
 /* =========================================================
-   HISTORY
+   PRINT STYLE
 ========================================================= */
 
-.health-history {
-    overflow-x: auto;
-}
+@media print{
 
-.health-history table {
-    width: 100%;
-    border-collapse: collapse;
-    min-width: 750px;
-}
+    @page{
 
-.health-history th,
-.health-history td {
-    border-bottom: 1px solid #e5e8eb;
-    padding: 10px;
-    text-align: right;
-    vertical-align: top;
-}
+        size:A4;
+        margin:12mm;
+    }
 
-.health-history th {
-    background: #f5f7f8;
-}
+    body{
 
-.health-badge {
-    display: inline-block;
-    padding: 4px 8px;
-    border-radius: 8px;
-    background: #edf1f4;
-    font-size: 12px;
-    font-weight: 700;
-}
+        background:#fff !important;
+    }
 
-.health-delete {
-    border: 0;
-    background: #b52b2b;
-    color: white;
-    border-radius: 7px;
-    padding: 6px 10px;
-    cursor: pointer;
-    font-family: inherit;
-}
+    .topbar,
+    .health-tabs,
+    .history-actions,
+    .button-row,
+    #healthStatus{
 
-.health-empty {
-    text-align: center;
-    padding: 25px;
-    color: #777;
+        display:none !important;
+    }
+
+    .page{
+
+        padding:0 !important;
+    }
+
+    .container{
+
+        width:100% !important;
+        max-width:none !important;
+    }
+
+    .card{
+
+        box-shadow:none !important;
+        border:0 !important;
+        padding:0 !important;
+    }
+
+    .print-header{
+
+        display:block !important;
+        text-align:center;
+        margin-bottom:20px;
+    }
+
+    .print-header h1{
+
+        margin:0 0 8px;
+        font-size:20px;
+    }
+
+    .print-header h2{
+
+        margin:0 0 10px;
+        font-size:17px;
+    }
+
+    .print-header p{
+
+        margin:5px 0;
+        font-size:12px;
+    }
+
+    .print-header hr{
+
+        margin-top:12px;
+        border:0;
+        border-top:1px solid #999;
+    }
+
+    .data-table{
+
+        width:100% !important;
+        font-size:11px;
+    }
+
+    .data-table th,
+    .data-table td{
+
+        padding:6px;
+
+        white-space:normal;
+
+        border:1px solid #bbb;
+    }
+
+    .data-table th:last-child,
+    .data-table td:last-child{
+
+        display:none !important;
+    }
+
+    .table-wrapper{
+
+        overflow:visible !important;
+    }
 }
 
 /* =========================================================
    MOBILE
 ========================================================= */
 
-@media (max-width: 700px) {
+@media(max-width:480px){
 
-    .health-page {
-        padding: 12px;
+    .health-tab{
+
+        padding:10px 12px;
+        font-size:13px;
     }
 
-    .health-tabs {
-        grid-template-columns: repeat(2, 1fr);
-    }
+    .datepicker-plot-area{
 
-    .health-form-grid {
-        grid-template-columns: 1fr;
-    }
+        width:
+        min(285px,calc(100vw - 20px))
+        !important;
 
-    .health-field.full {
-        grid-column: auto;
+        min-width:
+        min(285px,calc(100vw - 20px))
+        !important;
     }
-
-    .health-card {
-        padding: 14px;
-    }
-
-    .jalali-calendar {
-        width: 280px;
-    }
-
 }
 
 </style>
 
 </head>
 
-
 <body>
 
+<header class="topbar">
 
-<header class="header">
+    <div class="brand">
 
-    <img
-        src="IMG_4309.png"
-        class="header-logo"
-        alt="مرکز تخصصی سلامت طیور آدینه"
+        <img
+            src="IMG_4309.png"
+            alt="آدینه"
+        >
+
+        <span>
+            سلامت گله
+        </span>
+
+    </div>
+
+    <button
+        type="button"
+        class="btn btn-secondary"
+        onclick="location.href='Dashboard.html'"
     >
+
+        داشبورد
+
+    </button>
+
+</header>
+
+<main class="page">
+
+<div class="container">
+
+<h1 class="page-title">
+
+    سلامت گله
+
+</h1>
+
+<p
+    id="flockInfo"
+    class="page-description"
+>
+
+    در حال دریافت اطلاعات گله...
+
+</p>
+
+<div
+    id="healthStatus"
+    class="health-status"
+></div>
+
+<!-- =====================================================
+     TABS
+===================================================== -->
+
+<div class="health-tabs">
+
+<button
+    type="button"
+    class="health-tab active"
+    data-tab="vaccination"
+>
+
+    💉 واکسیناسیون
+
+</button>
+
+<button
+    type="button"
+    class="health-tab"
+    data-tab="antibody"
+>
+
+    🩸 تیتر آنتی‌بادی
+
+</button>
+
+<button
+    type="button"
+    class="health-tab"
+    data-tab="laboratory"
+>
+
+    🧪 آزمایش
+
+</button>
+
+<button
+    type="button"
+    class="health-tab"
+    data-tab="treatment"
+>
+
+    💊 درمان و دارو
+
+</button>
+
+<button
+    type="button"
+    class="health-tab"
+    data-tab="history"
+>
+
+    📋 سوابق
+
+</button>
+
+</div>
+
+<!-- =====================================================
+     VACCINATION
+===================================================== -->
+
+<section
+    id="panel-vaccination"
+    class="card health-panel active"
+>
+
+<h2 class="card-title">
+
+    ثبت واکسیناسیون
+
+</h2>
+
+<form id="vaccinationForm">
+
+<div class="form-grid">
+
+<div class="form-group">
+
+<label>
+تاریخ واکسیناسیون
+</label>
+
+<input
+    id="vaccinationDate"
+    class="jalali-input"
+    type="text"
+    inputmode="numeric"
+    placeholder="۱۴۰۵/۰۵/۲۹"
+    autocomplete="off"
+    required
+>
+
+</div>
+
+<div class="form-group">
+
+<label>
+سن گله
+</label>
+
+<input
+    id="vaccinationAge"
+    type="number"
+    min="0"
+    placeholder="روز"
+>
+
+</div>
+
+<div class="form-group">
+
+<label>
+بیماری / هدف
+</label>
+
+<select
+    id="vaccinationDisease"
+>
+
+<option value="">
+انتخاب کنید
+</option>
+
+</select>
+
+</div>
+
+<div class="form-group">
+
+<label>
+واکسن
+</label>
+
+<select
+    id="vaccinationVaccine"
+>
+
+<option value="">
+انتخاب واکسن
+</option>
+
+</select>
+
+</div>
+
+<div class="form-group">
+
+<label>
+دوز
+</label>
+
+<input
+    id="vaccinationDose"
+    type="number"
+    min="0"
+    step="any"
+    placeholder="مثلاً 1"
+>
+
+</div>
+
+<div class="form-group">
+
+<label>
+واحد دوز
+</label>
+
+<select id="vaccinationDoseUnit">
+
+<option value="dose">
+دوز
+</option>
+
+<option value="ml">
+میلی‌لیتر
+</option>
+
+</select>
+
+</div>
+
+<div class="form-group">
+
+<label>
+روش مصرف
+</label>
+
+<select id="vaccinationRoute">
+
+<option value="">
+انتخاب کنید
+</option>
+
+<option value="water">
+آب آشامیدنی
+</option>
+
+<option value="spray">
+اسپری
+</option>
+
+<option value="eye">
+قطره چشمی
+</option>
+
+<option value="wing">
+بال‌زدن
+</option>
+
+<option value="injection">
+تزریقی
+</option>
+
+<option value="oral">
+خوراکی
+</option>
+
+</select>
+
+</div>
+
+<div class="form-group">
+
+<label>
+مجری واکسیناسیون
+</label>
+
+<input
+    id="vaccinationAdministeredBy"
+>
+
+</div>
+
+<div class="form-group">
+
+<label>
+شماره سری ساخت
+</label>
+
+<input
+    id="vaccinationBatch"
+>
+
+</div>
+
+<div class="form-group full">
+
+<label>
+توضیحات
+</label>
+
+<textarea
+    id="vaccinationNotes"
+></textarea>
+
+</div>
+
+</div>
+
+<div class="button-row">
+
+<button
+    class="btn btn-primary"
+    type="submit"
+>
+
+    ثبت واکسیناسیون
+
+</button>
+
+</div>
+
+</form>
+
+</section>
+
+<!-- =====================================================
+     ANTIBODY
+===================================================== -->
+
+<section
+    id="panel-antibody"
+    class="card health-panel"
+>
+
+<h2 class="card-title">
+
+    ثبت تیتر آنتی‌بادی
+
+</h2>
+
+<p class="small-note">
+
+    تیتر مادری، قبل از واکسیناسیون و تیتر پس از واکسیناسیون قابل ثبت است.
+
+</p>
+
+<form id="antibodyForm">
+
+<div class="form-grid">
+
+<div class="form-group">
+
+<label>
+تاریخ آزمایش
+</label>
+
+<input
+    id="antibodyDate"
+    class="jalali-input"
+    type="text"
+    inputmode="numeric"
+    placeholder="۱۴۰۵/۰۵/۲۹"
+    autocomplete="off"
+    required
+>
+
+</div>
+
+<div class="form-group">
+
+<label>
+سن گله
+</label>
+
+<input
+    id="antibodyAge"
+    type="number"
+    min="0"
+>
+
+</div>
+
+<div class="form-group">
+
+<label>
+بیماری
+</label>
+
+<select
+    id="antibodyDisease"
+    required
+>
+
+<option value="">
+انتخاب کنید
+</option>
+
+</select>
+
+</div>
+
+<div class="form-group">
+
+<label>
+نوع تیتر
+</label>
+
+<select
+    id="antibodyStage"
+    required
+>
+
+<option value="maternal">
+تیتر مادری
+</option>
+
+<option value="pre_vaccination">
+قبل از واکسیناسیون
+</option>
+
+<option value="post_vaccination">
+پس از واکسیناسیون
+</option>
+
+<option value="routine">
+پایش روتین
+</option>
+
+</select>
+
+</div>
+
+<div class="form-group">
+
+<label>
+روش آزمایش
+</label>
+
+<select id="antibodyTestType">
+
+<option value="ELISA">
+ELISA
+</option>
+
+<option value="HI">
+HI
+</option>
+
+</select>
+
+</div>
+
+<div class="form-group">
+
+<label>
+تعداد نمونه
+</label>
+
+<input
+    id="antibodySamples"
+    type="number"
+    min="1"
+>
+
+</div>
+
+<div class="form-group">
+
+<label>
+میانگین تیتر
+</label>
+
+<input
+    id="antibodyMean"
+    type="number"
+    min="0"
+    step="any"
+>
+
+</div>
+
+<div class="form-group">
+
+<label>
+GMT
+</label>
+
+<input
+    id="antibodyGMT"
+    type="number"
+    min="0"
+    step="any"
+>
+
+</div>
+
+<div class="form-group">
+
+<label>
+CV%
+</label>
+
+<input
+    id="antibodyCV"
+    type="number"
+    min="0"
+    step="any"
+>
+
+</div>
+
+<div class="form-group">
+
+<label>
+حداقل تیتر
+</label>
+
+<input
+    id="antibodyMin"
+    type="number"
+    min="0"
+    step="any"
+>
+
+</div>
+
+<div class="form-group">
+
+<label>
+حداکثر تیتر
+</label>
+
+<input
+    id="antibodyMax"
+    type="number"
+    min="0"
+    step="any"
+>
+
+</div>
+
+<div class="form-group">
+
+<label>
+نام آزمایشگاه
+</label>
+
+<input
+    id="antibodyLab"
+>
+
+</div>
+
+<div class="form-group full">
+
+<label>
+توضیحات
+</label>
+
+<textarea
+    id="antibodyNotes"
+></textarea>
+
+</div>
+
+</div>
+
+<div class="button-row">
+
+<button
+    class="btn btn-primary"
+    type="submit"
+>
+
+    ثبت تیتر
+
+</button>
+
+</div>
+
+</form>
+
+</section>
+
+<!-- =====================================================
+     LABORATORY
+===================================================== -->
+
+<section
+    id="panel-laboratory"
+    class="card health-panel"
+>
+
+<h2 class="card-title">
+
+    ثبت آزمایش
+
+</h2>
+
+<form id="labForm">
+
+<div class="form-grid">
+
+<div class="form-group">
+
+<label>
+تاریخ
+</label>
+
+<input
+    id="labDate"
+    class="jalali-input"
+    type="text"
+    inputmode="numeric"
+    placeholder="۱۴۰۵/۰۵/۲۹"
+    autocomplete="off"
+    required
+>
+
+</div>
+
+<div class="form-group">
+
+<label>
+نوع آزمایش
+</label>
+
+<select id="labType">
+
+<option value="ELISA">
+ELISA — سرولوژی
+</option>
+
+<option value="HI">
+HI — مهار هماگلوتیناسیون
+</option>
+
+<option value="PCR">
+PCR
+</option>
+
+<option value="culture">
+کشت باکتریایی
+</option>
+
+<option value="antibiogram">
+آنتی‌بیوگرام
+</option>
+
+<option value="necropsy">
+کالبدگشایی
+</option>
+
+<option value="mycotoxin">
+مایکوتوکسین
+</option>
+
+<option value="other">
+سایر
+</option>
+
+</select>
+
+</div>
+
+<div class="form-group">
+
+<label>
+بیماری / عامل
+</label>
+
+<select
+    id="labDisease"
+>
+
+<option value="">
+انتخاب کنید
+</option>
+
+</select>
+
+</div>
+
+<div class="form-group">
+
+<label>
+نوع نمونه
+</label>
+
+<input
+    id="labSampleType"
+    placeholder="سوآب، خون، مدفوع..."
+>
+
+</div>
+
+<div class="form-group">
+
+<label>
+تعداد نمونه
+</label>
+
+<input
+    id="labSampleCount"
+    type="number"
+    min="1"
+>
+
+</div>
+
+<div class="form-group">
+
+<label>
+تعداد مثبت
+</label>
+
+<input
+    id="labPositiveCount"
+    type="number"
+    min="0"
+>
+
+</div>
+
+<div class="form-group">
+
+<label>
+Ct
+</label>
+
+<input
+    id="labCT"
+    type="number"
+    step="any"
+>
+
+</div>
+
+<div class="form-group">
+
+<label>
+نتیجه
+</label>
+
+<input
+    id="labResult"
+    placeholder="مثبت / منفی / مشکوک"
+>
+
+</div>
+
+<div class="form-group">
+
+<label>
+آزمایشگاه
+</label>
+
+<input
+    id="labLaboratory"
+>
+
+</div>
+
+<div class="form-group full">
+
+<label>
+نتیجه آنتی‌بیوگرام
+</label>
+
+<textarea
+    id="labSensitivity"
+    placeholder="نام باکتری و حساسیت دارویی"
+></textarea>
+
+</div>
+
+<div class="form-group full">
+
+<label>
+توضیحات
+</label>
+
+<textarea
+    id="labNotes"
+></textarea>
+
+</div>
+
+</div>
+
+<div class="button-row">
+
+<button
+    class="btn btn-primary"
+    type="submit"
+>
+
+    ثبت آزمایش
+
+</button>
+
+</div>
+
+</form>
+
+</section>
+
+<!-- =====================================================
+     TREATMENT
+===================================================== -->
+
+<section
+    id="panel-treatment"
+    class="card health-panel"
+>
+
+<h2 class="card-title">
+
+    ثبت درمان و دارو
+
+</h2>
+
+<form id="treatmentForm">
+
+<div class="form-grid">
+
+<div class="form-group">
+
+<label>
+تاریخ شروع
+</label>
+
+<input
+    id="treatmentDate"
+    class="jalali-input"
+    type="text"
+    inputmode="numeric"
+    placeholder="۱۴۰۵/۰۵/۲۹"
+    autocomplete="off"
+    required
+>
+
+</div>
+
+<div class="form-group">
+
+<label>
+تاریخ پایان
+</label>
+
+<input
+    id="treatmentEnd"
+    class="jalali-input"
+    type="text"
+    inputmode="numeric"
+    placeholder="۱۴۰۵/۰۵/۲۹"
+    autocomplete="off"
+>
+
+</div>
+
+<div class="form-group">
+
+<label>
+بیماری / علت
+</label>
+
+<select
+    id="treatmentDisease"
+>
+
+<option value="">
+انتخاب کنید
+</option>
+
+</select>
+
+</div>
+
+<div class="form-group">
+
+<label>
+دارو
+</label>
+
+<select
+    id="treatmentMedication"
+>
+
+<option value="">
+انتخاب دارو
+</option>
+
+</select>
+
+</div>
+
+<div class="form-group">
+
+<label>
+نام دارو
+</label>
+
+<input
+    id="treatmentMedicationName"
+    placeholder="در صورت نبودن در فهرست"
+>
+
+</div>
+
+<div class="form-group">
+
+<label>
+ماده مؤثره
+</label>
+
+<input
+    id="treatmentActive"
+>
+
+</div>
+
+<div class="form-group">
+
+<label>
+دوز
+</label>
+
+<input
+    id="treatmentDose"
+>
+
+</div>
+
+<div class="form-group">
+
+<label>
+روش مصرف
+</label>
+
+<select
+    id="treatmentRoute"
+>
+
+<option value="">
+انتخاب کنید
+</option>
+
+<option value="water">
+آب آشامیدنی
+</option>
+
+<option value="feed">
+دان
+</option>
+
+<option value="oral">
+خوراکی
+</option>
+
+<option value="injection">
+تزریقی
+</option>
+
+<option value="other">
+سایر
+</option>
+
+</select>
+
+</div>
+
+<div class="form-group">
+
+<label>
+مدت درمان
+</label>
+
+<input
+    id="treatmentDuration"
+>
+
+</div>
+
+<div class="form-group">
+
+<label>
+دوره منع مصرف
+</label>
+
+<input
+    id="treatmentWithdrawal"
+>
+
+</div>
+
+<div class="form-group">
+
+<label>
+نتیجه درمان
+</label>
+
+<select
+    id="treatmentResult"
+>
+
+<option value="">
+ثبت نشده
+</option>
+
+<option value="improved">
+بهبود
+</option>
+
+<option value="partial">
+بهبود نسبی
+</option>
+
+<option value="failed">
+عدم پاسخ
+</option>
+
+</select>
+
+</div>
+
+<div class="form-group">
+
+<label>
+دامپزشک / مسئول
+</label>
+
+<input
+    id="treatmentVeterinarian"
+>
+
+</div>
+
+<div class="form-group full">
+
+<label>
+توضیحات
+</label>
+
+<textarea
+    id="treatmentNotes"
+></textarea>
+
+</div>
+
+</div>
+
+<div class="button-row">
+
+<button
+    class="btn btn-primary"
+    type="submit"
+>
+
+    ثبت درمان
+
+</button>
+
+</div>
+
+</form>
+
+</section>
+
+<!-- =====================================================
+     HISTORY
+===================================================== -->
+
+<section
+    id="panel-history"
+    class="card health-panel"
+>
+
+<h2 class="card-title">
+
+    سوابق سلامت گله
+
+</h2>
+
+<div class="history-actions">
+
+<button
+    type="button"
+    class="btn btn-primary"
+    id="printHealthHistoryBtn"
+>
+
+    🖨️ چاپ سوابق
+
+</button>
+
+</div>
+
+<div class="print-header">
 
     <h1>
         مرکز تخصصی سلامت طیور آدینه
     </h1>
 
-    <h3>
-        پایش سلامت و مدیریت درمان
-    </h3>
+    <h2>
+        گزارش سوابق سلامت گله
+    </h2>
 
-    <div class="user-row">
+    <p id="printFlockInfo"></p>
 
-        <span id="userBox"></span>
+    <p id="printDate"></p>
 
-        <button
-            class="logout"
-            data-logout
-            type="button"
-        >
-            خروج
-        </button>
+    <hr>
 
-    </div>
+</div>
 
-</header>
+<div class="table-wrapper">
 
+<table class="data-table">
 
-<nav class="menu">
+<thead>
 
-    <a href="panel.html">🏠 داشبورد</a>
-    <a href="flock.html">🐔 گله‌ها</a>
-    <a href="feed.html">🌽 دان</a>
-    <a href="water.html">💧 آب</a>
-    <a href="vaccine.html">💉 واکسن</a>
-    <a href="medicine.html">💊 دارو</a>
-    <a href="health.html">🩺 سلامت</a>
-    <a href="report.html">📊 گزارش</a>
+<tr>
 
-</nav>
+<th>
+تاریخ
+</th>
 
+<th>
+نوع
+</th>
 
-<main class="health-page">
+<th>
+مورد
+</th>
 
+<th>
+جزئیات
+</th>
 
-    <div class="health-header">
+<th>
+حذف
+</th>
 
-        <h2>
-            پایش سلامت گله
-        </h2>
+</tr>
 
-        <div
-            id="flockInfo"
-            class="health-flock-info"
-        >
-            در حال دریافت اطلاعات گله...
-        </div>
+</thead>
 
-    </div>
+<tbody id="healthTable">
 
+<tr>
 
-    <div
-        id="healthStatus"
-        class="health-status"
-    ></div>
+<td colspan="5">
 
+    در حال دریافت اطلاعات...
 
-    <!-- =====================================================
-         TABS
-    ====================================================== -->
+</td>
 
-    <div class="health-tabs">
+</tr>
 
-        <button
-            type="button"
-            class="health-tab active"
-            data-tab="vaccination"
-        >
-            💉 واکسیناسیون
-        </button>
+</tbody>
 
-        <button
-            type="button"
-            class="health-tab"
-            data-tab="antibody"
-        >
-            🧪 تیتر آنتی‌بادی
-        </button>
+</table>
 
-        <button
-            type="button"
-            class="health-tab"
-            data-tab="lab"
-        >
-            🔬 آزمایش
-        </button>
+</div>
 
-        <button
-            type="button"
-            class="health-tab"
-            data-tab="treatment"
-        >
-            💊 ثبت درمان
-        </button>
+</section>
 
-    </div>
-
-
-    <!-- =====================================================
-         VACCINATION
-    ====================================================== -->
-
-    <section
-        id="panel-vaccination"
-        class="health-panel active"
-    >
-
-        <div class="health-card">
-
-            <h3>
-                ثبت واکسیناسیون
-            </h3>
-
-            <form id="vaccinationForm">
-
-                <div class="health-form-grid">
-
-
-                    <div class="health-field">
-
-                        <label>
-                            تاریخ واکسیناسیون
-                        </label>
-
-                        <div class="jalali-date-wrap">
-
-                            <div class="jalali-date-row">
-
-                                <input
-                                    id="vaccinationDate"
-                                    type="text"
-                                    inputmode="numeric"
-                                    autocomplete="off"
-                                    placeholder="۱۴۰۵/۰۵/۳۰"
-                                    required
-                                >
-
-                                <button
-                                    type="button"
-                                    class="jalali-calendar-btn"
-                                    data-calendar-for="vaccinationDate"
-                                >
-                                    📅
-                                </button>
-
-                            </div>
-
-                            <div
-                                class="jalali-calendar"
-                                data-calendar="vaccinationDate"
-                            ></div>
-
-                        </div>
-
-                    </div>
-
-
-                    <div class="health-field">
-
-                        <label>
-                            بیماری هدف
-                        </label>
-
-                        <select
-                            id="vaccinationDisease"
-                        >
-                            <option value="">
-                                در حال بارگذاری...
-                            </option>
-                        </select>
-
-                    </div>
-
-
-                    <div class="health-field">
-
-                        <label>
-                            واکسن
-                        </label>
-
-                        <select
-                            id="vaccinationVaccine"
-                            required
-                        >
-                            <option value="">
-                                در حال بارگذاری...
-                            </option>
-                        </select>
-
-                    </div>
-
-
-                    <div class="health-field">
-
-                        <label>
-                            شماره بچ
-                        </label>
-
-                        <input
-                            id="vaccinationBatch"
-                            type="text"
-                        >
-
-                    </div>
-
-
-                    <div class="health-field">
-
-                        <label>
-                            روش مصرف
-                        </label>
-
-                        <select id="vaccinationRoute">
-
-                            <option value="">
-                                انتخاب کنید
-                            </option>
-
-                            <option value="water">
-                                آب آشامیدنی
-                            </option>
-
-                            <option value="spray">
-                                اسپری
-                            </option>
-
-                            <option value="eye">
-                                قطره چشمی
-                            </option>
-
-                            <option value="wing">
-                                بال‌زدن
-                            </option>
-
-                            <option value="injection">
-                                تزریقی
-                            </option>
-
-                            <option value="feed">
-                                دان
-                            </option>
-
-                            <option value="oral">
-                                خوراکی
-                            </option>
-
-                            <option value="other">
-                                سایر
-                            </option>
-
-                        </select>
-
-                    </div>
-
-
-                    <div class="health-field">
-
-                        <label>
-                            دوز
-                        </label>
-
-                        <input
-                            id="vaccinationDose"
-                            type="text"
-                            inputmode="decimal"
-                        >
-
-                    </div>
-
-
-                    <div class="health-field">
-
-                        <label>
-                            واحد دوز
-                        </label>
-
-                        <input
-                            id="vaccinationDoseUnit"
-                            type="text"
-                            value="dose"
-                        >
-
-                    </div>
-
-
-                    <div class="health-field">
-
-                        <label>
-                            انجام‌دهنده
-                        </label>
-
-                        <input
-                            id="vaccinationAdministeredBy"
-                            type="text"
-                        >
-
-                    </div>
-
-
-                    <div class="health-field full">
-
-                        <label>
-                            توضیحات
-                        </label>
-
-                        <textarea
-                            id="vaccinationNotes"
-                        ></textarea>
-
-                    </div>
-
-                </div>
-
-
-                <div class="health-actions">
-
-                    <button
-                        type="submit"
-                        class="health-submit"
-                    >
-                        ثبت واکسیناسیون
-                    </button>
-
-                </div>
-
-            </form>
-
-        </div>
-
-    </section>
-
-
-    <!-- =====================================================
-         ANTIBODY
-    ====================================================== -->
-
-    <section
-        id="panel-antibody"
-        class="health-panel"
-    >
-
-        <div class="health-card">
-
-            <h3>
-                ثبت تیتر آنتی‌بادی
-            </h3>
-
-            <form id="antibodyForm">
-
-                <div class="health-form-grid">
-
-
-                    <div class="health-field">
-
-                        <label>
-                            تاریخ آزمایش
-                        </label>
-
-                        <div class="jalali-date-wrap">
-
-                            <div class="jalali-date-row">
-
-                                <input
-                                    id="antibodyDate"
-                                    type="text"
-                                    inputmode="numeric"
-                                    autocomplete="off"
-                                    placeholder="۱۴۰۵/۰۵/۳۰"
-                                    required
-                                >
-
-                                <button
-                                    type="button"
-                                    class="jalali-calendar-btn"
-                                    data-calendar-for="antibodyDate"
-                                >
-                                    📅
-                                </button>
-
-                            </div>
-
-                            <div
-                                class="jalali-calendar"
-                                data-calendar="antibodyDate"
-                            ></div>
-
-                        </div>
-
-                    </div>
-
-
-                    <div class="health-field">
-
-                        <label>
-                            بیماری
-                        </label>
-
-                        <select id="antibodyDisease">
-                            <option value="">
-                                انتخاب کنید
-                            </option>
-                        </select>
-
-                    </div>
-
-
-                    <div class="health-field">
-
-                        <label>
-                            نوع آزمایش
-                        </label>
-
-                        <select id="antibodyTestType">
-
-                            <option value="ELISA">
-                                ELISA
-                            </option>
-
-                            <option value="HI">
-                                HI
-                            </option>
-
-                            <option value="other">
-                                سایر
-                            </option>
-
-                        </select>
-
-                    </div>
-
-
-                    <div class="health-field">
-
-                        <label>
-                            مرحله
-                        </label>
-
-                        <select id="antibodyStage">
-
-                            <option value="">
-                                انتخاب کنید
-                            </option>
-
-                            <option value="maternal">
-                                تیتر مادری
-                            </option>
-
-                            <option value="pre_vaccination">
-                                قبل واکسیناسیون
-                            </option>
-
-                            <option value="post_vaccination">
-                                پس از واکسیناسیون
-                            </option>
-
-                            <option value="routine">
-                                پایش روتین
-                            </option>
-
-                        </select>
-
-                    </div>
-
-
-                    <div class="health-field">
-
-                        <label>
-                            سن گله (روز)
-                        </label>
-
-                        <input
-                            id="antibodyAge"
-                            type="text"
-                            inputmode="numeric"
-                        >
-
-                    </div>
-
-
-                    <div class="health-field">
-
-                        <label>
-                            تعداد نمونه
-                        </label>
-
-                        <input
-                            id="antibodySamples"
-                            type="text"
-                            inputmode="numeric"
-                        >
-
-                    </div>
-
-
-                    <div class="health-field">
-
-                        <label>
-                            GMT
-                        </label>
-
-                        <input
-                            id="antibodyGMT"
-                            type="text"
-                            inputmode="decimal"
-                        >
-
-                    </div>
-
-
-                    <div class="health-field">
-
-                        <label>
-                            CV %
-                        </label>
-
-                        <input
-                            id="antibodyCV"
-                            type="text"
-                            inputmode="decimal"
-                        >
-
-                    </div>
-
-
-                    <div class="health-field">
-
-                        <label>
-                            حداقل
-                        </label>
-
-                        <input
-                            id="antibodyMin"
-                            type="text"
-                            inputmode="decimal"
-                        >
-
-                    </div>
-
-
-                    <div class="health-field">
-
-                        <label>
-                            حداکثر
-                        </label>
-
-                        <input
-                            id="antibodyMax"
-                            type="text"
-                            inputmode="decimal"
-                        >
-
-                    </div>
-
-
-                    <div class="health-field">
-
-                        <label>
-                            آزمایشگاه
-                        </label>
-
-                        <input
-                            id="antibodyLab"
-                            type="text"
-                        >
-
-                    </div>
-
-
-                    <div class="health-field full">
-
-                        <label>
-                            توضیحات
-                        </label>
-
-                        <textarea
-                            id="antibodyNotes"
-                        ></textarea>
-
-                    </div>
-
-                </div>
-
-
-                <div class="health-actions">
-
-                    <button
-                        type="submit"
-                        class="health-submit"
-                    >
-                        ثبت تیتر
-                    </button>
-
-                </div>
-
-            </form>
-
-        </div>
-
-    </section>
-
-
-    <!-- =====================================================
-         LAB
-    ====================================================== -->
-
-    <section
-        id="panel-lab"
-        class="health-panel"
-    >
-
-        <div class="health-card">
-
-            <h3>
-                ثبت آزمایش تشخیصی
-            </h3>
-
-            <form id="labForm">
-
-                <div class="health-form-grid">
-
-
-                    <div class="health-field">
-
-                        <label>
-                            تاریخ آزمایش
-                        </label>
-
-                        <div class="jalali-date-wrap">
-
-                            <div class="jalali-date-row">
-
-                                <input
-                                    id="labDate"
-                                    type="text"
-                                    inputmode="numeric"
-                                    autocomplete="off"
-                                    placeholder="۱۴۰۵/۰۵/۳۰"
-                                    required
-                                >
-
-                                <button
-                                    type="button"
-                                    class="jalali-calendar-btn"
-                                    data-calendar-for="labDate"
-                                >
-                                    📅
-                                </button>
-
-                            </div>
-
-                            <div
-                                class="jalali-calendar"
-                                data-calendar="labDate"
-                            ></div>
-
-                        </div>
-
-                    </div>
-
-
-                    <div class="health-field">
-
-                        <label>
-                            نوع آزمایش
-                        </label>
-
-                        <select id="labType" required>
-
-                            <option value="">
-                                انتخاب کنید
-                            </option>
-
-                            <option value="PCR">
-                                PCR
-                            </option>
-
-                            <option value="ELISA">
-                                ELISA
-                            </option>
-
-                            <option value="culture">
-                                کشت
-                            </option>
-
-                            <option value="other">
-                                سایر
-                            </option>
-
-                        </select>
-
-                    </div>
-
-
-                    <div class="health-field">
-
-                        <label>
-                            بیماری
-                        </label>
-
-                        <select id="labDisease">
-                            <option value="">
-                                انتخاب کنید
-                            </option>
-                        </select>
-
-                    </div>
-
-
-                    <div class="health-field">
-
-                        <label>
-                            نوع نمونه
-                        </label>
-
-                        <input
-                            id="labSampleType"
-                            type="text"
-                        >
-
-                    </div>
-
-
-                    <div class="health-field">
-
-                        <label>
-                            تعداد نمونه
-                        </label>
-
-                        <input
-                            id="labSampleCount"
-                            type="text"
-                            inputmode="numeric"
-                        >
-
-                    </div>
-
-
-                    <div class="health-field">
-
-                        <label>
-                            تعداد مثبت
-                        </label>
-
-                        <input
-                            id="labPositiveCount"
-                            type="text"
-                            inputmode="numeric"
-                        >
-
-                    </div>
-
-
-                    <div class="health-field">
-
-                        <label>
-                            نتیجه
-                        </label>
-
-                        <input
-                            id="labResult"
-                            type="text"
-                        >
-
-                    </div>
-
-
-                    <div class="health-field">
-
-                        <label>
-                            Ct
-                        </label>
-
-                        <input
-                            id="labCT"
-                            type="text"
-                            inputmode="decimal"
-                        >
-
-                    </div>
-
-
-                    <div class="health-field">
-
-                        <label>
-                            حساسیت آنتی‌بیوتیکی
-                        </label>
-
-                        <input
-                            id="labSensitivity"
-                            type="text"
-                        >
-
-                    </div>
-
-
-                    <div class="health-field">
-
-                        <label>
-                            آزمایشگاه
-                        </label>
-
-                        <input
-                            id="labLaboratory"
-                            type="text"
-                        >
-
-                    </div>
-
-
-                    <div class="health-field full">
-
-                        <label>
-                            توضیحات
-                        </label>
-
-                        <textarea
-                            id="labNotes"
-                        ></textarea>
-
-                    </div>
-
-                </div>
-
-
-                <div class="health-actions">
-
-                    <button
-                        type="submit"
-                        class="health-submit"
-                    >
-                        ثبت آزمایش
-                    </button>
-
-                </div>
-
-            </form>
-
-        </div>
-
-    </section>
-
-
-    <!-- =====================================================
-         TREATMENT
-    ====================================================== -->
-
-    <section
-        id="panel-treatment"
-        class="health-panel"
-    >
-
-        <div class="health-card">
-
-            <h3>
-                ثبت درمان
-            </h3>
-
-            <form id="treatmentForm">
-
-                <div class="health-form-grid">
-
-
-                    <div class="health-field">
-
-                        <label>
-                            تاریخ شروع درمان
-                        </label>
-
-                        <div class="jalali-date-wrap">
-
-                            <div class="jalali-date-row">
-
-                                <input
-                                    id="treatmentDate"
-                                    type="text"
-                                    inputmode="numeric"
-                                    autocomplete="off"
-                                    placeholder="۱۴۰۵/۰۵/۳۰"
-                                    required
-                                >
-
-                                <button
-                                    type="button"
-                                    class="jalali-calendar-btn"
-                                    data-calendar-for="treatmentDate"
-                                >
-                                    📅
-                                </button>
-
-                            </div>
-
-                            <div
-                                class="jalali-calendar"
-                                data-calendar="treatmentDate"
-                            ></div>
-
-                        </div>
-
-                    </div>
-
-
-                    <div class="health-field">
-
-                        <label>
-                            تاریخ پایان درمان
-                        </label>
-
-                        <div class="jalali-date-wrap">
-
-                            <div class="jalali-date-row">
-
-                                <input
-                                    id="treatmentEnd"
-                                    type="text"
-                                    inputmode="numeric"
-                                    autocomplete="off"
-                                    placeholder="اختیاری"
-                                >
-
-                                <button
-                                    type="button"
-                                    class="jalali-calendar-btn"
-                                    data-calendar-for="treatmentEnd"
-                                >
-                                    📅
-                                </button>
-
-                            </div>
-
-                            <div
-                                class="jalali-calendar"
-                                data-calendar="treatmentEnd"
-                            ></div>
-
-                        </div>
-
-                    </div>
-
-
-                    <div class="health-field">
-
-                        <label>
-                            دارو
-                        </label>
-
-                        <select id="treatmentMedication">
-
-                            <option value="">
-                                انتخاب دارو
-                            </option>
-
-                        </select>
-
-                    </div>
-
-
-                    <div class="health-field">
-
-                        <label>
-                            نام دارو
-                        </label>
-
-                        <input
-                            id="treatmentMedicationName"
-                            type="text"
-                            required
-                        >
-
-                    </div>
-
-
-                    <div class="health-field">
-
-                        <label>
-                            ماده مؤثره
-                        </label>
-
-                        <input
-                            id="treatmentActive"
-                            type="text"
-                        >
-
-                    </div>
-
-
-                    <div class="health-field">
-
-                        <label>
-                            دوز
-                        </label>
-
-                        <input
-                            id="treatmentDose"
-                            type="text"
-                            inputmode="decimal"
-                        >
-
-                    </div>
-
-
-                    <div class="health-field">
-
-                        <label>
-                            روش مصرف
-                        </label>
-
-                        <select id="treatmentRoute">
-
-                            <option value="">
-                                انتخاب کنید
-                            </option>
-
-                            <option value="water">
-                                آب آشامیدنی
-                            </option>
-
-                            <option value="oral">
-                                خوراکی
-                            </option>
-
-                            <option value="feed">
-                                دان
-                            </option>
-
-                            <option value="injection">
-                                تزریقی
-                            </option>
-
-                            <option value="spray">
-                                اسپری
-                            </option>
-
-                            <option value="other">
-                                سایر
-                            </option>
-
-                        </select>
-
-                    </div>
-
-
-                    <div class="health-field">
-
-                        <label>
-                            علت / بیماری
-                        </label>
-
-                        <select id="treatmentDisease">
-
-                            <option value="">
-                                انتخاب کنید
-                            </option>
-
-                        </select>
-
-                    </div>
-
-
-                    <div class="health-field">
-
-                        <label>
-                            دوره منع مصرف (روز)
-                        </label>
-
-                        <input
-                            id="treatmentWithdrawal"
-                            type="text"
-                            inputmode="numeric"
-                        >
-
-                    </div>
-
-
-                    <div class="health-field full">
-
-                        <label>
-                            توضیحات درمان
-                        </label>
-
-                        <textarea
-                            id="treatmentNotes"
-                        ></textarea>
-
-                    </div>
-
-                </div>
-
-
-                <div class="health-actions">
-
-                    <button
-                        type="submit"
-                        class="health-submit"
-                    >
-                        ثبت درمان
-                    </button>
-
-                </div>
-
-            </form>
-
-        </div>
-
-    </section>
-
-
-    <!-- =====================================================
-         HISTORY
-    ====================================================== -->
-
-    <section>
-
-        <div class="health-card">
-
-            <h3>
-                سوابق سلامت گله
-            </h3>
-
-            <div class="health-history">
-
-                <table>
-
-                    <thead>
-
-                        <tr>
-
-                            <th>
-                                تاریخ
-                            </th>
-
-                            <th>
-                                نوع
-                            </th>
-
-                            <th>
-                                مورد
-                            </th>
-
-                            <th>
-                                جزئیات
-                            </th>
-
-                            <th>
-                                عملیات
-                            </th>
-
-                        </tr>
-
-                    </thead>
-
-                    <tbody id="healthTable">
-
-                        <tr>
-
-                            <td
-                                colspan="5"
-                                class="health-empty"
-                            >
-                                در حال دریافت سوابق...
-                            </td>
-
-                        </tr>
-
-                    </tbody>
-
-                </table>
-
-            </div>
-
-        </div>
-
-    </section>
-
+</div>
 
 </main>
 
+<!-- =====================================================
+     SCRIPTS
+===================================================== -->
 
-<!-- =========================================================
-     REQUIRED PROJECT FILES
-========================================================= -->
-
-<script src="database.js"></script>
-
-<script src="app.js"></script>
-
-<script src="jalali-date.js"></script>
+<script src="health-date.js"></script>
 
 <script src="health.js"></script>
 
-
 </body>
-
 </html>
+

@@ -2852,6 +2852,10 @@ function renderHistory() {
                         </th>
 
                         <th>
+                            FCR
+                        </th>
+
+                        <th>
                             یکنواختی ±10
                         </th>
 
@@ -2924,6 +2928,15 @@ function renderHistory() {
 
                                         <td>
                                             ${formatNumber(
+                                                calculateWeeklyHistoryFCR(
+                                                    record
+                                                ),
+                                                3
+                                            )}
+                                        </td>
+
+                                        <td>
+                                            ${formatNumber(
                                                 record.uniformity_10_percent,
                                                 1
                                             )}%
@@ -2984,6 +2997,28 @@ function renderHistory() {
 
     `;
 
+}
+
+
+/* =========================================================
+   FCR FOR HISTORY
+========================================================= */
+
+function calculateWeeklyHistoryFCR(current) {
+    if (!current) return null;
+    const index=weeklyRecords.findIndex(item=>String(item.id)===String(current.id));
+    if (index<=0) return null;
+    const previous=weeklyRecords[index-1];
+    const type=String(currentFlock?.production_type||currentFlock?.productionType||'broiler').toLowerCase();
+    if (type!=='broiler' && type!=='گوشتی') return null;
+    if (typeof calculateBroilerFCR==='function') return calculateBroilerFCR({
+        feedKg:current.feed_total_kg,
+        openingBirds:previous.live_birds,
+        closingBirds:current.live_birds,
+        openingAverageWeightG:previous.average_weight_g,
+        closingAverageWeightG:current.average_weight_g
+    });
+    return null;
 }
 
 

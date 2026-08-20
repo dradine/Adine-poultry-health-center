@@ -17,10 +17,18 @@
 
     function toEnglish(value) {
 
-        return String(value ?? "")
-            .replace(/[۰-۹]/g, d => FA_DIGITS.indexOf(d))
-            .replace(/[٠-٩]/g, d => AR_DIGITS.indexOf(d));
+    return String(value ?? "")
+        .replace(/[۰-۹]/g, d => FA_DIGITS.indexOf(d))
+        .replace(/[٠-٩]/g, d => AR_DIGITS.indexOf(d));
 
+}
+
+
+function toEnglishDigits(value) {
+
+    return toEnglish(value);
+
+}
     }
 
     function toPersian(value) {
@@ -1505,6 +1513,7 @@
         todayJalali,
 
         jalaliToISO,
+       toEnglishDigits,
 
         isoToJalali,
 

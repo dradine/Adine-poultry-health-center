@@ -1,2052 +1,2502 @@
-<!DOCTYPE html>
-<html lang="fa" dir="rtl">
-
-<head>
-
-    <meta charset="UTF-8">
-
-    <meta
-        name="viewport"
-        content="width=device-width, initial-scale=1, viewport-fit=cover"
-    >
-
-    <meta
-        name="theme-color"
-        content="#173f35"
-    >
-
-    <title>
-        ثبت هفتگی | مرکز تخصصی سلامت طیور آدینه
-    </title>
-
-    <link
-        rel="stylesheet"
-        href="app.css"
-    >
-
-    <style>
-
-        /* =====================================================
-           تقویم شمسی
-        ===================================================== */
-
-        .jalali-date-wrapper {
-            position: relative;
-            width: 100%;
-        }
-
-
-        #evaluationDate {
-            width: 100%;
-            box-sizing: border-box;
-            padding-left: 48px;
-            cursor: pointer;
-            direction: ltr;
-            text-align: center;
-            font-size: 16px;
-        }
-
-
-        .jalali-calendar-button {
-            position: absolute;
-            left: 8px;
-            top: 50%;
-            transform: translateY(-50%);
-            width: 38px;
-            height: 38px;
-            border: 0;
-            border-radius: 10px;
-            background: #173f35;
-            color: white;
-            font-size: 19px;
-            cursor: pointer;
-            z-index: 2;
-        }
-
-
-        .jalali-calendar {
-            display: none;
-            position: absolute;
-            top: calc(100% + 8px);
-            right: 0;
-            width: 100%;
-            max-width: 360px;
-            background: #fff;
-            border-radius: 16px;
-            box-shadow: 0 12px 35px rgba(0,0,0,.18);
-            border: 1px solid #e5e5e5;
-            overflow: hidden;
-            z-index: 99999;
-        }
-
-
-        .jalali-calendar-header {
-            height: 55px;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            padding: 0 8px;
-            background: #173f35;
-            color: white;
-        }
-
-
-        .jalali-month-title {
-            font-size: 15px;
-            font-weight: bold;
-        }
-
-
-        .jalali-nav-button {
-            width: 42px;
-            height: 42px;
-            border: 0;
-            background: transparent;
-            color: white;
-            font-size: 28px;
-            cursor: pointer;
-            border-radius: 10px;
-        }
-
-
-        .jalali-nav-button:active {
-            background: rgba(255,255,255,.15);
-        }
-
-
-        .jalali-weekdays {
-            display: grid;
-            grid-template-columns: repeat(7, 1fr);
-            padding: 12px 10px 6px;
-            color: #777;
-            font-size: 12px;
-            text-align: center;
-            font-weight: bold;
-        }
-
-
-        .jalali-days {
-            display: grid;
-            grid-template-columns: repeat(7, 1fr);
-            gap: 5px;
-            padding: 8px 10px 12px;
-        }
-
-
-        .jalali-day {
-            width: 100%;
-            aspect-ratio: 1;
-            border: 0;
-            border-radius: 10px;
-            background: transparent;
-            cursor: pointer;
-            font-size: 14px;
-            color: #222;
-        }
-
-
-        .jalali-day:hover {
-            background: #edf4f1;
-        }
-
-
-        .jalali-day.today {
-            border: 2px solid #173f35;
-            font-weight: bold;
-        }
-
-
-        .jalali-day.selected {
-            background: #173f35;
-            color: white;
-            font-weight: bold;
-        }
-
-
-        .jalali-day.today.selected {
-            border-color: #173f35;
-        }
-
-
-        .jalali-calendar-footer {
-            border-top: 1px solid #eee;
-            padding: 10px;
-            text-align: center;
-        }
-
-
-        .jalali-today-button {
-            border: 0;
-            background: transparent;
-            color: #173f35;
-            font-weight: bold;
-            cursor: pointer;
-            padding: 7px 20px;
-            border-radius: 8px;
-        }
-
-
-        .jalali-today-button:hover {
-            background: #edf4f1;
-        }
-
-
-        @media (max-width: 480px) {
-
-            .jalali-calendar {
-                max-width: none;
-            }
-
-        }
-
-    </style>
-
-</head>
-
-
-<body>
-
-<div class="app-shell">
-
-
-    <!-- =====================================================
-         HEADER
-    ====================================================== -->
-
-    <header class="topbar">
-
-        <div class="brand">
-
-            <img
-                src="IMG_4309.png"
-                alt="مرکز تخصصی سلامت طیور آدینه"
-            >
-
-            <span>
-                ثبت هفتگی
-            </span>
-
-        </div>
-
-
-        <button
-            class="btn btn-secondary"
-            type="button"
-            onclick="location.href='Dashboard.html'"
-        >
-            داشبورد
-        </button>
-
-    </header>
-
-
-
-    <!-- =====================================================
-         MAIN
-    ====================================================== -->
-
-    <main class="page">
-
-        <div class="container">
-
-
-            <!-- =================================================
-                 TITLE
-            ================================================== -->
-
-            <h1 class="page-title">
-                پایش هفتگی گله
-            </h1>
-
-
-            <p class="page-description">
-                ثبت وزن، یکنواختی، مصرف دان، آب و عملکرد هفتگی
-            </p>
-
-
-
-            <!-- =================================================
-                 CURRENT FLOCK
-            ================================================== -->
-
-            <section class="card">
-
-                <h2 class="card-title">
-                    گله انتخاب‌شده
-                </h2>
-
-
-                <div id="currentFlock">
-                    در حال بارگذاری...
-                </div>
-
-            </section>
-
-
-
-            <!-- =================================================
-                 WEEK INFORMATION
-            ================================================== -->
-
-            <section class="card">
-
-                <h2 class="card-title">
-                    اطلاعات هفته
-                </h2>
-
-
-                <div class="form-grid">
-
-
-                    <!-- هفته -->
-
-                    <div class="form-group">
-
-                        <label for="weekNumber">
-                            هفته گله *
-                        </label>
-
-
-                        <input
-                            id="weekNumber"
-                            type="number"
-                            min="1"
-                            max="100"
-                            required
-                            inputmode="numeric"
-                            placeholder="مثلاً 4"
-                        >
-
-                    </div>
-
-
-
-                    <!-- تاریخ -->
-
-                    <div class="form-group">
-
-                        <label for="evaluationDate">
-                            تاریخ ارزیابی
-                        </label>
-
-
-                        <div
-                            class="jalali-date-wrapper"
-                            id="jalaliDateWrapper"
-                        >
-
-                            <input
-                                id="evaluationDate"
-                                type="text"
-                                inputmode="numeric"
-                                autocomplete="off"
-                                placeholder="۱۴۰۵/۰۵/۲۹"
-                                maxlength="10"
-                                readonly
-                            >
-
-
-                            <button
-                                type="button"
-                                class="jalali-calendar-button"
-                                id="jalaliCalendarButton"
-                                aria-label="انتخاب تاریخ"
-                            >
-                                📅
-                            </button>
-
-
-                            <div
-                                id="jalaliCalendar"
-                                class="jalali-calendar"
-                            >
-
-                                <div class="jalali-calendar-header">
-
-                                    <button
-                                        type="button"
-                                        id="jalaliPrevButton"
-                                        class="jalali-nav-button"
-                                    >
-                                        ‹
-                                    </button>
-
-
-                                    <div
-                                        id="jalaliMonthTitle"
-                                        class="jalali-month-title"
-                                    >
-                                        -
-                                    </div>
-
-
-                                    <button
-                                        type="button"
-                                        id="jalaliNextButton"
-                                        class="jalali-nav-button"
-                                    >
-                                        ›
-                                    </button>
-
-                                </div>
-
-
-                                <div class="jalali-weekdays">
-
-                                    <div>ش</div>
-                                    <div>ی</div>
-                                    <div>د</div>
-                                    <div>س</div>
-                                    <div>چ</div>
-                                    <div>پ</div>
-                                    <div>ج</div>
-
-                                </div>
-
-
-                                <div
-                                    id="jalaliDays"
-                                    class="jalali-days"
-                                ></div>
-
-
-                                <div class="jalali-calendar-footer">
-
-                                    <button
-                                        type="button"
-                                        id="jalaliTodayButton"
-                                        class="jalali-today-button"
-                                    >
-                                        امروز
-                                    </button>
-
-                                </div>
-
-                            </div>
-
-                        </div>
-
-                    </div>
-
-
-
-                    <!-- تعداد زنده -->
-
-                    <div class="form-group">
-
-                        <label for="liveBirds">
-                            تعداد زنده
-                        </label>
-
-
-                        <input
-                            id="liveBirds"
-                            type="number"
-                            min="0"
-                            inputmode="numeric"
-                        >
-
-                    </div>
-
-
-
-                    <!-- تلفات -->
-
-                    <div class="form-group">
-
-                        <label for="mortalityWeek">
-                            تلفات این هفته
-                        </label>
-
-
-                        <input
-                            id="mortalityWeek"
-                            type="number"
-                            min="0"
-                            inputmode="numeric"
-                        >
-
-                    </div>
-
-
-                </div>
-
-            </section>
-
-
-
-            <!-- =================================================
-                 WEIGHTS
-            ================================================== -->
-
-            <section class="card">
-
-                <h2 class="card-title">
-                    ثبت وزن‌ها
-                </h2>
-
-
-                <p>
-                    برای محاسبه دقیق، وزن تک‌تک پرندگان نمونه را وارد کنید.
-                </p>
-
-
-                <div class="button-row">
-
-                    <button
-                        class="btn btn-primary"
-                        type="button"
-                        onclick="addWeightInput()"
-                    >
-                        + افزودن وزن
-                    </button>
-
-
-                    <button
-                        class="btn btn-secondary"
-                        type="button"
-                        onclick="addTwentyWeights()"
-                    >
-                        + افزودن ۲۰ وزن
-                    </button>
-
-
-                    <button
-                        class="btn btn-secondary"
-                        type="button"
-                        onclick="clearWeights()"
-                    >
-                        پاک کردن
-                    </button>
-
-                </div>
-
-
-                <div
-                    id="weightsContainer"
-                    class="weights-grid"
-                ></div>
-
-
-                <div class="button-row">
-
-                    <button
-                        class="btn btn-primary"
-                        type="button"
-                        onclick="calculateWeekly()"
-                    >
-                        محاسبه
-                    </button>
-
-                </div>
-
-            </section>
-
-
-
-            <!-- =================================================
-                 RESULTS
-            ================================================== -->
-
-            <section
-                id="resultsCard"
-                class="card"
-                style="display:none;"
-            >
-
-                <h2 class="card-title">
-                    نتیجه محاسبات
-                </h2>
-
-
-                <div
-                    id="results"
-                    class="results-grid"
-                ></div>
-
-
-                <div
-                    id="weightChartContainer"
-                    style="margin-top:20px;"
-                >
-
-                    <canvas id="weightChart"></canvas>
-
-                </div>
-
-            </section>
-
-
-
-            <!-- =================================================
-                 FEED / WATER
-            ================================================== -->
-
-            <section class="card">
-
-                <h2 class="card-title">
-                    مصرف دان و آب
-                </h2>
-
-
-                <div class="form-grid">
-
-
-                    <div class="form-group">
-
-                        <label for="feedTotal">
-                            کل دان مصرفی هفته (کیلوگرم)
-                        </label>
-
-
-                        <input
-                            id="feedTotal"
-                            type="number"
-                            min="0"
-                            step="0.01"
-                        >
-
-                    </div>
-
-
-
-                    <div class="form-group">
-
-                        <label for="waterTotal">
-                            کل آب مصرفی هفته (لیتر)
-                        </label>
-
-
-                        <input
-                            id="waterTotal"
-                            type="number"
-                            min="0"
-                            step="0.01"
-                        >
-
-                    </div>
-
-
-
-                    <div class="form-group">
-
-                        <label for="feedPerBird">
-                            دان روزانه هر پرنده (گرم)
-                        </label>
-
-
-                        <input
-                            id="feedPerBird"
-                            type="number"
-                            min="0"
-                            step="0.1"
-                        >
-
-                    </div>
-
-
-
-                    <div class="form-group">
-
-                        <label for="waterPerBird">
-                            آب روزانه هر پرنده (میلی‌لیتر)
-                        </label>
-
-
-                        <input
-                            id="waterPerBird"
-                            type="number"
-                            min="0"
-                            step="0.1"
-                        >
-
-                    </div>
-
-
-                </div>
-
-            </section>
-
-
-
-            <!-- =================================================
-                 NOTES
-            ================================================== -->
-
-            <section class="card">
-
-                <h2 class="card-title">
-                    یادداشت هفتگی
-                </h2>
-
-
-                <textarea
-                    id="weeklyNotes"
-                    rows="5"
-                    placeholder="کیفیت بستر، تهویه، آمونیاک، وضعیت مدفوع، مصرف، رفتار گله و سایر مشاهدات..."
-                ></textarea>
-
-
-                <div class="button-row">
-
-                    <button
-                        class="btn btn-primary"
-                        type="button"
-                        onclick="saveWeeklyRecord()"
-                    >
-                        ذخیره گزارش هفتگی
-                    </button>
-
-
-                    <button
-                        class="btn btn-secondary"
-                        type="button"
-                        onclick="location.href='reports.html'"
-                    >
-                        مشاهده گزارش‌ها
-                    </button>
-
-                </div>
-
-            </section>
-
-
-
-            <!-- =================================================
-                 HISTORY
-            ================================================== -->
-
-            <section class="card">
-
-                <h2 class="card-title">
-                    سوابق ثبت‌شده
-                </h2>
-
-
-                <div id="weeklyHistory">
-                    در حال بارگذاری...
-                </div>
-
-            </section>
-
-
-        </div>
-
-    </main>
-
-
-
-    <!-- =====================================================
-         BOTTOM NAVIGATION
-    ====================================================== -->
-
-    <nav class="bottom-nav">
-
-        <button
-            type="button"
-            onclick="location.href='Dashboard.html'"
-        >
-            🏠
-            <br>
-            خانه
-        </button>
-
-
-        <button
-            type="button"
-            onclick="location.href='Farms.html'"
-        >
-            🏭
-            <br>
-            فارم‌ها
-        </button>
-
-
-        <button
-            class="active"
-            type="button"
-            onclick="location.href='weekly.html'"
-        >
-            ⚖️
-            <br>
-            هفتگی
-        </button>
-
-
-        <button
-            type="button"
-            onclick="location.href='reports.html'"
-        >
-            📊
-            <br>
-            گزارش
-        </button>
-
-    </nav>
-
-
-</div>
-
-
-
-<!-- =========================================================
-     LIBRARIES
-========================================================= -->
-
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-
-
-
-<!-- =========================================================
-     APPLICATION FILES
-========================================================= -->
-
-<script src="supabase-config.js"></script>
-
-<script src="standards.js"></script>
-
-<script src="standard-data.js"></script>
-
-<script src="poultry-utils.js"></script>
-
-<script src="weekly-storage.js"></script>
-
-<script src="comparison-engine.js"></script>
-
-<script src="app-core.js"></script>
-
-<script src="genetics-ui.js"></script>
-
-
-
-<!-- =========================================================
-     فقط یک بار
-========================================================= -->
-
-<script src="weekly.js"></script>
-
-
-
-<!-- =========================================================
-     تقویم شمسی
-========================================================= -->
-
-<script>
+/* =========================================================
+   WEEKLY.JS — PROFESSIONAL STANDARD MONITORING PATCH
+   ADINE POULTRY HEALTH CENTER
+   ---------------------------------------------------------
+   این بخش را در انتهای weekly.js قرار دهید.
+   توابع قبلی با این نسخه جایگزین می‌شوند.
+   ========================================================= */
+
+"use strict";
 
 (function () {
 
-    "use strict";
-
-
-    const monthNames = [
-
-        "فروردین",
-        "اردیبهشت",
-        "خرداد",
-        "تیر",
-        "مرداد",
-        "شهریور",
-        "مهر",
-        "آبان",
-        "آذر",
-        "دی",
-        "بهمن",
-        "اسفند"
-
-    ];
-
-
-    let calendarYear = 1405;
-
-    let calendarMonth = 1;
-
-
-
     /* =====================================================
-       اعداد فارسی
-    ===================================================== */
+       STANDARD RESOLUTION
+       اولویت:
+       1. استاندارد ژنتیکی رسمی
+       2. استاندارد مدیریتی برای شاخص فاقد مرجع رسمی
+       ===================================================== */
 
-    function toPersianDigits(value) {
+    function resolveWeeklyStandard(metric, ageDays) {
 
-        return String(value).replace(
-            /\d/g,
-            function (digit) {
+        const flock = window.currentFlock || currentFlock;
 
-                return "۰۱۲۳۴۵۶۷۸۹"[
-                    Number(digit)
-                ];
+        if (!flock) {
+            return {
+                value: null,
+                sourceType: null,
+                sourceLabel: "بدون استاندارد",
+                isFallback: false,
+                metric,
+                ageDays
+            };
+        }
+
+        const type = normalizeProductionType(
+            flock.production_type ||
+            flock.productionType ||
+            "broiler"
+        );
+
+        const genetics =
+            flock.genetics_id ||
+            flock.geneticsId ||
+            flock.genetics ||
+            "";
+
+        const strain =
+            flock.strain ||
+            flock.genetic_strain ||
+            flock.geneticStrain ||
+            "";
+
+        try {
+
+            if (
+                typeof getStandardMeta === "function"
+            ) {
+
+                const standard =
+                    getStandard(
+                        type,
+                        genetics,
+                        strain
+                    );
+
+                if (standard) {
+
+                    return {
+                        ...getStandardMeta(
+                            standard,
+                            metric,
+                            ageDays
+                        ),
+                        metric,
+                        ageDays
+                    };
+
+                }
 
             }
-        );
+
+        } catch (error) {
+
+            console.warn(
+                "Standard resolution error:",
+                error
+            );
+
+        }
+
+        return {
+            value: null,
+            sourceType: null,
+            sourceLabel: "بدون استاندارد",
+            isFallback: false,
+            metric,
+            ageDays
+        };
 
     }
 
 
+    function normalizeProductionType(type) {
+
+        const value =
+            String(type || "")
+                .trim()
+                .toLowerCase();
+
+        if (
+            [
+                "broiler",
+                "گوشتی",
+                "meat"
+            ].includes(value)
+        ) {
+
+            return "broiler";
+
+        }
+
+        if (
+            [
+                "layer",
+                "تخمگذار",
+                "تخم‌گذار",
+                "egg"
+            ].includes(value)
+        ) {
+
+            return "layer";
+
+        }
+
+        if (
+            [
+                "pullet",
+                "پولت"
+            ].includes(value)
+        ) {
+
+            return "pullet";
+
+        }
+
+        if (
+            [
+                "breeder",
+                "مرغ مادر",
+                "مادر"
+            ].includes(value)
+        ) {
+
+            return "breeder";
+
+        }
+
+        return "broiler";
+
+    }
+
 
     /* =====================================================
-       تبدیل اعداد فارسی / عربی به انگلیسی
-    ===================================================== */
+       AGE
+       هفته → روز
+       ===================================================== */
 
-    function normalizeDigits(value) {
+    function getWeeklyAgeDays() {
 
-        return String(value || "")
+        const week =
+            getNumber(
+                "weekNumber"
+            );
 
-            .replace(
-                /[۰-۹]/g,
-                function (digit) {
+        if (
+            Number.isFinite(week) &&
+            week > 0
+        ) {
 
-                    return String(
-                        digit.charCodeAt(0) - 1776
-                    );
+            return week * 7;
 
-                }
+        }
+
+        return null;
+
+    }
+
+
+    /* =====================================================
+       STATUS
+       ===================================================== */
+
+    function getStandardStatus(
+        actual,
+        standard,
+        metric
+    ) {
+
+        if (
+            !Number.isFinite(
+                Number(actual)
+            ) ||
+            !Number.isFinite(
+                Number(standard)
             )
+        ) {
 
-            .replace(
-                /[٠-٩]/g,
-                function (digit) {
+            return {
+                key: "no-standard",
+                label: "بدون استاندارد",
+                className: "standard-neutral"
+            };
 
-                    return String(
-                        digit.charCodeAt(0) - 1632
+        }
+
+        const a =
+            Number(actual);
+
+        const s =
+            Number(standard);
+
+        if (
+            s === 0
+        ) {
+
+            return {
+                key: "no-standard",
+                label: "بدون استاندارد",
+                className: "standard-neutral"
+            };
+
+        }
+
+        const deviation =
+            (
+                (a - s) /
+                s
+            ) * 100;
+
+        const direction =
+            window.PERFORMANCE_METRICS?.[metric]?.direction ||
+            "higher";
+
+
+        /*
+         * شاخص‌هایی که مقدار بیشتر مطلوب است:
+         * وزن، افزایش وزن، زنده‌مانی، یکنواختی
+         */
+
+        if (
+            direction === "higher"
+        ) {
+
+            if (
+                deviation >= 5
+            ) {
+
+                return {
+                    key: "above",
+                    label: "بالاتر از استاندارد",
+                    className: "standard-good"
+                };
+
+            }
+
+            if (
+                deviation <= -10
+            ) {
+
+                return {
+                    key: "critical",
+                    label: "پایین‌تر از استاندارد",
+                    className: "standard-critical"
+                };
+
+            }
+
+            if (
+                deviation < -5
+            ) {
+
+                return {
+                    key: "warning",
+                    label: "هشدار",
+                    className: "standard-warning"
+                };
+
+            }
+
+            return {
+                key: "normal",
+                label: "در محدوده استاندارد",
+                className: "standard-normal"
+            };
+
+        }
+
+
+        /*
+         * شاخص‌هایی که مقدار کمتر مطلوب است:
+         * CV، FCR، دان، آب، تلفات
+         */
+
+        if (
+            direction === "lower"
+        ) {
+
+            if (
+                deviation <= -5
+            ) {
+
+                return {
+                    key: "good",
+                    label: "بهتر از استاندارد",
+                    className: "standard-good"
+                };
+
+            }
+
+            if (
+                deviation >= 10
+            ) {
+
+                return {
+                    key: "critical",
+                    label: "بالاتر از استاندارد",
+                    className: "standard-critical"
+                };
+
+            }
+
+            if (
+                deviation > 5
+            ) {
+
+                return {
+                    key: "warning",
+                    label: "هشدار",
+                    className: "standard-warning"
+                };
+
+            }
+
+            return {
+                key: "normal",
+                label: "در محدوده استاندارد",
+                className: "standard-normal"
+            };
+
+        }
+
+
+        return {
+            key: "normal",
+            label: "در محدوده استاندارد",
+            className: "standard-normal"
+        };
+
+    }
+
+
+    /* =====================================================
+       STANDARD BADGE
+       ===================================================== */
+
+    function standardBadge(
+        meta,
+        actual,
+        metric,
+        unit = ""
+    ) {
+
+        if (
+            !meta ||
+            !Number.isFinite(
+                Number(meta.value)
+            )
+        ) {
+
+            return `
+                <div class="weekly-standard-badge neutral">
+                    <span>استاندارد</span>
+                    <strong>بدون استاندارد معتبر</strong>
+                </div>
+            `;
+
+        }
+
+
+        const standard =
+            Number(meta.value);
+
+        const status =
+            getStandardStatus(
+                actual,
+                standard,
+                metric
+            );
+
+
+        const sourceLabel =
+            meta.isFallback ||
+            meta.sourceType ===
+            "management-standard"
+
+                ? "استاندارد مدیریتی"
+
+                : "استاندارد ژنتیکی رسمی";
+
+
+        return `
+
+            <div class="weekly-standard-badge ${status.className}">
+
+                <div class="standard-badge-source">
+                    ${escapeHTML(sourceLabel)}
+                </div>
+
+                <div class="standard-badge-value">
+
+                    استاندارد:
+                    <strong>
+                        ${formatNumber(
+                            standard,
+                            1
+                        )}
+                        ${unit}
+                    </strong>
+
+                </div>
+
+                <div class="standard-badge-status">
+
+                    ${status.label}
+
+                </div>
+
+            </div>
+
+        `;
+
+    }
+
+
+    /* =====================================================
+       STANDARD INFORMATION
+       ===================================================== */
+
+    function buildStandardInformation(
+        ageDays
+    ) {
+
+        const weight =
+            resolveWeeklyStandard(
+                "bodyWeight",
+                ageDays
+            );
+
+        const feed =
+            resolveWeeklyStandard(
+                "dailyFeed",
+                ageDays
+            );
+
+        const water =
+            resolveWeeklyStandard(
+                "dailyWater",
+                ageDays
+            );
+
+        const fcr =
+            resolveWeeklyStandard(
+                "fcr",
+                ageDays
+            );
+
+        const cv =
+            resolveWeeklyStandard(
+                "cv",
+                ageDays
+            );
+
+        const uniformity10 =
+            resolveWeeklyStandard(
+                "uniformity10",
+                ageDays
+            );
+
+        const uniformity15 =
+            resolveWeeklyStandard(
+                "uniformity15",
+                ageDays
+            );
+
+        return {
+
+            weight,
+            feed,
+            water,
+            fcr,
+            cv,
+            uniformity10,
+            uniformity15
+
+        };
+
+    }
+
+
+    /* =====================================================
+       STANDARD HEADER
+       ===================================================== */
+
+    function renderStandardHeader(
+        ageDays,
+        standards
+    ) {
+
+        const flock =
+            window.currentFlock || currentFlock;
+
+        const genetics =
+            flock?.genetics ||
+            flock?.strain ||
+            "-";
+
+
+        const sources = [];
+
+        Object.values(
+            standards || {}
+        ).forEach(
+            item => {
+
+                if (
+                    item &&
+                    item.sourceLabel &&
+                    !sources.includes(
+                        item.sourceLabel
+                    )
+                ) {
+
+                    sources.push(
+                        item.sourceLabel
                     );
 
                 }
+
+            }
+        );
+
+
+        const official =
+            Object.values(
+                standards || {}
+            ).some(
+                item =>
+                    item &&
+                    item.value !== null &&
+                    !item.isFallback &&
+                    item.sourceType !==
+                    "management-standard"
             );
 
-    }
+
+        const management =
+            Object.values(
+                standards || {}
+            ).some(
+                item =>
+                    item &&
+                    item.value !== null &&
+                    (
+                        item.isFallback ||
+                        item.sourceType ===
+                        "management-standard"
+                    )
+            );
 
 
+        return `
 
-    /* =====================================================
-       امروز به شمسی
-    ===================================================== */
+            <div class="weekly-standard-panel">
 
-    function getTodayJalali() {
+                <div class="weekly-standard-title">
 
-        const now =
-            new Date();
+                    <div>
 
+                        <span class="standard-main-title">
+                            مقایسه با استاندارد
+                        </span>
 
-        const formatter =
-            new Intl.DateTimeFormat(
-                "en-US-u-ca-persian",
-                {
-                    year: "numeric",
-                    month: "numeric",
-                    day: "numeric"
+                        <span class="standard-age">
+                            سن گله:
+                            ${convertDigitsToPersian(
+                                ageDays
+                            )}
+                            روز
+                        </span>
+
+                    </div>
+
+                    <div class="standard-priority">
+
+                        ${
+                            official
+                                ? `
+                                    <span class="standard-source official">
+                                        استاندارد ژنتیکی رسمی
+                                    </span>
+                                  `
+                                : ""
+                        }
+
+                        ${
+                            management
+                                ? `
+                                    <span class="standard-source management">
+                                        استاندارد مدیریتی
+                                    </span>
+                                  `
+                                : ""
+                        }
+
+                    </div>
+
+                </div>
+
+                <div class="standard-note">
+
+                    ${
+                        official
+                            ? "مقادیر دارای مرجع رسمی ژنتیکی در اولویت قرار گرفته‌اند."
+                            : "برای این گله/شاخص، مقدار ژنتیکی رسمی قابل استفاده وجود ندارد؛ بنابراین استاندارد مدیریتی استفاده شده است."
+                    }
+
+                </div>
+
+                ${
+                    sources.length
+                        ? `
+                            <details class="standard-details">
+
+                                <summary>
+                                    منبع استانداردها
+                                </summary>
+
+                                <ul>
+
+                                    ${
+                                        sources
+                                            .map(
+                                                source =>
+                                                    `<li>${escapeHTML(source)}</li>`
+                                            )
+                                            .join("")
+                                    }
+
+                                </ul>
+
+                            </details>
+                          `
+                        : ""
                 }
-            );
 
+            </div>
 
-        const parts =
-            formatter.formatToParts(
-                now
-            );
-
-
-        return {
-
-            year:
-                Number(
-                    parts.find(
-                        p =>
-                            p.type ===
-                            "year"
-                    ).value
-                ),
-
-            month:
-                Number(
-                    parts.find(
-                        p =>
-                            p.type ===
-                            "month"
-                    ).value
-                ),
-
-            day:
-                Number(
-                    parts.find(
-                        p =>
-                            p.type ===
-                            "day"
-                    ).value
-                )
-
-        };
+        `;
 
     }
 
 
-
     /* =====================================================
-       تعداد روزهای ماه
-    ===================================================== */
+       CALCULATE WEEKLY — REPLACEMENT
+       ===================================================== */
 
-    function daysInJalaliMonth(
-        year,
-        month
-    ) {
-
-        if (month <= 6) {
-
-            return 31;
-
-        }
-
-
-        if (month <= 11) {
-
-            return 30;
-
-        }
-
-
-        const current =
-            jalaliToGregorian(
-                year,
-                12,
-                1
-            );
-
-
-        const next =
-            jalaliToGregorian(
-                year + 1,
-                1,
-                1
-            );
-
-
-        const currentDate =
-            new Date(
-                current.gy,
-                current.gm - 1,
-                current.gd
-            );
-
-
-        const nextDate =
-            new Date(
-                next.gy,
-                next.gm - 1,
-                next.gd
-            );
-
-
-        return Math.round(
-            (
-                nextDate -
-                currentDate
-            ) /
-            86400000
-        );
-
-    }
-
-
-
-    /* =====================================================
-       جلالی → میلادی
-    ===================================================== */
-
-    function jalaliToGregorian(
-        jy,
-        jm,
-        jd
-    ) {
-
-        let gy =
-            jy + 621;
-
-
-        const breaks = [
-
-            -61,
-            9,
-            38,
-            199,
-            426,
-            686,
-            756,
-            818,
-            1111,
-            1181,
-            1210,
-            1635,
-            2060,
-            2097,
-            2192,
-            2262,
-            2324,
-            2394,
-            2456,
-            3178
-
-        ];
-
-
-        let leapJ = -14;
-
-        let jp =
-            breaks[0];
-
-        let jump = 0;
-
-
-        for (
-            let i = 1;
-            i < breaks.length;
-            i++
-        ) {
-
-            const jm2 =
-                breaks[i];
-
-
-            jump =
-                jm2 - jp;
-
-
-            if (jy < jm2) {
-
-                break;
-
-            }
-
-
-            leapJ +=
-                Math.floor(
-                    jump / 33
-                ) * 8 +
-
-                Math.floor(
-                    (jump % 33) / 4
-                );
-
-
-            jp =
-                jm2;
-
-        }
-
-
-        let n =
-            jy - jp;
-
-
-        if (n === jump) {
-
-            leapJ +=
-                Math.floor(
-                    jump / 33
-                );
-
-        }
-
-
-        const leapG =
-            Math.floor(
-                gy / 4
-            ) -
-
-            Math.floor(
-                (
-                    Math.floor(
-                        gy / 100
-                    ) + 1
-                ) * 3 / 4
-            ) -
-
-            150;
-
-
-        const march =
-            20 +
-            leapJ -
-            leapG;
-
-
-        let days;
-
-
-        if (jm <= 6) {
-
-            days =
-                (jm - 1) * 31 +
-                (jd - 1);
-
-        }
-
-        else {
-
-            days =
-                186 +
-                (jm - 7) * 30 +
-                (jd - 1);
-
-        }
-
-
-        const date =
-            new Date(
-                gy,
-                2,
-                march
-            );
-
-
-        date.setDate(
-            date.getDate() +
-            days
-        );
-
-
-        return {
-
-            gy:
-                date.getFullYear(),
-
-            gm:
-                date.getMonth() + 1,
-
-            gd:
-                date.getDate()
-
-        };
-
-    }
-
-
-
-    /* =====================================================
-       میلادی → جلالی
-    ===================================================== */
-
-    function gregorianToJalali(
-        gy,
-        gm,
-        gd
-    ) {
-
-        const gdm = [
-
-            0,
-            31,
-            59,
-            90,
-            120,
-            151,
-            181,
-            212,
-            243,
-            273,
-            304,
-            334
-
-        ];
-
-
-        const gy2 =
-            gm > 2
-                ? gy + 1
-                : gy;
-
-
-        let days =
-            355666 +
-            (365 * gy) +
-            Math.floor(
-                (gy2 + 3) / 4
-            ) -
-            Math.floor(
-                (gy2 + 99) / 100
-            ) +
-            Math.floor(
-                (gy2 + 399) / 400
-            ) +
-            gd +
-            gdm[gm - 1];
-
-
-        let jy =
-            -1595 +
-            33 *
-            Math.floor(
-                days / 12053
-            );
-
-
-        days %=
-            12053;
-
-
-        jy +=
-            4 *
-            Math.floor(
-                days / 1461
-            );
-
-
-        days %=
-            1461;
-
-
-        if (days > 365) {
-
-            jy +=
-                Math.floor(
-                    (days - 1) / 365
-                );
-
-
-            days =
-                (days - 1) % 365;
-
-        }
-
-
-        let jm;
-
-
-        if (days < 186) {
-
-            jm =
-                1 +
-                Math.floor(
-                    days / 31
-                );
-
-        }
-
-        else {
-
-            jm =
-                7 +
-                Math.floor(
-                    (days - 186) / 30
-                );
-
-        }
-
-
-        let jd;
-
-
-        if (days < 186) {
-
-            jd =
-                1 +
-                (days % 31);
-
-        }
-
-        else {
-
-            jd =
-                1 +
-                (
-                    (days - 186) % 30
-                );
-
-        }
-
-
-        return {
-
-            year: jy,
-            month: jm,
-            day: jd
-
-        };
-
-    }
-
-
-
-    /* =====================================================
-       رندر تقویم
-    ===================================================== */
-
-    function renderCalendar() {
-
-        const days =
-            document.getElementById(
-                "jalaliDays"
-            );
-
-
-        const title =
-            document.getElementById(
-                "jalaliMonthTitle"
-            );
-
-
-        if (!days || !title) {
-
-            return;
-
-        }
-
-
-        title.textContent =
-            monthNames[
-                calendarMonth - 1
-            ] +
-            " " +
-            toPersianDigits(
-                calendarYear
-            );
-
-
-        days.innerHTML = "";
-
-
-        const first =
-            jalaliToGregorian(
-                calendarYear,
-                calendarMonth,
-                1
-            );
-
-
-        const firstDate =
-            new Date(
-                first.gy,
-                first.gm - 1,
-                first.gd
-            );
-
-
-        const start =
-            (
-                firstDate.getDay() + 1
-            ) % 7;
-
-
-        for (
-            let i = 0;
-            i < start;
-            i++
-        ) {
-
-            const empty =
-                document.createElement(
-                    "div"
-                );
-
-
-            days.appendChild(
-                empty
-            );
-
-        }
-
-
-        const total =
-            daysInJalaliMonth(
-                calendarYear,
-                calendarMonth
-            );
-
-
-        const today =
-            getTodayJalali();
-
-
-        const input =
-            document.getElementById(
-                "evaluationDate"
-            );
-
-
-        const selected =
-            normalizeDigits(
-                input?.value || ""
-            ).split("/");
-
-
-        const selectedYear =
-            Number(
-                selected[0]
-            );
-
-
-        const selectedMonth =
-            Number(
-                selected[1]
-            );
-
-
-        const selectedDay =
-            Number(
-                selected[2]
-            );
-
-
-        for (
-            let day = 1;
-            day <= total;
-            day++
-        ) {
-
-            const button =
-                document.createElement(
-                    "button"
-                );
-
-
-            button.type =
-                "button";
-
-
-            button.className =
-                "jalali-day";
-
-
-            button.textContent =
-                toPersianDigits(
-                    day
-                );
-
-
-            if (
-                today.year ===
-                    calendarYear &&
-
-                today.month ===
-                    calendarMonth &&
-
-                today.day ===
-                    day
-            ) {
-
-                button.classList.add(
-                    "today"
-                );
-
-            }
-
-
-            if (
-                selectedYear ===
-                    calendarYear &&
-
-                selectedMonth ===
-                    calendarMonth &&
-
-                selectedDay ===
-                    day
-            ) {
-
-                button.classList.add(
-                    "selected"
-                );
-
-            }
-
-
-            button.addEventListener(
-                "click",
-                function (event) {
-
-                    event.stopPropagation();
-
-
-                    selectDate(
-                        calendarYear,
-                        calendarMonth,
-                        day
-                    );
-
-                }
-            );
-
-
-            days.appendChild(
-                button
-            );
-
-        }
-
-    }
-
-
-
-    /* =====================================================
-       انتخاب تاریخ
-    ===================================================== */
-
-    function selectDate(
-        year,
-        month,
-        day
-    ) {
-
-        const input =
-            document.getElementById(
-                "evaluationDate"
-            );
-
-
-        if (!input) {
-
-            return;
-
-        }
-
-
-        const value =
-            String(year) +
-            "/" +
-            String(month).padStart(
-                2,
-                "0"
-            ) +
-            "/" +
-            String(day).padStart(
-                2,
-                "0"
-            );
-
-
-        input.value =
-            toPersianDigits(
-                value
-            );
-
-
-        closeCalendar();
-
-    }
-
-
-
-    /* =====================================================
-       باز کردن
-    ===================================================== */
-
-    function openCalendar() {
-
-        const calendar =
-            document.getElementById(
-                "jalaliCalendar"
-            );
-
-
-        const input =
-            document.getElementById(
-                "evaluationDate"
-            );
-
-
-        if (!calendar) {
-
-            return;
-
-        }
-
-
-        const today =
-            getTodayJalali();
-
-
-        const current =
-            normalizeDigits(
-                input?.value || ""
-            ).split("/");
-
-
-        if (
-            current.length === 3 &&
-            Number(current[0]) &&
-            Number(current[1])
-        ) {
-
-            calendarYear =
-                Number(
-                    current[0]
-                );
-
-
-            calendarMonth =
-                Number(
-                    current[1]
-                );
-
-        }
-
-        else {
-
-            calendarYear =
-                today.year;
-
-
-            calendarMonth =
-                today.month;
-
-        }
-
-
-        renderCalendar();
-
-
-        calendar.style.display =
-            "block";
-
-    }
-
-
-
-    /* =====================================================
-       بستن
-    ===================================================== */
-
-    function closeCalendar() {
-
-        const calendar =
-            document.getElementById(
-                "jalaliCalendar"
-            );
-
-
-        if (calendar) {
-
-            calendar.style.display =
-                "none";
-
-        }
-
-    }
-
-
-
-    /* =====================================================
-       ماه قبل
-    ===================================================== */
-
-    function previousMonth() {
-
-        calendarMonth--;
-
-
-        if (
-            calendarMonth < 1
-        ) {
-
-            calendarMonth = 12;
-
-            calendarYear--;
-
-        }
-
-
-        renderCalendar();
-
-    }
-
-
-
-    /* =====================================================
-       ماه بعد
-    ===================================================== */
-
-    function nextMonth() {
-
-        calendarMonth++;
-
-
-        if (
-            calendarMonth > 12
-        ) {
-
-            calendarMonth = 1;
-
-            calendarYear++;
-
-        }
-
-
-        renderCalendar();
-
-    }
-
-
-
-    /* =====================================================
-       امروز
-    ===================================================== */
-
-    function selectToday() {
-
-        const value =
-            getTodayJalali();
-
-
-        selectDate(
-            value.year,
-            value.month,
-            value.day
-        );
-
-    }
-
-
-
-    /* =====================================================
-       INITIALIZE
-    ===================================================== */
-
-    document.addEventListener(
-        "DOMContentLoaded",
+    window.calculateWeekly =
         function () {
 
-            const input =
-                document.getElementById(
-                    "evaluationDate"
-                );
-
-
-            const calendarButton =
-                document.getElementById(
-                    "jalaliCalendarButton"
-                );
-
-
-            const calendar =
-                document.getElementById(
-                    "jalaliCalendar"
-                );
-
-
-            const previous =
-                document.getElementById(
-                    "jalaliPrevButton"
-                );
-
-
-            const next =
-                document.getElementById(
-                    "jalaliNextButton"
-                );
-
-
-            const todayButton =
-                document.getElementById(
-                    "jalaliTodayButton"
-                );
+            const weights =
+                getWeights();
 
 
             if (
-                !input ||
-                !calendar
+                weights.length < 2
             ) {
+
+                alert(
+                    "حداقل دو وزن برای محاسبه لازم است."
+                );
 
                 return;
 
             }
 
 
-            /* تاریخ امروز */
-
-            if (!input.value) {
-
-                const value =
-                    getTodayJalali();
+            const result =
+                calculateWeightStatistics(
+                    weights
+                );
 
 
-                input.value =
-                    toPersianDigits(
+            const ageDays =
+                getWeeklyAgeDays();
 
-                        value.year +
-                        "/" +
-                        String(
-                            value.month
-                        ).padStart(
-                            2,
-                            "0"
-                        ) +
-                        "/" +
-                        String(
-                            value.day
-                        ).padStart(
-                            2,
-                            "0"
-                        )
 
+            if (
+                !ageDays
+            ) {
+
+                alert(
+                    "ابتدا شماره هفته گله را وارد کنید."
+                );
+
+                return;
+
+            }
+
+
+            const standards =
+                buildStandardInformation(
+                    ageDays
+                );
+
+
+            const liveBirds =
+                getNumber(
+                    "liveBirds"
+                );
+
+
+            const mortality =
+                getNumber(
+                    "mortalityWeek"
+                );
+
+
+            const feedTotal =
+                getNumber(
+                    "feedTotal"
+                );
+
+
+            const waterTotal =
+                getNumber(
+                    "waterTotal"
+                );
+
+
+            const feedPerBirdInput =
+                getNumber(
+                    "feedPerBird"
+                );
+
+
+            const waterPerBirdInput =
+                getNumber(
+                    "waterPerBird"
+                );
+
+
+            const previous =
+                getPreviousWeeklyRecord();
+
+
+            const fcr =
+                calculateCurrentFCR(
+                    previous,
+                    result.mean,
+                    liveBirds,
+                    feedTotal
+                );
+
+
+            const dailyFeed =
+                feedPerBirdInput > 0
+
+                    ? feedPerBirdInput
+
+                    : calculateDailyPerBird(
+                        feedTotal,
+                        liveBirds,
+                        7
                     );
 
+
+            const dailyWater =
+                waterPerBirdInput > 0
+
+                    ? waterPerBirdInput
+
+                    : calculateDailyPerBird(
+                        waterTotal,
+                        liveBirds,
+                        7,
+                        true
+                    );
+
+
+            const mortalityRate =
+                calculateCurrentMortalityRate(
+                    mortality,
+                    previous,
+                    liveBirds
+                );
+
+
+            renderProfessionalResults({
+
+                result,
+
+                ageDays,
+
+                standards,
+
+                liveBirds,
+
+                mortality,
+
+                mortalityRate,
+
+                feedTotal,
+
+                waterTotal,
+
+                dailyFeed,
+
+                dailyWater,
+
+                fcr
+
+            });
+
+
+            drawProfessionalWeeklyCharts({
+
+                result,
+
+                ageDays,
+
+                standards,
+
+                fcr,
+
+                dailyFeed,
+
+                dailyWater
+
+            });
+
+
+            const resultsCard =
+                document.getElementById(
+                    "resultsCard"
+                );
+
+
+            if (resultsCard) {
+
+                resultsCard.style.display =
+                    "block";
+
             }
 
+        };
 
 
-            /* کلیک روی ورودی */
+    /* =====================================================
+       PREVIOUS RECORD
+       ===================================================== */
 
-            input.addEventListener(
-                "click",
-                function (event) {
+    function getPreviousWeeklyRecord() {
 
-                    event.stopPropagation();
+        if (
+            !Array.isArray(
+                weeklyRecords
+            ) ||
+            !weeklyRecords.length
+        ) {
 
-                    openCalendar();
+            return null;
 
-                }
+        }
+
+
+        const week =
+            getNumber(
+                "weekNumber"
             );
 
 
-
-            /* فوکوس */
-
-            input.addEventListener(
-                "focus",
-                function () {
-
-                    openCalendar();
-
-                }
-            );
-
-
-
-            /* دکمه تقویم */
-
-            if (calendarButton) {
-
-                calendarButton.addEventListener(
-                    "click",
-                    function (event) {
-
-                        event.stopPropagation();
-
-
-                        if (
-                            calendar.style.display ===
-                            "block"
-                        ) {
-
-                            closeCalendar();
-
-                        }
-
-                        else {
-
-                            openCalendar();
-
-                        }
-
-                    }
-                );
-
-            }
-
-
-
-            /* ماه قبل */
-
-            if (previous) {
-
-                previous.addEventListener(
-                    "click",
-                    function (event) {
-
-                        event.stopPropagation();
-
-                        previousMonth();
-
-                    }
-                );
-
-            }
-
-
-
-            /* ماه بعد */
-
-            if (next) {
-
-                next.addEventListener(
-                    "click",
-                    function (event) {
-
-                        event.stopPropagation();
-
-                        nextMonth();
-
-                    }
-                );
-
-            }
-
-
-
-            /* امروز */
-
-            if (todayButton) {
-
-                todayButton.addEventListener(
-                    "click",
-                    function (event) {
-
-                        event.stopPropagation();
-
-                        selectToday();
-
-                    }
-                );
-
-            }
-
-
-
-            /* جلوگیری از بسته شدن هنگام کار با تقویم */
-
-            calendar.addEventListener(
-                "click",
-                function (event) {
-
-                    event.stopPropagation();
-
-                }
-            );
-
-
-
-            /* کلیک بیرون */
-
-            document.addEventListener(
-                "click",
-                function (event) {
-
-                    const wrapper =
-                        document.getElementById(
-                            "jalaliDateWrapper"
-                        );
-
-
-                    if (
-                        wrapper &&
-                        !wrapper.contains(
-                            event.target
+        const records =
+            weeklyRecords
+                .filter(
+                    record =>
+                        Number(
+                            record.week_number
+                        ) < week
+                )
+                .sort(
+                    (a, b) =>
+                        Number(
+                            b.week_number
+                        ) -
+                        Number(
+                            a.week_number
                         )
-                    ) {
+                );
 
-                        closeCalendar();
+
+        return records[0] || null;
+
+    }
+
+
+    /* =====================================================
+       FCR
+       ===================================================== */
+
+    function calculateCurrentFCR(
+        previous,
+        currentWeight,
+        closingBirds,
+        feedKg
+    ) {
+
+        if (
+            !previous
+        ) {
+
+            return null;
+
+        }
+
+
+        if (
+            typeof calculateBroilerFCR !==
+            "function"
+        ) {
+
+            return null;
+
+        }
+
+
+        return calculateBroilerFCR({
+
+            feedKg,
+
+            openingBirds:
+                previous.live_birds,
+
+            closingBirds:
+                closingBirds,
+
+            openingAverageWeightG:
+                previous.average_weight_g,
+
+            closingAverageWeightG:
+                currentWeight
+
+        });
+
+    }
+
+
+    /* =====================================================
+       DAILY FEED / WATER
+       ===================================================== */
+
+    function calculateDailyPerBird(
+        total,
+        birds,
+        days = 7,
+        isWater = false
+    ) {
+
+        const totalValue =
+            Number(total);
+
+        const birdCount =
+            Number(birds);
+
+
+        if (
+            !Number.isFinite(
+                totalValue
+            ) ||
+            totalValue <= 0 ||
+            !Number.isFinite(
+                birdCount
+            ) ||
+            birdCount <= 0
+        ) {
+
+            return null;
+
+        }
+
+
+        if (isWater) {
+
+            return (
+                totalValue * 1000
+            ) /
+            birdCount /
+            days;
+
+        }
+
+
+        return (
+            totalValue * 1000
+        ) /
+        birdCount /
+        days;
+
+    }
+
+
+    /* =====================================================
+       MORTALITY RATE
+       ===================================================== */
+
+    function calculateCurrentMortalityRate(
+        mortality,
+        previous,
+        liveBirds
+    ) {
+
+        const m =
+            Number(mortality);
+
+
+        if (
+            !Number.isFinite(m) ||
+            m < 0
+        ) {
+
+            return null;
+
+        }
+
+
+        let denominator =
+            Number(
+                previous?.live_birds
+            );
+
+
+        if (
+            !Number.isFinite(
+                denominator
+            ) ||
+            denominator <= 0
+        ) {
+
+            denominator =
+                Number(liveBirds) + m;
+
+        }
+
+
+        if (
+            !Number.isFinite(
+                denominator
+            ) ||
+            denominator <= 0
+        ) {
+
+            return null;
+
+        }
+
+
+        return (
+            m /
+            denominator
+        ) *
+        100;
+
+    }
+
+
+    /* =====================================================
+       PROFESSIONAL RESULTS
+       ===================================================== */
+
+    function renderProfessionalResults({
+        result,
+        ageDays,
+        standards,
+        liveBirds,
+        mortality,
+        mortalityRate,
+        feedTotal,
+        waterTotal,
+        dailyFeed,
+        dailyWater,
+        fcr
+    }) {
+
+        const container =
+            document.getElementById(
+                "results"
+            );
+
+
+        if (!container) {
+
+            return;
+
+        }
+
+
+        const weightDeviation =
+            getDeviation(
+                result.mean,
+                standards.weight.value
+            );
+
+
+        const fcrStatus =
+            fcr !== null
+                ? getStandardStatus(
+                    fcr,
+                    standards.fcr.value,
+                    "fcr"
+                )
+                : null;
+
+
+        container.innerHTML = `
+
+            <div class="weekly-summary-card">
+
+                <div class="weekly-summary-header">
+
+                    <div>
+
+                        <strong>
+                            ارزیابی تخصصی هفته
+                        </strong>
+
+                        <span>
+                            سن:
+                            ${formatNumber(
+                                ageDays,
+                                0
+                            )}
+                            روز
+                        </span>
+
+                    </div>
+
+                    ${
+                        standards.weight.value !== null
+                            ? `
+                                <div class="weekly-deviation ${deviationClass(weightDeviation)}">
+
+                                    ${formatSignedPercent(
+                                        weightDeviation
+                                    )}
+
+                                </div>
+                              `
+                            : ""
+                    }
+
+                </div>
+
+                <div class="weekly-summary-standard">
+
+                    ${renderStandardHeader(
+                        ageDays,
+                        standards
+                    )}
+
+                </div>
+
+            </div>
+
+
+            <div class="metric-card professional-metric">
+
+                <div class="metric-title">
+                    میانگین وزن
+                </div>
+
+                <div class="metric-value">
+                    ${formatNumber(
+                        result.mean,
+                        1
+                    )}
+                    گرم
+                </div>
+
+                ${standardBadge(
+                    standards.weight,
+                    result.mean,
+                    "bodyWeight",
+                    " گرم"
+                )}
+
+            </div>
+
+
+            <div class="metric-card professional-metric">
+
+                <div class="metric-title">
+                    CV
+                </div>
+
+                <div class="metric-value">
+                    ${
+                        result.cv === null
+                            ? "-"
+                            : formatNumber(
+                                result.cv,
+                                2
+                            ) + "%"
+                    }
+                </div>
+
+                ${standardBadge(
+                    standards.cv,
+                    result.cv,
+                    "cv",
+                    "%"
+                )}
+
+            </div>
+
+
+            <div class="metric-card professional-metric">
+
+                <div class="metric-title">
+                    یکنواختی ±10%
+                </div>
+
+                <div class="metric-value">
+                    ${formatNumber(
+                        result.uniformity10,
+                        1
+                    )}%
+                </div>
+
+                ${standardBadge(
+                    standards.uniformity10,
+                    result.uniformity10,
+                    "uniformity10",
+                    "%"
+                )}
+
+            </div>
+
+
+            <div class="metric-card professional-metric">
+
+                <div class="metric-title">
+                    یکنواختی ±15%
+                </div>
+
+                <div class="metric-value">
+                    ${formatNumber(
+                        result.uniformity15,
+                        1
+                    )}%
+                </div>
+
+                ${standardBadge(
+                    standards.uniformity15,
+                    result.uniformity15,
+                    "uniformity15",
+                    "%"
+                )}
+
+            </div>
+
+
+            <div class="metric-card">
+
+                <div class="metric-title">
+                    SD
+                </div>
+
+                <div class="metric-value">
+                    ${
+                        result.sd === null
+                            ? "-"
+                            : formatNumber(
+                                result.sd,
+                                1
+                            ) + " گرم"
+                    }
+                </div>
+
+            </div>
+
+
+            <div class="metric-card">
+
+                <div class="metric-title">
+                    تعداد نمونه
+                </div>
+
+                <div class="metric-value">
+                    ${formatNumber(
+                        result.count,
+                        0
+                    )}
+                </div>
+
+                <div class="metric-subtitle">
+                    ${
+                        escapeHTML(
+                            result.samplingStatus ||
+                            "-"
+                        )
+                    }
+                </div>
+
+            </div>
+
+
+            <div class="metric-card professional-metric">
+
+                <div class="metric-title">
+                    دان روزانه / پرنده
+                </div>
+
+                <div class="metric-value">
+
+                    ${
+                        dailyFeed === null
+                            ? "-"
+                            : formatNumber(
+                                dailyFeed,
+                                1
+                            ) + " گرم"
+                    }
+
+                </div>
+
+                ${standardBadge(
+                    standards.feed,
+                    dailyFeed,
+                    "dailyFeed",
+                    " گرم"
+                )}
+
+            </div>
+
+
+            <div class="metric-card professional-metric">
+
+                <div class="metric-title">
+                    آب روزانه / پرنده
+                </div>
+
+                <div class="metric-value">
+
+                    ${
+                        dailyWater === null
+                            ? "-"
+                            : formatNumber(
+                                dailyWater,
+                                1
+                            ) + " میلی‌لیتر"
+                    }
+
+                </div>
+
+                ${standardBadge(
+                    standards.water,
+                    dailyWater,
+                    "dailyWater",
+                    " ml"
+                )}
+
+            </div>
+
+
+            <div class="metric-card professional-metric">
+
+                <div class="metric-title">
+                    FCR
+                </div>
+
+                <div class="metric-value">
+
+                    ${
+                        fcr === null
+                            ? "-"
+                            : formatNumber(
+                                fcr,
+                                3
+                            )
+                    }
+
+                </div>
+
+                ${
+                    fcrStatus
+                        ? `
+                            <div class="metric-subtitle">
+                                ${fcrStatus.label}
+                            </div>
+                          `
+                        : ""
+                }
+
+                ${standardBadge(
+                    standards.fcr,
+                    fcr,
+                    "fcr",
+                    ""
+                )}
+
+            </div>
+
+
+            <div class="metric-card">
+
+                <div class="metric-title">
+                    تلفات
+                </div>
+
+                <div class="metric-value">
+
+                    ${formatNumber(
+                        mortality,
+                        0
+                    )}
+
+                </div>
+
+                <div class="metric-subtitle">
+
+                    ${
+                        mortalityRate === null
+                            ? "-"
+                            : formatNumber(
+                                mortalityRate,
+                                2
+                            ) + "%"
+                    }
+
+                </div>
+
+            </div>
+
+
+            <div class="metric-card">
+
+                <div class="metric-title">
+                    حداقل وزن
+                </div>
+
+                <div class="metric-value">
+
+                    ${formatNumber(
+                        result.min,
+                        1
+                    )}
+                    گرم
+
+                </div>
+
+            </div>
+
+
+            <div class="metric-card">
+
+                <div class="metric-title">
+                    حداکثر وزن
+                </div>
+
+                <div class="metric-value">
+
+                    ${formatNumber(
+                        result.max,
+                        1
+                    )}
+                    گرم
+
+                </div>
+
+            </div>
+
+        `;
+
+    }
+
+
+    /* =====================================================
+       DEVIATION
+       ===================================================== */
+
+    function getDeviation(
+        actual,
+        standard
+    ) {
+
+        const a =
+            Number(actual);
+
+        const s =
+            Number(standard);
+
+
+        if (
+            !Number.isFinite(a) ||
+            !Number.isFinite(s) ||
+            s === 0
+        ) {
+
+            return null;
+
+        }
+
+
+        return (
+            (
+                a - s
+            ) /
+            s
+        ) * 100;
+
+    }
+
+
+    function deviationClass(
+        value
+    ) {
+
+        if (
+            value === null
+        ) {
+
+            return "";
+
+        }
+
+        if (
+            value < -10
+        ) {
+
+            return "danger";
+
+        }
+
+        if (
+            value < -5
+        ) {
+
+            return "warning";
+
+        }
+
+        return "good";
+
+    }
+
+
+    function formatSignedPercent(
+        value
+    ) {
+
+        if (
+            value === null ||
+            !Number.isFinite(
+                Number(value)
+            )
+        ) {
+
+            return "";
+
+        }
+
+
+        const number =
+            Number(value);
+
+
+        return (
+            number > 0
+                ? "+"
+                : ""
+        ) +
+        formatNumber(
+            number,
+            1
+        ) +
+        "%";
+
+    }
+
+
+    /* =====================================================
+       CHART CONTAINER
+       ===================================================== */
+
+    function prepareProfessionalChartArea() {
+
+        const parent =
+            document.getElementById(
+                "weightChartContainer"
+            );
+
+
+        if (!parent) {
+
+            return null;
+
+        }
+
+
+        parent.innerHTML = `
+
+            <div class="weekly-chart-section">
+
+                <div class="weekly-chart-title">
+                    عملکرد وزن در برابر استاندارد
+                </div>
+
+                <div class="weekly-chart-box">
+                    <canvas id="weeklyWeightStandardChart"></canvas>
+                </div>
+
+            </div>
+
+
+            <div class="weekly-chart-section">
+
+                <div class="weekly-chart-title">
+                    یکنواختی و CV
+                </div>
+
+                <div class="weekly-chart-box">
+                    <canvas id="weeklyUniformityChart"></canvas>
+                </div>
+
+            </div>
+
+
+            <div class="weekly-chart-section">
+
+                <div class="weekly-chart-title">
+                    دان، آب و FCR
+                </div>
+
+                <div class="weekly-chart-box">
+                    <canvas id="weeklyEfficiencyChart"></canvas>
+                </div>
+
+            </div>
+
+        `;
+
+
+        return parent;
+
+    }
+
+
+    /* =====================================================
+       PROFESSIONAL CHARTS
+       ===================================================== */
+
+    function drawProfessionalWeeklyCharts({
+        result,
+        ageDays,
+        standards,
+        fcr,
+        dailyFeed,
+        dailyWater
+    }) {
+
+        if (
+            typeof Chart ===
+            "undefined"
+        ) {
+
+            return;
+
+        }
+
+
+        prepareProfessionalChartArea();
+
+
+        const weightCanvas =
+            document.getElementById(
+                "weeklyWeightStandardChart"
+            );
+
+
+        const uniformityCanvas =
+            document.getElementById(
+                "weeklyUniformityChart"
+            );
+
+
+        const efficiencyCanvas =
+            document.getElementById(
+                "weeklyEfficiencyChart"
+            );
+
+
+        /*
+         * وزن
+         */
+
+        if (
+            weightCanvas
+        ) {
+
+            new Chart(
+                weightCanvas,
+                {
+
+                    type:
+                        "bar",
+
+                    data: {
+
+                        labels: [
+                            "وزن واقعی",
+                            "استاندارد"
+                        ],
+
+                        datasets: [
+
+                            {
+
+                                label:
+                                    "وزن",
+
+                                data: [
+
+                                    result.mean,
+
+                                    standards.weight.value
+
+                                ].map(
+                                    value =>
+                                        Number.isFinite(
+                                            Number(value)
+                                        )
+                                            ? Number(value)
+                                            : null
+                                )
+
+                            }
+
+                        ]
+
+                    },
+
+                    options: {
+
+                        responsive:
+                            true,
+
+                        maintainAspectRatio:
+                            false,
+
+                        plugins: {
+
+                            legend: {
+
+                                display:
+                                    false
+
+                            },
+
+                            tooltip: {
+
+                                callbacks: {
+
+                                    label:
+                                        context => {
+
+                                            const value =
+                                                context.raw;
+
+                                            return (
+                                                context.label +
+                                                ": " +
+                                                formatNumber(
+                                                    value,
+                                                    1
+                                                ) +
+                                                " گرم"
+                                            );
+
+                                        }
+
+                                }
+
+                            }
+
+                        }
 
                     }
 
                 }
+
             );
 
         }
-    );
+
+
+        /*
+         * یکنواختی و CV
+         */
+
+        if (
+            uniformityCanvas
+        ) {
+
+            new Chart(
+                uniformityCanvas,
+                {
+
+                    type:
+                        "bar",
+
+                    data: {
+
+                        labels: [
+                            "یکنواختی ±10",
+                            "استاندارد ±10",
+                            "یکنواختی ±15",
+                            "استاندارد ±15",
+                            "CV",
+                            "استاندارد CV"
+                        ],
+
+                        datasets: [
+
+                            {
+
+                                label:
+                                    "مقدار",
+
+                                data: [
+
+                                    result.uniformity10,
+
+                                    standards.uniformity10.value,
+
+                                    result.uniformity15,
+
+                                    standards.uniformity15.value,
+
+                                    result.cv,
+
+                                    standards.cv.value
+
+                                ].map(
+                                    value =>
+                                        Number.isFinite(
+                                            Number(value)
+                                        )
+                                            ? Number(value)
+                                            : null
+                                )
+
+                            }
+
+                        ]
+
+                    },
+
+                    options: {
+
+                        responsive:
+                            true,
+
+                        maintainAspectRatio:
+                            false,
+
+                        plugins: {
+
+                            legend: {
+
+                                display:
+                                    false
+
+                            }
+
+                        },
+
+                        scales: {
+
+                            y: {
+
+                                beginAtZero:
+                                    true
+
+                            }
+
+                        }
+
+                    }
+
+                }
+
+            );
+
+        }
+
+
+        /*
+         * دان / آب / FCR
+         */
+
+        if (
+            efficiencyCanvas
+        ) {
+
+            new Chart(
+                efficiencyCanvas,
+                {
+
+                    type:
+                        "bar",
+
+                    data: {
+
+                        labels: [
+
+                            "دان روزانه",
+
+                            "استاندارد دان",
+
+                            "آب روزانه",
+
+                            "استاندارد آب",
+
+                            "FCR",
+
+                            "استاندارد FCR"
+
+                        ],
+
+                        datasets: [
+
+                            {
+
+                                label:
+                                    "عملکرد",
+
+                                data: [
+
+                                    dailyFeed,
+
+                                    standards.feed.value,
+
+                                    dailyWater,
+
+                                    standards.water.value,
+
+                                    fcr,
+
+                                    standards.fcr.value
+
+                                ].map(
+                                    value =>
+                                        Number.isFinite(
+                                            Number(value)
+                                        )
+                                            ? Number(value)
+                                            : null
+                                )
+
+                            }
+
+                        ]
+
+                    },
+
+                    options: {
+
+                        responsive:
+                            true,
+
+                        maintainAspectRatio:
+                            false,
+
+                        plugins: {
+
+                            legend: {
+
+                                display:
+                                    false
+
+                            }
+
+                        },
+
+                        scales: {
+
+                            y: {
+
+                                beginAtZero:
+                                    true
+
+                            }
+
+                        }
+
+                    }
+
+                }
+
+            );
+
+        }
+
+    }
+
+
+    /* =====================================================
+       CSS
+       ===================================================== */
+
+    function injectProfessionalWeeklyCSS() {
+
+        if (
+            document.getElementById(
+                "weeklyProfessionalCSS"
+            )
+        ) {
+
+            return;
+
+        }
+
+
+        const style =
+            document.createElement(
+                "style"
+            );
+
+
+        style.id =
+            "weeklyProfessionalCSS";
+
+
+        style.textContent = `
+
+            .weekly-standard-panel {
+
+                margin-top: 14px;
+
+                border: 1px solid #d8e2de;
+
+                border-radius: 14px;
+
+                background: #f8fbfa;
+
+                overflow: hidden;
+
+            }
+
+
+            .weekly-standard-title {
+
+                display: flex;
+
+                justify-content: space-between;
+
+                align-items: center;
+
+                gap: 12px;
+
+                padding: 14px 16px;
+
+                background: #173f35;
+
+                color: #fff;
+
+            }
+
+
+            .standard-main-title {
+
+                display: block;
+
+                font-weight: 800;
+
+                font-size: 15px;
+
+            }
+
+
+            .standard-age {
+
+                display: block;
+
+                margin-top: 4px;
+
+                opacity: .85;
+
+                font-size: 12px;
+
+            }
+
+
+            .standard-priority {
+
+                display: flex;
+
+                flex-wrap: wrap;
+
+                gap: 6px;
+
+                justify-content: flex-end;
+
+            }
+
+
+            .standard-source {
+
+                padding: 6px 9px;
+
+                border-radius: 20px;
+
+                font-size: 11px;
+
+                font-weight: 700;
+
+                background: rgba(255,255,255,.12);
+
+                white-space: nowrap;
+
+            }
+
+
+            .standard-source.management {
+
+                background: rgba(255,255,255,.18);
+
+            }
+
+
+            .standard-note {
+
+                padding: 12px 16px;
+
+                font-size: 12px;
+
+                line-height: 1.9;
+
+                color: #44534d;
+
+            }
+
+
+            .standard-details {
+
+                border-top: 1px solid #e2ebe7;
+
+                padding: 10px 16px;
+
+                font-size: 12px;
+
+            }
+
+
+            .standard-details summary {
+
+                cursor: pointer;
+
+                font-weight: 700;
+
+            }
+
+
+            .standard-details ul {
+
+                margin: 8px 0 0;
+
+                padding-right: 18px;
+
+            }
+
+
+            .professional-metric {
+
+                position: relative;
+
+                overflow: hidden;
+
+            }
+
+
+            .weekly-standard-badge {
+
+                margin-top: 10px;
+
+                padding: 8px 10px;
+
+                border-radius: 10px;
+
+                font-size: 11px;
+
+                line-height: 1.8;
+
+                border: 1px solid #dfe8e4;
+
+                background: #f7faf8;
+
+            }
+
+
+            .weekly-standard-badge.good,
+
+            .weekly-standard-badge.standard-good {
+
+                border-color: #b8d8c7;
+
+                background: #f1faf4;
+
+            }
+
+
+            .weekly-standard-badge.standard-normal {
+
+                border-color: #c9ddd4;
+
+                background: #f4faf7;
+
+            }
+
+
+            .weekly-standard-badge.standard-warning {
+
+                border-color: #e8d5a5;
+
+                background: #fffaf0;
+
+            }
+
+
+            .weekly-standard-badge.standard-critical {
+
+                border-color: #e7b5b5;
+
+                background: #fff4f4;
+
+            }
+
+
+            .weekly-standard-badge.neutral {
+
+                background: #f7f7f7;
+
+                color: #777;
+
+            }
+
+
+            .standard-badge-source {
+
+                font-weight: 800;
+
+                margin-bottom: 2px;
+
+            }
+
+
+            .standard-badge-value strong {
+
+                font-weight: 800;
+
+            }
+
+
+            .standard-badge-status {
+
+                font-weight: 700;
+
+            }
+
+
+            .weekly-summary-card {
+
+                grid-column: 1 / -1;
+
+                margin-bottom: 4px;
+
+            }
+
+
+            .weekly-summary-header {
+
+                display: flex;
+
+                justify-content: space-between;
+
+                align-items: center;
+
+                gap: 10px;
+
+                padding: 12px 14px;
+
+                border-radius: 12px;
+
+                background: #f5f8f7;
+
+                border: 1px solid #e0e8e4;
+
+            }
+
+
+            .weekly-summary-header strong {
+
+                display: block;
+
+                font-size: 15px;
+
+            }
+
+
+            .weekly-summary-header span {
+
+                display: block;
+
+                margin-top: 4px;
+
+                font-size: 12px;
+
+                color: #68756f;
+
+            }
+
+
+            .weekly-deviation {
+
+                padding: 7px 12px;
+
+                border-radius: 20px;
+
+                font-weight: 800;
+
+                direction: ltr;
+
+            }
+
+
+            .weekly-deviation.good {
+
+                background: #e4f4ea;
+
+            }
+
+
+            .weekly-deviation.warning {
+
+                background: #fff2ce;
+
+            }
+
+
+            .weekly-deviation.danger {
+
+                background: #fde2e2;
+
+            }
+
+
+            .metric-subtitle {
+
+                margin-top: 5px;
+
+                font-size: 11px;
+
+                line-height: 1.8;
+
+                color: #68756f;
+
+            }
+
+
+            .weekly-chart-section {
+
+                margin-top: 22px;
+
+                padding: 14px;
+
+                border: 1px solid #e2e9e6;
+
+                border-radius: 14px;
+
+                background: #fff;
+
+            }
+
+
+            .weekly-chart-title {
+
+                font-weight: 800;
+
+                margin-bottom: 12px;
+
+                color: #173f35;
+
+            }
+
+
+            .weekly-chart-box {
+
+                position: relative;
+
+                height: 320px;
+
+            }
+
+
+            @media (max-width: 600px) {
+
+                .weekly-standard-title {
+
+                    align-items: flex-start;
+
+                    flex-direction: column;
+
+                }
+
+
+                .standard-priority {
+
+                    justify-content: flex-start;
+
+                }
+
+
+                .weekly-chart-box {
+
+                    height: 270px;
+
+                }
+
+            }
+
+        `;
+
+
+        document.head.appendChild(
+            style
+        );
+
+    }
+
+
+    /* =====================================================
+       INIT
+       ===================================================== */
+
+    if (
+        document.readyState ===
+        "loading"
+    ) {
+
+        document.addEventListener(
+            "DOMContentLoaded",
+            injectProfessionalWeeklyCSS
+        );
+
+    }
+
+    else {
+
+        injectProfessionalWeeklyCSS();
+
+    }
+
+
+    /* =====================================================
+       EXPOSE
+       ===================================================== */
+
+    window.resolveWeeklyStandard =
+        resolveWeeklyStandard;
+
+    window.getWeeklyAgeDays =
+        getWeeklyAgeDays;
+
+    window.getStandardStatus =
+        getStandardStatus;
+
+    window.renderStandardHeader =
+        renderStandardHeader;
+
+    window.drawProfessionalWeeklyCharts =
+        drawProfessionalWeeklyCharts;
 
 })();
-
-</script>
-
-
-</body>
-
-</html>

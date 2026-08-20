@@ -1,1560 +1,2193 @@
-"use strict";
-
 /* =========================================================
-   ADINEH POULTRY HEALTH CENTER
-   STANDARD ENGINE
-   =========================================================
+   ADINE POULTRY HEALTH CENTER
+   PROFESSIONAL POULTRY GENETICS DATABASE
+   VERSION 2.0
+   Updated: 2026
 
-   This file handles:
-   - Standard lookup
-   - Age interpolation
-   - Actual vs standard comparison
-   - FCR calculation
-   - Weekly comparison
-   - Standard validation
+   IMPORTANT:
+   This file is the GENETIC / STANDARD STRUCTURE.
 
+   Numeric performance objectives are NOT guessed.
+   They will be entered only from the corresponding
+   official breeder documentation.
+
+   Status:
+   active       = currently documented/marketed
+   legacy       = historical/archived product
+   regional     = availability may depend on region
+   research     = research/reference population
+   iran         = Iranian/local genetic line
 ========================================================= */
 
+const POULTRY_STANDARDS = {
 
-/* =========================================================
-   ENGINE CONFIG
-========================================================= */
+    meta: {
 
-const STANDARD_ENGINE_CONFIG = {
+        databaseName:
+            "Adine Poultry Genetics & Performance Database",
 
-    version: "3.0",
+        version:
+            "2.0",
 
-    allowExtrapolation: false,
+        updated:
+            "2026",
 
-    interpolation: "linear",
+        countryFocus:
+            "Iran",
 
-    tolerancePercent: 5,
+        numericDataPolicy:
+            "Official breeder documentation only",
 
-    fcrDecimals: 3,
+        comparisonPolicy:
+            "Never compare different genetic programs as if they were the same standard"
 
-    weightDecimals: 0,
+    },
 
-    percentageDecimals: 2
 
-};
+    /* =====================================================
+       1. BROILERS
+    ===================================================== */
 
-
-/* =========================================================
-   PRODUCTION TYPE NORMALIZATION
-========================================================= */
-
-function normalizeProductionType(type) {
-
-    const value =
-        String(type || "")
-            .trim()
-            .toLowerCase();
-
-    const aliases = {
-
-        broiler: "broiler",
-        meat: "broiler",
-        گوشتی: "broiler",
-
-        breeder: "breeder",
-        parent: "breeder",
-        parentstock: "breeder",
-        مادر: "breeder",
-
-        layer: "layer",
-        layers: "layer",
-        تخمگذار: "layer",
-        "تخم‌گذار": "layer",
-
-        pullet: "pullet",
-        پولت: "pullet"
-
-    };
-
-    return aliases[value] || value || null;
-}
-
-
-/* =========================================================
-   NUMBER HELPERS
-========================================================= */
-
-function toFiniteNumber(value) {
-
-    const number = Number(value);
-
-    return Number.isFinite(number)
-        ? number
-        : null;
-}
-
-
-function roundValue(value, decimals = 2) {
-
-    const number = Number(value);
-
-    if (!Number.isFinite(number)) {
-        return null;
-    }
-
-    const factor =
-        Math.pow(10, decimals);
-
-    return (
-        Math.round(number * factor) /
-        factor
-    );
-}
-
-
-/* =========================================================
-   GET STANDARD
-========================================================= */
-
-function getStandard(
-    type,
-    geneticsId,
-    strain
-) {
-
-    const normalizedType =
-        normalizeProductionType(type);
-
-    if (
-        typeof VERIFIED_STANDARDS ===
-        "undefined"
-    ) {
-        return null;
-    }
-
-    const typeData =
-        VERIFIED_STANDARDS[
-            normalizedType
-        ];
-
-    if (!typeData) {
-        return null;
-    }
-
-    let geneticsData =
-        typeData[geneticsId];
-
-    /*
-     * Try to resolve genetics by strain.
-     */
-
-    if (!geneticsData && strain) {
-
-        const target =
-            String(strain)
-                .trim()
-                .toLowerCase();
-
-        const match =
-            Object.keys(typeData)
-                .find(id => {
-
-                    const item =
-                        typeData[id];
-
-                    return Object.keys(item)
-                        .some(name =>
-                            String(name)
-                                .trim()
-                                .toLowerCase() ===
-                            target
-                        );
-
-                });
-
-        if (match) {
-            geneticsData =
-                typeData[match];
-        }
-    }
-
-    if (!geneticsData) {
-        return null;
-    }
-
-    if (strain) {
-
-        return (
-            geneticsData[strain] ||
-            geneticsData[
-                Object.keys(geneticsData)
-                    .find(name =>
-                        String(name)
-                            .trim()
-                            .toLowerCase() ===
-                        String(strain)
-                            .trim()
-                            .toLowerCase()
-                    )
-            ] ||
-            null
-        );
-
-    }
-
-    /*
-     * If only one strain exists,
-     * return it.
-     */
-
-    const strains =
-        Object.keys(geneticsData);
-
-    if (strains.length === 1) {
-        return geneticsData[strains[0]];
-    }
-
-    return null;
-}
-
-
-/* =========================================================
-   GET RECORDS
-========================================================= */
-
-function getStandardRecords(
-    type,
-    geneticsId,
-    strain
-) {
-
-    const standard =
-        getStandard(
-            type,
-            geneticsId,
-            strain
-        );
-
-    if (
-        !standard ||
-        !Array.isArray(
-            standard.records
-        )
-    ) {
-        return [];
-    }
-
-    return standard.records
-        .filter(record =>
-            Number.isFinite(
-                Number(record.ageDays)
-            )
-        )
-        .sort(
-            (a, b) =>
-                Number(a.ageDays) -
-                Number(b.ageDays)
-        );
-}
-
-
-/* =========================================================
-   STANDARD AGE RANGE
-========================================================= */
-
-function getStandardAgeRange(
-    standard
-) {
-
-    if (
-        !standard ||
-        !Array.isArray(
-            standard.records
-        ) ||
-        !standard.records.length
-    ) {
-        return null;
-    }
-
-    const records =
-        standard.records
-            .filter(record =>
-                Number.isFinite(
-                    Number(record.ageDays)
-                )
-            )
-            .sort(
-                (a, b) =>
-                    Number(a.ageDays) -
-                    Number(b.ageDays)
-            );
-
-    if (!records.length) {
-        return null;
-    }
-
-    return {
-
-        min:
-            Number(
-                records[0].ageDays
-            ),
-
-        max:
-            Number(
-                records[
-                    records.length - 1
-                ].ageDays
-            )
-
-    };
-}
-
-
-/* =========================================================
-   VALUE AT AGE
-========================================================= */
-
-function getStandardValueAtAge(
-    standard,
-    metric,
-    ageDays
-) {
-
-    if (
-        !standard ||
-        !Array.isArray(
-            standard.records
-        )
-    ) {
-        return null;
-    }
-
-    const age =
-        Number(ageDays);
-
-    if (!Number.isFinite(age)) {
-        return null;
-    }
-
-    const points =
-        standard.records
-            .map(record => ({
-
-                age:
-                    Number(
-                        record.ageDays
-                    ),
-
-                value:
-                    Number(
-                        record[metric]
-                    )
-
-            }))
-            .filter(point =>
-                Number.isFinite(point.age) &&
-                Number.isFinite(point.value)
-            )
-            .sort(
-                (a, b) =>
-                    a.age - b.age
-            );
-
-    if (!points.length) {
-        return null;
-    }
-
-    /*
-     * Never extrapolate.
-     */
-
-    if (
-        age < points[0].age ||
-        age > points[points.length - 1].age
-    ) {
-        return null;
-    }
-
-    /*
-     * Exact point.
-     */
-
-    const exact =
-        points.find(
-            point =>
-                point.age === age
-        );
-
-    if (exact) {
-        return exact.value;
-    }
-
-    /*
-     * Linear interpolation.
-     */
-
-    for (
-        let i = 1;
-        i < points.length;
-        i++
-    ) {
-
-        const previous =
-            points[i - 1];
-
-        const next =
-            points[i];
-
-        if (
-            age >= previous.age &&
-            age <= next.age
-        ) {
-
-            const denominator =
-                next.age -
-                previous.age;
-
-            if (denominator <= 0) {
-                return previous.value;
-            }
-
-            const ratio =
-                (
-                    age -
-                    previous.age
-                ) /
-                denominator;
-
-            return roundValue(
-                previous.value +
-                (
-                    next.value -
-                    previous.value
-                ) *
-                ratio,
-                3
-            );
-        }
-    }
-
-    return null;
-}
-
-
-/* =========================================================
-   COMPLETE STANDARD AT AGE
-========================================================= */
-
-function getStandardAtAge(
-    type,
-    geneticsId,
-    strain,
-    ageDays
-) {
-
-    const standard =
-        getStandard(
-            type,
-            geneticsId,
-            strain
-        );
-
-    if (!standard) {
-        return null;
-    }
-
-    const metrics = {
-
-        bodyWeight:
-            "bodyWeight",
-
-        dailyGain:
-            "dailyGain",
-
-        dailyFeed:
-            "dailyFeed",
-
-        cumulativeFeed:
-            "cumulativeFeed",
-
-        fcr:
-            "fcr",
-
-        mortality:
-            "mortality",
-
-        livability:
-            "livability",
-
-        uniformity10:
-            "uniformity10",
-
-        uniformity15:
-            "uniformity15",
-
-        cv:
-            "cv",
-
-        dailyWater:
-            "dailyWater",
-
-        eggProduction:
-            "eggProduction",
-
-        henDayProduction:
-            "henDayProduction",
-
-        eggWeight:
-            "eggWeight",
-
-        eggMass:
-            "eggMass",
-
-        cumulativeEggs:
-            "cumulativeEggs",
-
-        fertility:
-            "fertility",
-
-        hatchability:
-            "hatchability"
-
-    };
-
-    const result = {
-
-        ageDays:
-            Number(ageDays)
-
-    };
-
-    Object.keys(metrics)
-        .forEach(key => {
-
-            const value =
-                getStandardValueAtAge(
-                    standard,
-                    metrics[key],
-                    ageDays
-                );
-
-            if (value !== null) {
-                result[key] = value;
-            }
-
-        });
-
-    return result;
-}
-
-
-/* =========================================================
-   ACTUAL VS STANDARD
-========================================================= */
-
-function compareStandardValue(
-    actual,
-    standard,
-    metric
-) {
-
-    const actualValue =
-        toFiniteNumber(actual);
-
-    const standardValue =
-        toFiniteNumber(standard);
-
-    if (
-        actualValue === null ||
-        standardValue === null
-    ) {
-
-        return {
-
-            actual: actualValue,
-
-            standard: standardValue,
-
-            difference: null,
-
-            differencePercent: null,
-
-            status: "no-standard"
-
-        };
-    }
-
-    const difference =
-        actualValue -
-        standardValue;
-
-    const differencePercent =
-        standardValue !== 0
-            ? (
-                difference /
-                standardValue
-            ) * 100
-            : null;
-
-    let status =
-        "within-range";
-
-    if (
-        differencePercent !== null &&
-        differencePercent >
-            STANDARD_ENGINE_CONFIG
-                .tolerancePercent
-    ) {
-        status = "above";
-    }
-    else if (
-        differencePercent !== null &&
-        differencePercent <
-            -STANDARD_ENGINE_CONFIG
-                .tolerancePercent
-    ) {
-        status = "below";
-    }
-
-    return {
-
-        actual:
-            roundValue(
-                actualValue,
-                3
-            ),
-
-        standard:
-            roundValue(
-                standardValue,
-                3
-            ),
-
-        difference:
-            roundValue(
-                difference,
-                3
-            ),
-
-        differencePercent:
-            roundValue(
-                differencePercent,
-                2
-            ),
-
-        status,
-
-        metric
-
-    };
-}
-
-
-/* =========================================================
-   METRIC DIRECTION
-========================================================= */
-
-const STANDARD_METRIC_DIRECTION = {
-
-    bodyWeight: "target",
-
-    dailyGain: "higher",
-
-    dailyFeed: "lower",
-
-    cumulativeFeed: "lower",
-
-    fcr: "lower",
-
-    mortality: "lower",
-
-    livability: "higher",
-
-    uniformity10: "higher",
-
-    uniformity15: "higher",
-
-    cv: "lower",
-
-    dailyWater: "target",
-
-    eggProduction: "higher",
-
-    henDayProduction: "higher",
-
-    eggWeight: "target",
-
-    eggMass: "higher",
-
-    cumulativeEggs: "higher",
-
-    fertility: "higher",
-
-    hatchability: "higher"
-
-};
-
-
-/* =========================================================
-   INTERPRET COMPARISON
-========================================================= */
-
-function interpretComparison(
-    metric,
-    comparison
-) {
-
-    if (
-        !comparison ||
-        comparison.status ===
-            "no-standard"
-    ) {
-
-        return {
-
-            status:
-                "no-standard",
-
-            label:
-                "استاندارد موجود نیست"
-
-        };
-    }
-
-    const direction =
-        STANDARD_METRIC_DIRECTION[
-            metric
-        ] || "target";
-
-    if (
-        comparison.status ===
-        "within-range"
-    ) {
-
-        return {
-
-            status:
-                "within-range",
-
-            label:
-                "در محدوده استاندارد"
-
-        };
-    }
-
-    if (direction === "higher") {
-
-        if (
-            comparison.status ===
-            "above"
-        ) {
-
-            return {
-
-                status: "better",
-
-                label:
-                    "بهتر از استاندارد"
-
-            };
-
-        }
-
-        return {
-
-            status: "worse",
-
-            label:
-                "پایین‌تر از استاندارد"
-
-        };
-    }
-
-    if (direction === "lower") {
-
-        if (
-            comparison.status ===
-            "below"
-        ) {
-
-            return {
-
-                status: "better",
-
-                label:
-                    "بهتر از استاندارد"
-
-            };
-
-        }
-
-        return {
-
-            status: "worse",
-
-            label:
-                "بالاتر از استاندارد"
-
-        };
-    }
-
-    return {
-
-        status:
-            comparison.status,
+    broiler: {
 
         label:
-            comparison.status === "above"
-                ? "بالاتر از هدف"
-                : "پایین‌تر از هدف"
+            "ÙØ±Øº Ú¯ÙØ´ØªÛ",
+
+        categories: {
+
+            commercial: {
+
+                label:
+                    "Ú¯ÙØ´ØªÛ ØªØ¬Ø§Ø±Û",
+
+                genetics: {
+
+                    /* -----------------------------
+                       AVIAGEN / ROSS
+                    ----------------------------- */
+
+                    Ross: {
+
+                        company:
+                            "Aviagen",
+
+                        family:
+                            "Ross",
+
+                        status:
+                            "active",
+
+                        products: {
+
+                            "Ross 308": {
+
+                                status:
+                                    "active",
+
+                                commercialType:
+                                    "broiler",
+
+                                parentStock:
+                                    true,
+
+                                fastFeathering:
+                                    true,
+
+                                slowFeathering:
+                                    true,
+
+                                officialDocumentation:
+                                    true,
+
+                                source:
+                                    "Aviagen Ross 308",
+
+                                performancePrograms: [
+
+                                    "Broiler Performance Objectives",
+
+                                    "Broiler Handbook",
+
+                                    "Parent Stock Performance Objectives",
+
+                                    "Parent Stock Handbook"
+
+                                ],
+
+                                standards: {}
+
+                            },
+
+
+                            "Ross 308 FF": {
+
+                                status:
+                                    "active",
+
+                                commercialType:
+                                    "broiler",
+
+                                parentStock:
+                                    true,
+
+                                fastFeathering:
+                                    true,
+
+                                officialDocumentation:
+                                    true,
+
+                                source:
+                                    "Aviagen Ross 308 FF",
+
+                                performancePrograms: [
+
+                                    "Broiler Performance Objectives",
+
+                                    "Parent Stock Performance Objectives - Fast Feathering"
+
+                                ],
+
+                                standards: {}
+
+                            },
+
+
+                            "Ross 708": {
+
+                                status:
+                                    "active",
+
+                                commercialType:
+                                    "broiler",
+
+                                parentStock:
+                                    true,
+
+                                officialDocumentation:
+                                    true,
+
+                                source:
+                                    "Aviagen Ross 708",
+
+                                performancePrograms: [
+
+                                    "Broiler Performance Objectives",
+
+                                    "Parent Stock Performance Objectives"
+
+                                ],
+
+                                standards: {}
+
+                            },
+
+
+                            "Ross 308 AP": {
+
+                                status:
+                                    "active",
+
+                                commercialType:
+                                    "broiler",
+
+                                parentStock:
+                                    true,
+
+                                officialDocumentation:
+                                    true,
+
+                                source:
+                                    "Aviagen Ross 308 AP",
+
+                                performancePrograms: [
+
+                                    "Broiler Performance Objectives",
+
+                                    "Parent Stock Performance Objectives"
+
+                                ],
+
+                                standards: {}
+
+                            }
+
+                        }
+
+                    },
+
+
+                    /* -----------------------------
+                       COBB
+                    ----------------------------- */
+
+                    Cobb: {
+
+                        company:
+                            "Cobb Genetics",
+
+                        family:
+                            "Cobb",
+
+                        status:
+                            "active",
+
+                        products: {
+
+                            "Cobb500": {
+
+                                status:
+                                    "active",
+
+                                commercialType:
+                                    "broiler",
+
+                                parentStock:
+                                    true,
+
+                                officialDocumentation:
+                                    true,
+
+                                source:
+                                    "Cobb Genetics",
+
+                                performancePrograms: [
+
+                                    "Cobb500 Broiler Performance",
+
+                                    "Cobb500 Breeder Performance"
+
+                                ],
+
+                                standards: {}
+
+                            },
+
+
+                            "Cobb800": {
+
+                                status:
+                                    "active",
+
+                                commercialType:
+                                    "broiler",
+
+                                parentStock:
+                                    true,
+
+                                officialDocumentation:
+                                    true,
+
+                                source:
+                                    "Cobb Genetics",
+
+                                performancePrograms: [
+
+                                    "Cobb800 Broiler",
+
+                                    "Cobb800 Breeder"
+
+                                ],
+
+                                standards: {}
+
+                            }
+
+                        }
+
+                    },
+
+
+                    /* -----------------------------
+                       ARBOR ACRES
+                    ----------------------------- */
+
+                    ArborAcres: {
+
+                        company:
+                            "Aviagen",
+
+                        family:
+                            "Arbor Acres",
+
+                        status:
+                            "active",
+
+                        products: {
+
+                            "Arbor Acres Plus": {
+
+                                status:
+                                    "active",
+
+                                commercialType:
+                                    "broiler",
+
+                                parentStock:
+                                    true,
+
+                                officialDocumentation:
+                                    true,
+
+                                source:
+                                    "Aviagen Arbor Acres Plus",
+
+                                standards: {}
+
+                            },
+
+
+                            "Arbor Acres Plus S": {
+
+                                status:
+                                    "active",
+
+                                commercialType:
+                                    "broiler",
+
+                                parentStock:
+                                    true,
+
+                                officialDocumentation:
+                                    true,
+
+                                source:
+                                    "Aviagen Arbor Acres Plus S",
+
+                                standards: {}
+
+                            }
+
+                        }
+
+                    },
+
+
+                    /* -----------------------------
+                       INDIAN RIVER
+                    ----------------------------- */
+
+                    IndianRiver: {
+
+                        company:
+                            "Aviagen",
+
+                        family:
+                            "Indian River",
+
+                        status:
+                            "active",
+
+                        products: {
+
+                            "Indian River": {
+
+                                status:
+                                    "active",
+
+                                commercialType:
+                                    "broiler",
+
+                                parentStock:
+                                    true,
+
+                                officialDocumentation:
+                                    true,
+
+                                source:
+                                    "Aviagen Indian River",
+
+                                performancePrograms: [
+
+                                    "Indian River Broiler",
+
+                                    "Indian River Parent Stock",
+
+                                    "Indian River Parent Stock Fast Feathering"
+
+                                ],
+
+                                standards: {}
+
+                            }
+
+                        }
+
+                    },
+
+
+                    /* -----------------------------
+                       HUBBARD
+                    ----------------------------- */
+
+                    Hubbard: {
+
+                        company:
+                            "Hubbard Breeders",
+
+                        family:
+                            "Hubbard",
+
+                        status:
+                            "active",
+
+                        products: {
+
+                            "Hubbard Efficiency Plus": {
+
+                                status:
+                                    "active",
+
+                                commercialType:
+                                    "broiler",
+
+                                parentStock:
+                                    true,
+
+                                officialDocumentation:
+                                    true,
+
+                                source:
+                                    "Hubbard Breeders",
+
+                                performancePrograms: [
+
+                                    "Efficiency Plus Broiler",
+
+                                    "Efficiency Plus Breeder"
+
+                                ],
+
+                                standards: {}
+
+                            },
+
+
+                            "Hubbard EDGE": {
+
+                                status:
+                                    "active",
+
+                                commercialType:
+                                    "broiler",
+
+                                parentStock:
+                                    true,
+
+                                officialDocumentation:
+                                    true,
+
+                                source:
+                                    "Hubbard Breeders",
+
+                                performancePrograms: [
+
+                                    "EDGE Broiler",
+
+                                    "EDGE Breeder"
+
+                                ],
+
+                                standards: {}
+
+                            }
+
+                        }
+
+                    },
+
+
+                    /* -----------------------------
+                       IRANIAN ARIAN
+                    ----------------------------- */
+
+                    Arian: {
+
+                        company:
+                            "Iranian Poultry Genetics",
+
+                        family:
+                            "Arian",
+
+                        status:
+                            "iran",
+
+                        products: {
+
+                            "Arian": {
+
+                                status:
+                                    "iran",
+
+                                commercialType:
+                                    "broiler",
+
+                                parentStock:
+                                    true,
+
+                                officialDocumentation:
+                                    false,
+
+                                localLine:
+                                    true,
+
+                                source:
+                                    "Iranian Arian genetic line",
+
+                                standards: {},
+
+                                dataClassification:
+                                    "Iranian/local reference required"
+
+                            }
+
+                        }
+
+                    }
+
+                }
+
+            },
+
+
+            /* =================================================
+               SPECIAL / RESEARCH BROILER
+            ================================================= */
+
+            other: {
+
+                label:
+                    "Ø³Ø§ÛØ± / ØªØ­ÙÛÙØ§ØªÛ",
+
+                genetics: {}
+
+            }
+
+        }
+
+    },
+
+
+    /* =====================================================
+       2. LAYERS
+    ===================================================== */
+
+    layer: {
+
+        label:
+            "ÙØ±Øº ØªØ®ÙâÚ¯Ø°Ø§Ø±",
+
+        categories: {
+
+            commercial: {
+
+                label:
+                    "ØªØ®ÙâÚ¯Ø°Ø§Ø± ØªØ¬Ø§Ø±Û",
+
+                genetics: {
+
+
+                    /* =================================================
+                       HY-LINE
+                    ================================================= */
+
+                    HyLine: {
+
+                        company:
+                            "Hy-Line International",
+
+                        family:
+                            "Hy-Line",
+
+                        status:
+                            "active",
+
+                        products: {
+
+                            "W-36": {
+
+                                status:
+                                    "active",
+
+                                eggColor:
+                                    "white",
+
+                                officialDocumentation:
+                                    true,
+
+                                parentStock:
+                                    true,
+
+                                source:
+                                    "Hy-Line W-36",
+
+                                standards: {}
+
+                            },
+
+
+                            "W-80": {
+
+                                status:
+                                    "active",
+
+                                eggColor:
+                                    "white",
+
+                                officialDocumentation:
+                                    true,
+
+                                parentStock:
+                                    true,
+
+                                source:
+                                    "Hy-Line W-80",
+
+                                standards: {}
+
+                            },
+
+
+                            "W-80 Plus": {
+
+                                status:
+                                    "active",
+
+                                eggColor:
+                                    "white",
+
+                                officialDocumentation:
+                                    true,
+
+                                parentStock:
+                                    true,
+
+                                source:
+                                    "Hy-Line W-80 Plus",
+
+                                standards: {}
+
+                            },
+
+
+                            "W-80 Pro": {
+
+                                status:
+                                    "active",
+
+                                eggColor:
+                                    "white",
+
+                                officialDocumentation:
+                                    true,
+
+                                parentStock:
+                                    true,
+
+                                source:
+                                    "Hy-Line W-80 Pro",
+
+                                standards: {}
+
+                            },
+
+
+                            "Brown": {
+
+                                status:
+                                    "active",
+
+                                eggColor:
+                                    "brown",
+
+                                officialDocumentation:
+                                    true,
+
+                                parentStock:
+                                    true,
+
+                                source:
+                                    "Hy-Line Brown",
+
+                                standards: {}
+
+                            },
+
+
+                            "Silver Brown": {
+
+                                status:
+                                    "active",
+
+                                eggColor:
+                                    "brown",
+
+                                officialDocumentation:
+                                    true,
+
+                                parentStock:
+                                    true,
+
+                                source:
+                                    "Hy-Line Silver Brown",
+
+                                standards: {}
+
+                            },
+
+
+                            "Sonia / Gray": {
+
+                                status:
+                                    "active",
+
+                                officialDocumentation:
+                                    true,
+
+                                source:
+                                    "Hy-Line Sonia / Gray",
+
+                                standards: {}
+
+                            },
+
+
+                            "Pink": {
+
+                                status:
+                                    "active",
+
+                                officialDocumentation:
+                                    true,
+
+                                source:
+                                    "Hy-Line Pink",
+
+                                standards: {}
+
+                            }
+
+                        }
+
+                    },
+
+
+                    /* =================================================
+                       HENDRIX GENETICS
+                    ================================================= */
+
+                    Hendrix: {
+
+                        company:
+                            "Hendrix Genetics",
+
+                        family:
+                            "Hendrix Genetics Layer",
+
+                        status:
+                            "active",
+
+                        products: {
+
+
+                            /* ISA */
+
+                            "ISA Brown": {
+
+                                brand:
+                                    "ISA",
+
+                                status:
+                                    "active",
+
+                                eggColor:
+                                    "brown",
+
+                                officialDocumentation:
+                                    true,
+
+                                source:
+                                    "ISA Brown",
+
+                                standards: {}
+
+                            },
+
+
+                            "ISA White": {
+
+                                brand:
+                                    "ISA",
+
+                                status:
+                                    "active",
+
+                                eggColor:
+                                    "white",
+
+                                officialDocumentation:
+                                    true,
+
+                                source:
+                                    "ISA White",
+
+                                standards: {}
+
+                            },
+
+
+                            /* DEKALB */
+
+                            "Dekalb White": {
+
+                                brand:
+                                    "Dekalb",
+
+                                status:
+                                    "active",
+
+                                eggColor:
+                                    "white",
+
+                                officialDocumentation:
+                                    true,
+
+                                source:
+                                    "Dekalb White",
+
+                                standards: {}
+
+                            },
+
+
+                            "Dekalb Brown": {
+
+                                brand:
+                                    "Dekalb",
+
+                                status:
+                                    "active",
+
+                                eggColor:
+                                    "brown",
+
+                                officialDocumentation:
+                                    true,
+
+                                source:
+                                    "Dekalb Brown",
+
+                                standards: {}
+
+                            },
+
+
+                            /* BOVANS */
+
+                            "Bovans White": {
+
+                                brand:
+                                    "Bovans",
+
+                                status:
+                                    "active",
+
+                                eggColor:
+                                    "white",
+
+                                officialDocumentation:
+                                    true,
+
+                                source:
+                                    "Bovans White",
+
+                                standards: {}
+
+                            },
+
+
+                            "Bovans Brown": {
+
+                                brand:
+                                    "Bovans",
+
+                                status:
+                                    "active",
+
+                                eggColor:
+                                    "brown",
+
+                                officialDocumentation:
+                                    true,
+
+                                source:
+                                    "Bovans Brown",
+
+                                standards: {}
+
+                            },
+
+
+                            "Bovans Black": {
+
+                                brand:
+                                    "Bovans",
+
+                                status:
+                                    "active",
+
+                                eggColor:
+                                    "brown",
+
+                                officialDocumentation:
+                                    true,
+
+                                source:
+                                    "Bovans Black",
+
+                                standards: {}
+
+                            },
+
+
+                            /* SHAVER */
+
+                            "Shaver White": {
+
+                                brand:
+                                    "Shaver",
+
+                                status:
+                                    "active",
+
+                                eggColor:
+                                    "white",
+
+                                officialDocumentation:
+                                    true,
+
+                                source:
+                                    "Shaver White",
+
+                                standards: {}
+
+                            },
+
+
+                            "Shaver Brown": {
+
+                                brand:
+                                    "Shaver",
+
+                                status:
+                                    "active",
+
+                                eggColor:
+                                    "brown",
+
+                                officialDocumentation:
+                                    true,
+
+                                source:
+                                    "Shaver Brown",
+
+                                standards: {}
+
+                            },
+
+
+                            "Shaver Black": {
+
+                                brand:
+                                    "Shaver",
+
+                                status:
+                                    "active",
+
+                                eggColor:
+                                    "brown",
+
+                                officialDocumentation:
+                                    true,
+
+                                source:
+                                    "Shaver Black",
+
+                                standards: {}
+
+                            },
+
+
+                            /* BABCOCK */
+
+                            "Babcock White": {
+
+                                brand:
+                                    "Babcock",
+
+                                status:
+                                    "active",
+
+                                eggColor:
+                                    "white",
+
+                                officialDocumentation:
+                                    true,
+
+                                source:
+                                    "Babcock White",
+
+                                standards: {}
+
+                            },
+
+
+                            "Babcock Brown": {
+
+                                brand:
+                                    "Babcock",
+
+                                status:
+                                    "active",
+
+                                eggColor:
+                                    "brown",
+
+                                officialDocumentation:
+                                    true,
+
+                                source:
+                                    "Babcock Brown",
+
+                                standards: {}
+
+                            },
+
+
+                            /* HISEX */
+
+                            "Hisex White": {
+
+                                brand:
+                                    "Hisex",
+
+                                status:
+                                    "active",
+
+                                eggColor:
+                                    "white",
+
+                                officialDocumentation:
+                                    true,
+
+                                source:
+                                    "Hisex White",
+
+                                standards: {}
+
+                            },
+
+
+                            "Hisex Brown": {
+
+                                brand:
+                                    "Hisex",
+
+                                status:
+                                    "active",
+
+                                eggColor:
+                                    "brown",
+
+                                officialDocumentation:
+                                    true,
+
+                                source:
+                                    "Hisex Brown",
+
+                                standards: {}
+
+                            },
+
+
+                            /* WARREN */
+
+                            "Warren White": {
+
+                                brand:
+                                    "Warren",
+
+                                status:
+                                    "active",
+
+                                eggColor:
+                                    "white",
+
+                                officialDocumentation:
+                                    true,
+
+                                source:
+                                    "Warren White",
+
+                                standards: {}
+
+                            },
+
+
+                            "Warren Brown": {
+
+                                brand:
+                                    "Warren",
+
+                                status:
+                                    "active",
+
+                                eggColor:
+                                    "brown",
+
+                                officialDocumentation:
+                                    true,
+
+                                source:
+                                    "Warren Brown",
+
+                                standards: {}
+
+                            }
+
+                        }
+
+                    },
+
+
+                    /* =================================================
+                       LOHMANN
+                    ================================================= */
+
+                    Lohmann: {
+
+                        company:
+                            "Lohmann Breeders",
+
+                        family:
+                            "Lohmann",
+
+                        status:
+                            "active",
+
+                        products: {
+
+                            "Lohmann Brown-Classic": {
+
+                                status:
+                                    "active",
+
+                                eggColor:
+                                    "brown",
+
+                                officialDocumentation:
+                                    true,
+
+                                source:
+                                    "Lohmann Brown Classic",
+
+                                standards: {}
+
+                            },
+
+
+                            "Lohmann Brown-Lite": {
+
+                                status:
+                                    "active",
+
+                                eggColor:
+                                    "brown",
+
+                                officialDocumentation:
+                                    true,
+
+                                source:
+                                    "Lohmann Brown Lite",
+
+                                standards: {}
+
+                            },
+
+
+                            "Lohmann Brown-Extra": {
+
+                                status:
+                                    "active",
+
+                                eggColor:
+                                    "brown",
+
+                                officialDocumentation:
+                                    true,
+
+                                source:
+                                    "Lohmann Brown Extra",
+
+                                standards: {}
+
+                            },
+
+
+                            "Lohmann LSL-Classic": {
+
+                                status:
+                                    "active",
+
+                                eggColor:
+                                    "white",
+
+                                officialDocumentation:
+                                    true,
+
+                                source:
+                                    "Lohmann LSL Classic",
+
+                                standards: {}
+
+                            },
+
+
+                            "Lohmann LSL-Lite": {
+
+                                status:
+                                    "active",
+
+                                eggColor:
+                                    "white",
+
+                                officialDocumentation:
+                                    true,
+
+                                source:
+                                    "Lohmann LSL Lite",
+
+                                standards: {}
+
+                            },
+
+
+                            "Lohmann LSL-Extra": {
+
+                                status:
+                                    "active",
+
+                                eggColor:
+                                    "white",
+
+                                officialDocumentation:
+                                    true,
+
+                                source:
+                                    "Lohmann LSL Extra",
+
+                                standards: {}
+
+                            },
+
+
+                            "Lohmann Sandy": {
+
+                                status:
+                                    "active",
+
+                                eggColor:
+                                    "tinted",
+
+                                officialDocumentation:
+                                    true,
+
+                                source:
+                                    "Lohmann Sandy",
+
+                                standards: {}
+
+                            },
+
+
+                            "Lohmann Tradition": {
+
+                                status:
+                                    "active",
+
+                                eggColor:
+                                    "brown",
+
+                                officialDocumentation:
+                                    true,
+
+                                source:
+                                    "Lohmann Tradition",
+
+                                standards: {}
+
+                            }
+
+                        }
+
+                    },
+
+
+                    /* =================================================
+                       NOVOGEN
+                    ================================================= */
+
+                    NOVOgen: {
+
+                        company:
+                            "NOVOgen",
+
+                        family:
+                            "NOVOgen",
+
+                        status:
+                            "active",
+
+                        products: {
+
+                            "NOVOgen Brown": {
+
+                                status:
+                                    "active",
+
+                                eggColor:
+                                    "brown",
+
+                                officialDocumentation:
+                                    true,
+
+                                source:
+                                    "NOVOgen Brown",
+
+                                standards: {}
+
+                            },
+
+
+                            "NOVOgen White": {
+
+                                status:
+                                    "active",
+
+                                eggColor:
+                                    "white",
+
+                                officialDocumentation:
+                                    true,
+
+                                source:
+                                    "NOVOgen White",
+
+                                standards: {}
+
+                            }
+
+                        }
+
+                    },
+
+
+                    /* =================================================
+                       H&N
+                    ================================================= */
+
+                    HN: {
+
+                        company:
+                            "H&N International",
+
+                        family:
+                            "H&N",
+
+                        status:
+                            "active",
+
+                        products: {
+
+                            "Nick Chick": {
+
+                                status:
+                                    "active",
+
+                                officialDocumentation:
+                                    true,
+
+                                source:
+                                    "H&N Nick Chick",
+
+                                standards: {}
+
+                            }
+
+                        }
+
+                    },
+
+
+                    /* =================================================
+                       TETRA
+                    ================================================= */
+
+                    TETRA: {
+
+                        company:
+                            "BÃ¡bolna TETRA",
+
+                        family:
+                            "TETRA",
+
+                        status:
+                            "active",
+
+                        products: {
+
+                            "TETRA Brown": {
+
+                                status:
+                                    "active",
+
+                                eggColor:
+                                    "brown",
+
+                                officialDocumentation:
+                                    true,
+
+                                source:
+                                    "TETRA Brown",
+
+                                standards: {}
+
+                            }
+
+                        }
+
+                    }
+
+                }
+
+            }
+
+        }
+
+    },
+
+
+    /* =====================================================
+       3. PULLET
+       ===================================================== */
+
+    pullet: {
+
+        label:
+            "Ù¾ÙÙØª",
+
+        description:
+            "Pullet standards are selected according to the commercial layer genetic line.",
+
+        inheritedFromLayerGenetics:
+            true,
+
+        availableGenetics: [
+
+            "HyLine",
+            "Hendrix",
+            "Lohmann",
+            "NOVOgen",
+            "HN",
+            "TETRA"
+
+        ],
+
+        rule:
+            "Pullet standard must match the exact layer strain and production program."
+
+    },
+
+
+    /* =====================================================
+       4. BROILER BREEDER
+       ===================================================== */
+
+    breeder: {
+
+        label:
+            "ÙØ±Øº ÙØ§Ø¯Ø±",
+
+        categories: {
+
+            broilerBreeder: {
+
+                label:
+                    "ÙØ±Øº ÙØ§Ø¯Ø± Ú¯ÙØ´ØªÛ",
+
+                genetics: {
+
+                    Ross: {
+
+                        products: [
+
+                            "Ross 308 Parent Stock",
+
+                            "Ross 308 FF Parent Stock",
+
+                            "Ross 708 Parent Stock",
+
+                            "Ross 308 AP Parent Stock"
+
+                        ]
+
+                    },
+
+
+                    Cobb: {
+
+                        products: [
+
+                            "Cobb500 Parent Stock",
+
+                            "Cobb800 Parent Stock",
+
+                            "MX Male"
+
+                        ]
+
+                    },
+
+
+                    ArborAcres: {
+
+                        products: [
+
+                            "Arbor Acres Plus Parent Stock",
+
+                            "Arbor Acres Plus S Parent Stock"
+
+                        ]
+
+                    },
+
+
+                    IndianRiver: {
+
+                        products: [
+
+                            "Indian River Parent Stock",
+
+                            "Indian River Fast Feathering Parent Stock"
+
+                        ]
+
+                    },
+
+
+                    Hubbard: {
+
+                        products: [
+
+                            "Hubbard Efficiency Plus Breeder",
+
+                            "Hubbard EDGE Breeder",
+
+                            "Hubbard JA57 Breeder",
+
+                            "Hubbard JA57Ki Breeder"
+
+                        ]
+
+                    }
+
+                }
+
+            },
+
+
+            layerBreeder: {
+
+                label:
+                    "ÙØ±Øº ÙØ§Ø¯Ø± ØªØ®ÙâÚ¯Ø°Ø§Ø±",
+
+                rule:
+                    "Layer parent-stock standard must be selected from the corresponding layer breeder documentation.",
+
+                genetics: {
+
+                    HyLine: [
+
+                        "W-36 Parent Stock",
+
+                        "W-80 Parent Stock",
+
+                        "W-80 Plus Parent Stock",
+
+                        "W-80 Pro Parent Stock",
+
+                        "Brown Parent Stock",
+
+                        "Silver Brown Parent Stock"
+
+                    ],
+
+
+                    Hendrix: [
+
+                        "ISA Parent Stock",
+
+                        "Dekalb Parent Stock",
+
+                        "Bovans Parent Stock",
+
+                        "Shaver Parent Stock",
+
+                        "Babcock Parent Stock",
+
+                        "Hisex Parent Stock"
+
+                    ],
+
+
+                    Lohmann: [
+
+                        "Lohmann Parent Stock"
+
+                    ]
+
+                }
+
+            }
+
+        }
+
+    }
+
+};
+
+
+/* =========================================================
+   STANDARD METRIC DEFINITIONS
+========================================================= */
+
+const STANDARD_METRICS = {
+
+    /* -------- Broiler -------- */
+
+    age:
+        "Ø³Ù",
+
+    bodyWeight:
+        "ÙØ²Ù Ø¨Ø¯Ù",
+
+    dailyGain:
+        "Ø§ÙØ²Ø§ÛØ´ ÙØ²Ù Ø±ÙØ²Ø§ÙÙ",
+
+    weeklyGain:
+        "Ø§ÙØ²Ø§ÛØ´ ÙØ²Ù ÙÙØªÚ¯Û",
+
+    dailyFeed:
+        "ÙØµØ±Ù Ø±ÙØ²Ø§ÙÙ Ø¯Ø§Ù",
+
+    weeklyFeed:
+        "ÙØµØ±Ù ÙÙØªÚ¯Û Ø¯Ø§Ù",
+
+    cumulativeFeed:
+        "ÙØµØ±Ù ØªØ¬ÙØ¹Û Ø¯Ø§Ù",
+
+    fcr:
+        "Ø¶Ø±ÛØ¨ ØªØ¨Ø¯ÛÙ ØºØ°Ø§ÛÛ",
+
+    livability:
+        "Ø²ÙØ¯ÙâÙØ§ÙÛ",
+
+    mortality:
+        "ØªÙÙØ§Øª",
+
+    uniformity:
+        "ÛÚ©ÙÙØ§Ø®ØªÛ",
+
+    cv:
+        "CV%",
+
+    /* -------- Layer -------- */
+
+    henDayProduction:
+        "ØªÙÙÛØ¯ Ø¨Ù Ø§Ø²Ø§Û ÙØ±Øº Ø±ÙØ²",
+
+    henHousedProduction:
+        "ØªÙÙÛØ¯ Ø¨Ù Ø§Ø²Ø§Û ÙØ±Øº Ø§ÙÙÛÙ",
+
+    eggMass:
+        "Egg Mass",
+
+    eggWeight:
+        "ÙØ²Ù ØªØ®ÙâÙØ±Øº",
+
+    feedPerEggMass:
+        "Ø¯Ø§Ù Ø¨Ù Ø§Ø²Ø§Û Egg Mass",
+
+    peakProduction:
+        "Ù¾ÛÚ© ØªÙÙÛØ¯",
+
+    peakAge:
+        "Ø³Ù Ù¾ÛÚ©",
+
+    cumulativeEggs:
+        "ØªØ¹Ø¯Ø§Ø¯ ØªØ®Ù ØªØ¬ÙØ¹Û",
+
+    /* -------- Breeder -------- */
+
+    fertility:
+        "ÙØ·ÙÙâØ¯Ø§Ø±Û",
+
+    hatchability:
+        "ÙØ§Ø¨ÙÛØª Ø¬ÙØ¬ÙâØ¯Ø±Ø¢ÙØ±Û",
+
+    hatchOfFertileEggs:
+        "ÙØ§Ø¨ÙÛØª Ø¬ÙØ¬ÙâØ¯Ø±Ø¢ÙØ±Û Ø§Ø² ØªØ®Ù ÙØ·ÙÙâØ¯Ø§Ø±",
+
+    settableEggs:
+        "ØªØ®Ù ÙØ§Ø¨Ù Ø¬ÙØ¬ÙâÚ©Ø´Û",
+
+    maleFemaleRatio:
+        "ÙØ³Ø¨Øª ÙØ± Ø¨Ù ÙØ§Ø¯Ù"
+
+};
+
+
+/* =========================================================
+   STANDARD SOURCE TYPES
+========================================================= */
+
+const STANDARD_SOURCE_TYPES = {
+
+    officialPerformanceObjective:
+        "Official Performance Objectives",
+
+    officialManagementGuide:
+        "Official Management Guide",
+
+    officialNutritionGuide:
+        "Official Nutrition Guide",
+
+    officialParentStockGuide:
+        "Official Parent Stock Guide",
+
+    regionalOfficialGuide:
+        "Official Regional Guide",
+
+    researchReference:
+        "Research Reference",
+
+    iranianLocalReference:
+        "Iranian Local Reference"
+
+};
+
+
+/* =========================================================
+   HOUSING PROGRAMS
+========================================================= */
+
+const HOUSING_PROGRAMS = {
+
+    conventional:
+        "Ø³ÛØ³ØªÙ ÙØªØ¹Ø§Ø±Ù",
+
+    alternative:
+        "Ø³ÛØ³ØªÙ Ø¬Ø§ÛÚ¯Ø²ÛÙ",
+
+    cage:
+        "ÙÙØ³",
+
+    aviary:
+        "Ø¢ÙÛØ§Ø±Û",
+
+    freeRange:
+        "Ø¢Ø²Ø§Ø¯ / Free Range",
+
+    floor:
+        "Ø¨Ø³ØªØ±",
+
+    climateSpecific:
+        "Ø¨Ø±ÙØ§ÙÙ Ø§ÙÙÛÙ Ø®Ø§Øµ"
+
+};
+
+
+/* =========================================================
+   STANDARD VERSION OBJECT
+========================================================= */
+
+function createStandardRecord({
+
+    version = null,
+
+    publicationDate = null,
+
+    sourceType =
+        "officialPerformanceObjective",
+
+    source = null,
+
+    region = "international",
+
+    housing = "all",
+
+    sex = "mixed",
+
+    notes = ""
+
+} = {}) {
+
+    return {
+
+        version,
+
+        publicationDate,
+
+        sourceType,
+
+        source,
+
+        region,
+
+        housing,
+
+        sex,
+
+        notes,
+
+        data: {}
 
     };
+
 }
 
 
 /* =========================================================
-   BUILD METRIC COMPARISON
+   GENERIC ACCESS FUNCTIONS
 ========================================================= */
 
-function buildMetricComparison(
+
+/*
+  ÙÙØ¹âÙØ§Û Ø§ØµÙÛ Ø¨Ø±ÙØ§ÙÙ
+*/
+
+function getProductionTypes() {
+
+    return [
+
+        {
+            id: "broiler",
+            label: "Ú¯ÙØ´ØªÛ"
+        },
+
+        {
+            id: "layer",
+            label: "ØªØ®ÙâÚ¯Ø°Ø§Ø±"
+        },
+
+        {
+            id: "pullet",
+            label: "Ù¾ÙÙØª"
+        },
+
+        {
+            id: "breeder",
+            label: "ÙØ±Øº ÙØ§Ø¯Ø±"
+        }
+
+    ];
+
+}
+
+
+/*
+  Ø´Ø±Ú©ØªâÙØ§Û ÚÙØªÛÚ©Û Ú¯ÙØ´ØªÛ
+*/
+
+function getBroilerGenetics() {
+
+    return [
+
+        "Ross",
+
+        "Cobb",
+
+        "ArborAcres",
+
+        "IndianRiver",
+
+        "Hubbard",
+
+        "Arian"
+
+    ];
+
+}
+
+
+/*
+  Ø¨Ø±ÙØ¯ÙØ§Û ØªØ®ÙâÚ¯Ø°Ø§Ø±
+*/
+
+function getLayerGenetics() {
+
+    return [
+
+        "HyLine",
+
+        "Hendrix",
+
+        "Lohmann",
+
+        "NOVOgen",
+
+        "HN",
+
+        "TETRA"
+
+    ];
+
+}
+
+
+/*
+  ÙØ­ØµÙÙØ§Øª ÛÚ© ÚÙØªÛÚ©
+*/
+
+function getProducts(
     type,
-    metric,
+    genetics
+) {
+
+    try {
+
+        const source =
+            POULTRY_STANDARDS
+                [type]
+                .categories
+                .commercial
+                .genetics
+                [genetics];
+
+        if (!source) {
+
+            return [];
+
+        }
+
+        return Object.keys(
+            source.products || {}
+        );
+
+    } catch (error) {
+
+        return [];
+
+    }
+
+}
+
+
+/*
+  Ø§Ø·ÙØ§Ø¹Ø§Øª ÙØ­ØµÙÙ
+*/
+
+function getProduct(
+    type,
+    genetics,
+    product
+) {
+
+    try {
+
+        return POULTRY_STANDARDS
+            [type]
+            .categories
+            .commercial
+            .genetics
+            [genetics]
+            .products
+            [product] || null;
+
+    } catch (error) {
+
+        return null;
+
+    }
+
+}
+
+
+/*
+  ØªØ´Ø®ÛØµ Ø§ÛÙÚ©Ù ÙØ­ØµÙÙ Ø§Ø³ØªØ§ÙØ¯Ø§Ø±Ø¯ Ø±Ø³ÙÛ Ø¯Ø§Ø±Ø¯
+*/
+
+function hasOfficialDocumentation(
+    type,
+    genetics,
+    product
+) {
+
+    const item =
+        getProduct(
+            type,
+            genetics,
+            product
+        );
+
+    return Boolean(
+        item &&
+        item.officialDocumentation
+    );
+
+}
+
+
+/*
+  ÙÙØ§ÛØ³Ù Ø¯Ù ÙÙØ¯Ø§Ø±
+*/
+
+function compareMetric(
     actual,
     standard
 ) {
 
-    const comparison =
-        compareStandardValue(
-            actual,
-            standard,
-            metric
-        );
-
-    const interpretation =
-        interpretComparison(
-            metric,
-            comparison
-        );
-
-    return {
-
-        ...comparison,
-
-        ...interpretation
-
-    };
-}
-
-
-/* =========================================================
-   WEEKLY STANDARD COMPARISON
-========================================================= */
-
-function buildWeeklyStandardComparison(
-    type,
-    geneticsId,
-    strain,
-    ageDays,
-    actualMetrics = {}
-) {
-
-    const standard =
-        getStandardAtAge(
-            type,
-            geneticsId,
-            strain,
-            ageDays
-        );
-
-    if (!standard) {
-
-        return {
-
-            available: false,
-
-            ageDays:
-                Number(ageDays),
-
-            standard: null,
-
-            comparisons: {},
-
-            message:
-                "استاندارد معتبر برای این ژنتیک و سن موجود نیست."
-
-        };
-    }
-
-    const comparisons = {};
-
-    Object.keys(
-        actualMetrics
-    )
-    .forEach(metric => {
-
-        comparisons[metric] =
-            buildMetricComparison(
-                type,
-                metric,
-                actualMetrics[metric],
-                standard[metric]
-            );
-
-    });
-
-    return {
-
-        available: true,
-
-        ageDays:
-            Number(ageDays),
-
-        standard,
-
-        comparisons
-
-    };
-}
-
-
-/* =========================================================
-   BROILER FCR
-========================================================= */
-
-function calculateBroilerFCR({
-    feedKg,
-    openingBirds,
-    closingBirds,
-    openingAverageWeightG,
-    closingAverageWeightG
-} = {}) {
-
-    const feed =
-        toFiniteNumber(feedKg);
-
-    const openingBirdCount =
-        toFiniteNumber(openingBirds);
-
-    const closingBirdCount =
-        toFiniteNumber(closingBirds);
-
-    const openingWeight =
-        toFiniteNumber(
-            openingAverageWeightG
-        );
-
-    const closingWeight =
-        toFiniteNumber(
-            closingAverageWeightG
-        );
-
     if (
-        feed === null ||
-        openingBirdCount === null ||
-        closingBirdCount === null ||
-        openingWeight === null ||
-        closingWeight === null
+        actual === null ||
+        actual === undefined ||
+        standard === null ||
+        standard === undefined
     ) {
 
         return {
-
-            valid: false,
-
-            value: null,
-
-            reason:
-                "اطلاعات کافی برای محاسبه FCR وجود ندارد."
-
-        };
-    }
-
-    if (
-        feed < 0 ||
-        openingBirdCount <= 0 ||
-        closingBirdCount <= 0 ||
-        openingWeight < 0 ||
-        closingWeight <= 0
-    ) {
-
-        return {
-
-            valid: false,
-
-            value: null,
-
-            reason:
-                "مقادیر ورودی FCR معتبر نیستند."
-
-        };
-    }
-
-    const openingBiomassKg =
-        (
-            openingBirdCount *
-            openingWeight
-        ) / 1000;
-
-    const closingBiomassKg =
-        (
-            closingBirdCount *
-            closingWeight
-        ) / 1000;
-
-    const gainKg =
-        closingBiomassKg -
-        openingBiomassKg;
-
-    if (gainKg <= 0) {
-
-        return {
-
-            valid: false,
-
-            value: null,
-
-            openingBiomassKg,
-
-            closingBiomassKg,
-
-            gainKg,
-
-            reason:
-                "افزایش زیست‌توده مثبت نیست."
-
-        };
-    }
-
-    const fcr =
-        feed /
-        gainKg;
-
-    return {
-
-        valid:
-            Number.isFinite(fcr),
-
-        value:
-            roundValue(
-                fcr,
-                STANDARD_ENGINE_CONFIG
-                    .fcrDecimals
-            ),
-
-        feedKg:
-            roundValue(feed, 3),
-
-        openingBiomassKg:
-            roundValue(
-                openingBiomassKg,
-                3
-            ),
-
-        closingBiomassKg:
-            roundValue(
-                closingBiomassKg,
-                3
-            ),
-
-        gainKg:
-            roundValue(
-                gainKg,
-                3
-            )
-
-    };
-}
-
-
-/* =========================================================
-   ESTIMATED FCR
-========================================================= */
-
-function calculateFCRFromFeedPerBird({
-    feedPerBirdPerDayG,
-    days,
-    openingAverageWeightG,
-    closingAverageWeightG
-} = {}) {
-
-    const feed =
-        toFiniteNumber(
-            feedPerBirdPerDayG
-        );
-
-    const numberOfDays =
-        toFiniteNumber(days);
-
-    const openingWeight =
-        toFiniteNumber(
-            openingAverageWeightG
-        );
-
-    const closingWeight =
-        toFiniteNumber(
-            closingAverageWeightG
-        );
-
-    if (
-        feed === null ||
-        numberOfDays === null ||
-        openingWeight === null ||
-        closingWeight === null
-    ) {
-
-        return {
-
-            valid: false,
-
-            estimated: true,
-
-            value: null
-
-        };
-    }
-
-    const feedConsumedG =
-        feed *
-        numberOfDays;
-
-    const gainG =
-        closingWeight -
-        openingWeight;
-
-    if (gainG <= 0) {
-
-        return {
-
-            valid: false,
-
-            estimated: true,
-
-            value: null
-
-        };
-    }
-
-    return {
-
-        valid: true,
-
-        estimated: true,
-
-        value:
-            roundValue(
-                feedConsumedG /
-                gainG,
-                STANDARD_ENGINE_CONFIG
-                    .fcrDecimals
-            ),
-
-        feedConsumedG,
-
-        gainG
-
-    };
-}
-
-
-/* =========================================================
-   LAYER FCR
-========================================================= */
-
-function calculateLayerFCR({
-    feedKg,
-    eggsProduced,
-    averageEggWeightG
-} = {}) {
-
-    const feed =
-        toFiniteNumber(feedKg);
-
-    const eggs =
-        toFiniteNumber(eggsProduced);
-
-    const eggWeight =
-        toFiniteNumber(
-            averageEggWeightG
-        );
-
-    if (
-        feed === null ||
-        eggs === null ||
-        eggWeight === null
-    ) {
-
-        return {
-
-            valid: false,
-
-            value: null
-
-        };
-    }
-
-    if (
-        feed < 0 ||
-        eggs < 0 ||
-        eggWeight <= 0
-    ) {
-
-        return {
-
-            valid: false,
-
-            value: null
-
-        };
-    }
-
-    const eggMassKg =
-        (
-            eggs *
-            eggWeight
-        ) / 1000;
-
-    if (eggMassKg <= 0) {
-
-        return {
-
-            valid: false,
-
-            value: null
-
-        };
-    }
-
-    const fcr =
-        feed /
-        eggMassKg;
-
-    return {
-
-        valid: true,
-
-        value:
-            roundValue(
-                fcr,
-                STANDARD_ENGINE_CONFIG
-                    .fcrDecimals
-            ),
-
-        eggMassKg:
-            roundValue(
-                eggMassKg,
-                3
-            )
-
-    };
-}
-
-
-/* =========================================================
-   EGG MASS
-========================================================= */
-
-function calculateEggMass({
-    eggProductionPercent,
-    averageEggWeightG
-} = {}) {
-
-    const production =
-        toFiniteNumber(
-            eggProductionPercent
-        );
-
-    const eggWeight =
-        toFiniteNumber(
-            averageEggWeightG
-        );
-
-    if (
-        production === null ||
-        eggWeight === null
-    ) {
-        return null;
-    }
-
-    if (
-        production < 0 ||
-        production > 100 ||
-        eggWeight <= 0
-    ) {
-        return null;
-    }
-
-    return roundValue(
-        (
-            production / 100
-        ) *
-        eggWeight,
-        2
-    );
-}
-
-
-/* =========================================================
-   FCR COMPARISON
-========================================================= */
-
-function buildFCRComparison(
-    productionType,
-    actualFCR,
-    standardFCR
-) {
-
-    if (
-        actualFCR === null ||
-        actualFCR === undefined
-    ) {
-
-        return {
-
-            available: false,
-
-            actual: null,
-
-            standard:
-                toFiniteNumber(
-                    standardFCR
-                ),
 
             difference: null,
 
-            differencePercent: null,
-
-            status: "no-actual"
-
-        };
-    }
-
-    if (
-        standardFCR === null ||
-        standardFCR === undefined
-    ) {
-
-        return {
-
-            available: true,
-
-            actual:
-                roundValue(
-                    actualFCR,
-                    3
-                ),
-
-            standard: null,
-
-            difference: null,
-
-            differencePercent: null,
+            percentage: null,
 
             status: "no-standard"
 
         };
+
     }
+
+
+    const a =
+        Number(actual);
+
+    const s =
+        Number(standard);
+
+
+    if (
+        !Number.isFinite(a) ||
+        !Number.isFinite(s) ||
+        s === 0
+    ) {
+
+        return {
+
+            difference: null,
+
+            percentage: null,
+
+            status: "invalid"
+
+        };
+
+    }
+
+
+    const difference =
+        a - s;
+
+
+    const percentage =
+        difference / s * 100;
+
 
     return {
 
-        available: true,
+        difference,
 
-        ...buildMetricComparison(
-            productionType,
-            "fcr",
-            actualFCR,
-            standardFCR
-        )
+        percentage,
+
+        status:
+            percentage > 5
+                ? "above"
+
+                : percentage < -5
+                    ? "below"
+
+                    : "within-range"
 
     };
+
 }
 
 
 /* =========================================================
-   ACTUAL VS STANDARD SERIES
+   STANDARD DATA VALIDATION
 ========================================================= */
 
-function buildActualVsStandardSeries(
-    type,
-    geneticsId,
-    strain,
-    actualRecords,
-    metric
+function validateStandardRecord(
+    record
 ) {
 
-    if (
-        !Array.isArray(
-            actualRecords
-        )
-    ) {
-        return [];
-    }
-
-    const standard =
-        getStandard(
-            type,
-            geneticsId,
-            strain
-        );
-
-    return actualRecords.map(
-        record => {
-
-            const age =
-                Number(
-                    record.ageDays ??
-                    record.age ??
-                    record.days
-                );
-
-            const actual =
-                toFiniteNumber(
-                    record[metric]
-                );
-
-            const standardValue =
-                standard
-                    ? getStandardValueAtAge(
-                        standard,
-                        metric,
-                        age
-                    )
-                    : null;
-
-            return {
-
-                ageDays:
-                    Number.isFinite(age)
-                        ? age
-                        : null,
-
-                actual,
-
-                standard:
-                    standardValue,
-
-                difference:
-                    actual !== null &&
-                    standardValue !== null
-                        ? roundValue(
-                            actual -
-                            standardValue,
-                            3
-                        )
-                        : null,
-
-                differencePercent:
-                    actual !== null &&
-                    standardValue !== null &&
-                    standardValue !== 0
-                        ? roundValue(
-                            (
-                                (
-                                    actual -
-                                    standardValue
-                                ) /
-                                standardValue
-                            ) * 100,
-                            2
-                        )
-                        : null
-
-            };
-
-        }
-    );
-}
-
-
-/* =========================================================
-   STANDARD SERIES
-========================================================= */
-
-function buildStandardSeries(
-    type,
-    geneticsId,
-    strain,
-    ages,
-    metric
-) {
-
-    if (
-        !Array.isArray(ages)
-    ) {
-        return [];
-    }
-
-    const standard =
-        getStandard(
-            type,
-            geneticsId,
-            strain
-        );
-
-    if (!standard) {
-        return [];
-    }
-
-    return ages.map(age => ({
-
-        ageDays:
-            Number(age),
-
-        value:
-            getStandardValueAtAge(
-                standard,
-                metric,
-                age
-            )
-
-    }));
-}
-
-
-/* =========================================================
-   STANDARD VALIDATION
-========================================================= */
-
-function validateStandardSource(
-    standard
-) {
-
-    const errors = [];
-
-    if (!standard) {
+    if (!record) {
 
         return {
 
             valid: false,
 
             errors: [
-                "Standard not found."
+                "Standard record is missing."
             ]
 
         };
-    }
-
-    if (!standard.sourceYear) {
-
-        errors.push(
-            "sourceYear is missing."
-        );
 
     }
 
-    if (!standard.sourceStatus) {
 
-        errors.push(
-            "sourceStatus is missing."
-        );
+    const errors = [];
 
-    }
 
     if (
-        !Array.isArray(
-            standard.records
-        )
+        !record.version
     ) {
 
         errors.push(
-            "records is missing."
+            "Standard version is missing."
         );
 
     }
+
+
+    if (
+        !record.source
+    ) {
+
+        errors.push(
+            "Source is missing."
+        );
+
+    }
+
+
+    if (
+        !record.sourceType
+    ) {
+
+        errors.push(
+            "Source type is missing."
+        );
+
+    }
+
 
     return {
 
@@ -1564,255 +2197,116 @@ function validateStandardSource(
         errors
 
     };
+
 }
 
 
 /* =========================================================
-   STANDARD RECORD VALIDATION
+   DATABASE POLICY
 ========================================================= */
 
-function validateStandardRecords(
-    standard
-) {
+const STANDARD_DATABASE_POLICY = {
 
-    const errors = [];
+    numericValuesMayBeAddedOnlyIf:
 
-    if (!standard) {
+        [
 
-        return {
+            "officialPerformanceObjective",
 
-            valid: false,
+            "officialManagementGuide",
 
-            errors: [
-                "Standard missing."
-            ]
+            "officialParentStockGuide",
 
-        };
-    }
+            "officialRegionalGuide",
 
-    if (
-        !Array.isArray(
-            standard.records
-        )
-    ) {
+            "researchReference",
 
-        return {
+            "iranianLocalReference"
 
-            valid: false,
+        ],
 
-            errors: [
-                "records must be array."
-            ]
 
-        };
-    }
+    neverGuessNumbers:
+        true,
 
-    let previousAge = null;
 
-    standard.records.forEach(
-        (record, index) => {
+    neverMixParentStockWithBroiler:
+        true,
 
-            const age =
-                Number(
-                    record.ageDays
-                );
 
-            if (
-                !Number.isFinite(age)
-            ) {
+    neverMixLayerStrains:
+        true,
 
-                errors.push(
-                    `Record ${index + 1}: invalid ageDays`
-                );
 
-                return;
+    neverMixHousingPrograms:
+        true,
 
-            }
 
-            if (
-                previousAge !== null &&
-                age <= previousAge
-            ) {
+    preservePreviousVersions:
+        true,
 
-                errors.push(
-                    `Record ${index + 1}: ageDays must increase`
-                );
 
-            }
+    preserveRegionalVersions:
+        true,
 
-            previousAge = age;
 
-        }
-    );
+    preserveHistoricalRecords:
+        true
 
-    return {
-
-        valid:
-            errors.length === 0,
-
-        errors
-
-    };
-}
+};
 
 
 /* =========================================================
-   AVAILABLE STANDARDS
+   WEEKLY PERFORMANCE / FCR ENGINE
 ========================================================= */
 
-function listAvailableStandards(
-    type
-) {
-
-    const normalizedType =
-        normalizeProductionType(type);
-
-    if (
-        typeof VERIFIED_STANDARDS ===
-        "undefined"
-    ) {
-        return [];
-    }
-
-    const typeData =
-        VERIFIED_STANDARDS[
-            normalizedType
-        ];
-
-    if (!typeData) {
-        return [];
-    }
-
-    const result = [];
-
-    Object.keys(typeData)
-        .forEach(geneticsId => {
-
-            const genetics =
-                typeData[
-                    geneticsId
-                ];
-
-            Object.keys(genetics)
-                .forEach(strain => {
-
-                    const standard =
-                        genetics[
-                            strain
-                        ];
-
-                    result.push({
-
-                        type:
-                            normalizedType,
-
-                        geneticsId,
-
-                        strain,
-
-                        sourceYear:
-                            standard.sourceYear ||
-                            null,
-
-                        sourceStatus:
-                            standard.sourceStatus ||
-                            null,
-
-                        recordCount:
-                            Array.isArray(
-                                standard.records
-                            )
-                                ? standard.records.length
-                                : 0,
-
-                        ageRange:
-                            getStandardAgeRange(
-                                standard
-                            )
-
-                    });
-
-                });
-
-        });
-
-    return result;
+function calculateBroilerFCR({feedKg, openingBirds, closingBirds, openingAverageWeightG, closingAverageWeightG} = {}) {
+    const feed=Number(feedKg), ob=Number(openingBirds), cb=Number(closingBirds), ow=Number(openingAverageWeightG), cw=Number(closingAverageWeightG);
+    if (![feed,ob,cb,ow,cw].every(Number.isFinite) || feed<=0 || ob<=0 || cb<=0 || ow<0 || cw<=0) return null;
+    const gainKg=(cb*cw-ob*ow)/1000;
+    return gainKg>0 ? Number((feed/gainKg).toFixed(3)) : null;
 }
 
+function calculateLayerEggMass({eggsProduced, averageEggWeightG} = {}) {
+    const eggs=Number(eggsProduced), w=Number(averageEggWeightG);
+    if (!Number.isFinite(eggs)||!Number.isFinite(w)||eggs<0||w<=0) return null;
+    return Number((eggs*w/1000).toFixed(3));
+}
 
-/* =========================================================
-   GLOBAL EXPORTS
-========================================================= */
+function calculateLayerFCR({feedKg, eggsProduced, averageEggWeightG} = {}) {
+    const feed=Number(feedKg), mass=calculateLayerEggMass({eggsProduced,averageEggWeightG});
+    return Number.isFinite(feed)&&feed>0&&Number.isFinite(mass)&&mass>0 ? Number((feed/mass).toFixed(3)) : null;
+}
 
-if (
-    typeof window !==
-    "undefined"
-) {
+function compareStandardMetric(actual, standard, metric=null, tolerancePercent=5) {
+    const a=Number(actual), s=Number(standard);
+    if (!Number.isFinite(a)||!Number.isFinite(s)||s===0) return {actual:Number.isFinite(a)?a:null,standard:Number.isFinite(s)?s:null,difference:null,percentage:null,status:'no-standard',metric};
+    const d=a-s, p=d/s*100;
+    return {actual:Number(a.toFixed(3)),standard:Number(s.toFixed(3)),difference:Number(d.toFixed(3)),percentage:Number(p.toFixed(2)),status:Math.abs(p)<=tolerancePercent?'within-range':p>0?'above':'below',metric};
+}
 
-    window.STANDARD_ENGINE_CONFIG =
-        STANDARD_ENGINE_CONFIG;
+function getStandardAtAge(type, geneticsId, strain, ageDays) {
+    const standard=getStandard(type,geneticsId,strain);
+    if (!standard) return null;
+    const out={ageDays:Number(ageDays)};
+    const metricNames=typeof PERFORMANCE_METRICS!=='undefined'?Object.keys(PERFORMANCE_METRICS):[];
+    metricNames.forEach(metric=>{ if(metric!=='ageDays') out[metric]=getStandardValueAtAge(standard,metric,ageDays); });
+    return out;
+}
 
-    window.STANDARD_METRIC_DIRECTION =
-        STANDARD_METRIC_DIRECTION;
+function getStandardComparison(type, geneticsId, strain, ageDays, actual={}) {
+    const target=getStandardAtAge(type,geneticsId,strain,ageDays);
+    if (!target) return {available:false,target:null,comparisons:{}};
+    const comparisons={};
+    Object.keys(actual||{}).forEach(metric=>comparisons[metric]=compareStandardMetric(actual[metric],target[metric],metric));
+    return {available:true,target,comparisons};
+}
 
-    window.normalizeProductionType =
-        normalizeProductionType;
-
-    window.getStandard =
-        getStandard;
-
-    window.getStandardRecords =
-        getStandardRecords;
-
-    window.getStandardAgeRange =
-        getStandardAgeRange;
-
-    window.getStandardValueAtAge =
-        getStandardValueAtAge;
-
-    window.getStandardAtAge =
-        getStandardAtAge;
-
-    window.compareStandardValue =
-        compareStandardValue;
-
-    window.interpretComparison =
-        interpretComparison;
-
-    window.buildMetricComparison =
-        buildMetricComparison;
-
-    window.buildWeeklyStandardComparison =
-        buildWeeklyStandardComparison;
-
-    window.calculateBroilerFCR =
-        calculateBroilerFCR;
-
-    window.calculateFCRFromFeedPerBird =
-        calculateFCRFromFeedPerBird;
-
-    window.calculateLayerFCR =
-        calculateLayerFCR;
-
-    window.calculateEggMass =
-        calculateEggMass;
-
-    window.buildFCRComparison =
-        buildFCRComparison;
-
-    window.buildActualVsStandardSeries =
-        buildActualVsStandardSeries;
-
-    window.buildStandardSeries =
-        buildStandardSeries;
-
-    window.validateStandardSource =
-        validateStandardSource;
-
-    window.validateStandardRecords =
-        validateStandardRecords;
-
-    window.listAvailableStandards =
-        listAvailableStandards;
-
+if (typeof window !== 'undefined') {
+    window.calculateBroilerFCR=calculateBroilerFCR;
+    window.calculateLayerEggMass=calculateLayerEggMass;
+    window.calculateLayerFCR=calculateLayerFCR;
+    window.compareStandardMetric=compareStandardMetric;
+    window.getStandardAtAge=getStandardAtAge;
+    window.getStandardComparison=getStandardComparison;
 }

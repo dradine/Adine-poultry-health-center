@@ -260,10 +260,6 @@
 </div>
 
 
-<!-- =====================================================
-     تاریخ ارزیابی
-====================================================== -->
-
 <div class="form-group">
 
 <label for="evaluationDate">
@@ -683,11 +679,7 @@
 
 
 <!-- =====================================================
-     SUPABASE
-====================================================== -->
-
-<!-- =====================================================
-     SUPABASE
+     کتابخانه‌ها
 ====================================================== -->
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -704,19 +696,13 @@
 
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
-<!--
-     فقط weekly.js
-     weekly-engine.js نباید همزمان لود شود
--->
+<!-- فقط یک بار -->
 <script src="weekly.js"></script>
 
-</body>
-</html>
 
 <!-- =====================================================
      تقویم شمسی
-     بدون کتابخانه خارجی
-     ===================================================== -->
+====================================================== -->
 
 <script>
 
@@ -778,11 +764,6 @@
     }
 
 
-    /*
-     * استفاده از تقویم فارسی داخلی مرورگر
-     * برای تبدیل دقیق تاریخ امروز
-     */
-
     function getTodayJalali() {
 
         const now = new Date();
@@ -824,74 +805,6 @@
 
     }
 
-
-    /*
-     * تعداد روزهای ماه
-     */
-
-    function daysInJalaliMonth(
-        year,
-        month
-    ) {
-
-        if (month <= 6) {
-            return 31;
-        }
-
-        if (month <= 11) {
-            return 30;
-        }
-
-        /*
-         * تشخیص اسفند با مقایسه
-         * اول فروردین سال بعد
-         */
-
-        const current =
-            jalaliToGregorian(
-                year,
-                12,
-                1
-            );
-
-        const next =
-            jalaliToGregorian(
-                year + 1,
-                1,
-                1
-            );
-
-        const currentDate =
-            new Date(
-                current.gy,
-                current.gm - 1,
-                current.gd
-            );
-
-        const nextDate =
-            new Date(
-                next.gy,
-                next.gm - 1,
-                next.gd
-            );
-
-        const diff =
-            Math.round(
-                (
-                    nextDate -
-                    currentDate
-                ) /
-                86400000
-            );
-
-        return diff;
-
-    }
-
-
-    /*
-     * تبدیل جلالی به میلادی
-     */
 
     function jalaliToGregorian(
         jy,
@@ -1001,113 +914,54 @@
     }
 
 
-    /*
-     * تبدیل میلادی به جلالی
-     */
-
-    function gregorianToJalali(
-        gy,
-        gm,
-        gd
+    function daysInJalaliMonth(
+        year,
+        month
     ) {
 
-        const gdm = [
-            0, 31, 59, 90, 120, 151,
-            181, 212, 243, 273, 304, 334
-        ];
+        if (month <= 6) {
+            return 31;
+        }
 
-        let gy2 =
-            gm > 2
-                ? gy + 1
-                : gy;
+        if (month <= 11) {
+            return 30;
+        }
 
-        let days =
-            355666 +
-            (365 * gy) +
-            Math.floor(
-                (gy2 + 3) / 4
-            ) -
-            Math.floor(
-                (gy2 + 99) / 100
-            ) +
-            Math.floor(
-                (gy2 + 399) / 400
-            ) +
-            gd +
-            gdm[gm - 1];
-
-        let jy =
-            -1595 +
-            33 *
-            Math.floor(
-                days / 12053
+        const current =
+            jalaliToGregorian(
+                year,
+                12,
+                1
             );
 
-        days %= 12053;
-
-        jy +=
-            4 *
-            Math.floor(
-                days / 1461
+        const next =
+            jalaliToGregorian(
+                year + 1,
+                1,
+                1
             );
 
-        days %= 1461;
+        const currentDate =
+            new Date(
+                current.gy,
+                current.gm - 1,
+                current.gd
+            );
 
-        if (days > 365) {
+        const nextDate =
+            new Date(
+                next.gy,
+                next.gm - 1,
+                next.gd
+            );
 
-            jy +=
-                Math.floor(
-                    (days - 1) / 365
-                );
-
-            days =
-                (days - 1) % 365;
-
-        }
-
-        let jm;
-
-        if (days < 186) {
-
-            jm =
-                1 +
-                Math.floor(
-                    days / 31
-                );
-
-        } else {
-
-            jm =
-                7 +
-                Math.floor(
-                    (days - 186) / 30
-                );
-
-        }
-
-        let jd;
-
-        if (days < 186) {
-
-            jd =
-                1 +
-                (days % 31);
-
-        } else {
-
-            jd =
-                1 +
-                (
-                    (days - 186) % 30
-                );
-
-        }
-
-        return {
-            year: jy,
-            month: jm,
-            day: jd
-        };
+        return Math.round(
+            (
+                nextDate -
+                currentDate
+            ) /
+            86400000
+        );
 
     }
 
@@ -1140,10 +994,6 @@
         days.innerHTML = "";
 
 
-        /*
-         * روز اول ماه
-         */
-
         const first =
             jalaliToGregorian(
                 calendarYear,
@@ -1158,17 +1008,6 @@
                 first.gd
             );
 
-
-        /*
-         * JS:
-         * Sunday = 0
-         * Monday = 1
-         * ...
-         * Saturday = 6
-         *
-         * تقویم ما:
-         * Saturday = 0
-         */
 
         const start =
             (
@@ -1328,7 +1167,6 @@
                 value
             );
 
-
         closeCalendar();
 
     }
@@ -1346,11 +1184,9 @@
                 "evaluationDate"
             );
 
-
         if (!calendar) {
             return;
         }
-
 
         const today =
             getTodayJalali();
@@ -1493,14 +1329,13 @@
                 );
 
 
-            if (!input || !calendar) {
+            if (
+                !input ||
+                !calendar
+            ) {
                 return;
             }
 
-
-            /*
-             * تاریخ امروز فقط اگر خالی باشد
-             */
 
             if (!input.value) {
 
@@ -1644,13 +1479,5 @@
 
 </script>
 
-
-<!-- =====================================================
-     فقط یک بار weekly.js
-====================================================== -->
-
-<script src="weekly.js"></script>
-
 </body>
-
 </html>

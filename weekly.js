@@ -1,6 +1,7 @@
 /* =========================================================
    ADINE POULTRY HEALTH CENTER
    WEEKLY MONITORING - SUPABASE VERSION
+   WITH EDITING
    ========================================================= */
 
 let currentUser = null;
@@ -8,6 +9,12 @@ let currentFlock = null;
 let weeklyRecords = [];
 
 let weightChart = null;
+
+/*
+ * اگر null باشد یعنی ثبت جدید.
+ * اگر مقدار داشته باشد یعنی در حال ویرایش همان رکورد هستیم.
+ */
+let editingRecordId = null;
 
 
 /* =========================================================
@@ -845,6 +852,498 @@ function drawWeightChart(
 
 
 /* =========================================================
+   START EDIT
+   ========================================================= */
+
+function editWeeklyRecord(
+    recordId
+) {
+
+    const record =
+        weeklyRecords.find(
+            item =>
+                String(item.id) ===
+                String(recordId)
+        );
+
+
+    if (!record) {
+
+        alert(
+            "رکورد موردنظر پیدا نشد."
+        );
+
+        return;
+
+    }
+
+
+    editingRecordId =
+        record.id;
+
+
+    /*
+     * اطلاعات اصلی
+     */
+
+    setField(
+        "weekNumber",
+        record.week_number
+    );
+
+
+    setField(
+        "evaluationDate",
+        record.evaluation_date
+    );
+
+
+    setField(
+        "liveBirds",
+        record.live_birds
+    );
+
+
+    setField(
+        "mortalityWeek",
+        record.mortality_count
+    );
+
+
+    setField(
+        "feedTotal",
+        record.feed_total_kg
+    );
+
+
+    setField(
+        "waterTotal",
+        record.water_total_liter
+    );
+
+
+    setField(
+        "feedPerBird",
+        record.feed_per_bird_g
+    );
+
+
+    setField(
+        "waterPerBird",
+        record.water_per_bird_ml
+    );
+
+
+    setField(
+        "weeklyNotes",
+        record.notes
+    );
+
+
+    /*
+     * وزن‌ها
+     */
+
+    const weightsContainer =
+        document.getElementById(
+            "weightsContainer"
+        );
+
+
+    weightsContainer.innerHTML =
+        "";
+
+
+    let savedWeights =
+        record.weights;
+
+
+    /*
+     * اگر Supabase وزن‌ها را
+     * به صورت JSON string برگرداند
+     */
+    if (
+        typeof savedWeights ===
+        "string"
+    ) {
+
+        try {
+
+            savedWeights =
+                JSON.parse(
+                    savedWeights
+                );
+
+        }
+
+        catch (
+            error
+        ) {
+
+            console.error(
+                "Weight JSON parse error:",
+                error
+            );
+
+            savedWeights =
+                [];
+
+        }
+
+    }
+
+
+    if (
+        Array.isArray(
+            savedWeights
+        ) &&
+        savedWeights.length
+    ) {
+
+        savedWeights.forEach(
+            weight =>
+                addWeightInput(
+                    weight
+                )
+        );
+
+    }
+
+
+    /*
+     * اگر وزن خام موجود نبود،
+     * حداقل یک ورودی ایجاد شود.
+     */
+
+    if (
+        !weightsContainer.children.length
+    ) {
+
+        addWeightInput();
+
+    }
+
+
+    /*
+     * محاسبه مجدد
+     */
+
+    if (
+        getWeights().length >= 2
+    ) {
+
+        calculateWeekly();
+
+    }
+
+
+    /*
+     * عنوان حالت ویرایش
+     */
+
+    showEditMode();
+
+
+    /*
+     * برگشت به بالای فرم
+     */
+
+    window.scrollTo(
+        {
+            top: 0,
+            behavior: "smooth"
+        }
+    );
+
+}
+
+
+/* =========================================================
+   EDIT MODE UI
+   ========================================================= */
+
+function showEditMode() {
+
+    const saveButton =
+        document.querySelector(
+            'button[onclick="saveWeeklyRecord()"]'
+        );
+
+
+    if (saveButton) {
+
+        saveButton.textContent =
+            "ذخیره تغییرات";
+
+    }
+
+
+    let editNotice =
+        document.getElementById(
+            "editModeNotice"
+        );
+
+
+    if (!editNotice) {
+
+        editNotice =
+            document.createElement(
+                "div"
+            );
+
+        editNotice.id =
+            "editModeNotice";
+
+        editNotice.style.cssText = `
+            margin-bottom:15px;
+            padding:12px;
+            border-radius:10px;
+            background:#fff3cd;
+            border:1px solid #ffe69c;
+            color:#664d03;
+            font-weight:600;
+        `;
+
+
+        editNotice.innerHTML = `
+            ✏️ در حال ویرایش گزارش هفته
+            <span id="editingWeekText"></span>
+
+            <button
+                type="button"
+                class="btn btn-secondary"
+                style="margin-right:10px;"
+                onclick="cancelEditWeeklyRecord()"
+            >
+                لغو ویرایش
+            </button>
+        `;
+
+
+        const firstCard =
+            document.querySelector(
+                ".card"
+            );
+
+
+        if (firstCard) {
+
+            firstCard.parentNode.insertBefore(
+                editNotice,
+                firstCard
+            );
+
+        }
+
+    }
+
+
+    const week =
+        getValue(
+            "weekNumber"
+        );
+
+
+    const weekText =
+        document.getElementById(
+            "editingWeekText"
+        );
+
+
+    if (weekText) {
+
+        weekText.textContent =
+            week
+                ? ` — هفته ${week}`
+                : "";
+
+    }
+
+}
+
+
+/* =========================================================
+   CANCEL EDIT
+   ========================================================= */
+
+function cancelEditWeeklyRecord() {
+
+    editingRecordId =
+        null;
+
+
+    const saveButton =
+        document.querySelector(
+            'button[onclick="saveWeeklyRecord()"]'
+        );
+
+
+    if (saveButton) {
+
+        saveButton.textContent =
+            "ذخیره گزارش هفتگی";
+
+    }
+
+
+    const notice =
+        document.getElementById(
+            "editModeNotice"
+        );
+
+
+    if (notice) {
+
+        notice.remove();
+
+    }
+
+
+    clearWeeklyForm();
+
+}
+
+
+/* =========================================================
+   CLEAR FORM AFTER SAVE / CANCEL
+   ========================================================= */
+
+function clearWeeklyForm() {
+
+    setToday();
+
+
+    const fields = [
+
+        "weekNumber",
+        "liveBirds",
+        "mortalityWeek",
+        "feedTotal",
+        "waterTotal",
+        "feedPerBird",
+        "waterPerBird",
+        "weeklyNotes"
+
+    ];
+
+
+    fields.forEach(
+        id => {
+
+            const element =
+                document.getElementById(
+                    id
+                );
+
+
+            if (element) {
+
+                element.value =
+                    "";
+
+            }
+
+        }
+    );
+
+
+    document.getElementById(
+        "weightsContainer"
+    ).innerHTML =
+        "";
+
+
+    document.getElementById(
+        "resultsCard"
+    ).style.display =
+        "none";
+
+
+    if (weightChart) {
+
+        weightChart.destroy();
+
+        weightChart =
+            null;
+
+    }
+
+
+    editingRecordId =
+        null;
+
+
+    const saveButton =
+        document.querySelector(
+            'button[onclick="saveWeeklyRecord()"]'
+        );
+
+
+    if (saveButton) {
+
+        saveButton.textContent =
+            "ذخیره گزارش هفتگی";
+
+    }
+
+
+    const notice =
+        document.getElementById(
+            "editModeNotice"
+        );
+
+
+    if (notice) {
+
+        notice.remove();
+
+    }
+
+}
+
+
+/* =========================================================
+   SET FIELD
+   ========================================================= */
+
+function setField(
+    id,
+    value
+) {
+
+    const element =
+        document.getElementById(
+            id
+        );
+
+
+    if (!element) {
+
+        return;
+
+    }
+
+
+    if (
+        value === null ||
+        value === undefined
+    ) {
+
+        element.value =
+            "";
+
+        return;
+
+    }
+
+
+    element.value =
+        value;
+
+}
+
+
+/* =========================================================
    SAVE TO SUPABASE
    ========================================================= */
 
@@ -939,13 +1438,44 @@ async function saveWeeklyRecord() {
 
 
     /*
-     * IMPORTANT
-     *
-     * These names MUST match the Supabase
-     * weekly_records schema.
+     * اگر در حالت ویرایش هستیم،
+     * رکورد قبلی را پیدا می‌کنیم.
      */
 
+    const editingRecord =
+        editingRecordId
+            ? weeklyRecords.find(
+                item =>
+                    String(item.id) ===
+                    String(editingRecordId)
+              )
+            : null;
+
+
+    /*
+     * برای حفظ همان ID
+     */
+
+    const recordId =
+        editingRecord
+            ? editingRecord.id
+            : null;
+
+
     const payload = {
+
+        /*
+         * در حالت ویرایش ID همان رکورد
+         * حفظ می‌شود.
+         */
+
+        ...(recordId
+            ? {
+                id:
+                    recordId
+              }
+            : {}),
+
 
         owner_id:
             currentUser.id,
@@ -1093,10 +1623,33 @@ async function saveWeeklyRecord() {
     );
 
 
-    alert(
-        "گزارش هفتگی با موفقیت ذخیره شد."
-    );
+    if (editingRecordId) {
 
+        alert(
+            "گزارش هفتگی با موفقیت ویرایش شد."
+        );
+
+    }
+
+    else {
+
+        alert(
+            "گزارش هفتگی با موفقیت ذخیره شد."
+        );
+
+    }
+
+
+    /*
+     * فرم را به حالت عادی برمی‌گردانیم.
+     */
+
+    clearWeeklyForm();
+
+
+    /*
+     * سوابق را دوباره از Supabase می‌خوانیم.
+     */
 
     await loadHistory();
 
@@ -1220,6 +1773,10 @@ function renderHistory() {
                         </th>
 
                         <th>
+                            تاریخ
+                        </th>
+
+                        <th>
                             میانگین
                         </th>
 
@@ -1251,6 +1808,10 @@ function renderHistory() {
                             آب
                         </th>
 
+                        <th>
+                            عملیات
+                        </th>
+
                     </tr>
 
                 </thead>
@@ -1269,6 +1830,12 @@ function renderHistory() {
                                             ${formatNumber(
                                                 record.week_number,
                                                 0
+                                            )}
+                                        </td>
+
+                                        <td>
+                                            ${formatDateDisplay(
+                                                record.evaluation_date
                                             )}
                                         </td>
 
@@ -1328,6 +1895,18 @@ function renderHistory() {
                                             )}
                                         </td>
 
+                                        <td>
+
+                                            <button
+                                                type="button"
+                                                class="btn btn-secondary"
+                                                onclick="editWeeklyRecord('${escapeHTMLAttribute(record.id)}')"
+                                            >
+                                                ✏️ ویرایش
+                                            </button>
+
+                                        </td>
+
                                     </tr>
 
                                 `
@@ -1342,6 +1921,45 @@ function renderHistory() {
         </div>
 
     `;
+
+}
+
+
+/* =========================================================
+   DATE DISPLAY
+   ========================================================= */
+
+function formatDateDisplay(
+    date
+) {
+
+    if (!date) {
+
+        return "-";
+
+    }
+
+
+    const parts =
+        String(date).split("-");
+
+
+    if (
+        parts.length !== 3
+    ) {
+
+        return String(date);
+
+    }
+
+
+    return (
+        parts[2] +
+        "/" +
+        parts[1] +
+        "/" +
+        parts[0]
+    );
 
 }
 
@@ -1363,7 +1981,7 @@ function getValue(
     return element
         ? String(
             element.value || ""
-        ).trim()
+          ).trim()
         : "";
 
 }
@@ -1508,6 +2126,33 @@ function escapeHTML(
     .replaceAll(
         "'",
         "&#039;"
+    );
+
+}
+
+
+function escapeHTMLAttribute(
+    value
+) {
+
+    return String(
+        value ?? ""
+    )
+    .replaceAll(
+        "\\",
+        "\\\\"
+    )
+    .replaceAll(
+        "'",
+        "\\'"
+    )
+    .replaceAll(
+        "\n",
+        "\\n"
+    )
+    .replaceAll(
+        "\r",
+        "\\r"
     );
 
 }

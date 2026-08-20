@@ -1,6 +1,12 @@
+/* =========================================================
+   ADINE POULTRY HEALTH CENTER
+   JALALI DATE PICKER
+   ========================================================= */
+
 (function () {
 
     "use strict";
+
 
     const DATE_IDS = [
         "vaccinationDate",
@@ -11,9 +17,15 @@
         "treatmentEnd"
     ];
 
+
     function pad(n) {
         return String(n).padStart(2, "0");
     }
+
+
+    /* =====================================================
+       GREGORIAN -> JALALI
+    ===================================================== */
 
     function gregorianToJalali(gy, gm, gd) {
 
@@ -25,9 +37,12 @@
         let jy;
 
         if (gy > 1600) {
+
             jy = 979;
             gy -= 1600;
+
         } else {
+
             jy = 0;
             gy -= 621;
         }
@@ -75,10 +90,10 @@
         } else {
 
             jm =
-                7 + Math.floor(
+                7 +
+                Math.floor(
                     (days - 186) / 30
                 );
-
         }
 
         let jd;
@@ -91,8 +106,8 @@
         } else {
 
             jd =
-                1 + ((days - 186) % 30);
-
+                1 +
+                ((days - 186) % 30);
         }
 
         return {
@@ -102,6 +117,10 @@
         };
     }
 
+
+    /* =====================================================
+       JALALI -> GREGORIAN
+    ===================================================== */
 
     function jalaliToGregorian(jy, jm, jd) {
 
@@ -119,7 +138,6 @@
         } else {
 
             gy = 621;
-
         }
 
         let days =
@@ -137,14 +155,16 @@
         } else {
 
             days +=
-                (jm - 7) * 30 + 186;
-
+                (jm - 7) * 30 +
+                186;
         }
 
-        days += jd - 1;
+        days +=
+            jd - 1;
 
         gy +=
-            400 * Math.floor(
+            400 *
+            Math.floor(
                 days / 146097
             );
 
@@ -153,7 +173,8 @@
         if (days > 36524) {
 
             gy +=
-                100 * Math.floor(
+                100 *
+                Math.floor(
                     --days / 36524
                 );
 
@@ -165,7 +186,8 @@
         }
 
         gy +=
-            4 * Math.floor(
+            4 *
+            Math.floor(
                 days / 1461
             );
 
@@ -222,6 +244,10 @@
     }
 
 
+    /* =====================================================
+       ISO -> JALALI
+    ===================================================== */
+
     function isoToJalali(iso) {
 
         if (!iso) return "";
@@ -260,6 +286,10 @@
     }
 
 
+    /* =====================================================
+       JALALI -> ISO
+    ===================================================== */
+
     function jalaliToISO(value) {
 
         if (!value) return null;
@@ -297,8 +327,7 @@
             !jd ||
             jm < 1 ||
             jm > 12 ||
-            jd < 1 ||
-            jd > 31
+            jd < 1
         ) {
             return null;
         }
@@ -334,6 +363,10 @@
     }
 
 
+    /* =====================================================
+       TODAY
+    ===================================================== */
+
     function todayJalali() {
 
         const now =
@@ -342,13 +375,148 @@
         const iso =
             now.getFullYear() +
             "-" +
-            pad(now.getMonth() + 1) +
+            pad(
+                now.getMonth() + 1
+            ) +
             "-" +
-            pad(now.getDate());
+            pad(
+                now.getDate()
+            );
 
         return isoToJalali(iso);
     }
 
+
+    /* =====================================================
+       INIT PERSIAN DATEPICKER
+    ===================================================== */
+
+    function initDatePickers() {
+
+        if (
+            typeof jQuery === "undefined"
+        ) {
+            console.error(
+                "jQuery not loaded"
+            );
+            return;
+        }
+
+
+        if (
+            typeof jQuery.fn.persianDatepicker !==
+            "function"
+        ) {
+            console.error(
+                "Persian datepicker not loaded"
+            );
+            return;
+        }
+
+
+        DATE_IDS.forEach(id => {
+
+            const input =
+                document.getElementById(id);
+
+            if (!input) {
+                return;
+            }
+
+
+            input.type = "text";
+
+            input.readOnly = true;
+
+            input.inputMode =
+                "none";
+
+            input.autocomplete =
+                "off";
+
+            input.dir =
+                "ltr";
+
+            input.classList.add(
+                "jalali-input"
+            );
+
+
+            jQuery(input)
+                .persianDatepicker({
+
+                    format:
+                        "YYYY/MM/DD",
+
+                    autoClose:
+                        true,
+
+                    initialValue:
+                        false,
+
+                    observer:
+                        true,
+
+                    calendarType:
+                        "persian",
+
+                    toolbox: {
+
+                        calendarSwitch:
+                            false
+
+                    },
+
+                    onSelect:
+                        function (unix) {
+
+                            if (!unix) {
+                                return;
+                            }
+
+                            const date =
+                                new persianDate(
+                                    unix
+                                );
+
+                            input.value =
+                                date.format(
+                                    "YYYY/MM/DD"
+                                );
+                        }
+                });
+
+
+            /*
+             * اگر کاربر روی کادر کلیک کرد
+             * تقویم باز شود.
+             */
+
+            input.addEventListener(
+                "click",
+                function () {
+
+                    try {
+
+                        jQuery(input)
+                            .persianDatepicker(
+                                "show"
+                            );
+
+                    } catch (e) {
+
+                        console.warn(e);
+                    }
+                }
+            );
+
+        });
+    }
+
+
+    /* =====================================================
+       PREPARE
+    ===================================================== */
 
     function prepareDateFields() {
 
@@ -357,79 +525,58 @@
             const input =
                 document.getElementById(id);
 
-            if (!input) return;
+            if (!input) {
+                return;
+            }
 
-            input.type = "text";
+            input.type =
+                "text";
 
-            input.inputMode =
-                "numeric";
+            input.readOnly =
+                true;
 
             input.placeholder =
-                "۱۴۰۵/۰۵/۲۹";
+                "انتخاب تاریخ";
 
             input.autocomplete =
                 "off";
 
-            input.dir = "ltr";
+            input.dir =
+                "ltr";
 
             input.classList.add(
                 "jalali-input"
             );
-
-            input.addEventListener(
-                "input",
-                function () {
-
-                    let value =
-                        this.value;
-
-                    value =
-                        value.replace(
-                            /[^0-9۰-۹\/]/g,
-                            ""
-                        );
-
-                    value =
-                        value.replace(
-                            /[۰-۹]/g,
-                            d =>
-                                String(
-                                    "۰۱۲۳۴۵۶۷۸۹"
-                                        .indexOf(d)
-                                )
-                        );
-
-                    if (
-                        value.length === 4 &&
-                        !value.includes("/")
-                    ) {
-                        value += "/";
-                    }
-
-                    if (
-                        value.length === 7 &&
-                        value.split("/").length === 2
-                    ) {
-                        value += "/";
-                    }
-
-                    this.value =
-                        value.substring(
-                            0,
-                            10
-                        );
-                }
-            );
         });
+
+
+        /*
+         * کمی تأخیر برای اینکه
+         * کتابخانه‌ها کاملاً لود شوند.
+         */
+
+        setTimeout(
+            initDatePickers,
+            100
+        );
     }
 
+
+    /* =====================================================
+       EXPORT
+    ===================================================== */
 
     window.jalaliDate = {
 
         isoToJalali,
+
         jalaliToISO,
+
         todayJalali,
-        prepareDateFields
+
+        prepareDateFields,
+
+        initDatePickers
 
     };
 

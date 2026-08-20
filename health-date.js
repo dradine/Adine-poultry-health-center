@@ -11,11 +11,6 @@
     const PERSIAN_DIGITS = "۰۱۲۳۴۵۶۷۸۹";
     const ARABIC_DIGITS  = "٠١٢٣٤٥٦٧٨٩";
 
-
-    /* =====================================================
-       DIGITS
-    ===================================================== */
-
     function toEnglishDigits(value) {
 
         return String(value || "")
@@ -375,6 +370,7 @@
 
     /* =====================================================
        TODAY
+       استفاده از زمان محلی، نه UTC
     ===================================================== */
 
     function todayJalali() {
@@ -404,67 +400,7 @@
 
 
     /* =====================================================
-       VALIDATE
-    ===================================================== */
-
-    function isValidJalali(value) {
-
-        if (!value) {
-            return false;
-        }
-
-        const text =
-            toEnglishDigits(value)
-                .trim()
-                .replace(/-/g, "/")
-                .replace(/\./g, "/");
-
-        const parts =
-            text.split("/");
-
-        if (parts.length !== 3) {
-            return false;
-        }
-
-        const year =
-            Number(parts[0]);
-
-        const month =
-            Number(parts[1]);
-
-        const day =
-            Number(parts[2]);
-
-        if (
-            !Number.isInteger(year) ||
-            !Number.isInteger(month) ||
-            !Number.isInteger(day)
-        ) {
-            return false;
-        }
-
-        if (
-            year < 1300 ||
-            year > 1500 ||
-            month < 1 ||
-            month > 12
-        ) {
-            return false;
-        }
-
-        return (
-            day >= 1 &&
-            day <=
-            daysInMonth(
-                year,
-                month
-            )
-        );
-    }
-
-
-    /* =====================================================
-       DAYS IN MONTH
+       DAYS IN JALALI MONTH
     ===================================================== */
 
     function daysInMonth(year, month) {
@@ -513,7 +449,7 @@
 
 
     /* =====================================================
-       PICKER CSS
+       DATE PICKER CSS
     ===================================================== */
 
     function injectPickerStyle() {
@@ -537,21 +473,19 @@
         .adine-jalali-picker {
 
             position:absolute;
-            z-index:999999;
+            z-index:99999;
 
-            width:280px;
-            max-width:calc(100vw - 24px);
-
-            box-sizing:border-box;
+            width:290px;
+            max-width:calc(100vw - 20px);
 
             background:#fff;
 
-            border-radius:14px;
+            border-radius:16px;
 
-            padding:8px;
+            padding:10px;
 
             box-shadow:
-                0 10px 28px rgba(0,0,0,.18);
+                0 12px 35px rgba(0,0,0,.20);
 
             border:1px solid #e2e8e5;
 
@@ -566,14 +500,14 @@
             align-items:center;
             justify-content:space-between;
 
-            margin-bottom:6px;
+            margin-bottom:8px;
         }
 
         .adine-jalali-title {
 
             font-weight:700;
             color:#173f35;
-            font-size:13px;
+            font-size:14px;
         }
 
         .adine-jalali-nav {
@@ -581,16 +515,14 @@
             border:0;
             background:#eef2f0;
 
-            width:30px;
-            height:30px;
+            width:32px;
+            height:32px;
 
-            border-radius:8px;
+            border-radius:9px;
 
             cursor:pointer;
 
-            font-size:17px;
-
-            padding:0;
+            font-size:18px;
         }
 
         .adine-jalali-week {
@@ -601,10 +533,10 @@
 
             text-align:center;
 
-            font-size:10px;
+            font-size:11px;
             color:#69736f;
 
-            margin-bottom:2px;
+            margin-bottom:3px;
         }
 
         .adine-jalali-days {
@@ -613,25 +545,23 @@
             grid-template-columns:
                 repeat(7,1fr);
 
-            gap:1px;
+            gap:2px;
         }
 
         .adine-jalali-day {
 
-            height:32px;
+            height:34px;
 
             border:0;
             background:transparent;
 
-            border-radius:8px;
+            border-radius:9px;
 
             cursor:pointer;
 
             font-family:inherit;
 
-            font-size:12px;
-
-            padding:0;
+            font-size:13px;
         }
 
         .adine-jalali-day:hover {
@@ -655,7 +585,7 @@
             display:flex;
             justify-content:center;
 
-            margin-top:6px;
+            margin-top:7px;
         }
 
         .adine-jalali-today {
@@ -665,42 +595,15 @@
             background:#173f35;
             color:#fff;
 
-            padding:6px 13px;
+            padding:7px 14px;
 
-            border-radius:8px;
+            border-radius:9px;
 
             cursor:pointer;
 
             font-family:inherit;
 
-            font-size:11px;
-        }
-
-        @media (max-width:480px) {
-
-            .adine-jalali-picker {
-
-                width:270px;
-                max-width:calc(100vw - 16px);
-
-                padding:7px;
-
-                border-radius:13px;
-            }
-
-            .adine-jalali-day {
-
-                height:30px;
-
-                font-size:12px;
-            }
-
-            .adine-jalali-nav {
-
-                width:29px;
-                height:29px;
-            }
-
+            font-size:12px;
         }
 
         `;
@@ -710,13 +613,12 @@
 
 
     /* =====================================================
-       PICKER
+       DATE PICKER
     ===================================================== */
 
     let picker = null;
 
     let pickerYear = null;
-
     let pickerMonth = null;
 
     let activeInput = null;
@@ -787,58 +689,27 @@
         const rect =
             activeInput.getBoundingClientRect();
 
-        const pickerWidth =
-            Math.min(
-                280,
-                window.innerWidth - 16
-            );
+        const top =
+            window.scrollY +
+            rect.bottom +
+            6;
 
         let left =
             window.scrollX +
             rect.right -
-            pickerWidth;
-
-        const minLeft =
-            window.scrollX + 8;
+            290;
 
         const maxLeft =
             window.scrollX +
             window.innerWidth -
-            pickerWidth -
-            8;
+            300;
 
-        left =
-            Math.max(
-                minLeft,
-                Math.min(
-                    left,
-                    maxLeft
-                )
-            );
+        if (left > maxLeft) {
+            left = maxLeft;
+        }
 
-        let top =
-            window.scrollY +
-            rect.bottom +
-            5;
-
-        const viewportBottom =
-            window.scrollY +
-            window.innerHeight;
-
-        if (
-            top + picker.offsetHeight >
-            viewportBottom - 8
-        ) {
-
-            const above =
-                window.scrollY +
-                rect.top -
-                picker.offsetHeight -
-                5;
-
-            if (above >= window.scrollY + 8) {
-                top = above;
-            }
+        if (left < 10) {
+            left = 10;
         }
 
         picker.style.top =
@@ -874,6 +745,14 @@
                 first.gm - 1,
                 first.gd
             );
+
+        /*
+         * JavaScript:
+         * Sunday=0
+         *
+         * تقویم شمسی:
+         * شنبه=0
+         */
 
         const sundayIndex =
             firstDate.getDay();
@@ -942,9 +821,7 @@
         <div class="adine-jalali-week">
 
             ${weekNames
-                .map(day =>
-                    `<span>${day}</span>`
-                )
+                .map(day => `<span>${day}</span>`)
                 .join("")}
 
         </div>
@@ -1070,10 +947,6 @@
                             this.dataset.day
                         );
 
-                    if (!activeInput) {
-                        return;
-                    }
-
                     activeInput.value =
                         toPersianDigits(
                             pickerYear
@@ -1106,10 +979,6 @@
                 "[data-today]"
             )
             .onclick = function () {
-
-                if (!activeInput) {
-                    return;
-                }
 
                 activeInput.value =
                     todayJalali();
@@ -1178,10 +1047,6 @@
             "block";
 
         renderPicker();
-
-        requestAnimationFrame(
-            positionPicker
-        );
     }
 
 
@@ -1199,7 +1064,7 @@
 
 
     /* =====================================================
-       PREPARE DATE FIELDS
+       PREPARE
     ===================================================== */
 
     function prepareDateFields() {
@@ -1225,15 +1090,8 @@
                     "۱۴۰۵/۰۵/۲۹"
                 );
 
-                input.readOnly = true;
-
-                input.style.cursor =
-                    "pointer";
-
                 input.onclick =
-                    function (event) {
-
-                        event.preventDefault();
+                    function () {
 
                         openPicker(this);
 
@@ -1248,10 +1106,23 @@
                     };
 
 
-                /*
-                 * عمداً ورودی دستی را غیرفعال نکردیم
-                 * تا ساختار قبلی برنامه حفظ شود.
-                 */
+                input.oninput =
+                    function () {
+
+                        let value =
+                            toEnglishDigits(
+                                this.value
+                            );
+
+                        value =
+                            value.replace(
+                                /[^0-9/]/g,
+                                ""
+                            );
+
+                        this.value =
+                            value;
+                    };
 
             });
     }
@@ -1296,7 +1167,6 @@
                 picker &&
                 picker.style.display !== "none"
             ) {
-
                 positionPicker();
             }
 
@@ -1312,7 +1182,6 @@
                 picker &&
                 picker.style.display !== "none"
             ) {
-
                 positionPicker();
             }
 

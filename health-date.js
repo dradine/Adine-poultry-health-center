@@ -1,8 +1,8 @@
 /* =========================================================
    ADINE POULTRY HEALTH CENTER
-   JALALI DATE ENGINE + MOBILE DATE PICKER
-   بدون وابستگی به jQuery
-========================================================= */
+   JALALI DATE ENGINE
+   فقط موتور تاریخ شمسی
+   ========================================================= */
 
 (function () {
 
@@ -13,7 +13,11 @@
 
     function toEnglishDigits(value) {
 
-        return String(value || "")
+        if (value === null || value === undefined) {
+            return "";
+        }
+
+        return String(value)
             .replace(/[۰-۹]/g, d =>
                 String(PERSIAN_DIGITS.indexOf(d))
             )
@@ -25,27 +29,23 @@
 
     function toPersianDigits(value) {
 
-        return String(value || "")
-            .replace(/\d/g, d =>
-                PERSIAN_DIGITS[Number(d)]
-            );
-    }
+        if (value === null || value === undefined) {
+            return "";
+        }
 
-
-    function pad(number) {
-
-        return String(number).padStart(2, "0");
-
+        return String(value).replace(/\d/g, d =>
+            PERSIAN_DIGITS[Number(d)]
+        );
     }
 
 
     /* =====================================================
-       GREGORIAN → JALALI
+       Gregorian → Jalali
     ===================================================== */
 
     function gregorianToJalali(gy, gm, gd) {
 
-        const g_d_m = [
+        const gdm = [
             0,31,59,90,120,151,
             181,212,243,273,304,334
         ];
@@ -55,13 +55,14 @@
         if (gy > 1600) {
 
             jy = 979;
+
             gy -= 1600;
 
         } else {
 
             jy = 0;
-            gy -= 621;
 
+            gy -= 621;
         }
 
         const gy2 =
@@ -76,7 +77,7 @@
             Math.floor((gy2 + 399) / 400) -
             80 +
             gd +
-            g_d_m[gm - 1];
+            gdm[gm - 1];
 
         jy +=
             33 *
@@ -102,12 +103,17 @@
         }
 
         let jm;
+        let jd;
 
         if (days < 186) {
 
             jm =
                 1 +
                 Math.floor(days / 31);
+
+            jd =
+                1 +
+                (days % 31);
 
         } else {
 
@@ -116,26 +122,22 @@
                 Math.floor(
                     (days - 186) / 30
                 );
+
+            jd =
+                1 +
+                ((days - 186) % 30);
         }
 
-        const jd =
-            1 +
-            (
-                days < 186
-                    ? days % 31
-                    : (days - 186) % 30
-            );
-
         return {
-            jy,
-            jm,
-            jd
+            year: jy,
+            month: jm,
+            day: jd
         };
     }
 
 
     /* =====================================================
-       JALALI → GREGORIAN
+       Jalali → Gregorian
     ===================================================== */
 
     function jalaliToGregorian(jy, jm, jd) {
@@ -149,6 +151,7 @@
         if (jy > 979) {
 
             gy = 1600;
+
             jy -= 979;
 
         } else {
@@ -215,29 +218,23 @@
             0,
             31,
             (
-                (gy % 4 === 0 &&
-                 gy % 100 !== 0) ||
-                 gy % 400 === 0
+                gy % 4 === 0 &&
+                (
+                    gy % 100 !== 0 ||
+                    gy % 400 === 0
+                )
             )
                 ? 29
                 : 28,
-            31,
-            30,
-            31,
-            30,
-            31,
-            31,
-            30,
-            31,
-            30,
-            31
+            31,30,31,30,
+            31,31,30,31,30,31
         ];
 
-        let gm = 0;
+        let gm = 1;
 
         while (
-            gd >
-            sal_a[gm]
+            gm <= 12 &&
+            gd > sal_a[gm]
         ) {
 
             gd -= sal_a[gm];
@@ -245,15 +242,43 @@
         }
 
         return {
-            gy,
-            gm,
-            gd
+            year: gy,
+            month: gm,
+            day: gd
         };
     }
 
 
     /* =====================================================
-       JALALI → ISO
+       امروز شمسی
+    ===================================================== */
+
+    function todayJalali() {
+
+        const now =
+            new Date();
+
+        const j =
+            gregorianToJalali(
+                now.getFullYear(),
+                now.getMonth() + 1,
+                now.getDate()
+            );
+
+        return toPersianDigits(
+            String(j.year).padStart(4, "0") +
+            "/" +
+            String(j.month).padStart(2, "0") +
+            "/" +
+            String(j.day).padStart(2, "0")
+        );
+    }
+
+
+    /* =====================================================
+       Jalali → ISO
+       خروجی برای Supabase
+       YYYY-MM-DD
     ===================================================== */
 
     function jalaliToISO(value) {
@@ -262,7 +287,7 @@
             return null;
         }
 
-        const text =
+        let text =
             toEnglishDigits(value)
                 .trim()
                 .replace(/-/g, "/")
@@ -275,9 +300,14 @@
             return null;
         }
 
-        const jy = Number(parts[0]);
-        const jm = Number(parts[1]);
-        const jd = Number(parts[2]);
+        const jy =
+            Number(parts[0]);
+
+        const jm =
+            Number(parts[1]);
+
+        const jd =
+            Number(parts[2]);
 
         if (
             !Number.isInteger(jy) ||
@@ -288,8 +318,8 @@
         }
 
         if (
-            jy < 1300 ||
-            jy > 1500 ||
+            jy < 1200 ||
+            jy > 1600 ||
             jm < 1 ||
             jm > 12 ||
             jd < 1 ||
@@ -306,17 +336,17 @@
             );
 
         return (
-            String(g.gy).padStart(4, "0") +
+            String(g.year).padStart(4, "0") +
             "-" +
-            pad(g.gm) +
+            String(g.month).padStart(2, "0") +
             "-" +
-            pad(g.gd)
+            String(g.day).padStart(2, "0")
         );
     }
 
 
     /* =====================================================
-       ISO → JALALI
+       ISO → Jalali
     ===================================================== */
 
     function isoToJalali(value) {
@@ -332,19 +362,24 @@
             text.split("-");
 
         if (parts.length !== 3) {
-            return value;
+            return "";
         }
 
-        const gy = Number(parts[0]);
-        const gm = Number(parts[1]);
-        const gd = Number(parts[2]);
+        const gy =
+            Number(parts[0]);
+
+        const gm =
+            Number(parts[1]);
+
+        const gd =
+            Number(parts[2]);
 
         if (
             !gy ||
             !gm ||
             !gd
         ) {
-            return value;
+            return "";
         }
 
         const j =
@@ -354,855 +389,203 @@
                 gd
             );
 
-        return (
-            toPersianDigits(j.jy) +
+        return toPersianDigits(
+            String(j.year).padStart(4, "0") +
             "/" +
-            toPersianDigits(
-                pad(j.jm)
-            ) +
+            String(j.month).padStart(2, "0") +
             "/" +
-            toPersianDigits(
-                pad(j.jd)
-            )
+            String(j.day).padStart(2, "0")
         );
     }
 
 
     /* =====================================================
-       TODAY
-       استفاده از زمان محلی، نه UTC
+       اعتبارسنجی
     ===================================================== */
 
-    function todayJalali() {
+    function isValidJalali(value) {
 
-        const now =
-            new Date();
-
-        const j =
-            gregorianToJalali(
-                now.getFullYear(),
-                now.getMonth() + 1,
-                now.getDate()
-            );
-
-        return (
-            toPersianDigits(j.jy) +
-            "/" +
-            toPersianDigits(
-                pad(j.jm)
-            ) +
-            "/" +
-            toPersianDigits(
-                pad(j.jd)
-            )
-        );
+        return jalaliToISO(value) !== null;
     }
 
 
     /* =====================================================
-       DAYS IN JALALI MONTH
-    ===================================================== */
-
-    function daysInMonth(year, month) {
-
-        if (month <= 6) {
-            return 31;
-        }
-
-        if (month <= 11) {
-            return 30;
-        }
-
-        const next =
-            jalaliToGregorian(
-                year + 1,
-                1,
-                1
-            );
-
-        const current =
-            jalaliToGregorian(
-                year,
-                1,
-                1
-            );
-
-        const diff =
-            Math.round(
-                (
-                    new Date(
-                        next.gy,
-                        next.gm - 1,
-                        next.gd
-                    ) -
-                    new Date(
-                        current.gy,
-                        current.gm - 1,
-                        current.gd
-                    )
-                ) /
-                86400000
-            );
-
-        return diff === 366 ? 30 : 29;
-    }
-
-
-    /* =====================================================
-       DATE PICKER CSS
-    ===================================================== */
-
-    function injectPickerStyle() {
-
-        if (
-            document.getElementById(
-                "adine-jalali-picker-style"
-            )
-        ) {
-            return;
-        }
-
-        const style =
-            document.createElement("style");
-
-        style.id =
-            "adine-jalali-picker-style";
-
-        style.textContent = `
-
-        .adine-jalali-picker {
-
-            position:absolute;
-            z-index:99999;
-
-            width:290px;
-            max-width:calc(100vw - 20px);
-
-            background:#fff;
-
-            border-radius:16px;
-
-            padding:10px;
-
-            box-shadow:
-                0 12px 35px rgba(0,0,0,.20);
-
-            border:1px solid #e2e8e5;
-
-            font-family:inherit;
-
-            direction:rtl;
-        }
-
-        .adine-jalali-header {
-
-            display:flex;
-            align-items:center;
-            justify-content:space-between;
-
-            margin-bottom:8px;
-        }
-
-        .adine-jalali-title {
-
-            font-weight:700;
-            color:#173f35;
-            font-size:14px;
-        }
-
-        .adine-jalali-nav {
-
-            border:0;
-            background:#eef2f0;
-
-            width:32px;
-            height:32px;
-
-            border-radius:9px;
-
-            cursor:pointer;
-
-            font-size:18px;
-        }
-
-        .adine-jalali-week {
-
-            display:grid;
-            grid-template-columns:
-                repeat(7,1fr);
-
-            text-align:center;
-
-            font-size:11px;
-            color:#69736f;
-
-            margin-bottom:3px;
-        }
-
-        .adine-jalali-days {
-
-            display:grid;
-            grid-template-columns:
-                repeat(7,1fr);
-
-            gap:2px;
-        }
-
-        .adine-jalali-day {
-
-            height:34px;
-
-            border:0;
-            background:transparent;
-
-            border-radius:9px;
-
-            cursor:pointer;
-
-            font-family:inherit;
-
-            font-size:13px;
-        }
-
-        .adine-jalali-day:hover {
-
-            background:#eef2f0;
-        }
-
-        .adine-jalali-day.today {
-
-            background:#173f35;
-            color:#fff;
-        }
-
-        .adine-jalali-day.selected {
-
-            outline:2px solid #173f35;
-        }
-
-        .adine-jalali-footer {
-
-            display:flex;
-            justify-content:center;
-
-            margin-top:7px;
-        }
-
-        .adine-jalali-today {
-
-            border:0;
-
-            background:#173f35;
-            color:#fff;
-
-            padding:7px 14px;
-
-            border-radius:9px;
-
-            cursor:pointer;
-
-            font-family:inherit;
-
-            font-size:12px;
-        }
-
-        `;
-
-        document.head.appendChild(style);
-    }
-
-
-    /* =====================================================
-       DATE PICKER
-    ===================================================== */
-
-    let picker = null;
-
-    let pickerYear = null;
-    let pickerMonth = null;
-
-    let activeInput = null;
-
-
-    const monthNames = [
-
-        "فروردین",
-        "اردیبهشت",
-        "خرداد",
-        "تیر",
-        "مرداد",
-        "شهریور",
-        "مهر",
-        "آبان",
-        "آذر",
-        "دی",
-        "بهمن",
-        "اسفند"
-
-    ];
-
-
-    const weekNames = [
-
-        "ش",
-        "ی",
-        "د",
-        "س",
-        "چ",
-        "پ",
-        "ج"
-
-    ];
-
-
-    function createPicker() {
-
-        if (picker) {
-            return picker;
-        }
-
-        picker =
-            document.createElement(
-                "div"
-            );
-
-        picker.className =
-            "adine-jalali-picker";
-
-        picker.style.display =
-            "none";
-
-        document.body.appendChild(
-            picker
-        );
-
-        return picker;
-    }
-
-
-    function positionPicker() {
-
-        if (!activeInput || !picker) {
-            return;
-        }
-
-        const rect =
-            activeInput.getBoundingClientRect();
-
-        const top =
-            window.scrollY +
-            rect.bottom +
-            6;
-
-        let left =
-            window.scrollX +
-            rect.right -
-            290;
-
-        const maxLeft =
-            window.scrollX +
-            window.innerWidth -
-            300;
-
-        if (left > maxLeft) {
-            left = maxLeft;
-        }
-
-        if (left < 10) {
-            left = 10;
-        }
-
-        picker.style.top =
-            top + "px";
-
-        picker.style.left =
-            left + "px";
-    }
-
-
-    function renderPicker() {
-
-        if (!picker) {
-            return;
-        }
-
-        const days =
-            daysInMonth(
-                pickerYear,
-                pickerMonth
-            );
-
-        const first =
-            jalaliToGregorian(
-                pickerYear,
-                pickerMonth,
-                1
-            );
-
-        const firstDate =
-            new Date(
-                first.gy,
-                first.gm - 1,
-                first.gd
-            );
-
-        /*
-         * JavaScript:
-         * Sunday=0
-         *
-         * تقویم شمسی:
-         * شنبه=0
-         */
-
-        const sundayIndex =
-            firstDate.getDay();
-
-        const offset =
-            (sundayIndex + 1) % 7;
-
-        const current =
-            activeInput?.value
-                ? toEnglishDigits(
-                    activeInput.value
-                )
-                : "";
-
-        const currentParts =
-            current.split("/");
-
-        const selectedDay =
-            Number(currentParts[2]);
-
-        const todayText =
-            toEnglishDigits(
-                todayJalali()
-            );
-
-        const todayParts =
-            todayText.split("/");
-
-        const todayYear =
-            Number(todayParts[0]);
-
-        const todayMonth =
-            Number(todayParts[1]);
-
-        const todayDay =
-            Number(todayParts[2]);
-
-
-        let html = `
-
-        <div class="adine-jalali-header">
-
-            <button
-                type="button"
-                class="adine-jalali-nav"
-                data-prev>
-                ‹
-            </button>
-
-            <div class="adine-jalali-title">
-
-                ${monthNames[pickerMonth - 1]}
-                ${toPersianDigits(pickerYear)}
-
-            </div>
-
-            <button
-                type="button"
-                class="adine-jalali-nav"
-                data-next>
-                ›
-            </button>
-
-        </div>
-
-        <div class="adine-jalali-week">
-
-            ${weekNames
-                .map(day => `<span>${day}</span>`)
-                .join("")}
-
-        </div>
-
-        <div class="adine-jalali-days">
-        `;
-
-
-        for (
-            let i = 0;
-            i < offset;
-            i++
-        ) {
-
-            html +=
-                `<span></span>`;
-        }
-
-
-        for (
-            let day = 1;
-            day <= days;
-            day++
-        ) {
-
-            const isToday =
-                pickerYear === todayYear &&
-                pickerMonth === todayMonth &&
-                day === todayDay;
-
-            const isSelected =
-                pickerYear ===
-                    Number(currentParts[0]) &&
-                pickerMonth ===
-                    Number(currentParts[1]) &&
-                day === selectedDay;
-
-            html += `
-
-                <button
-                    type="button"
-                    class="adine-jalali-day
-                    ${isToday ? "today" : ""}
-                    ${isSelected ? "selected" : ""}"
-                    data-day="${day}">
-
-                    ${toPersianDigits(day)}
-
-                </button>
-            `;
-        }
-
-
-        html += `
-
-        </div>
-
-        <div class="adine-jalali-footer">
-
-            <button
-                type="button"
-                class="adine-jalali-today"
-                data-today>
-
-                امروز
-
-            </button>
-
-        </div>
-        `;
-
-
-        picker.innerHTML =
-            html;
-
-
-        picker
-            .querySelector(
-                "[data-prev]"
-            )
-            .onclick = function () {
-
-                pickerMonth--;
-
-                if (pickerMonth < 1) {
-
-                    pickerMonth = 12;
-                    pickerYear--;
-                }
-
-                renderPicker();
-            };
-
-
-        picker
-            .querySelector(
-                "[data-next]"
-            )
-            .onclick = function () {
-
-                pickerMonth++;
-
-                if (pickerMonth > 12) {
-
-                    pickerMonth = 1;
-                    pickerYear++;
-                }
-
-                renderPicker();
-            };
-
-
-        picker
-            .querySelectorAll(
-                "[data-day]"
-            )
-            .forEach(button => {
-
-                button.onclick = function () {
-
-                    const day =
-                        Number(
-                            this.dataset.day
-                        );
-
-                    activeInput.value =
-                        toPersianDigits(
-                            pickerYear
-                        ) +
-                        "/" +
-                        toPersianDigits(
-                            pad(pickerMonth)
-                        ) +
-                        "/" +
-                        toPersianDigits(
-                            pad(day)
-                        );
-
-                    activeInput.dispatchEvent(
-                        new Event(
-                            "change",
-                            {
-                                bubbles:true
-                            }
-                        )
-                    );
-
-                    closePicker();
-                };
-            });
-
-
-        picker
-            .querySelector(
-                "[data-today]"
-            )
-            .onclick = function () {
-
-                activeInput.value =
-                    todayJalali();
-
-                activeInput.dispatchEvent(
-                    new Event(
-                        "change",
-                        {
-                            bubbles:true
-                        }
-                    )
-                );
-
-                closePicker();
-            };
-
-
-        positionPicker();
-    }
-
-
-    function openPicker(input) {
-
-        injectPickerStyle();
-
-        createPicker();
-
-        activeInput =
-            input;
-
-        let initial =
-            toEnglishDigits(
-                input.value
-            );
-
-        let parts =
-            initial.split("/");
-
-        if (
-            parts.length === 3 &&
-            Number(parts[0]) >= 1300
-        ) {
-
-            pickerYear =
-                Number(parts[0]);
-
-            pickerMonth =
-                Number(parts[1]);
-
-        } else {
-
-            const today =
-                toEnglishDigits(
-                    todayJalali()
-                )
-                .split("/");
-
-            pickerYear =
-                Number(today[0]);
-
-            pickerMonth =
-                Number(today[1]);
-        }
-
-        picker.style.display =
-            "block";
-
-        renderPicker();
-    }
-
-
-    function closePicker() {
-
-        if (picker) {
-
-            picker.style.display =
-                "none";
-        }
-
-        activeInput =
-            null;
-    }
-
-
-    /* =====================================================
-       PREPARE
+       آماده‌سازی فیلدهای تاریخ
+       بدون وابستگی به jQuery یا Persian Datepicker
     ===================================================== */
 
     function prepareDateFields() {
 
-        document
-            .querySelectorAll(
-                ".jalali-input"
-            )
-            .forEach(input => {
+        const fields = [
+            "vaccinationDate",
+            "vaccinationExpiry",
+            "antibodyDate",
+            "labDate",
+            "treatmentDate",
+            "treatmentEnd"
+        ];
 
-                input.setAttribute(
-                    "inputmode",
-                    "numeric"
-                );
+        fields.forEach(id => {
 
-                input.setAttribute(
-                    "autocomplete",
-                    "off"
-                );
+            const input =
+                document.getElementById(id);
 
-                input.setAttribute(
-                    "placeholder",
-                    "۱۴۰۵/۰۵/۲۹"
-                );
+            if (!input) {
+                return;
+            }
 
-                input.onclick =
+            input.setAttribute(
+                "autocomplete",
+                "off"
+            );
+
+            input.setAttribute(
+                "inputmode",
+                "numeric"
+            );
+
+            input.placeholder =
+                "۱۴۰۵/۰۵/۲۹";
+
+            /*
+             * جلوگیری از ثبت HTML5
+             * به صورت تاریخ میلادی
+             */
+
+            input.type = "text";
+
+
+            /*
+             * اگر قبلاً مقدار میلادی
+             * داخل فیلد باشد تبدیل می‌کنیم
+             */
+
+            if (
+                input.value &&
+                /^\d{4}-\d{2}-\d{2}$/.test(
+                    toEnglishDigits(input.value)
+                )
+            ) {
+
+                input.value =
+                    isoToJalali(
+                        input.value
+                    );
+            }
+
+
+            /*
+             * جلوگیری از ورود کاراکتر غیرعددی
+             * ولی / را آزاد می‌گذاریم
+             */
+
+            if (
+                !input.dataset.jalaliBound
+            ) {
+
+                input.addEventListener(
+                    "input",
                     function () {
 
-                        openPicker(this);
-
-                    };
-
-
-                input.onfocus =
-                    function () {
-
-                        openPicker(this);
-
-                    };
-
-
-                input.oninput =
-                    function () {
-
-                        let value =
+                        let v =
                             toEnglishDigits(
                                 this.value
                             );
 
-                        value =
-                            value.replace(
+                        v =
+                            v.replace(
                                 /[^0-9/]/g,
                                 ""
                             );
 
-                        this.value =
-                            value;
-                    };
+                        /*
+                         * حداکثر 10 کاراکتر
+                         * YYYY/MM/DD
+                         */
 
-            });
+                        v =
+                            v.substring(
+                                0,
+                                10
+                            );
+
+                        this.value =
+                            toPersianDigits(v);
+                    }
+                );
+
+
+                /*
+                 * کلیک روی تاریخ:
+                 * اگر خالی باشد تاریخ امروز
+                 * را پیشنهاد می‌دهد.
+                 */
+
+                input.addEventListener(
+                    "focus",
+                    function () {
+
+                        if (
+                            !this.value
+                        ) {
+
+                            this.value =
+                                todayJalali();
+                        }
+                    }
+                );
+
+
+                input.dataset.jalaliBound =
+                    "true";
+            }
+        });
     }
 
 
     /* =====================================================
-       GLOBAL EVENTS
-    ===================================================== */
-
-    document.addEventListener(
-        "click",
-        function (event) {
-
-            if (
-                !picker ||
-                picker.style.display === "none"
-            ) {
-                return;
-            }
-
-            if (
-                event.target.closest(
-                    ".adine-jalali-picker"
-                ) ||
-                event.target.closest(
-                    ".jalali-input"
-                )
-            ) {
-                return;
-            }
-
-            closePicker();
-        }
-    );
-
-
-    window.addEventListener(
-        "resize",
-        function () {
-
-            if (
-                picker &&
-                picker.style.display !== "none"
-            ) {
-                positionPicker();
-            }
-
-        }
-    );
-
-
-    window.addEventListener(
-        "scroll",
-        function () {
-
-            if (
-                picker &&
-                picker.style.display !== "none"
-            ) {
-                positionPicker();
-            }
-
-        },
-        true
-    );
-
-
-    /* =====================================================
-       PUBLIC API
+       اتصال به برنامه
     ===================================================== */
 
     window.jalaliDate = {
 
-        jalaliToISO,
-        isoToJalali,
         todayJalali,
-        isValidJalali,
-        prepareDateFields,
-        toEnglishDigits
 
+        jalaliToISO,
+
+        isoToJalali,
+
+        gregorianToJalali,
+
+        jalaliToGregorian,
+
+        isValidJalali,
+
+        prepareDateFields,
+
+        toPersianDigits,
+
+        toEnglishDigits
     };
+
+
+    /*
+     * اجرای اولیه
+     */
+
+    if (
+        document.readyState ===
+        "loading"
+    ) {
+
+        document.addEventListener(
+            "DOMContentLoaded",
+            prepareDateFields
+        );
+
+    } else {
+
+        prepareDateFields();
+    }
 
 })();

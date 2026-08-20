@@ -659,35 +659,34 @@ async function loadVaccines() {
 async function loadMedications() {
 
     const select =
-        document.getElementById(
-            "treatmentMedication"
-        );
+        document.getElementById("treatmentMedication");
 
     if (!select) {
         return;
     }
 
+    select.innerHTML = `
+        <option value="">
+            در حال بارگذاری داروها...
+        </option>
+    `;
+
     try {
 
-        const {
-            data,
-            error
-        } =
+        const result =
             await supabaseClient
                 .from("medications")
-                .select("*")
-                .order(
-                    "medicine_name",
-                    {
-                        ascending: true
-                    }
-                );
+                .select("*");
 
+        console.log("MEDICATIONS RESULT:", result);
+
+        const data = result.data;
+        const error = result.error;
 
         if (error) {
 
             console.error(
-                "خطا در دریافت لیست داروها:",
+                "MEDICATIONS ERROR:",
                 error
             );
 
@@ -700,88 +699,85 @@ async function loadMedications() {
             return;
         }
 
-
         select.innerHTML = `
             <option value="">
                 انتخاب دارو
             </option>
         `;
 
+        if (!data || data.length === 0) {
 
-        (data || []).forEach(
-            medication => {
+            select.innerHTML = `
+                <option value="">
+                    دارویی ثبت نشده است
+                </option>
+            `;
 
-                const option =
-                    document.createElement(
-                        "option"
-                    );
+            return;
+        }
 
+        data.forEach(function (medication) {
 
-                option.value =
-                    medication.id;
+            const option =
+                document.createElement("option");
 
+            option.value =
+                medication.id ?? "";
 
-                const medicineName =
-                    medication.medicine_name ||
-                    medication.name ||
-                    "";
+            const name =
+                medication.name ||
+                medication.medicine_name ||
+                medication.medication_name ||
+                medication.title ||
+                "";
 
+            const active =
+                medication.active_ingredient ||
+                "";
 
-                const activeIngredient =
-                    medication.active_ingredient ||
-                    "";
+            option.textContent =
+                active
+                    ? `${name} — ${active}`
+                    : name;
 
+            select.appendChild(option);
 
-                option.textContent =
-                    activeIngredient
-                        ? `${medicineName} — ${activeIngredient}`
-                        : medicineName;
-
-
-                select.appendChild(
-                    option
-                );
-
-            }
-        );
-
+        });
 
         select.onchange = function () {
 
             const selected =
-                (data || []).find(
-                    item =>
-                        String(item.id) ===
-                        String(this.value)
-                );
+                data.find(function (item) {
 
+                    return String(item.id) ===
+                           String(select.value);
+
+                });
 
             if (!selected) {
                 return;
             }
-
 
             const nameInput =
                 document.getElementById(
                     "treatmentMedicationName"
                 );
 
-
             const activeInput =
                 document.getElementById(
                     "treatmentActive"
                 );
 
-
             if (nameInput) {
 
                 nameInput.value =
-                    selected.medicine_name ||
                     selected.name ||
+                    selected.medicine_name ||
+                    selected.medication_name ||
+                    selected.title ||
                     "";
 
             }
-
 
             if (activeInput) {
 
@@ -793,12 +789,10 @@ async function loadMedications() {
 
         };
 
-    }
-
-    catch (error) {
+    } catch (error) {
 
         console.error(
-            "Medication loading error:",
+            "MEDICATIONS EXCEPTION:",
             error
         );
 
@@ -807,9 +801,9 @@ async function loadMedications() {
                 خطا در دریافت داروها
             </option>
         `;
-
     }
 }
+
 /* =========================================================
    VACCINATION
    Uses actual current schema:

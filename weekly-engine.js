@@ -74,11 +74,17 @@ function buildWeeklyWeightRecord({
        FCR
        ----------------------------------------------------- */
 
+    const previousRecord =
+        getFlockWeeklyRecords(flockId)
+            .filter(item => Number.isFinite(Number(item.ageDays)))
+            .sort((a, b) => Number(a.ageDays) - Number(b.ageDays))
+            .at(-1) || null;
+
+    const productionType = getFlockProductionType(flockId);
+
     const fcr =
         calculateWeeklyFCR(
-            flockId,
-            averageWeight,
-            feed
+            flockId, averageWeight, feed, liveBirds, previousRecord, productionType
         );
 
 
@@ -298,102 +304,23 @@ function saveWeeklyWeightRecord(
    FCR
    ========================================================= */
 
-function calculateWeeklyFCR(
-    flockId,
-    currentWeight,
-    currentFeed
-) {
+function calculateWeeklyFCR(flockId, currentWeight, currentFeed, currentLiveBirds=null, previousRecord=null, productionType=null) {
+    const feedKg=Number(currentFeed), cw=Number(currentWeight), cb=Number(currentLiveBirds);
+    if (!Number.isFinite(feedKg)||feedKg<=0||!Number.isFinite(cw)||cw<=0||!previousRecord) return null;
+    const ow=Number(previousRecord.averageWeight);
+    const ob=Number(previousRecord.live_birds ?? previousRecord.liveBirds);
+    const type=String(productionType||'').toLowerCase();
+    if (type && type!=='broiler' && type!=='Ú¯ÙØ´ØªÛ') return null;
+    if (![ow,ob,cb].every(Number.isFinite)||ow<0||ob<=0||cb<=0) return null;
+    if (typeof calculateBroilerFCR==='function') return calculateBroilerFCR({feedKg,openingBirds:ob,closingBirds:cb,openingAverageWeightG:ow,closingAverageWeightG:cw});
+    const gainKg=(cb*cw-ob*ow)/1000;
+    return gainKg>0?Number((feedKg/gainKg).toFixed(3)):null;
+}
 
-    const feed =
-        Number(
-            currentFeed
-        );
-
-
-    const weight =
-        Number(
-            currentWeight
-        );
-
-
-    if (
-        !Number.isFinite(feed) ||
-        feed <= 0 ||
-        !Number.isFinite(weight)
-    ) {
-
-        return null;
-
-    }
-
-
-    const previousRecords =
-        getFlockWeeklyRecords(
-            flockId
-        )
-        .filter(
-            item =>
-                Number.isFinite(
-                    Number(
-                        item.averageWeight
-                    )
-                ) &&
-                Number(
-                    item.averageWeight
-                ) < weight
-        )
-        .sort(
-            (
-                a,
-                b
-            ) =>
-                Number(
-                    a.ageDays || 0
-                ) -
-                Number(
-                    b.ageDays || 0
-                )
-        );
-
-
-    const previous =
-        previousRecords.length
-            ? previousRecords[
-                previousRecords.length - 1
-            ]
-            : null;
-
-
-    if (!previous) {
-
-        return null;
-
-    }
-
-
-    const previousWeight =
-        Number(
-            previous.averageWeight
-        );
-
-
-    const gain =
-        weight -
-        previousWeight;
-
-
-    if (
-        !Number.isFinite(gain) ||
-        gain <= 0
-    ) {
-
-        return null;
-
-    }
-
-
-    return feed / gain;
-
+function getFlockProductionType(flockId) {
+    if (typeof getFlocks!=='function') return null;
+    const flock=getFlocks().find(item=>String(item.id)===String(flockId));
+    return flock?.productionType||flock?.production_type||null;
 }
 
 
@@ -547,7 +474,10 @@ function getWeeklyPerformance(
 
                 weightDifference,
 
-                weightDifferencePercent
+                weightDifferencePercent,
+
+                standardFCR:
+                    standard ? getStandardValueAtAge(standard, "fcr", record.ageDays) : null
 
             };
 

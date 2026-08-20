@@ -372,103 +372,106 @@ async function getCompleteReportData(
      * side so old database rows also receive the new metrics
      * without requiring a database migration.
      */
-    const productionType = flock.production_type || flock.productionType || null;
-    const geneticsId = flock.genetics || flock.genetics_id || null;
-    const strain = flock.strain || flock.strain_name || null;
-
     const standard =
         typeof getStandard === "function"
-            ? getStandard(productionType, geneticsId, strain)
+            ? getStandard(
+                flock.production_type,
+                flock.genetics,
+                flock.strain || flock.genetics
+            )
             : null;
 
     let previous = null;
 
-    records.forEach(record => {
-        record.standardWeight = standard && typeof getStandardValueAtAge === "function"
-            ? getStandardValueAtAge(standard, "bodyWeight", record.ageDays)
-            : null;
-        record.standardWeightRange = standard && typeof getStandardRangeAtAge === "function"
-            ? getStandardRangeAtAge(standard, "bodyWeight", record.ageDays)
-            : null;
+    records.forEach(
+        record => {
 
-        if (record.standardWeight !== null && record.averageWeight !== null) {
-            record.weightDifference = record.averageWeight - record.standardWeight;
-            record.weightDifferencePercent = record.standardWeight !== 0
-                ? (record.weightDifference / record.standardWeight) * 100
-                : null;
-        } else {
-            record.weightDifference = null;
-            record.weightDifferencePercent = null;
+            const weightMeta =
+                typeof getStandardMeta === "function"
+                    ? getStandardMeta(standard, "bodyWeight", record.ageDays)
+                    : { value: null, sourceType: null, sourceLabel: null, isFallback: false };
+
+            record.standardWeight = weightMeta.value;
+            record.standardWeightSourceType = weightMeta.sourceType;
+            record.standardWeightSourceLabel = weightMeta.sourceLabel;
+            record.standardWeightIsManagement =
+                weightMeta.sourceType === "management-standard";
+
+            if (
+                record.standardWeight !== null &&
+                record.averageWeight !== null
+            ) {
+                record.weightDifference =
+                    record.averageWeight - record.standardWeight;
+
+                record.weightDifferencePercent =
+                    record.standardWeight !== 0
+                        ? (record.weightDifference / record.standardWeight) * 100
+                        : null;
+            } else {
+                record.weightDifference = null;
+                record.weightDifferencePercent = null;
+            }
+
+            record.fcr =
+                calculateReportFCR(
+                    previous,
+                    record,
+                    flock.production_type
+                );
+
+            const fcrMeta =
+                typeof getStandardMeta === "function"
+                    ? getStandardMeta(standard, "fcr", record.ageDays)
+                    : { value: null, sourceType: null, sourceLabel: null, isFallback: false };
+
+            record.standardFCR = fcrMeta.value;
+            record.standardFCRSourceType = fcrMeta.sourceType;
+            record.standardFCRSourceLabel = fcrMeta.sourceLabel;
+            record.standardFCRIsManagement =
+                fcrMeta.sourceType === "management-standard";
+
+            const feedMeta =
+                typeof getStandardMeta === "function"
+                    ? getStandardMeta(standard, "dailyFeed", record.ageDays)
+                    : { value: null, sourceType: null, sourceLabel: null };
+
+            record.standardFeedPerBirdG = feedMeta.value;
+            record.standardFeedSourceType = feedMeta.sourceType;
+
+            const waterMeta =
+                typeof getStandardMeta === "function"
+                    ? getStandardMeta(standard, "dailyWater", record.ageDays)
+                    : { value: null, sourceType: null, sourceLabel: null };
+
+            record.standardWaterPerBirdMl = waterMeta.value;
+            record.standardWaterSourceType = waterMeta.sourceType;
+
+            const cvMeta =
+                typeof getStandardMeta === "function"
+                    ? getStandardMeta(standard, "cv", record.ageDays)
+                    : { value: null, sourceType: null, sourceLabel: null };
+            record.standardCV = cvMeta.value;
+            record.standardCVSourceType = cvMeta.sourceType;
+
+            const u10Meta =
+                typeof getStandardMeta === "function"
+                    ? getStandardMeta(standard, "uniformity10", record.ageDays)
+                    : { value: null, sourceType: null, sourceLabel: null };
+            record.standardUniformity10 = u10Meta.value;
+            record.standardUniformity10SourceType = u10Meta.sourceType;
+
+            const u15Meta =
+                typeof getStandardMeta === "function"
+                    ? getStandardMeta(standard, "uniformity15", record.ageDays)
+                    : { value: null, sourceType: null, sourceLabel: null };
+            record.standardUniformity15 = u15Meta.value;
+            record.standardUniformity15SourceType = u15Meta.sourceType;
+
+            previous = record;
         }
+    );
 
-        record.standardFCR = standard && typeof getStandardValueAtAge === "function"
-            ? getStandardValueAtAge(standard, "fcr", record.ageDays)
-            : null;
-        record.standardDailyFeed = standard && typeof getStandardValueAtAge === "function"
-            ? getStandardValueAtAge(standard, "dailyFeed", record.ageDays)
-            : null;
-        record.standardCumulativeFeed = standard && typeof getStandardValueAtAge === "function"
-            ? getStandardValueAtAge(standard, "cumulativeFeed", record.ageDays)
-            : null;
-        record.standardEggProduction = standard && typeof getStandardValueAtAge === "function"
-            ? getStandardValueAtAge(standard, "henDayProduction", record.ageDays)
-            : null;
-        record.standardEggWeight = standard && typeof getStandardValueAtAge === "function"
-            ? getStandardValueAtAge(standard, "eggWeight", record.ageDays)
-            : null;
-        record.standardEggMass = standard && typeof getStandardValueAtAge === "function"
-            ? getStandardValueAtAge(standard, "eggMass", record.ageDays)
-            : null;
-        record.standardUniformity10 = standard && typeof getStandardValueAtAge === "function"
-            ? getStandardValueAtAge(standard, "uniformity10", record.ageDays)
-            : null;
-        record.standardCV = standard && typeof getStandardValueAtAge === "function"
-            ? getStandardValueAtAge(standard, "cv", record.ageDays)
-            : null;
-
-        record.managementCVTarget = typeof getManagementTarget === "function"
-            ? getManagementTarget(productionType, "cv")
-            : null;
-        record.managementUniformity10Target = typeof getManagementTarget === "function"
-            ? getManagementTarget(productionType, "uniformity10")
-            : null;
-
-        record.fcrWeekly = calculateReportFCR(previous, record, productionType);
-
-        if (String(productionType || "").toLowerCase() === "broiler" || String(productionType || "").toLowerCase() === "گوشتی") {
-            const initialBirds = Number(flock.initial_bird_count);
-            const chickWeight = standard && typeof getStandardValueAtAge === "function"
-                ? getStandardValueAtAge(standard, "bodyWeight", 0)
-                : null;
-            const relevantRecords = records.filter(r => Number(r.ageDays) <= Number(record.ageDays));
-            const startsAtWeekOne = relevantRecords.length > 0 && Number(relevantRecords[0].ageDays) <= 7;
-            const hasContinuousWeeklyData = startsAtWeekOne && relevantRecords.every((r, i, arr) => i === 0 || (Number(r.ageDays) - Number(arr[i - 1].ageDays)) <= 7);
-            const allFeedPresent = relevantRecords.every(r => Number.isFinite(Number(r.feedTotalKg)) && Number(r.feedTotalKg) >= 0);
-            const cumulativeFeedKg = hasContinuousWeeklyData && allFeedPresent
-                ? relevantRecords.reduce((sum, r) => sum + Number(r.feedTotalKg), 0)
-                : null;
-            const currentBiomassKg = Number(record.liveBirds) * Number(record.averageWeight) / 1000;
-            const openingBiomassKg = initialBirds > 0 && Number.isFinite(Number(chickWeight))
-                ? initialBirds * Number(chickWeight) / 1000
-                : null;
-            const gainKg = Number.isFinite(currentBiomassKg) && Number.isFinite(openingBiomassKg)
-                ? currentBiomassKg - openingBiomassKg
-                : null;
-            record.cumulativeFeedKg = cumulativeFeedKg !== null && cumulativeFeedKg > 0 ? cumulativeFeedKg : null;
-            record.cumulativeFCR = cumulativeFeedKg !== null && cumulativeFeedKg > 0 && gainKg > 0
-                ? Number((cumulativeFeedKg / gainKg).toFixed(3))
-                : null;
-            record.fcrDataQuality = record.cumulativeFCR !== null
-                ? "complete-weekly-series"
-                : "insufficient-continuous-data-for-cumulative-fcr";
-        } else {
-            record.cumulativeFeedKg = null;
-            record.cumulativeFCR = null;
-        }
-
-        record.fcr = record.cumulativeFCR ?? record.fcrWeekly ?? null;
-        previous = record;
-    });
 
     return {
 
@@ -491,18 +494,34 @@ async function getCompleteReportData(
    FCR
 ========================================================= */
 
-function calculateReportFCR(previous, current, productionType='broiler') {
-    const type=String(productionType||'').toLowerCase();
-    if (type && type!=='broiler' && type!=='گوشتی') return null;
-    if (!previous||!current) return null;
-    const feed=Number(current.feedTotalKg), ow=Number(previous.averageWeight), cw=Number(current.averageWeight), ob=Number(previous.liveBirds), cb=Number(current.liveBirds);
-    if (![feed,ow,cw,ob,cb].every(Number.isFinite)||feed<=0||ow<0||cw<=0||ob<=0||cb<=0) {
-        const gain=cw-ow, dailyFeed=Number(current.feedPerBirdG);
-        return gain>0&&dailyFeed>0?Number(((dailyFeed*7)/gain).toFixed(3)):null;
+function calculateReportFCR(previous, current, productionType = "broiler") {
+    const type = String(productionType || "").toLowerCase();
+    if (!previous || !current) return null;
+    if (type !== "broiler" && type !== "گوشتی") return null;
+
+    const feed = Number(current.feedTotalKg);
+    const ow = Number(previous.averageWeight);
+    const cw = Number(current.averageWeight);
+    const ob = Number(previous.liveBirds);
+    const cb = Number(current.liveBirds);
+
+    if (![feed, ow, cw, ob, cb].every(Number.isFinite) ||
+        feed <= 0 || ow < 0 || cw <= 0 || ob <= 0 || cb <= 0) {
+        return null;
     }
-    if (typeof calculateBroilerFCR==='function') return calculateBroilerFCR({feedKg:feed,openingBirds:ob,closingBirds:cb,openingAverageWeightG:ow,closingAverageWeightG:cw});
-    const gainKg=(cb*cw-ob*ow)/1000;
-    return gainKg>0?Number((feed/gainKg).toFixed(3)):null;
+
+    if (typeof calculateBroilerFCR === "function") {
+        return calculateBroilerFCR({
+            feedKg: feed,
+            openingBirds: ob,
+            closingBirds: cb,
+            openingAverageWeightG: ow,
+            closingAverageWeightG: cw
+        });
+    }
+
+    const gainKg = (cb * cw - ob * ow) / 1000;
+    return gainKg > 0 ? Number((feed / gainKg).toFixed(3)) : null;
 }
 
 

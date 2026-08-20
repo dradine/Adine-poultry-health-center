@@ -1,13 +1,29 @@
 /* =========================================================
    ADINE POULTRY HEALTH CENTER
    WEEKLY MONITORING - SUPABASE VERSION
-   WITH EDITING + PERSIAN/ARABIC NUMBERS
+   STABLE VERSION
+   Persian + English Numbers
+   Shamsi Date
+   Editing Records
+   ========================================================= */
+
+
+/* =========================================================
+   GLOBAL VARIABLES
    ========================================================= */
 
 let currentUser = null;
+
 let currentFlock = null;
+
 let weeklyRecords = [];
+
 let weightChart = null;
+
+/*
+ * اگر null باشد یعنی ثبت جدید.
+ * اگر مقدار داشته باشد یعنی در حال ویرایش رکورد است.
+ */
 let editingRecordId = null;
 
 
@@ -25,8 +41,17 @@ async function initializeWeekly() {
 
     try {
 
+        /*
+         * مهم:
+         * فیلدهای number را به text تبدیل می‌کنیم
+         * تا آیفون بتواند اعداد فارسی را نیز دریافت کند.
+         */
+        prepareNumericInputs();
+
+
         const access =
             await checkUserAccess();
+
 
         if (!access.authenticated) {
 
@@ -37,7 +62,9 @@ async function initializeWeekly() {
                 );
 
             return;
+
         }
+
 
         if (!access.allowed) {
 
@@ -48,12 +75,16 @@ async function initializeWeekly() {
             await logoutUser();
 
             return;
+
         }
+
 
         currentUser =
             access.user;
 
+
         setToday();
+
 
         await loadCurrentFlock();
 
@@ -76,6 +107,366 @@ async function initializeWeekly() {
 
 
 /* =========================================================
+   NUMERIC INPUT PREPARATION
+   ========================================================= */
+
+/*
+ * مشکل اصلی آیفون:
+ *
+ * input type="number"
+ *
+ * در بعضی حالت‌ها اعداد فارسی را قبول نمی‌کند.
+ *
+ * بنابراین فیلدهای عددی را به text تبدیل می‌کنیم
+ * و خودمان مقدار را به عدد استاندارد تبدیل می‌کنیم.
+ */
+
+function prepareNumericInputs() {
+
+    const numericIds = [
+
+        "weekNumber",
+
+        "liveBirds",
+
+        "mortalityWeek",
+
+        "feedTotal",
+
+        "waterTotal",
+
+        "feedPerBird",
+
+        "waterPerBird"
+
+    ];
+
+
+    numericIds.forEach(
+        id => {
+
+            const input =
+                document.getElementById(
+                    id
+                );
+
+
+            if (!input) {
+
+                return;
+
+            }
+
+
+            input.type =
+                "text";
+
+
+            input.inputMode =
+                "decimal";
+
+
+            input.setAttribute(
+                "autocomplete",
+                "off"
+            );
+
+
+            attachNumberInputHandler(
+                input
+            );
+
+        }
+    );
+
+
+    /*
+     * اگر وزن‌هایی از قبل در صفحه وجود داشته باشند
+     */
+    document
+        .querySelectorAll(
+            ".bird-weight"
+        )
+        .forEach(
+            input => {
+
+                prepareWeightInput(
+                    input
+                );
+
+            }
+        );
+
+}
+
+
+/* =========================================================
+   PREPARE WEIGHT INPUT
+   ========================================================= */
+
+function prepareWeightInput(
+    input
+) {
+
+    if (!input) {
+
+        return;
+
+    }
+
+
+    input.type =
+        "text";
+
+
+    input.inputMode =
+        "decimal";
+
+
+    input.setAttribute(
+        "autocomplete",
+        "off"
+    );
+
+
+    attachNumberInputHandler(
+        input
+    );
+
+}
+
+
+/* =========================================================
+   NUMBER INPUT HANDLER
+   ========================================================= */
+
+function attachNumberInputHandler(
+    input
+) {
+
+    if (!input) {
+
+        return;
+
+    }
+
+
+    /*
+     * جلوگیری از نصب چندباره event
+     */
+    if (
+        input.dataset.numberPrepared ===
+        "true"
+    ) {
+
+        return;
+
+    }
+
+
+    input.dataset.numberPrepared =
+        "true";
+
+
+    input.addEventListener(
+        "input",
+        function () {
+
+            /*
+             * فقط اعداد و علامت‌های مجاز را نگه می‌داریم.
+             *
+             * تبدیل عدد فارسی به انگلیسی
+             */
+            this.value =
+                normalizeNumberString(
+                    this.value
+                );
+
+        }
+    );
+
+}
+
+
+/* =========================================================
+   NORMALIZE NUMBERS
+   ========================================================= */
+
+/*
+ * تبدیل:
+ *
+ * ۰۱۲۳۴۵۶۷۸۹
+ *
+ * و:
+ *
+ * ٠١٢٣٤٥٦٧٨٩
+ *
+ * به:
+ *
+ * 0123456789
+ *
+ * همچنین جداکننده‌های فارسی و عربی
+ * به فرمت قابل محاسبه تبدیل می‌شوند.
+ */
+
+function normalizeNumberString(
+    value
+) {
+
+    if (
+        value === null ||
+        value === undefined
+    ) {
+
+        return "";
+
+    }
+
+
+    let text =
+        String(value);
+
+
+    /*
+     * فارسی
+     */
+    text =
+        text.replace(
+            /[۰-۹]/g,
+            function (digit) {
+
+                return String(
+                    digit.charCodeAt(0) -
+                    1776
+                );
+
+            }
+        );
+
+
+    /*
+     * عربی
+     */
+    text =
+        text.replace(
+            /[٠-٩]/g,
+            function (digit) {
+
+                return String(
+                    digit.charCodeAt(0) -
+                    1632
+                );
+
+            }
+        );
+
+
+    /*
+     * جداکننده هزارگان فارسی
+     */
+    text =
+        text.replaceAll(
+            "٬",
+            ""
+        );
+
+
+    /*
+     * جداکننده هزارگان انگلیسی
+     */
+    text =
+        text.replaceAll(
+            ",",
+            ""
+        );
+
+
+    /*
+     * ممیز فارسی
+     */
+    text =
+        text.replaceAll(
+            "٫",
+            "."
+        );
+
+
+    /*
+     * ممیز عربی
+     */
+    text =
+        text.replaceAll(
+            "،",
+            "."
+        );
+
+
+    /*
+     * فقط اعداد، نقطه و منفی
+     */
+    text =
+        text.replace(
+            /[^0-9.\-]/g,
+            ""
+        );
+
+
+    /*
+     * فقط یک نقطه اعشار
+     */
+    const firstDot =
+        text.indexOf(".");
+
+
+    if (firstDot !== -1) {
+
+        text =
+            text.substring(
+                0,
+                firstDot + 1
+            ) +
+
+            text
+                .substring(
+                    firstDot + 1
+                )
+                .replace(
+                    /\./g,
+                    ""
+                );
+
+    }
+
+
+    /*
+     * فقط یک منفی در ابتدای عدد
+     */
+    if (
+        text.includes("-")
+    ) {
+
+        text =
+            (
+                text.startsWith("-")
+                    ? "-"
+                    : ""
+            ) +
+
+            text
+                .replace(
+                    /-/g,
+                    ""
+                );
+
+    }
+
+
+    return text;
+
+}
+
+
+/* =========================================================
    CURRENT FLOCK
    ========================================================= */
 
@@ -84,10 +475,12 @@ async function loadCurrentFlock() {
     const selection =
         getCurrentSelection();
 
+
     const container =
         document.getElementById(
             "currentFlock"
         );
+
 
     if (!selection.flockId) {
 
@@ -108,7 +501,9 @@ async function loadCurrentFlock() {
         `;
 
         return;
+
     }
+
 
     const {
         data,
@@ -135,9 +530,12 @@ async function loadCurrentFlock() {
             )
             .maybeSingle();
 
+
     if (error || !data) {
 
-        console.error(error);
+        console.error(
+            error
+        );
 
         container.innerHTML = `
             <p>
@@ -146,10 +544,13 @@ async function loadCurrentFlock() {
         `;
 
         return;
+
     }
+
 
     currentFlock =
         data;
+
 
     container.innerHTML = `
 
@@ -194,6 +595,7 @@ async function loadCurrentFlock() {
 
     `;
 
+
     await loadHistory();
 
 }
@@ -210,27 +612,39 @@ function setToday() {
             "evaluationDate"
         );
 
+
     if (!input) {
+
         return;
+
     }
+
 
     const today =
         new Date();
+
 
     const formatter =
         new Intl.DateTimeFormat(
             "fa-IR-u-ca-persian",
             {
-                year: "numeric",
-                month: "2-digit",
-                day: "2-digit"
+                year:
+                    "numeric",
+
+                month:
+                    "2-digit",
+
+                day:
+                    "2-digit"
             }
         );
+
 
     const parts =
         formatter.formatToParts(
             today
         );
+
 
     const year =
         parts.find(
@@ -238,11 +652,13 @@ function setToday() {
                 item.type === "year"
         )?.value || "";
 
+
     const month =
         parts.find(
             item =>
                 item.type === "month"
         )?.value || "";
+
 
     const day =
         parts.find(
@@ -250,80 +666,9 @@ function setToday() {
                 item.type === "day"
         )?.value || "";
 
+
     input.value =
         `${year}/${month}/${day}`;
-
-}
-
-
-/* =========================================================
-   NUMBER NORMALIZATION
-   ========================================================= */
-
-/*
- * این تابع:
- *
- * ۱۲۵۰
- * ١٢٥٠
- * 1250
- *
- * را همگی به:
- *
- * 1250
- *
- * تبدیل می‌کند.
- */
-
-function normalizeDigits(value) {
-
-    if (
-        value === null ||
-        value === undefined
-    ) {
-
-        return "";
-
-    }
-
-    return String(value)
-
-        /* فارسی */
-        .replace(
-            /[۰-۹]/g,
-            function(digit) {
-
-                return String(
-                    digit.charCodeAt(0) - 1776
-                );
-
-            }
-        )
-
-        /* عربی */
-        .replace(
-            /[٠-٩]/g,
-            function(digit) {
-
-                return String(
-                    digit.charCodeAt(0) - 1632
-                );
-
-            }
-        )
-
-        /* جداکننده هزارگان فارسی و عربی */
-        .replaceAll("٬", "")
-
-        /* کاما */
-        .replaceAll(",", "")
-
-        /* اعداد اعشاری فارسی */
-        .replaceAll("٫", ".")
-
-        /* اسلش فارسی */
-        .replaceAll("／", "/")
-
-        .trim();
 
 }
 
@@ -341,20 +686,27 @@ function addWeightInput(
             "weightsContainer"
         );
 
+
     if (!container) {
+
         return;
+
     }
+
 
     const index =
         container.children.length + 1;
+
 
     const wrapper =
         document.createElement(
             "div"
         );
 
+
     wrapper.className =
         "weight-input";
+
 
     wrapper.innerHTML = `
 
@@ -363,70 +715,43 @@ function addWeightInput(
         </label>
 
         <input
-            type="number"
+            type="text"
             min="0"
             step="0.1"
             inputmode="decimal"
             class="bird-weight"
             placeholder="گرم"
-            value="${normalizeDigits(value)}"
+            value="${escapeHTMLAttribute(
+                normalizeNumberString(
+                    value
+                )
+            )}"
         >
 
     `;
+
+
+    container.appendChild(
+        wrapper
+    );
+
 
     const input =
         wrapper.querySelector(
             ".bird-weight"
         );
 
-    /*
-     * تبدیل عدد فارسی هنگام تایپ
-     */
 
-    input.addEventListener(
-        "input",
-        function() {
-
-            const position =
-                this.selectionStart;
-
-            const oldValue =
-                this.value;
-
-            const newValue =
-                normalizeDigits(
-                    oldValue
-                );
-
-            if (
-                oldValue !== newValue
-            ) {
-
-                this.value =
-                    newValue;
-
-                try {
-
-                    this.setSelectionRange(
-                        position,
-                        position
-                    );
-
-                }
-
-                catch (e) {}
-
-            }
-
-        }
-    );
-
-    container.appendChild(
-        wrapper
+    prepareWeightInput(
+        input
     );
 
 }
 
+
+/* =========================================================
+   ADD 20 WEIGHTS
+   ========================================================= */
 
 function addTwentyWeights() {
 
@@ -443,12 +768,17 @@ function addTwentyWeights() {
 }
 
 
+/* =========================================================
+   CLEAR WEIGHTS
+   ========================================================= */
+
 function clearWeights() {
 
     const container =
         document.getElementById(
             "weightsContainer"
         );
+
 
     if (container) {
 
@@ -457,15 +787,27 @@ function clearWeights() {
 
     }
 
+
     const resultsCard =
         document.getElementById(
             "resultsCard"
         );
 
+
     if (resultsCard) {
 
         resultsCard.style.display =
             "none";
+
+    }
+
+
+    if (weightChart) {
+
+        weightChart.destroy();
+
+        weightChart =
+            null;
 
     }
 
@@ -483,15 +825,25 @@ function getWeights() {
             ".bird-weight"
         );
 
+
     return Array
         .from(inputs)
         .map(
             input => {
 
                 const normalized =
-                    normalizeDigits(
+                    normalizeNumberString(
                         input.value
                     );
+
+
+                /*
+                 * مقدار نرمال‌شده را دوباره
+                 * داخل input می‌گذاریم.
+                 */
+                input.value =
+                    normalized;
+
 
                 return Number(
                     normalized
@@ -517,6 +869,7 @@ function calculateWeekly() {
     const weights =
         getWeights();
 
+
     if (weights.length < 2) {
 
         alert(
@@ -524,26 +877,39 @@ function calculateWeekly() {
         );
 
         return;
+
     }
+
 
     const result =
         calculateWeightStatistics(
             weights
         );
 
+
     renderResults(
         result
     );
+
 
     drawWeightChart(
         weights,
         result
     );
 
-    document.getElementById(
-        "resultsCard"
-    ).style.display =
-        "block";
+
+    const resultsCard =
+        document.getElementById(
+            "resultsCard"
+        );
+
+
+    if (resultsCard) {
+
+        resultsCard.style.display =
+            "block";
+
+    }
 
 }
 
@@ -559,6 +925,7 @@ function calculateWeightStatistics(
     const n =
         weights.length;
 
+
     const mean =
         weights.reduce(
             (
@@ -569,6 +936,7 @@ function calculateWeightStatistics(
             0
         ) / n;
 
+
     const squared =
         weights.map(
             value =>
@@ -577,6 +945,7 @@ function calculateWeightStatistics(
                     2
                 )
         );
+
 
     const variance =
         squared.reduce(
@@ -588,29 +957,36 @@ function calculateWeightStatistics(
             0
         ) / n;
 
+
     const sd =
         Math.sqrt(
             variance
         );
 
+
     const cv =
         mean > 0
             ? (
                 sd / mean
-              ) * 100
+            ) * 100
             : 0;
+
 
     const lower10 =
         mean * 0.90;
 
+
     const upper10 =
         mean * 1.10;
+
 
     const lower15 =
         mean * 0.85;
 
+
     const upper15 =
         mean * 1.15;
+
 
     const uniformity10 =
         (
@@ -621,6 +997,7 @@ function calculateWeightStatistics(
             ).length / n
         ) * 100;
 
+
     const uniformity15 =
         (
             weights.filter(
@@ -629,6 +1006,7 @@ function calculateWeightStatistics(
                     weight <= upper15
             ).length / n
         ) * 100;
+
 
     return {
 
@@ -690,9 +1068,13 @@ function renderResults(
             "results"
         );
 
+
     if (!container) {
+
         return;
+
     }
+
 
     container.innerHTML = `
 
@@ -808,22 +1190,29 @@ function drawWeightChart(
     ) {
 
         return;
+
     }
+
 
     const canvas =
         document.getElementById(
             "weightChart"
         );
 
+
     if (!canvas) {
+
         return;
+
     }
+
 
     if (weightChart) {
 
         weightChart.destroy();
 
     }
+
 
     const labels =
         weights.map(
@@ -833,6 +1222,7 @@ function drawWeightChart(
             ) =>
                 index + 1
         );
+
 
     weightChart =
         new Chart(
@@ -963,6 +1353,7 @@ function editWeeklyRecord(
                 String(recordId)
         );
 
+
     if (!record) {
 
         alert(
@@ -970,68 +1361,87 @@ function editWeeklyRecord(
         );
 
         return;
+
     }
+
 
     editingRecordId =
         record.id;
+
 
     setField(
         "weekNumber",
         record.week_number
     );
 
+
     setField(
         "evaluationDate",
-        convertGregorianToJalali(
+        convertDatabaseDateToShamsi(
             record.evaluation_date
         )
     );
+
 
     setField(
         "liveBirds",
         record.live_birds
     );
 
+
     setField(
         "mortalityWeek",
         record.mortality_count
     );
+
 
     setField(
         "feedTotal",
         record.feed_total_kg
     );
 
+
     setField(
         "waterTotal",
         record.water_total_liter
     );
+
 
     setField(
         "feedPerBird",
         record.feed_per_bird_g
     );
 
+
     setField(
         "waterPerBird",
         record.water_per_bird_ml
     );
+
 
     setField(
         "weeklyNotes",
         record.notes
     );
 
+
     const weightsContainer =
         document.getElementById(
             "weightsContainer"
         );
 
-    weightsContainer.innerHTML =
-        "";
+
+    if (weightsContainer) {
+
+        weightsContainer.innerHTML =
+            "";
+
+    }
+
 
     let savedWeights =
         record.weights;
+
 
     if (
         typeof savedWeights ===
@@ -1061,6 +1471,7 @@ function editWeeklyRecord(
 
     }
 
+
     if (
         Array.isArray(
             savedWeights
@@ -1077,13 +1488,16 @@ function editWeeklyRecord(
 
     }
 
+
     if (
+        !weightsContainer ||
         !weightsContainer.children.length
     ) {
 
         addWeightInput();
 
     }
+
 
     if (
         getWeights().length >= 2
@@ -1093,12 +1507,17 @@ function editWeeklyRecord(
 
     }
 
+
     showEditMode();
+
 
     window.scrollTo(
         {
-            top: 0,
-            behavior: "smooth"
+            top:
+                0,
+
+            behavior:
+                "smooth"
         }
     );
 
@@ -1116,6 +1535,7 @@ function showEditMode() {
             'button[onclick="saveWeeklyRecord()"]'
         );
 
+
     if (saveButton) {
 
         saveButton.textContent =
@@ -1123,10 +1543,12 @@ function showEditMode() {
 
     }
 
+
     let editNotice =
         document.getElementById(
             "editModeNotice"
         );
+
 
     if (!editNotice) {
 
@@ -1135,8 +1557,10 @@ function showEditMode() {
                 "div"
             );
 
+
         editNotice.id =
             "editModeNotice";
+
 
         editNotice.style.cssText = `
             margin-bottom:15px;
@@ -1148,9 +1572,14 @@ function showEditMode() {
             font-weight:600;
         `;
 
+
         editNotice.innerHTML = `
+
             ✏️ در حال ویرایش گزارش هفته
-            <span id="editingWeekText"></span>
+
+            <span
+                id="editingWeekText"
+            ></span>
 
             <button
                 type="button"
@@ -1160,12 +1589,15 @@ function showEditMode() {
             >
                 لغو ویرایش
             </button>
+
         `;
+
 
         const firstCard =
             document.querySelector(
                 ".card"
             );
+
 
         if (firstCard) {
 
@@ -1178,15 +1610,18 @@ function showEditMode() {
 
     }
 
+
     const week =
         getValue(
             "weekNumber"
         );
 
+
     const weekText =
         document.getElementById(
             "editingWeekText"
         );
+
 
     if (weekText) {
 
@@ -1209,6 +1644,34 @@ function cancelEditWeeklyRecord() {
     editingRecordId =
         null;
 
+
+    const saveButton =
+        document.querySelector(
+            'button[onclick="saveWeeklyRecord()"]'
+        );
+
+
+    if (saveButton) {
+
+        saveButton.textContent =
+            "ذخیره گزارش هفتگی";
+
+    }
+
+
+    const notice =
+        document.getElementById(
+            "editModeNotice"
+        );
+
+
+    if (notice) {
+
+        notice.remove();
+
+    }
+
+
     clearWeeklyForm();
 
 }
@@ -1222,18 +1685,27 @@ function clearWeeklyForm() {
 
     setToday();
 
+
     const fields = [
 
         "weekNumber",
+
         "liveBirds",
+
         "mortalityWeek",
+
         "feedTotal",
+
         "waterTotal",
+
         "feedPerBird",
+
         "waterPerBird",
+
         "weeklyNotes"
 
     ];
+
 
     fields.forEach(
         id => {
@@ -1242,6 +1714,7 @@ function clearWeeklyForm() {
                 document.getElementById(
                     id
                 );
+
 
             if (element) {
 
@@ -1253,22 +1726,26 @@ function clearWeeklyForm() {
         }
     );
 
-    const container =
+
+    const weightsContainer =
         document.getElementById(
             "weightsContainer"
         );
 
-    if (container) {
 
-        container.innerHTML =
+    if (weightsContainer) {
+
+        weightsContainer.innerHTML =
             "";
 
     }
+
 
     const resultsCard =
         document.getElementById(
             "resultsCard"
         );
+
 
     if (resultsCard) {
 
@@ -1276,6 +1753,7 @@ function clearWeeklyForm() {
             "none";
 
     }
+
 
     if (weightChart) {
 
@@ -1286,13 +1764,16 @@ function clearWeeklyForm() {
 
     }
 
+
     editingRecordId =
         null;
+
 
     const saveButton =
         document.querySelector(
             'button[onclick="saveWeeklyRecord()"]'
         );
+
 
     if (saveButton) {
 
@@ -1301,10 +1782,12 @@ function clearWeeklyForm() {
 
     }
 
+
     const notice =
         document.getElementById(
             "editModeNotice"
         );
+
 
     if (notice) {
 
@@ -1329,9 +1812,13 @@ function setField(
             id
         );
 
+
     if (!element) {
+
         return;
+
     }
+
 
     if (
         value === null ||
@@ -1342,16 +1829,20 @@ function setField(
             "";
 
         return;
+
     }
 
+
     element.value =
-        normalizeDigits(value);
+        normalizeNumberString(
+            value
+        );
 
 }
 
 
 /* =========================================================
-   JALALI -> GREGORIAN
+   SAVE TO SUPABASE
    ========================================================= */
 
 function getGregorianDateForSupabase(
@@ -1359,18 +1850,46 @@ function getGregorianDateForSupabase(
 ) {
 
     if (!value) {
+
         return null;
+
     }
 
+
     const text =
-        normalizeDigits(
-            value
-        );
+        String(value)
+            .replace(
+                /[۰-۹]/g,
+                function (d) {
+
+                    return String(
+                        d.charCodeAt(0) -
+                        1776
+                    );
+
+                }
+            )
+            .replace(
+                /[٠-٩]/g,
+                function (d) {
+
+                    return String(
+                        d.charCodeAt(0) -
+                        1632
+                    );
+
+                }
+            )
+            .trim();
+
 
     const parts =
         text.split("/");
 
-    if (parts.length !== 3) {
+
+    if (
+        parts.length !== 3
+    ) {
 
         throw new Error(
             "فرمت تاریخ صحیح نیست. مثال: ۱۴۰۵/۰۵/۱۸"
@@ -1378,14 +1897,18 @@ function getGregorianDateForSupabase(
 
     }
 
+
     const jy =
         Number(parts[0]);
+
 
     const jm =
         Number(parts[1]);
 
+
     const jd =
         Number(parts[2]);
+
 
     if (
         !Number.isInteger(jy) ||
@@ -1403,241 +1926,38 @@ function getGregorianDateForSupabase(
 
     }
 
+
     /*
-     * تبدیل دقیق جلالی به میلادی
+     * استفاده از persianDate موجود در پروژه
      */
-
-    let gy;
-
-    if (jy > 979) {
-
-        gy = 1600;
-
-    }
-    else {
-
-        gy = 621;
-
-    }
-
-    let jy2 =
-        jy - (
-            jy > 979
-                ? 979
-                : 0
-        );
-
-    const days =
-        (
-            365 * jy2
-        ) +
-        Math.floor(
-            jy2 / 33
-        ) * 8 +
-        Math.floor(
-            (
-                jy2 % 33 + 3
-            ) / 4
-        ) +
-        78 +
-        jd +
-        (
-            jm < 7
-                ? (
-                    jm - 1
-                ) * 31
-                : (
-                    jm - 7
-                ) * 30 + 186
-        );
-
-    let gDays =
-        days +
-        (
-            jy > 979
-                ? 79
-                : 0
-        );
-
-    gy +=
-        400 *
-        Math.floor(
-            gDays / 146097
-        );
-
-    gDays %=
-        146097;
-
-    let leap =
-        true;
-
     if (
-        gDays >= 36525
+        typeof persianDate !==
+        "function"
     ) {
 
-        gDays--;
-
-        gy +=
-            100 *
-            Math.floor(
-                gDays / 36524
-            );
-
-        gDays %=
-            36524;
-
-        if (
-            gDays >= 365
-        ) {
-
-            gDays++;
-
-        }
-        else {
-
-            leap =
-                false;
-
-        }
-
-    }
-
-    gy +=
-        4 *
-        Math.floor(
-            gDays / 1461
+        throw new Error(
+            "کتابخانه تاریخ شمسی بارگذاری نشده است."
         );
 
-    gDays %=
-        1461;
-
-    if (
-        gDays >= 366
-    ) {
-
-        leap =
-            false;
-
-        gDays--;
-
-        gy +=
-            Math.floor(
-                gDays / 365
-            );
-
-        gDays %=
-            365;
-
     }
 
-    const monthDays = [
-        31,
-        leap ? 29 : 28,
-        31,
-        30,
-        31,
-        30,
-        31,
-        31,
-        30,
-        31,
-        30,
-        31
-    ];
 
-    let gm = 1;
+    const date =
+        new persianDate()
+            .year(jy)
+            .month(jm - 1)
+            .date(jd);
 
-    while (
-        gDays >=
-        monthDays[gm - 1]
-    ) {
 
-        gDays -=
-            monthDays[gm - 1];
-
-        gm++;
-
-    }
-
-    const gd =
-        gDays + 1;
-
-    return (
-        String(gy) +
-        "-" +
-        String(gm).padStart(2, "0") +
-        "-" +
-        String(gd).padStart(2, "0")
-    );
+    return date
+        .toCalendar("gregorian")
+        .format("YYYY-MM-DD");
 
 }
 
 
 /* =========================================================
-   GREGORIAN -> JALALI
-   ========================================================= */
-
-function convertGregorianToJalali(
-    date
-) {
-
-    if (!date) {
-        return "";
-    }
-
-    const parts =
-        String(date).split("-");
-
-    if (parts.length !== 3) {
-        return String(date);
-    }
-
-    const gy =
-        Number(parts[0]);
-
-    const gm =
-        Number(parts[1]);
-
-    const gd =
-        Number(parts[2]);
-
-    if (
-        !Number.isFinite(gy) ||
-        !Number.isFinite(gm) ||
-        !Number.isFinite(gd)
-    ) {
-
-        return String(date);
-
-    }
-
-    const formatter =
-        new Intl.DateTimeFormat(
-            "fa-IR-u-ca-persian",
-            {
-                year: "numeric",
-                month: "2-digit",
-                day: "2-digit"
-            }
-        );
-
-    return formatter.format(
-        new Date(
-            gy,
-            gm - 1,
-            gd
-        )
-    )
-    .replaceAll(
-        "-",
-        "/"
-    );
-
-}
-
-
-/* =========================================================
-   SAVE TO SUPABASE
+   SAVE WEEKLY RECORD
    ========================================================= */
 
 async function saveWeeklyRecord() {
@@ -1654,10 +1974,12 @@ async function saveWeeklyRecord() {
 
         }
 
+
         const week =
             getNumber(
                 "weekNumber"
             );
+
 
         if (
             !week ||
@@ -1672,8 +1994,10 @@ async function saveWeeklyRecord() {
 
         }
 
+
         const weights =
             getWeights();
+
 
         if (weights.length < 2) {
 
@@ -1685,11 +2009,64 @@ async function saveWeeklyRecord() {
 
         }
 
+
         const stats =
             calculateWeightStatistics(
                 weights
             );
 
+
+        const liveBirds =
+            getNumber(
+                "liveBirds"
+            );
+
+
+        const mortality =
+            getNumber(
+                "mortalityWeek"
+            );
+
+
+        const feedTotal =
+            getNumber(
+                "feedTotal"
+            );
+
+
+        const waterTotal =
+            getNumber(
+                "waterTotal"
+            );
+
+
+        const feedPerBird =
+            getNumber(
+                "feedPerBird"
+            );
+
+
+        const waterPerBird =
+            getNumber(
+                "waterPerBird"
+            );
+
+
+        /*
+         * تاریخ شمسی → میلادی
+         */
+        const evaluationDate =
+            getGregorianDateForSupabase(
+                getValue(
+                    "evaluationDate"
+                )
+            );
+
+
+        /*
+         * اگر در حالت ویرایش هستیم،
+         * همان رکورد قبلی را پیدا می‌کنیم.
+         */
         const editingRecord =
             editingRecordId
                 ? weeklyRecords.find(
@@ -1699,10 +2076,12 @@ async function saveWeeklyRecord() {
                 )
                 : null;
 
+
         const recordId =
             editingRecord
                 ? editingRecord.id
                 : null;
+
 
         const payload = {
 
@@ -1713,96 +2092,144 @@ async function saveWeeklyRecord() {
                 }
                 : {}),
 
+
             owner_id:
                 currentUser.id,
+
 
             farm_id:
                 currentFlock.farm_id,
 
+
             house_id:
                 currentFlock.house_id,
+
 
             flock_id:
                 currentFlock.id,
 
+
             week_number:
                 week,
 
+
             evaluation_date:
-                getGregorianDateForSupabase(
-                    getValue(
-                        "evaluationDate"
-                    )
-                ),
+                evaluationDate,
+
+
+            /*
+             * WEIGHT STATISTICS
+             */
 
             sample_count:
                 stats.count,
 
+
             average_weight_g:
                 stats.mean,
+
 
             sd_weight_g:
                 stats.sd,
 
+
             cv_percent:
                 stats.cv,
+
 
             uniformity_10_percent:
                 stats.uniformity10,
 
+
             uniformity_15_percent:
                 stats.uniformity15,
+
 
             min_weight_g:
                 stats.min,
 
+
             max_weight_g:
                 stats.max,
 
+
+            /*
+             * FLOCK
+             */
+
             live_birds:
-                getNumber(
-                    "liveBirds"
-                ),
+                liveBirds,
+
 
             mortality_count:
-                getNumber(
-                    "mortalityWeek"
-                ),
+                mortality,
+
+
+            /*
+             * FEED / WATER
+             */
 
             feed_total_kg:
-                getNumber(
-                    "feedTotal"
-                ),
+                feedTotal,
+
 
             water_total_liter:
-                getNumber(
-                    "waterTotal"
-                ),
+                waterTotal,
+
 
             feed_per_bird_g:
-                getNumber(
-                    "feedPerBird"
-                ),
+                feedPerBird,
+
 
             water_per_bird_ml:
-                getNumber(
-                    "waterPerBird"
-                ),
+                waterPerBird,
+
+
+            /*
+             * NOTES
+             */
 
             notes:
                 getValue(
                     "weeklyNotes"
                 ),
 
+
+            /*
+             * RAW WEIGHTS
+             */
+
             weights:
                 weights
 
         };
 
+
         console.log(
             "WEEKLY SUPABASE PAYLOAD:",
             payload
         );
+
+
+        /*
+         * جلوگیری از دوبار کلیک هنگام ذخیره
+         */
+        const saveButton =
+            document.querySelector(
+                'button[onclick="saveWeeklyRecord()"]'
+            );
+
+
+        if (saveButton) {
+
+            saveButton.disabled =
+                true;
+
+            saveButton.textContent =
+                "در حال ذخیره...";
+
+        }
+
 
         const {
             data,
@@ -1822,6 +2249,7 @@ async function saveWeeklyRecord() {
                 .select()
                 .single();
 
+
         if (error) {
 
             console.error(
@@ -1829,27 +2257,51 @@ async function saveWeeklyRecord() {
                 error
             );
 
+
+            if (saveButton) {
+
+                saveButton.disabled =
+                    false;
+
+                saveButton.textContent =
+                    editingRecordId
+                        ? "ذخیره تغییرات"
+                        : "ذخیره گزارش هفتگی";
+
+            }
+
+
             alert(
                 "ذخیره گزارش انجام نشد:\n" +
                 error.message
             );
 
+
             return;
 
         }
+
 
         console.log(
             "WEEKLY RECORD SAVED:",
             data
         );
 
-        if (editingRecordId) {
+
+        const wasEditing =
+            Boolean(
+                editingRecordId
+            );
+
+
+        if (wasEditing) {
 
             alert(
                 "گزارش هفتگی با موفقیت ویرایش شد."
             );
 
         }
+
         else {
 
             alert(
@@ -1858,7 +2310,9 @@ async function saveWeeklyRecord() {
 
         }
 
+
         clearWeeklyForm();
+
 
         await loadHistory();
 
@@ -1871,6 +2325,7 @@ async function saveWeeklyRecord() {
             error
         );
 
+
         alert(
             "ذخیره گزارش انجام نشد:\n" +
             (
@@ -1879,20 +2334,42 @@ async function saveWeeklyRecord() {
             )
         );
 
+
+        const saveButton =
+            document.querySelector(
+                'button[onclick="saveWeeklyRecord()"]'
+            );
+
+
+        if (saveButton) {
+
+            saveButton.disabled =
+                false;
+
+            saveButton.textContent =
+                editingRecordId
+                    ? "ذخیره تغییرات"
+                    : "ذخیره گزارش هفتگی";
+
+        }
+
     }
 
 }
 
 
 /* =========================================================
-   HISTORY
+   HISTORY FROM SUPABASE
    ========================================================= */
 
 async function loadHistory() {
 
     if (!currentFlock) {
+
         return;
+
     }
+
 
     const {
         data,
@@ -1919,6 +2396,7 @@ async function loadHistory() {
                 }
             );
 
+
     if (error) {
 
         console.error(
@@ -1926,18 +2404,32 @@ async function loadHistory() {
             error
         );
 
-        document.getElementById(
-            "weeklyHistory"
-        ).innerHTML = `
-            خطا در دریافت سوابق.
-        `;
+
+        const history =
+            document.getElementById(
+                "weeklyHistory"
+            );
+
+
+        if (history) {
+
+            history.innerHTML = `
+                <p>
+                    خطا در دریافت سوابق.
+                </p>
+            `;
+
+        }
+
 
         return;
 
     }
 
+
     weeklyRecords =
         data || [];
+
 
     renderHistory();
 
@@ -1955,9 +2447,13 @@ function renderHistory() {
             "weeklyHistory"
         );
 
+
     if (!container) {
+
         return;
+
     }
+
 
     if (!weeklyRecords.length) {
 
@@ -1970,6 +2466,7 @@ function renderHistory() {
         return;
 
     }
+
 
     container.innerHTML = `
 
@@ -1985,21 +2482,54 @@ function renderHistory() {
 
                     <tr>
 
-                        <th>هفته</th>
-                        <th>تاریخ</th>
-                        <th>میانگین</th>
-                        <th>SD</th>
-                        <th>CV</th>
-                        <th>یکنواختی ±10</th>
-                        <th>یکنواختی ±15</th>
-                        <th>تلفات</th>
-                        <th>دان</th>
-                        <th>آب</th>
-                        <th>عملیات</th>
+                        <th>
+                            هفته
+                        </th>
+
+                        <th>
+                            تاریخ
+                        </th>
+
+                        <th>
+                            میانگین
+                        </th>
+
+                        <th>
+                            SD
+                        </th>
+
+                        <th>
+                            CV
+                        </th>
+
+                        <th>
+                            یکنواختی ±10
+                        </th>
+
+                        <th>
+                            یکنواختی ±15
+                        </th>
+
+                        <th>
+                            تلفات
+                        </th>
+
+                        <th>
+                            دان
+                        </th>
+
+                        <th>
+                            آب
+                        </th>
+
+                        <th>
+                            عملیات
+                        </th>
 
                     </tr>
 
                 </thead>
+
 
                 <tbody>
 
@@ -2017,11 +2547,13 @@ function renderHistory() {
                                             )}
                                         </td>
 
+
                                         <td>
                                             ${formatDateDisplay(
                                                 record.evaluation_date
                                             )}
                                         </td>
+
 
                                         <td>
                                             ${formatNumber(
@@ -2030,12 +2562,14 @@ function renderHistory() {
                                             )}
                                         </td>
 
+
                                         <td>
                                             ${formatNumber(
                                                 record.sd_weight_g,
                                                 1
                                             )}
                                         </td>
+
 
                                         <td>
                                             ${formatNumber(
@@ -2044,12 +2578,14 @@ function renderHistory() {
                                             )}%
                                         </td>
 
+
                                         <td>
                                             ${formatNumber(
                                                 record.uniformity_10_percent,
                                                 1
                                             )}%
                                         </td>
+
 
                                         <td>
                                             ${formatNumber(
@@ -2058,12 +2594,14 @@ function renderHistory() {
                                             )}%
                                         </td>
 
+
                                         <td>
                                             ${formatNumber(
                                                 record.mortality_count,
                                                 0
                                             )}
                                         </td>
+
 
                                         <td>
                                             ${formatNumber(
@@ -2072,12 +2610,14 @@ function renderHistory() {
                                             )}
                                         </td>
 
+
                                         <td>
                                             ${formatNumber(
                                                 record.water_total_liter,
                                                 1
                                             )}
                                         </td>
+
 
                                         <td>
 
@@ -2118,11 +2658,200 @@ function formatDateDisplay(
 ) {
 
     if (!date) {
+
         return "-";
+
     }
 
-    return convertGregorianToJalali(
+
+    /*
+     * اگر قبلاً شمسی باشد
+     */
+    const text =
+        String(date);
+
+
+    if (
+        text.includes("/")
+    ) {
+
+        return convertDigitsToPersian(
+            text
+        );
+
+    }
+
+
+    const parts =
+        text.split("-");
+
+
+    if (
+        parts.length !== 3
+    ) {
+
+        return convertDigitsToPersian(
+            text
+        );
+
+    }
+
+
+    /*
+     * تاریخ دیتابیس میلادی است.
+     * تبدیل به شمسی واقعی.
+     */
+
+    try {
+
+        if (
+            typeof persianDate ===
+            "function"
+        ) {
+
+            const gregorianDate =
+                new persianDate(
+                    parts[0] +
+                    "-" +
+                    parts[1] +
+                    "-" +
+                    parts[2]
+                );
+
+
+            const shamsi =
+                gregorianDate
+                    .toCalendar(
+                        "persian"
+                    )
+                    .format(
+                        "YYYY/MM/DD"
+                    );
+
+
+            return convertDigitsToPersian(
+                shamsi
+            );
+
+        }
+
+    }
+
+    catch (error) {
+
+        console.error(
+            "Persian date display error:",
+            error
+        );
+
+    }
+
+
+    /*
+     * اگر تبدیل‌کننده موجود نبود
+     */
+    return convertDigitsToPersian(
+        text
+    );
+
+}
+
+
+/* =========================================================
+   DATABASE DATE → SHAMSI FOR EDIT
+   ========================================================= */
+
+function convertDatabaseDateToShamsi(
+    date
+) {
+
+    if (!date) {
+
+        return "";
+
+    }
+
+
+    const parts =
+        String(date).split("-");
+
+
+    if (
+        parts.length !== 3
+    ) {
+
+        return String(date);
+
+    }
+
+
+    try {
+
+        if (
+            typeof persianDate ===
+            "function"
+        ) {
+
+            const gregorian =
+                new persianDate(
+                    `${parts[0]}-${parts[1]}-${parts[2]}`
+                );
+
+
+            const shamsi =
+                gregorian
+                    .toCalendar(
+                        "persian"
+                    )
+                    .format(
+                        "YYYY/MM/DD"
+                    );
+
+
+            return convertDigitsToPersian(
+                shamsi
+            );
+
+        }
+
+    }
+
+    catch (error) {
+
+        console.error(
+            "Date conversion error:",
+            error
+        );
+
+    }
+
+
+    return convertDigitsToPersian(
         date
+    );
+
+}
+
+
+/* =========================================================
+   DIGITS TO PERSIAN
+   ========================================================= */
+
+function convertDigitsToPersian(
+    value
+) {
+
+    return String(
+        value ?? ""
+    ).replace(
+        /\d/g,
+        function (digit) {
+
+            return "۰۱۲۳۴۵۶۷۸۹"[
+                Number(digit)
+            ];
+
+        }
     );
 
 }
@@ -2141,21 +2870,24 @@ function getValue(
             id
         );
 
-    return element
-        ? String(
-            element.value || ""
-        ).trim()
-        : "";
+
+    if (!element) {
+
+        return "";
+
+    }
+
+
+    return String(
+        element.value || ""
+    ).trim();
 
 }
 
 
-/*
- * مهم‌ترین تغییر:
- *
- * این تابع الان اعداد فارسی و عربی
- * را هم می‌خواند.
- */
+/* =========================================================
+   GET NUMBER
+   ========================================================= */
 
 function getNumber(
     id
@@ -2164,19 +2896,25 @@ function getNumber(
     const value =
         getValue(id);
 
+
     if (!value) {
+
         return 0;
+
     }
 
+
     const normalized =
-        normalizeDigits(
+        normalizeNumberString(
             value
         );
+
 
     const number =
         Number(
             normalized
         );
+
 
     return Number.isFinite(
         number
@@ -2206,8 +2944,10 @@ function formatNumber(
 
     }
 
+
     const number =
         Number(value);
+
 
     if (
         !Number.isFinite(
@@ -2219,14 +2959,17 @@ function formatNumber(
 
     }
 
+
     return number.toLocaleString(
         "fa-IR",
         {
+
             minimumFractionDigits:
                 decimals,
 
             maximumFractionDigits:
                 decimals
+
         }
     );
 
@@ -2257,6 +3000,7 @@ function getProductionLabel(
 
     };
 
+
     return (
         labels[type] ||
         type ||
@@ -2277,22 +3021,27 @@ function escapeHTML(
     return String(
         value ?? ""
     )
+
     .replaceAll(
         "&",
         "&amp;"
     )
+
     .replaceAll(
         "<",
         "&lt;"
     )
+
     .replaceAll(
         ">",
         "&gt;"
     )
+
     .replaceAll(
         '"',
         "&quot;"
     )
+
     .replaceAll(
         "'",
         "&#039;"
@@ -2302,7 +3051,7 @@ function escapeHTML(
 
 
 /* =========================================================
-   ESCAPE ATTRIBUTE
+   ESCAPE HTML ATTRIBUTE
    ========================================================= */
 
 function escapeHTMLAttribute(
@@ -2312,18 +3061,22 @@ function escapeHTMLAttribute(
     return String(
         value ?? ""
     )
+
     .replaceAll(
         "\\",
         "\\\\"
     )
+
     .replaceAll(
         "'",
         "\\'"
     )
+
     .replaceAll(
         "\n",
         "\\n"
     )
+
     .replaceAll(
         "\r",
         "\\r"

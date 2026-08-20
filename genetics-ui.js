@@ -340,12 +340,15 @@ function renderStandardStatus(
 
         <div class="info-box">
 
-            استاندارد مرجع فعال است.
-            سال مرجع:
+            <strong>استاندارد مرجع فعال است.</strong>
+            <br>
             ${escapeHTML(
-                standard.sourceYear ||
-                "-"
+                standard.sourceType === "management-standard"
+                    ? "برای این سویه/شاخص، استاندارد مدیریتی استفاده می‌شود."
+                    : "استاندارد ژنتیکی رسمی برای شاخص‌های موجود و استاندارد مدیریتی برای شاخص‌های فاقد مرجع رسمی استفاده می‌شود."
             )}
+            <br>
+            نسخه: ${escapeHTML(standard.version || "-")}
 
         </div>
 

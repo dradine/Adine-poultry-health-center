@@ -2,6 +2,13 @@
    ADINE POULTRY HEALTH CENTER
    HOUSES + FLOCKS
    SUPABASE
+
+   اصلاحات:
+   - اعداد فارسی
+   - اعداد عربی
+   - اعداد انگلیسی
+   - تاریخ شمسی
+   - ذخیره تاریخ به صورت YYYY-MM-DD در Supabase
    ========================================================= */
 
 let currentUser = null;
@@ -11,8 +18,32 @@ let flocks = [];
 
 
 /* =========================================================
-   INIT
-   ========================================================= */
+   NUMBER NORMALIZATION
+========================================================= */
+
+function normalizeNumbers(value) {
+
+    return String(value ?? "")
+        .replace(/[۰-۹]/g, function(char) {
+            return String(
+                char.charCodeAt(0) - 1776
+            );
+        })
+        .replace(/[٠-٩]/g, function(char) {
+            return String(
+                char.charCodeAt(0) - 1632
+            );
+        })
+        .replace(/[٬،]/g, ",")
+        .replace(/,/g, "")
+        .trim();
+
+}
+
+
+/* =========================================================
+   INITIALIZE
+========================================================= */
 
 document.addEventListener(
     "DOMContentLoaded",
@@ -22,55 +53,75 @@ document.addEventListener(
 
 async function initializeFlocks() {
 
-    const access =
-        await checkUserAccess();
+    try {
+
+        const access =
+            await checkUserAccess();
 
 
-    if (!access.authenticated) {
+        if (!access.authenticated) {
 
-        window.location.href =
-            "login.html?message=" +
-            encodeURIComponent(
-                "ابتدا وارد سامانه شوید."
+            window.location.href =
+                "login.html?message=" +
+                encodeURIComponent(
+                    "ابتدا وارد سامانه شوید."
+                );
+
+            return;
+
+        }
+
+
+        if (!access.allowed) {
+
+            alert(
+                "حساب شما هنوز توسط مدیریت تأیید نشده است."
             );
 
-        return;
+            await logoutUser();
+
+            return;
+
+        }
+
+
+        currentUser =
+            access.user;
+
+
+        await loadSelectedFarm();
+
+
+        setupHouseForm();
+
+        setupFlockForm();
+
+        setupGenetics();
+
+        setupJalaliDate();
+
 
     }
 
+    catch (error) {
 
-    if (!access.allowed) {
-
-        alert(
-            "حساب شما هنوز توسط مدیریت تأیید نشده است."
+        console.error(
+            "Flocks initialization error:",
+            error
         );
 
-        await logoutUser();
-
-        return;
+        alert(
+            "خطا در راه‌اندازی بخش سالن و گله."
+        );
 
     }
-
-
-    currentUser =
-        access.user;
-
-
-    await loadSelectedFarm();
-
-
-    setupHouseForm();
-
-    setupFlockForm();
-
-    setupGenetics();
 
 }
 
 
 /* =========================================================
    SELECTED FARM
-   ========================================================= */
+========================================================= */
 
 async function loadSelectedFarm() {
 
@@ -170,7 +221,8 @@ async function loadSelectedFarm() {
 
             ظرفیت:
             ${
-                data.capacity
+                data.capacity !== null &&
+                data.capacity !== undefined
                     ? Number(
                         data.capacity
                       ).toLocaleString("fa-IR")
@@ -191,7 +243,7 @@ async function loadSelectedFarm() {
 
 /* =========================================================
    HOUSES
-   ========================================================= */
+========================================================= */
 
 async function loadHouses() {
 
@@ -243,7 +295,7 @@ async function loadHouses() {
 
 /* =========================================================
    HOUSE FORM
-   ========================================================= */
+========================================================= */
 
 function setupHouseForm() {
 
@@ -251,6 +303,13 @@ function setupHouseForm() {
         document.getElementById(
             "houseForm"
         );
+
+
+    if (!form) {
+
+        return;
+
+    }
 
 
     form.addEventListener(
@@ -403,7 +462,7 @@ async function saveHouse(
 
 /* =========================================================
    RENDER HOUSES
-   ========================================================= */
+========================================================= */
 
 function renderHouses() {
 
@@ -411,6 +470,13 @@ function renderHouses() {
         document.getElementById(
             "housesList"
         );
+
+
+    if (!container) {
+
+        return;
+
+    }
 
 
     if (!houses.length) {
@@ -451,7 +517,8 @@ function renderHouses() {
                         <p>
                             ظرفیت:
                             ${
-                                house.capacity
+                                house.capacity !== null &&
+                                house.capacity !== undefined
                                     ? Number(
                                         house.capacity
                                       ).toLocaleString("fa-IR")
@@ -473,7 +540,7 @@ function renderHouses() {
                                 type="button"
                                 onclick="
                                     selectHouse(
-                                        '${house.id}'
+                                        '${escapeHTML(house.id)}'
                                     )
                                 "
                             >
@@ -485,7 +552,7 @@ function renderHouses() {
                                 type="button"
                                 onclick="
                                     deleteHouse(
-                                        '${house.id}'
+                                        '${escapeHTML(house.id)}'
                                     )
                                 "
                             >
@@ -505,7 +572,7 @@ function renderHouses() {
 
 /* =========================================================
    HOUSE SELECT
-   ========================================================= */
+========================================================= */
 
 function updateHouseSelect() {
 
@@ -513,6 +580,13 @@ function updateHouseSelect() {
         document.getElementById(
             "flockHouse"
         );
+
+
+    if (!select) {
+
+        return;
+
+    }
 
 
     select.innerHTML = `
@@ -586,8 +660,12 @@ function selectHouse(
         );
 
 
-    select.value =
-        houseId;
+    if (select) {
+
+        select.value =
+            houseId;
+
+    }
 
 
     document.getElementById(
@@ -601,7 +679,7 @@ function selectHouse(
 
 /* =========================================================
    DELETE HOUSE
-   ========================================================= */
+========================================================= */
 
 async function deleteHouse(
     houseId
@@ -660,7 +738,7 @@ async function deleteHouse(
 
 /* =========================================================
    GENETICS
-   ========================================================= */
+========================================================= */
 
 function setupGenetics() {
 
@@ -668,6 +746,13 @@ function setupGenetics() {
         document.getElementById(
             "productionType"
         );
+
+
+    if (!production) {
+
+        return;
+
+    }
 
 
     production.addEventListener(
@@ -699,6 +784,13 @@ function updateGenetics() {
         document.getElementById(
             "flockProgram"
         );
+
+
+    if (!genetics || !program) {
+
+        return;
+
+    }
 
 
     genetics.innerHTML = "";
@@ -812,7 +904,6 @@ function updateGenetics() {
     genetics.onchange =
         updatePrograms;
 
-
 }
 
 
@@ -886,7 +977,7 @@ function updatePrograms() {
 
 /* =========================================================
    FLOCKS
-   ========================================================= */
+========================================================= */
 
 async function loadFlocks() {
 
@@ -936,19 +1027,34 @@ async function loadFlocks() {
 
 /* =========================================================
    FLOCK FORM
-   ========================================================= */
+========================================================= */
 
 function setupFlockForm() {
 
-    document
-        .getElementById("flockForm")
-        .addEventListener(
-            "submit",
-            saveFlock
+    const form =
+        document.getElementById(
+            "flockForm"
         );
+
+
+    if (!form) {
+
+        return;
+
+    }
+
+
+    form.addEventListener(
+        "submit",
+        saveFlock
+    );
 
 }
 
+
+/* =========================================================
+   SAVE FLOCK
+========================================================= */
 
 async function saveFlock(
     event
@@ -1008,6 +1114,40 @@ async function saveFlock(
     }
 
 
+    /* =====================================================
+       JALALI DATE
+    ===================================================== */
+
+    const jalaliDate =
+        getValue(
+            "placementDate"
+        );
+
+
+    let gregorianDate = null;
+
+
+    if (jalaliDate) {
+
+        gregorianDate =
+            jalaliToGregorianISO(
+                jalaliDate
+            );
+
+
+        if (!gregorianDate) {
+
+            alert(
+                "تاریخ ورود گله را به صورت ۱۴۰۵/۰۵/۲۹ وارد کنید."
+            );
+
+            return;
+
+        }
+
+    }
+
+
     const payload = {
 
         farm_id:
@@ -1045,8 +1185,7 @@ async function saveFlock(
             getNumber("birdCount"),
 
         placement_date:
-            getValue("placementDate") ||
-            null,
+            gregorianDate,
 
         start_age_days:
             getNumber("startAgeDays"),
@@ -1125,7 +1264,7 @@ async function saveFlock(
 
         document.getElementById(
             "startAgeDays"
-        ).value = 1;
+        ).value = "۱";
 
 
         updateGenetics();
@@ -1158,7 +1297,7 @@ async function saveFlock(
 
 /* =========================================================
    RENDER FLOCKS
-   ========================================================= */
+========================================================= */
 
 function renderFlocks() {
 
@@ -1166,6 +1305,13 @@ function renderFlocks() {
         document.getElementById(
             "flocksList"
         );
+
+
+    if (!container) {
+
+        return;
+
+    }
 
 
     if (!flocks.length) {
@@ -1213,7 +1359,8 @@ function renderFlocks() {
                         <p>
                             تعداد:
                             ${
-                                flock.initial_bird_count
+                                flock.initial_bird_count !== null &&
+                                flock.initial_bird_count !== undefined
                                     ? Number(
                                         flock.initial_bird_count
                                       ).toLocaleString("fa-IR")
@@ -1224,7 +1371,9 @@ function renderFlocks() {
                         <p>
                             تاریخ ورود:
                             ${escapeHTML(
-                                flock.placement_date || "-"
+                                gregorianISOToJalali(
+                                    flock.placement_date
+                                ) || "-"
                             )}
                         </p>
 
@@ -1235,7 +1384,7 @@ function renderFlocks() {
                                 type="button"
                                 onclick="
                                     selectFlock(
-                                        '${flock.id}'
+                                        '${escapeHTML(flock.id)}'
                                     )
                                 "
                             >
@@ -1247,7 +1396,7 @@ function renderFlocks() {
                                 type="button"
                                 onclick="
                                     deleteFlock(
-                                        '${flock.id}'
+                                        '${escapeHTML(flock.id)}'
                                     )
                                 "
                             >
@@ -1267,7 +1416,7 @@ function renderFlocks() {
 
 /* =========================================================
    SELECT FLOCK
-   ========================================================= */
+========================================================= */
 
 function selectFlock(
     flockId
@@ -1309,7 +1458,7 @@ function selectFlock(
 
 /* =========================================================
    DELETE FLOCK
-   ========================================================= */
+========================================================= */
 
 async function deleteFlock(
     flockId
@@ -1386,7 +1535,7 @@ async function deleteFlock(
 
 /* =========================================================
    DISABLE
-   ========================================================= */
+========================================================= */
 
 function disableForms() {
 
@@ -1431,7 +1580,7 @@ function disableForms() {
 
 /* =========================================================
    HELPERS
-   ========================================================= */
+========================================================= */
 
 function getValue(
     id
@@ -1457,7 +1606,9 @@ function getNumber(
 ) {
 
     const value =
-        getValue(id);
+        normalizeNumbers(
+            getValue(id)
+        );
 
 
     if (!value) {
@@ -1467,12 +1618,19 @@ function getNumber(
     }
 
 
+    /*
+       اجازه اعداد اعشاری فارسی/انگلیسی
+    */
+
+    const normalized =
+        value
+            .replace(/٫/g, ".")
+            .replace(/٬/g, "")
+            .replace(/,/g, "");
+
+
     const number =
-        Number(
-            value
-                .replaceAll(",", "")
-                .replaceAll("٬", "")
-        );
+        Number(normalized);
 
 
     return Number.isFinite(number)
@@ -1531,5 +1689,1268 @@ function escapeHTML(
         "'",
         "&#039;"
     );
+
+}
+
+
+/* =========================================================
+   JALALI DATE SYSTEM
+========================================================= */
+
+
+/*
+   تبدیل تاریخ شمسی به میلادی
+   ورودی:
+   ۱۴۰۵/۰۵/۲۹
+   یا:
+   1405/05/29
+*/
+
+function jalaliToGregorianISO(
+    input
+) {
+
+    const normalized =
+        normalizeNumbers(
+            input
+        )
+        .replace(/-/g, "/")
+        .replace(/\\/g, "/");
+
+
+    const parts =
+        normalized
+            .split("/")
+            .map(
+                item =>
+                    Number(item)
+            );
+
+
+    if (
+        parts.length !== 3 ||
+        parts.some(
+            item =>
+                !Number.isFinite(item)
+        )
+    ) {
+
+        return null;
+
+    }
+
+
+    const jy =
+        parts[0];
+
+    const jm =
+        parts[1];
+
+    const jd =
+        parts[2];
+
+
+    if (
+        jy < 1200 ||
+        jy > 1600 ||
+        jm < 1 ||
+        jm > 12 ||
+        jd < 1 ||
+        jd > 31
+    ) {
+
+        return null;
+
+    }
+
+
+    const result =
+        jalaliToGregorian(
+            jy,
+            jm,
+            jd
+        );
+
+
+    if (!result) {
+
+        return null;
+
+    }
+
+
+    return (
+        String(result.gy).padStart(4, "0") +
+        "-" +
+        String(result.gm).padStart(2, "0") +
+        "-" +
+        String(result.gd).padStart(2, "0")
+    );
+
+}
+
+
+/*
+   الگوریتم تبدیل جلالی به میلادی
+*/
+
+function jalaliToGregorian(
+    jy,
+    jm,
+    jd
+) {
+
+    jy -= 979;
+
+
+    let days =
+        365 * jy;
+
+
+    days +=
+        Math.floor(
+            jy / 33
+        ) * 8;
+
+
+    days +=
+        Math.floor(
+            ((jy % 33) + 3) / 4
+        );
+
+
+    if (jm < 7) {
+
+        days +=
+            (jm - 1) * 31;
+
+    }
+
+    else {
+
+        days +=
+            (jm - 7) * 30 +
+            186;
+
+    }
+
+
+    days +=
+        jd - 1;
+
+
+    let gy =
+        1600 +
+        400 *
+        Math.floor(
+            days / 146097
+        );
+
+
+    days %=
+        146097;
+
+
+    if (days >= 36525) {
+
+        days--;
+
+        gy +=
+            100 *
+            Math.floor(
+                days / 36524
+            );
+
+        days %=
+            36524;
+
+
+        if (days >= 365) {
+
+            days++;
+
+        }
+
+    }
+
+
+    gy +=
+        4 *
+        Math.floor(
+            days / 1461
+        );
+
+
+    days %=
+        1461;
+
+
+    if (days >= 366) {
+
+        gy +=
+            Math.floor(
+                (days - 1) / 365
+            );
+
+        days =
+            (days - 1) % 365;
+
+    }
+
+
+    let gd =
+        days + 1;
+
+
+    const leap =
+        (
+            gy % 4 === 0 &&
+            gy % 100 !== 0
+        ) ||
+        (
+            gy % 400 === 0
+        );
+
+
+    const monthDays = [
+
+        31,
+
+        leap ? 29 : 28,
+
+        31,
+
+        30,
+
+        31,
+
+        30,
+
+        31,
+
+        31,
+
+        30,
+
+        31,
+
+        30,
+
+        31
+
+    ];
+
+
+    let gm = 1;
+
+
+    for (
+        let i = 0;
+        i < 12;
+        i++
+    ) {
+
+        if (
+            gd >
+            monthDays[i]
+        ) {
+
+            gd -=
+                monthDays[i];
+
+            gm++;
+
+        }
+
+        else {
+
+            break;
+
+        }
+
+    }
+
+
+    return {
+
+        gy,
+
+        gm,
+
+        gd
+
+    };
+
+}
+
+
+/*
+   تبدیل میلادی به شمسی
+*/
+
+function gregorianISOToJalali(
+    iso
+) {
+
+    if (!iso) {
+
+        return "";
+
+    }
+
+
+    const parts =
+        String(iso)
+            .substring(
+                0,
+                10
+            )
+            .split("-")
+            .map(
+                Number
+            );
+
+
+    if (
+        parts.length !== 3 ||
+        parts.some(
+            Number.isNaN
+        )
+    ) {
+
+        return "";
+
+    }
+
+
+    const result =
+        gregorianToJalali(
+            parts[0],
+            parts[1],
+            parts[2]
+        );
+
+
+    if (!result) {
+
+        return "";
+
+    }
+
+
+    return (
+        String(result.jy).padStart(4, "0") +
+        "/" +
+        String(result.jm).padStart(2, "0") +
+        "/" +
+        String(result.jd).padStart(2, "0")
+    );
+
+}
+
+
+/*
+   الگوریتم میلادی به جلالی
+*/
+
+function gregorianToJalali(
+    gy,
+    gm,
+    gd
+) {
+
+    const gdm = [
+
+        0,
+        31,
+        59,
+        90,
+        120,
+        151,
+        181,
+        212,
+        243,
+        273,
+        304,
+        334
+
+    ];
+
+
+    let gy2 =
+        gm > 2
+            ? gy + 1
+            : gy;
+
+
+    let days =
+        355666 +
+        365 * gy +
+        Math.floor(
+            (gy2 + 3) / 4
+        ) -
+        Math.floor(
+            (gy2 + 99) / 100
+        ) +
+        Math.floor(
+            (gy2 + 399) / 400
+        ) +
+        gd +
+        gdm[gm - 1];
+
+
+    let jy =
+        -1595 +
+        33 *
+        Math.floor(
+            days / 12053
+        );
+
+
+    days %=
+        12053;
+
+
+    jy +=
+        4 *
+        Math.floor(
+            days / 1461
+        );
+
+
+    days %=
+        1461;
+
+
+    if (days > 365) {
+
+        jy +=
+            Math.floor(
+                (days - 1) / 365
+            );
+
+        days =
+            (days - 1) % 365;
+
+    }
+
+
+    let jd;
+
+
+    let jm;
+
+
+    if (days < 186) {
+
+        jm =
+            1 +
+            Math.floor(
+                days / 31
+            );
+
+        jd =
+            1 +
+            (days % 31);
+
+    }
+
+    else {
+
+        jm =
+            7 +
+            Math.floor(
+                (days - 186) / 30
+            );
+
+        jd =
+            1 +
+            ((days - 186) % 30);
+
+    }
+
+
+    return {
+
+        jy,
+        jm,
+        jd
+
+    };
+
+}
+
+
+/* =========================================================
+   PERSIAN DIGITS FOR DISPLAY
+========================================================= */
+
+function toPersianDigits(
+    value
+) {
+
+    return String(value)
+        .replace(
+            /\d/g,
+            function(char) {
+
+                return (
+                    "۰۱۲۳۴۵۶۷۸۹"
+                )[Number(char)];
+
+            }
+        );
+
+}
+
+
+/* =========================================================
+   JALALI DATE PICKER
+========================================================= */
+
+let jalaliPicker = null;
+
+let jalaliPickerYear = null;
+
+let jalaliPickerMonth = null;
+
+
+function setupJalaliDate() {
+
+    const input =
+        document.getElementById(
+            "placementDate"
+        );
+
+
+    if (!input) {
+
+        return;
+
+    }
+
+
+    input.addEventListener(
+        "click",
+        openJalaliPicker
+    );
+
+
+    input.addEventListener(
+        "focus",
+        openJalaliPicker
+    );
+
+
+    createJalaliPicker();
+
+}
+
+
+function createJalaliPicker() {
+
+    if (
+        document.getElementById(
+            "jalaliDatePicker"
+        )
+    ) {
+
+        jalaliPicker =
+            document.getElementById(
+                "jalaliDatePicker"
+            );
+
+        return;
+
+    }
+
+
+    const picker =
+        document.createElement(
+            "div"
+        );
+
+
+    picker.id =
+        "jalaliDatePicker";
+
+
+    picker.style.cssText = `
+
+        position: fixed;
+        z-index: 99999;
+        background: #ffffff;
+        border: 1px solid #d9d9d9;
+        border-radius: 14px;
+        box-shadow: 0 10px 35px rgba(0,0,0,.18);
+        padding: 12px;
+        width: min(330px, calc(100vw - 24px));
+        display: none;
+        direction: rtl;
+        font-family: inherit;
+
+    `;
+
+
+    document.body.appendChild(
+        picker
+    );
+
+
+    jalaliPicker =
+        picker;
+
+
+    document.addEventListener(
+        "click",
+        function(event) {
+
+            const input =
+                document.getElementById(
+                    "placementDate"
+                );
+
+
+            if (
+                jalaliPicker &&
+                jalaliPicker.style.display !== "none" &&
+                !jalaliPicker.contains(event.target) &&
+                event.target !== input
+            ) {
+
+                closeJalaliPicker();
+
+            }
+
+        }
+    );
+
+}
+
+
+function openJalaliPicker() {
+
+    if (!jalaliPicker) {
+
+        createJalaliPicker();
+
+    }
+
+
+    const input =
+        document.getElementById(
+            "placementDate"
+        );
+
+
+    const current =
+        getValue(
+            "placementDate"
+        );
+
+
+    if (current) {
+
+        const parts =
+            normalizeNumbers(
+                current
+            )
+            .split("/")
+            .map(Number);
+
+
+        if (
+            parts.length === 3 &&
+            parts[0] >= 1200 &&
+            parts[1] >= 1 &&
+            parts[1] <= 12
+        ) {
+
+            jalaliPickerYear =
+                parts[0];
+
+            jalaliPickerMonth =
+                parts[1];
+
+        }
+
+    }
+
+
+    if (
+        !jalaliPickerYear ||
+        !jalaliPickerMonth
+    ) {
+
+        const now =
+            new Date();
+
+
+        const today =
+            gregorianToJalali(
+                now.getFullYear(),
+                now.getMonth() + 1,
+                now.getDate()
+            );
+
+
+        jalaliPickerYear =
+            today.jy;
+
+        jalaliPickerMonth =
+            today.jm;
+
+    }
+
+
+    renderJalaliPicker();
+
+
+    const rect =
+        input.getBoundingClientRect();
+
+
+    const pickerWidth =
+        Math.min(
+            330,
+            window.innerWidth - 24
+        );
+
+
+    let left =
+        rect.left;
+
+
+    if (
+        left + pickerWidth >
+        window.innerWidth - 12
+    ) {
+
+        left =
+            window.innerWidth -
+            pickerWidth -
+            12;
+
+    }
+
+
+    if (left < 12) {
+
+        left = 12;
+
+    }
+
+
+    let top =
+        rect.bottom + 8;
+
+
+    const estimatedHeight =
+        360;
+
+
+    if (
+        top + estimatedHeight >
+        window.innerHeight
+    ) {
+
+        top =
+            rect.top -
+            estimatedHeight -
+            8;
+
+    }
+
+
+    if (top < 12) {
+
+        top = 12;
+
+    }
+
+
+    jalaliPicker.style.left =
+        left + "px";
+
+
+    jalaliPicker.style.top =
+        top + "px";
+
+
+    jalaliPicker.style.display =
+        "block";
+
+}
+
+
+function closeJalaliPicker() {
+
+    if (jalaliPicker) {
+
+        jalaliPicker.style.display =
+            "none";
+
+    }
+
+}
+
+
+function renderJalaliPicker() {
+
+    if (!jalaliPicker) {
+
+        return;
+
+    }
+
+
+    const monthNames = [
+
+        "فروردین",
+        "اردیبهشت",
+        "خرداد",
+        "تیر",
+        "مرداد",
+        "شهریور",
+        "مهر",
+        "آبان",
+        "آذر",
+        "دی",
+        "بهمن",
+        "اسفند"
+
+    ];
+
+
+    const daysInMonth =
+        jalaliPickerMonth <= 6
+            ? 31
+            : jalaliPickerMonth <= 11
+                ? 30
+                : isJalaliLeapYear(
+                    jalaliPickerYear
+                  )
+                    ? 30
+                    : 29;
+
+
+    const firstGregorian =
+        jalaliToGregorian(
+            jalaliPickerYear,
+            jalaliPickerMonth,
+            1
+        );
+
+
+    const firstDate =
+        new Date(
+            firstGregorian.gy,
+            firstGregorian.gm - 1,
+            firstGregorian.gd
+        );
+
+
+    const startDay =
+        firstDate.getDay();
+
+
+    /*
+       تبدیل یکشنبه=۰ به
+       شنبه=۰ برای تقویم فارسی
+    */
+
+    const offset =
+        (startDay + 1) % 7;
+
+
+    let html = `
+
+        <div
+            style="
+                display:flex;
+                align-items:center;
+                justify-content:space-between;
+                gap:8px;
+                margin-bottom:10px;
+            "
+        >
+
+            <button
+                type="button"
+                data-jalali-prev
+                style="
+                    border:0;
+                    background:#f2f2f2;
+                    border-radius:8px;
+                    padding:7px 12px;
+                    font-size:18px;
+                    cursor:pointer;
+                "
+            >
+                ›
+            </button>
+
+            <strong
+                style="
+                    font-size:15px;
+                "
+            >
+                ${monthNames[jalaliPickerMonth - 1]}
+                ${toPersianDigits(jalaliPickerYear)}
+            </strong>
+
+            <button
+                type="button"
+                data-jalali-next
+                style="
+                    border:0;
+                    background:#f2f2f2;
+                    border-radius:8px;
+                    padding:7px 12px;
+                    font-size:18px;
+                    cursor:pointer;
+                "
+            >
+                ‹
+            </button>
+
+        </div>
+
+
+        <div
+            style="
+                display:grid;
+                grid-template-columns:repeat(7,1fr);
+                gap:4px;
+                text-align:center;
+                margin-bottom:5px;
+                font-size:12px;
+                font-weight:bold;
+            "
+        >
+
+            <div>ش</div>
+            <div>ی</div>
+            <div>د</div>
+            <div>س</div>
+            <div>چ</div>
+            <div>پ</div>
+            <div>ج</div>
+
+        </div>
+
+
+        <div
+            style="
+                display:grid;
+                grid-template-columns:repeat(7,1fr);
+                gap:4px;
+            "
+        >
+    `;
+
+
+    for (
+        let i = 0;
+        i < offset;
+        i++
+    ) {
+
+        html += `
+            <div></div>
+        `;
+
+    }
+
+
+    for (
+        let day = 1;
+        day <= daysInMonth;
+        day++
+    ) {
+
+        html += `
+
+            <button
+                type="button"
+                data-jalali-day="${day}"
+                style="
+                    border:0;
+                    background:#f7f7f7;
+                    border-radius:8px;
+                    padding:8px 2px;
+                    cursor:pointer;
+                    font-size:13px;
+                "
+            >
+                ${toPersianDigits(day)}
+            </button>
+
+        `;
+
+    }
+
+
+    html += `
+
+        </div>
+
+
+        <div
+            style="
+                display:flex;
+                justify-content:space-between;
+                gap:8px;
+                margin-top:10px;
+            "
+        >
+
+            <button
+                type="button"
+                data-jalali-today
+                style="
+                    flex:1;
+                    border:0;
+                    background:#173f35;
+                    color:white;
+                    border-radius:8px;
+                    padding:8px;
+                    cursor:pointer;
+                    font-family:inherit;
+                "
+            >
+                امروز
+            </button>
+
+            <button
+                type="button"
+                data-jalali-close
+                style="
+                    flex:1;
+                    border:0;
+                    background:#eeeeee;
+                    border-radius:8px;
+                    padding:8px;
+                    cursor:pointer;
+                    font-family:inherit;
+                "
+            >
+                بستن
+            </button>
+
+        </div>
+
+    `;
+
+
+    jalaliPicker.innerHTML =
+        html;
+
+
+    jalaliPicker
+        .querySelector(
+            "[data-jalali-prev]"
+        )
+        .addEventListener(
+            "click",
+            function(event) {
+
+                event.stopPropagation();
+
+                jalaliPickerMonth--;
+
+                if (
+                    jalaliPickerMonth <
+                    1
+                ) {
+
+                    jalaliPickerMonth =
+                        12;
+
+                    jalaliPickerYear--;
+
+                }
+
+                renderJalaliPicker();
+
+            }
+        );
+
+
+    jalaliPicker
+        .querySelector(
+            "[data-jalali-next]"
+        )
+        .addEventListener(
+            "click",
+            function(event) {
+
+                event.stopPropagation();
+
+                jalaliPickerMonth++;
+
+                if (
+                    jalaliPickerMonth >
+                    12
+                ) {
+
+                    jalaliPickerMonth =
+                        1;
+
+                    jalaliPickerYear++;
+
+                }
+
+                renderJalaliPicker();
+
+            }
+        );
+
+
+    jalaliPicker
+        .querySelectorAll(
+            "[data-jalali-day]"
+        )
+        .forEach(
+            button => {
+
+                button.addEventListener(
+                    "click",
+                    function(event) {
+
+                        event.stopPropagation();
+
+
+                        const day =
+                            Number(
+                                button.dataset.jalaliDay
+                            );
+
+
+                        const value =
+                            String(
+                                jalaliPickerYear
+                            ).padStart(4, "0") +
+                            "/" +
+                            String(
+                                jalaliPickerMonth
+                            ).padStart(2, "0") +
+                            "/" +
+                            String(
+                                day
+                            ).padStart(2, "0");
+
+
+                        const input =
+                            document.getElementById(
+                                "placementDate"
+                            );
+
+
+                        input.value =
+                            toPersianDigits(
+                                value
+                            );
+
+
+                        closeJalaliPicker();
+
+                    }
+                );
+
+            }
+        );
+
+
+    jalaliPicker
+        .querySelector(
+            "[data-jalali-today]"
+        )
+        .addEventListener(
+            "click",
+            function(event) {
+
+                event.stopPropagation();
+
+
+                const now =
+                    new Date();
+
+
+                const today =
+                    gregorianToJalali(
+                        now.getFullYear(),
+                        now.getMonth() + 1,
+                        now.getDate()
+                    );
+
+
+                jalaliPickerYear =
+                    today.jy;
+
+                jalaliPickerMonth =
+                    today.jm;
+
+
+                const input =
+                    document.getElementById(
+                        "placementDate"
+                    );
+
+
+                input.value =
+                    toPersianDigits(
+                        String(today.jy).padStart(4, "0") +
+                        "/" +
+                        String(today.jm).padStart(2, "0") +
+                        "/" +
+                        String(today.jd).padStart(2, "0")
+                    );
+
+
+                closeJalaliPicker();
+
+            }
+        );
+
+
+    jalaliPicker
+        .querySelector(
+            "[data-jalali-close]"
+        )
+        .addEventListener(
+            "click",
+            function(event) {
+
+                event.stopPropagation();
+
+                closeJalaliPicker();
+
+            }
+        );
+
+}
+
+
+function isJalaliLeapYear(
+    year
+) {
+
+    const mod =
+        year % 33;
+
+
+    return [
+
+        1,
+        5,
+        9,
+        13,
+        17,
+        22,
+        26,
+        30
+
+    ].includes(mod);
 
 }

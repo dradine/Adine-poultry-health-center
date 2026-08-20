@@ -16,6 +16,160 @@
     gap:8px;
     flex-wrap:wrap;
     margin-bottom:20px;
+    /* =====================================================
+   MOBILE PERSIAN DATEPICKER
+===================================================== */
+
+.datepicker-plot-area {
+    width: 290px !important;
+    min-width: 290px !important;
+    max-width: calc(100vw - 24px) !important;
+
+    font-family: inherit !important;
+
+    border-radius: 16px !important;
+
+    padding: 8px !important;
+
+    box-shadow:
+        0 10px 35px rgba(0,0,0,.18) !important;
+}
+
+
+/* هدر تقویم */
+
+.datepicker-plot-area
+.datepicker-header {
+
+    padding: 4px 2px !important;
+}
+
+
+/* نام ماه */
+
+.datepicker-plot-area
+.pwt-btn {
+
+    font-family: inherit !important;
+}
+
+
+/* روزهای هفته */
+
+.datepicker-plot-area
+.table-days {
+
+    width: 100% !important;
+}
+
+
+/* سلول روزها */
+
+.datepicker-plot-area
+.table-days td {
+
+    width: 14.28% !important;
+    height: 34px !important;
+    padding: 2px !important;
+}
+
+
+/* خود روز */
+
+.datepicker-plot-area
+.table-days td span {
+
+    width: 30px !important;
+    height: 30px !important;
+
+    line-height: 30px !important;
+
+    font-size: 13px !important;
+
+    margin: auto !important;
+
+    border-radius: 50% !important;
+}
+
+
+/* دکمه‌های پایین */
+
+.datepicker-plot-area
+.datepicker-footer {
+
+    padding: 5px 0 !important;
+}
+
+
+/* موبایل */
+
+@media (max-width: 480px) {
+
+    .datepicker-plot-area {
+
+        width:
+            min(285px, calc(100vw - 20px))
+            !important;
+
+        min-width:
+            min(285px, calc(100vw - 20px))
+            !important;
+
+        padding: 6px !important;
+
+        border-radius: 14px !important;
+    }
+
+
+    .datepicker-plot-area
+    .table-days td {
+
+        height: 32px !important;
+    }
+
+
+    .datepicker-plot-area
+    .table-days td span {
+
+        width: 28px !important;
+        height: 28px !important;
+
+        line-height: 28px !important;
+
+        font-size: 12px !important;
+    }
+}
+
+
+/* کادر تاریخ */
+
+.jalali-input {
+
+    background-color: #fff !important;
+
+    cursor: pointer !important;
+
+    font-size: 14px !important;
+
+    min-height: 44px !important;
+}
+
+
+/* علامت تقویم */
+
+.jalali-input {
+
+    padding-right: 42px !important;
+
+    background-image:
+        url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='20' height='20' viewBox='0 0 24 24' fill='none' stroke='%23173f35' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Crect x='3' y='4' width='18' height='18' rx='2'/%3E%3Cline x1='16' y1='2' x2='16' y2='6'/%3E%3Cline x1='8' y1='2' x2='8' y2='6'/%3E%3Cline x1='3' y1='10' x2='21' y2='10'/%3E%3C/svg%3E");
+
+    background-repeat: no-repeat;
+
+    background-position:
+        right 12px center;
+
+    background-size: 20px 20px;
 }
 
 .health-tab{

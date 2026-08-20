@@ -313,7 +313,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 } else {
 
                     window.location.href =
-                        "dashboard.html";
+                        "Dashboard.html";
 
                 }
 

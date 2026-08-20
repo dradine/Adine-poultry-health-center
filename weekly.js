@@ -1,543 +1,3893 @@
-<!DOCTYPE html>
-<html lang="fa" dir="rtl">
+/* =========================================================
+   ADINE POULTRY HEALTH CENTER
+   WEEKLY MONITORING
+   STABLE VERSION
+   Persian / Arabic / English Numbers
+   Shamsi Date
+   Supabase
+   Editing Records
+   Uniformity ±10 / ±15
+========================================================= */
 
-<head>
+"use strict";
 
-    <meta charset="UTF-8">
 
-    <meta
-        name="viewport"
-        content="width=device-width, initial-scale=1, viewport-fit=cover"
-    >
+/* =========================================================
+   GLOBAL VARIABLES
+========================================================= */
 
-    <meta
-        name="theme-color"
-        content="#173f35"
-    >
+let currentUser = null;
+let currentFlock = null;
+let weeklyRecords = [];
+let weightChart = null;
+let editingRecordId = null;
 
-    <title>
-        ثبت هفتگی | مرکز تخصصی سلامت طیور آدینه
-    </title>
 
-    <link
-        rel="stylesheet"
-        href="app.css"
-    >
-<link
-    rel="stylesheet"
-    href="https://cdn.jsdelivr.net/npm/persian-datepicker@1.2.0/dist/css/persian-datepicker.min.css"
->
-</head>
+/* =========================================================
+   INIT
+========================================================= */
 
-<body>
+document.addEventListener(
+    "DOMContentLoaded",
+    initializeWeekly
+);
 
-<div class="app-shell">
 
-<header class="topbar">
+async function initializeWeekly() {
 
-    <div class="brand">
+    try {
 
-        <img
-            src="IMG_4309.png"
-            alt="مرکز تخصصی سلامت طیور آدینه"
-        >
+        prepareNumericInputs();
 
-        <span>
-            ثبت هفتگی
-        </span>
+        const access =
+            await getWeeklyUserAccess();
 
-    </div>
+        if (!access.authenticated) {
 
-    <button
-        class="btn btn-secondary"
-        type="button"
-        onclick="location.href='Dashboard.html'"
-    >
-        داشبورد
-    </button>
+            location.href =
+                "login.html?message=" +
+                encodeURIComponent(
+                    "ابتدا وارد سامانه شوید."
+                );
 
-</header>
+            return;
 
-<main class="page">
+        }
 
-<div class="container">
+        if (!access.allowed) {
 
-<h1 class="page-title">
-    پایش هفتگی گله
-</h1>
+            alert(
+                "حساب شما هنوز توسط مدیریت تأیید نشده است."
+            );
 
-<p class="page-description">
-    ثبت وزن، یکنواختی، مصرف دان، آب و عملکرد هفتگی
-</p>
+            try {
 
-<!-- CURRENT FLOCK -->
+                await supabaseClient
+                    .auth
+                    .signOut();
 
-<section class="card">
+            }
 
-<h2 class="card-title">
-    گله انتخاب‌شده
-</h2>
+            catch (error) {
 
-<div id="currentFlock">
+                console.error(error);
 
-    در حال بارگذاری...
+            }
 
-</div>
+            location.href =
+                "login.html";
 
-</section>
+            return;
 
-<!-- WEEK -->
+        }
 
-<section class="card">
+        currentUser =
+            access.user;
 
-<h2 class="card-title">
-    اطلاعات هفته
-</h2>
+        setToday();
 
-<div class="form-grid">
+        await loadCurrentFlock();
 
-<div class="form-group">
+    }
 
-<label for="weekNumber">
-    هفته گله *
-</label>
-
-<input
-    id="weekNumber"
-    type="number"
-    min="1"
-    max="100"
-    required
-    inputmode="numeric"
-    placeholder="مثلاً 4"
->
-
-</div>
-
-<div class="form-group">
-
-<label for="evaluationDate">
-    تاریخ ارزیابی
-</label>
-
-<div style="position:relative;">
-
-    <input
-        id="evaluationDate"
-        type="text"
-        inputmode="numeric"
-        autocomplete="off"
-        placeholder="۱۴۰۵/۰۵/۲۹"
-        maxlength="10"
-        readonly
-        onclick="openJalaliCalendar()"
-        style="cursor:pointer;"
-    >
-
-    <button
-        type="button"
-        onclick="openJalaliCalendar()"
-        style="
-            position:absolute;
-            left:8px;
-            top:50%;
-            transform:translateY(-50%);
-            border:0;
-            background:transparent;
-            font-size:20px;
-            cursor:pointer;
-        "
-        aria-label="انتخاب تاریخ"
-    >
-        📅
-    </button>
-
-</div>
-</div>
-
-<div class="form-group">
-
-<label for="liveBirds">
-    تعداد زنده
-</label>
-
-<input
-    id="liveBirds"
-    type="number"
-    min="0"
-    inputmode="numeric"
->
-
-</div>
-
-<div class="form-group">
-
-<label for="mortalityWeek">
-    تلفات این هفته
-</label>
-
-<input
-    id="mortalityWeek"
-    type="number"
-    min="0"
-    inputmode="numeric"
->
-
-</div>
-
-</div>
-
-</section>
-
-<!-- WEIGHT -->
-
-<section class="card">
-
-<h2 class="card-title">
-    ثبت وزن‌ها
-</h2>
-
-<p>
-برای محاسبه دقیق، وزن تک‌تک پرندگان نمونه را وارد کنید.
-</p>
-
-<div class="button-row">
-
-<button
-    class="btn btn-primary"
-    type="button"
-    onclick="addWeightInput()"
->
-    + افزودن وزن
-</button>
-
-<button
-    class="btn btn-secondary"
-    type="button"
-    onclick="addTwentyWeights()"
->
-    + افزودن ۲۰ وزن
-</button>
-
-<button
-    class="btn btn-secondary"
-    type="button"
-    onclick="clearWeights()"
->
-    پاک کردن
-</button>
-
-</div>
-
-<div
-    id="weightsContainer"
-    class="weights-grid"
->
-
-</div>
-
-<div class="button-row">
-
-<button
-    class="btn btn-primary"
-    type="button"
-    onclick="calculateWeekly()"
->
-    محاسبه
-</button>
-
-</div>
-
-</section>
-
-<!-- RESULTS -->
-
-<section
-    id="resultsCard"
-    class="card"
-    style="display:none;"
->
+    catch (error) {
 
-<h2 class="card-title">
-    نتیجه محاسبات
-</h2>
+        console.error(
+            "Weekly initialization error:",
+            error
+        );
 
-<div
-    id="results"
-    class="results-grid"
->
+        alert(
+            "خطا در راه‌اندازی ثبت هفتگی."
+        );
 
-</div>
+    }
 
-<div
-    id="weightChartContainer"
-    style="margin-top:20px;"
->
+}
 
-<canvas
-    id="weightChart"
-></canvas>
 
-</div>
-
-</section>
+/* =========================================================
+   AUTH
+========================================================= */
 
-<!-- FEED / WATER -->
-
-<section class="card">
-
-<h2 class="card-title">
-    مصرف دان و آب
-</h2>
-
-<div class="form-grid">
-
-<div class="form-group">
+async function getWeeklyUserAccess() {
 
-<label for="feedTotal">
-    کل دان مصرفی هفته (کیلوگرم)
-</label>
+    try {
 
-<input
-    id="feedTotal"
-    type="number"
-    min="0"
-    step="0.01"
->
+        const {
+            data,
+            error
+        } =
+            await supabaseClient
+                .auth
+                .getUser();
 
-</div>
+        if (
+            error ||
+            !data ||
+            !data.user
+        ) {
 
-<div class="form-group">
+            return {
+                authenticated: false,
+                allowed: false,
+                user: null
+            };
 
-<label for="waterTotal">
-    کل آب مصرفی هفته (لیتر)
-</label>
+        }
 
-<input
-    id="waterTotal"
-    type="number"
-    min="0"
-    step="0.01"
->
+        const user =
+            data.user;
 
-</div>
+        let profile = null;
 
-<div class="form-group">
+        try {
 
-<label for="feedPerBird">
-    دان روزانه هر پرنده (گرم)
-</label>
+            const profileResult =
+                await supabaseClient
+                    .from("profiles")
+                    .select("*")
+                    .eq(
+                        "id",
+                        user.id
+                    )
+                    .maybeSingle();
 
-<input
-    id="feedPerBird"
-    type="number"
-    min="0"
-    step="0.1"
->
+            if (!profileResult.error) {
 
-</div>
+                profile =
+                    profileResult.data;
 
-<div class="form-group">
+            }
 
-<label for="waterPerBird">
-    آب روزانه هر پرنده (میلی‌لیتر)
-</label>
+        }
 
-<input
-    id="waterPerBird"
-    type="number"
-    min="0"
-    step="0.1"
->
-
-</div>
-
-</div>
+        catch (profileError) {
 
-</section>
+            console.warn(
+                "Profile check:",
+                profileError
+            );
 
-<!-- NOTES -->
+        }
 
-<section class="card">
+        if (!profile) {
 
-<h2 class="card-title">
-    یادداشت هفتگی
-</h2>
-
-<textarea
-    id="weeklyNotes"
-    rows="5"
-    placeholder="کیفیت بستر، تهویه، آمونیاک، وضعیت مدفوع، مصرف، رفتار گله و سایر مشاهدات..."
-></textarea>
+            return {
+                authenticated: true,
+                allowed: true,
+                user
+            };
 
-<div class="button-row">
+        }
 
-<button
-    class="btn btn-primary"
-    type="button"
-    onclick="saveWeeklyRecord()"
->
-    ذخیره گزارش هفتگی
-</button>
+        const status =
+            String(
+                profile.status || ""
+            ).toLowerCase();
 
-<button
-    class="btn btn-secondary"
-    type="button"
-    onclick="location.href='reports.html'"
->
-    مشاهده گزارش‌ها
-</button>
+        const accessStatus =
+            String(
+                profile.access_status || ""
+            ).toLowerCase();
 
-</div>
+        const role =
+            String(
+                profile.role || ""
+            ).toLowerCase();
 
-</section>
+        const allowed =
+            accessStatus === "approved" ||
+            status === "active" ||
+            (
+                role === "owner" &&
+                ![
+                    "blocked",
+                    "removed",
+                    "suspended"
+                ].includes(status)
+            );
 
-<!-- HISTORY -->
+        return {
 
-<section class="card">
+            authenticated: true,
 
-<h2 class="card-title">
-    سوابق ثبت‌شده
-</h2>
+            allowed,
 
-<div id="weeklyHistory">
+            user
 
-    در حال بارگذاری...
+        };
 
-</div>
+    }
 
-</section>
+    catch (error) {
 
-</div>
+        console.error(
+            "Authentication error:",
+            error
+        );
 
-</main>
+        return {
 
-<nav class="bottom-nav">
+            authenticated: false,
 
-<button
-    type="button"
-    onclick="location.href='Dashboard.html'"
->
-    🏠
-    <br>
-    خانه
-</button>
+            allowed: false,
 
-<button
-    type="button"
-    onclick="location.href='Farms.html'"
->
-    🏭
-    <br>
-    فارم‌ها
-</button>
+            user: null
 
-<button
-    class="active"
-    type="button"
-    onclick="location.href='weekly.html'"
->
-    ⚖️
-    <br>
-    هفتگی
-</button>
+        };
 
-<button
-    type="button"
-    onclick="location.href='reports.html'"
->
-    📊
-    <br>
-    گزارش
-</button>
+    }
 
-</nav>
+}
 
-</div>
 
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+/* =========================================================
+   NUMBER INPUTS
+========================================================= */
 
-<script src="supabase-config.js"></script>
-<script src="standards.js"></script>
-<script src="standard-data.js"></script>
-<script src="poultry-utils.js"></script>
-<script src="weekly-storage.js"></script>
-<script src="comparison-engine.js"></script>
-<script src="app-core.js"></script>
-<script src="genetics-ui.js"></script>
-<script src="weekly-engine.js"></script>
+function prepareNumericInputs() {
 
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    const numericIds = [
 
-<script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+        "weekNumber",
+        "liveBirds",
+        "mortalityWeek",
+        "feedTotal",
+        "waterTotal",
+        "feedPerBird",
+        "waterPerBird"
 
-<script src="https://cdn.jsdelivr.net/npm/persian-date@1.1.0/dist/persian-date.min.js"></script>
+    ];
 
-<script src="https://cdn.jsdelivr.net/npm/persian-datepicker@1.2.0/dist/js/persian-datepicker.min.js"></script>
+    numericIds.forEach(
+        id => {
 
-<script>
-function openJalaliCalendar() {
+            const input =
+                document.getElementById(id);
+
+            if (!input) {
+
+                return;
+
+            }
+
+            input.type =
+                "text";
+
+            input.inputMode =
+                "decimal";
+
+            input.setAttribute(
+                "autocomplete",
+                "off"
+            );
+
+            attachNumberInputHandler(
+                input
+            );
+
+        }
+    );
+
+    document
+        .querySelectorAll(
+            ".bird-weight"
+        )
+        .forEach(
+            input => {
+
+                prepareWeightInput(
+                    input
+                );
+
+            }
+        );
+
+}
+
+
+/* =========================================================
+   WEIGHT INPUT
+========================================================= */
+
+function prepareWeightInput(
+    input
+) {
+
+    if (!input) {
+
+        return;
+
+    }
+
+    input.type =
+        "text";
+
+    input.inputMode =
+        "decimal";
+
+    input.setAttribute(
+        "autocomplete",
+        "off"
+    );
+
+    attachNumberInputHandler(
+        input
+    );
+
+}
+
+
+/* =========================================================
+   NUMBER HANDLER
+========================================================= */
+
+function attachNumberInputHandler(
+    input
+) {
+
+    if (!input) {
+
+        return;
+
+    }
+
+    if (
+        input.dataset.numberPrepared ===
+        "true"
+    ) {
+
+        return;
+
+    }
+
+    input.dataset.numberPrepared =
+        "true";
+
+    input.addEventListener(
+        "input",
+        function () {
+
+            this.value =
+                normalizeNumberString(
+                    this.value
+                );
+
+        }
+    );
+
+}
+
+
+/* =========================================================
+   NORMALIZE NUMBER
+========================================================= */
+
+function normalizeNumberString(
+    value
+) {
+
+    if (
+        value === null ||
+        value === undefined
+    ) {
+
+        return "";
+
+    }
+
+    let text =
+        String(value);
+
+    /* Persian digits */
+
+    text =
+        text.replace(
+            /[۰-۹]/g,
+            digit =>
+                String(
+                    digit.charCodeAt(0) -
+                    1776
+                )
+        );
+
+    /* Arabic digits */
+
+    text =
+        text.replace(
+            /[٠-٩]/g,
+            digit =>
+                String(
+                    digit.charCodeAt(0) -
+                    1632
+                )
+        );
+
+    /* Persian thousands */
+
+    text =
+        text.replaceAll(
+            "٬",
+            ""
+        );
+
+    /* English comma */
+
+    text =
+        text.replaceAll(
+            ",",
+            ""
+        );
+
+    /* Persian decimal */
+
+    text =
+        text.replaceAll(
+            "٫",
+            "."
+        );
+
+    /*
+     * Arabic comma
+     * only treated as decimal separator
+     */
+
+    text =
+        text.replaceAll(
+            "،",
+            "."
+        );
+
+    /* Remove invalid characters */
+
+    text =
+        text.replace(
+            /[^0-9.\-]/g,
+            ""
+        );
+
+    /* Only one decimal point */
+
+    const firstDot =
+        text.indexOf(".");
+
+    if (
+        firstDot !== -1
+    ) {
+
+        text =
+            text.substring(
+                0,
+                firstDot + 1
+            ) +
+
+            text
+                .substring(
+                    firstDot + 1
+                )
+                .replace(
+                    /\./g,
+                    ""
+                );
+
+    }
+
+    /* Minus only at beginning */
+
+    if (
+        text.includes("-")
+    ) {
+
+        text =
+            (
+                text.startsWith("-")
+                    ? "-"
+                    : ""
+            ) +
+
+            text.replace(
+                /-/g,
+                ""
+            );
+
+    }
+
+    return text;
+
+}
+
+
+/* =========================================================
+   CURRENT FLOCK
+========================================================= */
+
+async function loadCurrentFlock() {
+
+    const selection =
+        typeof getCurrentSelection ===
+        "function"
+
+            ? getCurrentSelection()
+
+            : readCurrentSelectionFallback();
+
+
+    const container =
+        document.getElementById(
+            "currentFlock"
+        );
+
+
+    if (!container) {
+
+        return;
+
+    }
+
+
+    if (!selection.flockId) {
+
+        container.innerHTML = `
+
+            <p>
+                ابتدا یک گله انتخاب کنید.
+            </p>
+
+            <button
+                class="btn btn-primary"
+                type="button"
+                onclick="location.href='flocks.html'"
+            >
+                انتخاب گله
+            </button>
+
+        `;
+
+        return;
+
+    }
+
+
+    const {
+        data,
+        error
+    } =
+        await supabaseClient
+            .from("flocks")
+            .select(`
+                *,
+                farms (
+                    name
+                ),
+                houses (
+                    name
+                )
+            `)
+            .eq(
+                "id",
+                selection.flockId
+            )
+            .eq(
+                "owner_id",
+                currentUser.id
+            )
+            .maybeSingle();
+
+
+    if (
+        error ||
+        !data
+    ) {
+
+        console.error(
+            "Flock loading error:",
+            error
+        );
+
+        container.innerHTML = `
+
+            <p>
+                گله انتخاب‌شده پیدا نشد.
+            </p>
+
+            <button
+                class="btn btn-primary"
+                type="button"
+                onclick="location.href='flocks.html'"
+            >
+                انتخاب گله
+            </button>
+
+        `;
+
+        return;
+
+    }
+
+
+    currentFlock =
+        data;
+
+
+    container.innerHTML = `
+
+        <div class="farm-summary">
+
+            <strong>
+                🐔
+                ${escapeHTML(
+                    data.flock_name ||
+                    data.flockName ||
+                    "-"
+                )}
+            </strong>
+
+            <br>
+
+            فارم:
+            ${escapeHTML(
+                data.farms?.name || "-"
+            )}
+
+            <br>
+
+            سالن:
+            ${escapeHTML(
+                data.houses?.name || "-"
+            )}
+
+            <br>
+
+            نوع:
+            ${getProductionLabel(
+                data.production_type ||
+                data.productionType
+            )}
+
+            <br>
+
+            سویه:
+            ${escapeHTML(
+                data.genetics ||
+                "-"
+            )}
+
+        </div>
+
+    `;
+
+
+    await loadHistory();
+
+}
+
+
+/* =========================================================
+   CURRENT SELECTION FALLBACK
+========================================================= */
+
+function readCurrentSelectionFallback() {
+
+    try {
+
+        const key =
+            "adine_poultry_current_selection";
+
+        const raw =
+            localStorage.getItem(
+                key
+            );
+
+        if (!raw) {
+
+            return {};
+
+        }
+
+        return JSON.parse(
+            raw
+        );
+
+    }
+
+    catch (error) {
+
+        console.error(
+            error
+        );
+
+        return {};
+
+    }
+
+}
+
+
+/* =========================================================
+   TODAY SHAMSI
+========================================================= */
+
+function setToday() {
 
     const input =
         document.getElementById(
             "evaluationDate"
         );
 
-    if (!input) return;
 
-    if (
-        typeof jQuery === "undefined" ||
-        typeof jQuery.fn.persianDatepicker === "undefined"
-    ) {
-        alert("تقویم شمسی هنوز بارگذاری نشده است.");
+    if (!input) {
+
         return;
+
     }
 
-    if (!jQuery(input).data("datepicker-initialized")) {
 
-        jQuery(input).persianDatepicker({
+    const today =
+        new Date();
 
-            format: "YYYY/MM/DD",
 
-            autoClose: true,
+    const jalali =
+        gregorianToJalali(
+            today.getFullYear(),
+            today.getMonth() + 1,
+            today.getDate()
+        );
 
-            initialValue: false,
 
-            observer: true,
+    input.value =
+        `${padNumber(jalali[0], 4)}/${padNumber(jalali[1], 2)}/${padNumber(jalali[2], 2)}`;
 
-            calendarType: "persian",
+}
 
-            onSelect: function(unix) {
 
-                const date =
-                    new persianDate(unix);
+/* =========================================================
+   ADD WEIGHT
+========================================================= */
 
-                input.value =
-                    date.format(
-                        "YYYY/MM/DD"
-                    );
+function addWeightInput(
+    value = ""
+) {
 
-            }
+    const container =
+        document.getElementById(
+            "weightsContainer"
+        );
 
-        });
 
-        jQuery(input).data(
-            "datepicker-initialized",
-            true
+    if (!container) {
+
+        return;
+
+    }
+
+
+    const index =
+        container.children.length + 1;
+
+
+    const wrapper =
+        document.createElement(
+            "div"
+        );
+
+
+    wrapper.className =
+        "weight-input";
+
+
+    wrapper.innerHTML = `
+
+        <label>
+            ${convertDigitsToPersian(index)}
+        </label>
+
+        <input
+            type="text"
+            inputmode="decimal"
+            class="bird-weight"
+            placeholder="گرم"
+            autocomplete="off"
+        >
+
+    `;
+
+
+    container.appendChild(
+        wrapper
+    );
+
+
+    const input =
+        wrapper.querySelector(
+            ".bird-weight"
+        );
+
+
+    if (input) {
+
+        input.value =
+            normalizeNumberString(
+                value
+            );
+
+        prepareWeightInput(
+            input
         );
 
     }
 
-    jQuery(input).persianDatepicker(
-        "show"
+}
+
+
+/* =========================================================
+   ADD 20 WEIGHTS
+========================================================= */
+
+function addTwentyWeights() {
+
+    for (
+        let i = 0;
+        i < 20;
+        i++
+    ) {
+
+        addWeightInput();
+
+    }
+
+}
+
+
+/* =========================================================
+   CLEAR WEIGHTS
+========================================================= */
+
+function clearWeights() {
+
+    const container =
+        document.getElementById(
+            "weightsContainer"
+        );
+
+
+    if (container) {
+
+        container.innerHTML =
+            "";
+
+    }
+
+
+    const resultsCard =
+        document.getElementById(
+            "resultsCard"
+        );
+
+
+    if (resultsCard) {
+
+        resultsCard.style.display =
+            "none";
+
+    }
+
+
+    if (weightChart) {
+
+        weightChart.destroy();
+
+        weightChart =
+            null;
+
+    }
+
+}
+
+
+/* =========================================================
+   GET WEIGHTS
+========================================================= */
+
+function getWeights() {
+
+    const inputs =
+        document.querySelectorAll(
+            ".bird-weight"
+        );
+
+
+    const weights = [];
+
+
+    inputs.forEach(
+        input => {
+
+            const normalized =
+                normalizeNumberString(
+                    input.value
+                );
+
+
+            input.value =
+                normalized;
+
+
+            if (
+                normalized === ""
+            ) {
+
+                return;
+
+            }
+
+
+            const value =
+                Number(
+                    normalized
+                );
+
+
+            if (
+                Number.isFinite(value) &&
+                value > 0
+            ) {
+
+                weights.push(
+                    value
+                );
+
+            }
+
+        }
+    );
+
+
+    return weights;
+
+}
+
+
+/* =========================================================
+   CALCULATE
+========================================================= */
+
+function calculateWeekly() {
+
+    const weights =
+        getWeights();
+
+
+    if (
+        weights.length < 2
+    ) {
+
+        alert(
+            "حداقل دو وزن برای محاسبه لازم است."
+        );
+
+        return;
+
+    }
+
+
+    const result =
+        calculateWeightStatistics(
+            weights
+        );
+
+
+    renderResults(
+        result
+    );
+
+
+    drawWeightChart(
+        weights,
+        result
+    );
+
+
+    const resultsCard =
+        document.getElementById(
+            "resultsCard"
+        );
+
+
+    if (resultsCard) {
+
+        resultsCard.style.display =
+            "block";
+
+    }
+
+}
+
+
+/* =========================================================
+   WEIGHT STATISTICS
+========================================================= */
+
+function calculateWeightStatistics(
+    weights
+) {
+
+    const validWeights =
+        weights
+            .map(
+                value =>
+                    Number(
+                        normalizeNumberString(
+                            value
+                        )
+                    )
+            )
+            .filter(
+                value =>
+                    Number.isFinite(value) &&
+                    value > 0
+            );
+
+
+    const n =
+        validWeights.length;
+
+
+    if (
+        n < 2
+    ) {
+
+        return {
+
+            count: n,
+
+            mean: 0,
+
+            sd: 0,
+
+            cv: 0,
+
+            uniformity10: 0,
+
+            uniformity15: 0,
+
+            min: 0,
+
+            max: 0,
+
+            lower10: 0,
+
+            upper10: 0,
+
+            lower15: 0,
+
+            upper15: 0
+
+        };
+
+    }
+
+
+    /* MEAN */
+
+    const sum =
+        validWeights.reduce(
+            (
+                total,
+                weight
+            ) =>
+                total + weight,
+            0
+        );
+
+
+    const mean =
+        sum / n;
+
+
+    /* POPULATION SD */
+
+    const squaredDifferences =
+        validWeights.map(
+            weight =>
+                Math.pow(
+                    weight - mean,
+                    2
+                )
+        );
+
+
+    const variance =
+        squaredDifferences.reduce(
+            (
+                total,
+                value
+            ) =>
+                total + value,
+            0
+        ) / n;
+
+
+    const sd =
+        Math.sqrt(
+            variance
+        );
+
+
+    /* CV */
+
+    const cv =
+        mean > 0
+
+            ? (
+                sd /
+                mean
+            ) * 100
+
+            : 0;
+
+
+    /* ±10 */
+
+    const lower10 =
+        mean * 0.90;
+
+
+    const upper10 =
+        mean * 1.10;
+
+
+    /* ±15 */
+
+    const lower15 =
+        mean * 0.85;
+
+
+    const upper15 =
+        mean * 1.15;
+
+
+    /* UNIFORMITY ±10 */
+
+    const uniformCount10 =
+        validWeights.filter(
+            weight =>
+                weight >= lower10 &&
+                weight <= upper10
+        ).length;
+
+
+    const uniformity10 =
+        (
+            uniformCount10 /
+            n
+        ) * 100;
+
+
+    /* UNIFORMITY ±15 */
+
+    const uniformCount15 =
+        validWeights.filter(
+            weight =>
+                weight >= lower15 &&
+                weight <= upper15
+        ).length;
+
+
+    const uniformity15 =
+        (
+            uniformCount15 /
+            n
+        ) * 100;
+
+
+    /* MIN / MAX */
+
+    const min =
+        Math.min(
+            ...validWeights
+        );
+
+
+    const max =
+        Math.max(
+            ...validWeights
+        );
+
+
+    return {
+
+        count:
+            n,
+
+        mean:
+            mean,
+
+        sd:
+            sd,
+
+        cv:
+            cv,
+
+        uniformity10:
+            uniformity10,
+
+        uniformity15:
+            uniformity15,
+
+        min:
+            min,
+
+        max:
+            max,
+
+        lower10:
+            lower10,
+
+        upper10:
+            upper10,
+
+        lower15:
+            lower15,
+
+        upper15:
+            upper15
+
+    };
+
+}
+
+
+/* =========================================================
+   RESULTS
+========================================================= */
+
+function renderResults(
+    result
+) {
+
+    const container =
+        document.getElementById(
+            "results"
+        );
+
+
+    if (!container) {
+
+        return;
+
+    }
+
+
+    container.innerHTML = `
+
+        ${metric(
+            "میانگین وزن",
+            formatNumber(
+                result.mean,
+                1
+            ) +
+            " گرم"
+        )}
+
+        ${metric(
+            "SD",
+            formatNumber(
+                result.sd,
+                1
+            ) +
+            " گرم"
+        )}
+
+        ${metric(
+            "CV",
+            formatNumber(
+                result.cv,
+                2
+            ) +
+            "%"
+        )}
+
+        ${metric(
+            "یکنواختی ±10%",
+            formatNumber(
+                result.uniformity10,
+                1
+            ) +
+            "%"
+        )}
+
+        ${metric(
+            "یکنواختی ±15%",
+            formatNumber(
+                result.uniformity15,
+                1
+            ) +
+            "%"
+        )}
+
+        ${metric(
+            "حداقل وزن",
+            formatNumber(
+                result.min,
+                1
+            ) +
+            " گرم"
+        )}
+
+        ${metric(
+            "حداکثر وزن",
+            formatNumber(
+                result.max,
+                1
+            ) +
+            " گرم"
+        )}
+
+    `;
+
+}
+
+
+/* =========================================================
+   METRIC
+========================================================= */
+
+function metric(
+    title,
+    value
+) {
+
+    return `
+
+        <div class="metric-card">
+
+            <div class="metric-title">
+                ${title}
+            </div>
+
+            <div class="metric-value">
+                ${value}
+            </div>
+
+        </div>
+
+    `;
+
+}
+
+
+/* =========================================================
+   CHART
+========================================================= */
+
+function drawWeightChart(
+    weights,
+    result
+) {
+
+    if (
+        typeof Chart ===
+        "undefined"
+    ) {
+
+        return;
+
+    }
+
+
+    const canvas =
+        document.getElementById(
+            "weightChart"
+        );
+
+
+    if (!canvas) {
+
+        return;
+
+    }
+
+
+    if (weightChart) {
+
+        weightChart.destroy();
+
+        weightChart =
+            null;
+
+    }
+
+
+    const labels =
+        weights.map(
+            (
+                _,
+                index
+            ) =>
+                index + 1
+        );
+
+
+    weightChart =
+        new Chart(
+            canvas,
+            {
+
+                type:
+                    "line",
+
+                data: {
+
+                    labels:
+                        labels,
+
+                    datasets: [
+
+                        {
+
+                            label:
+                                "وزن پرندگان",
+
+                            data:
+                                weights,
+
+                            tension:
+                                0.25
+
+                        },
+
+                        {
+
+                            label:
+                                "میانگین",
+
+                            data:
+                                weights.map(
+                                    () =>
+                                        result.mean
+                                ),
+
+                            borderDash:
+                                [
+                                    6,
+                                    6
+                                ],
+
+                            pointRadius:
+                                0
+
+                        },
+
+                        {
+
+                            label:
+                                "حد پایین ±10%",
+
+                            data:
+                                weights.map(
+                                    () =>
+                                        result.lower10
+                                ),
+
+                            borderDash:
+                                [
+                                    4,
+                                    4
+                                ],
+
+                            pointRadius:
+                                0
+
+                        },
+
+                        {
+
+                            label:
+                                "حد بالا ±10%",
+
+                            data:
+                                weights.map(
+                                    () =>
+                                        result.upper10
+                                ),
+
+                            borderDash:
+                                [
+                                    4,
+                                    4
+                                ],
+
+                            pointRadius:
+                                0
+
+                        }
+
+                    ]
+
+                },
+
+                options: {
+
+                    responsive:
+                        true,
+
+                    maintainAspectRatio:
+                        false
+
+                }
+
+            }
+
+        );
+
+}
+
+
+/* =========================================================
+   EDIT RECORD
+========================================================= */
+
+function editWeeklyRecord(
+    recordId
+) {
+
+    const record =
+        weeklyRecords.find(
+            item =>
+                String(item.id) ===
+                String(recordId)
+        );
+
+
+    if (!record) {
+
+        alert(
+            "رکورد موردنظر پیدا نشد."
+        );
+
+        return;
+
+    }
+
+
+    editingRecordId =
+        record.id;
+
+
+    setField(
+        "weekNumber",
+        record.week_number
+    );
+
+
+    setField(
+        "liveBirds",
+        record.live_birds
+    );
+
+
+    setField(
+        "mortalityWeek",
+        record.mortality_count
+    );
+
+
+    setField(
+        "feedTotal",
+        record.feed_total_kg
+    );
+
+
+    setField(
+        "waterTotal",
+        record.water_total_liter
+    );
+
+
+    setField(
+        "feedPerBird",
+        record.feed_per_bird_g
+    );
+
+
+    setField(
+        "waterPerBird",
+        record.water_per_bird_ml
+    );
+
+
+    setDateField(
+        "evaluationDate",
+        convertDatabaseDateToShamsi(
+            record.evaluation_date
+        )
+    );
+
+
+    setTextField(
+        "weeklyNotes",
+        record.notes
+    );
+
+
+    const weightsContainer =
+        document.getElementById(
+            "weightsContainer"
+        );
+
+
+    if (weightsContainer) {
+
+        weightsContainer.innerHTML =
+            "";
+
+    }
+
+
+    let savedWeights =
+        record.weights;
+
+
+    if (
+        typeof savedWeights ===
+        "string"
+    ) {
+
+        try {
+
+            savedWeights =
+                JSON.parse(
+                    savedWeights
+                );
+
+        }
+
+        catch (error) {
+
+            console.error(
+                error
+            );
+
+            savedWeights =
+                [];
+
+        }
+
+    }
+
+
+    if (
+        Array.isArray(
+            savedWeights
+        )
+    ) {
+
+        savedWeights.forEach(
+            weight => {
+
+                if (
+                    Number(weight) > 0
+                ) {
+
+                    addWeightInput(
+                        weight
+                    );
+
+                }
+
+            }
+        );
+
+    }
+
+
+    if (
+        !weightsContainer ||
+        weightsContainer.children.length === 0
+    ) {
+
+        addWeightInput();
+
+    }
+
+
+    if (
+        getWeights().length >= 2
+    ) {
+
+        calculateWeekly();
+
+    }
+
+
+    showEditMode();
+
+
+    window.scrollTo(
+        {
+            top:
+                0,
+
+            behavior:
+                "smooth"
+
+        }
     );
 
 }
-</script>
 
-<script src="weekly.js"></script>
-</body>
 
-</html>
+/* =========================================================
+   EDIT MODE
+========================================================= */
 
- 
+function showEditMode() {
+
+    const saveButton =
+        document.querySelector(
+            'button[onclick="saveWeeklyRecord()"]'
+        );
+
+
+    if (saveButton) {
+
+        saveButton.disabled =
+            false;
+
+        saveButton.textContent =
+            "ذخیره تغییرات";
+
+    }
+
+
+    let editNotice =
+        document.getElementById(
+            "editModeNotice"
+        );
+
+
+    if (!editNotice) {
+
+        editNotice =
+            document.createElement(
+                "div"
+            );
+
+
+        editNotice.id =
+            "editModeNotice";
+
+
+        editNotice.style.cssText = `
+            margin-bottom:15px;
+            padding:12px;
+            border-radius:10px;
+            background:#fff3cd;
+            border:1px solid #ffe69c;
+            color:#664d03;
+            font-weight:600;
+        `;
+
+
+        editNotice.innerHTML = `
+
+            ✏️ در حال ویرایش گزارش هفته
+
+            <span
+                id="editingWeekText"
+            ></span>
+
+            <button
+                type="button"
+                class="btn btn-secondary"
+                style="margin-right:10px;"
+                onclick="cancelEditWeeklyRecord()"
+            >
+                لغو ویرایش
+            </button>
+
+        `;
+
+
+        const firstCard =
+            document.querySelector(
+                ".card"
+            );
+
+
+        if (firstCard) {
+
+            firstCard.parentNode.insertBefore(
+                editNotice,
+                firstCard
+            );
+
+        }
+
+    }
+
+
+    const week =
+        getValue(
+            "weekNumber"
+        );
+
+
+    const weekText =
+        document.getElementById(
+            "editingWeekText"
+        );
+
+
+    if (weekText) {
+
+        weekText.textContent =
+            week
+                ? ` — هفته ${convertDigitsToPersian(week)}`
+                : "";
+
+    }
+
+}
+
+
+/* =========================================================
+   CANCEL EDIT
+========================================================= */
+
+function cancelEditWeeklyRecord() {
+
+    clearWeeklyForm();
+
+}
+
+
+/* =========================================================
+   CLEAR FORM
+========================================================= */
+
+function clearWeeklyForm() {
+
+    editingRecordId =
+        null;
+
+
+    setToday();
+
+
+    const fields = [
+
+        "weekNumber",
+        "liveBirds",
+        "mortalityWeek",
+        "feedTotal",
+        "waterTotal",
+        "feedPerBird",
+        "waterPerBird"
+
+    ];
+
+
+    fields.forEach(
+        id => {
+
+            const element =
+                document.getElementById(
+                    id
+                );
+
+            if (element) {
+
+                element.value =
+                    "";
+
+            }
+
+        }
+    );
+
+
+    setTextField(
+        "weeklyNotes",
+        ""
+    );
+
+
+    const weightsContainer =
+        document.getElementById(
+            "weightsContainer"
+        );
+
+
+    if (weightsContainer) {
+
+        weightsContainer.innerHTML =
+            "";
+
+    }
+
+
+    const resultsCard =
+        document.getElementById(
+            "resultsCard"
+        );
+
+
+    if (resultsCard) {
+
+        resultsCard.style.display =
+            "none";
+
+    }
+
+
+    if (weightChart) {
+
+        weightChart.destroy();
+
+        weightChart =
+            null;
+
+    }
+
+
+    const saveButton =
+        document.querySelector(
+            'button[onclick="saveWeeklyRecord()"]'
+        );
+
+
+    if (saveButton) {
+
+        saveButton.disabled =
+            false;
+
+        saveButton.textContent =
+            "ذخیره گزارش هفتگی";
+
+    }
+
+
+    const notice =
+        document.getElementById(
+            "editModeNotice"
+        );
+
+
+    if (notice) {
+
+        notice.remove();
+
+    }
+
+}
+
+
+/* =========================================================
+   SET FIELD
+========================================================= */
+
+function setField(
+    id,
+    value
+) {
+
+    const element =
+        document.getElementById(
+            id
+        );
+
+
+    if (!element) {
+
+        return;
+
+    }
+
+
+    if (
+        value === null ||
+        value === undefined ||
+        value === ""
+    ) {
+
+        element.value =
+            "";
+
+        return;
+
+    }
+
+
+    element.value =
+        normalizeNumberString(
+            value
+        );
+
+}
+
+
+/* =========================================================
+   DATE FIELD
+========================================================= */
+
+function setDateField(
+    id,
+    value
+) {
+
+    const element =
+        document.getElementById(
+            id
+        );
+
+
+    if (!element) {
+
+        return;
+
+    }
+
+
+    element.value =
+        value || "";
+
+}
+
+
+/* =========================================================
+   TEXT FIELD
+========================================================= */
+
+function setTextField(
+    id,
+    value
+) {
+
+    const element =
+        document.getElementById(
+            id
+        );
+
+
+    if (!element) {
+
+        return;
+
+    }
+
+
+    element.value =
+        value === null ||
+        value === undefined
+            ? ""
+            : String(value);
+
+}
+
+
+/* =========================================================
+   SHAMSI → GREGORIAN
+========================================================= */
+
+function getGregorianDateForSupabase(
+    value
+) {
+
+    if (!value) {
+
+        return null;
+
+    }
+
+
+    let text =
+        String(value)
+            .trim();
+
+
+    text =
+        normalizeDateDigits(
+            text
+        );
+
+
+    text =
+        text.replace(
+            /[-.]/g,
+            "/"
+        );
+
+
+    const parts =
+        text.split("/");
+
+
+    if (
+        parts.length !== 3
+    ) {
+
+        throw new Error(
+            "فرمت تاریخ صحیح نیست. مثال: ۱۴۰۵/۰۵/۲۹"
+        );
+
+    }
+
+
+    const jy =
+        Number(parts[0]);
+
+
+    const jm =
+        Number(parts[1]);
+
+
+    const jd =
+        Number(parts[2]);
+
+
+    if (
+        !Number.isInteger(jy) ||
+        !Number.isInteger(jm) ||
+        !Number.isInteger(jd)
+    ) {
+
+        throw new Error(
+            "تاریخ شمسی واردشده صحیح نیست."
+        );
+
+    }
+
+
+    if (
+        jy < 1200 ||
+        jy > 1600
+    ) {
+
+        throw new Error(
+            "سال تاریخ شمسی صحیح نیست."
+        );
+
+    }
+
+
+    if (
+        jm < 1 ||
+        jm > 12
+    ) {
+
+        throw new Error(
+            "ماه تاریخ شمسی صحیح نیست."
+        );
+
+    }
+
+
+    const maxDay =
+        jm <= 6
+            ? 31
+            : jm <= 11
+                ? 30
+                : isLeapJalaliYear(jy)
+                    ? 30
+                    : 29;
+
+
+    if (
+        jd < 1 ||
+        jd > maxDay
+    ) {
+
+        throw new Error(
+            "روز تاریخ شمسی صحیح نیست."
+        );
+
+    }
+
+
+    const gregorian =
+        jalaliToGregorian(
+            jy,
+            jm,
+            jd
+        );
+
+
+    return (
+        String(
+            gregorian[0]
+        ).padStart(
+            4,
+            "0"
+        ) +
+        "-" +
+        String(
+            gregorian[1]
+        ).padStart(
+            2,
+            "0"
+        ) +
+        "-" +
+        String(
+            gregorian[2]
+        ).padStart(
+            2,
+            "0"
+        )
+    );
+
+}
+
+
+/* =========================================================
+   DATABASE DATE → SHAMSI
+========================================================= */
+
+function convertDatabaseDateToShamsi(
+    date
+) {
+
+    if (!date) {
+
+        return "";
+
+    }
+
+
+    const text =
+        String(date)
+            .trim();
+
+
+    if (
+        text.includes("/")
+    ) {
+
+        return convertDigitsToPersian(
+            text
+        );
+
+    }
+
+
+    const parts =
+        text
+            .substring(
+                0,
+                10
+            )
+            .split("-");
+
+
+    if (
+        parts.length !== 3
+    ) {
+
+        return convertDigitsToPersian(
+            text
+        );
+
+    }
+
+
+    const gy =
+        Number(parts[0]);
+
+
+    const gm =
+        Number(parts[1]);
+
+
+    const gd =
+        Number(parts[2]);
+
+
+    if (
+        !Number.isInteger(gy) ||
+        !Number.isInteger(gm) ||
+        !Number.isInteger(gd)
+    ) {
+
+        return convertDigitsToPersian(
+            text
+        );
+
+    }
+
+
+    const jalali =
+        gregorianToJalali(
+            gy,
+            gm,
+            gd
+        );
+
+
+    return convertDigitsToPersian(
+        `${jalali[0]}/${padNumber(jalali[1], 2)}/${padNumber(jalali[2], 2)}`
+    );
+
+}
+
+
+/* =========================================================
+   SAVE WEEKLY RECORD
+========================================================= */
+
+async function saveWeeklyRecord() {
+
+    const saveButton =
+        document.querySelector(
+            'button[onclick="saveWeeklyRecord()"]'
+        );
+
+
+    try {
+
+        if (!currentUser) {
+
+            alert(
+                "کاربر وارد نشده است."
+            );
+
+            return;
+
+        }
+
+
+        if (!currentFlock) {
+
+            alert(
+                "ابتدا گله را انتخاب کنید."
+            );
+
+            return;
+
+        }
+
+
+        const week =
+            getNumber(
+                "weekNumber"
+            );
+
+
+        if (
+            !week ||
+            week < 1
+        ) {
+
+            alert(
+                "شماره هفته را وارد کنید."
+            );
+
+            return;
+
+        }
+
+
+        const weights =
+            getWeights();
+
+
+        if (
+            weights.length < 2
+        ) {
+
+            alert(
+                "برای ذخیره گزارش حداقل دو وزن وارد کنید."
+            );
+
+            return;
+
+        }
+
+
+        const stats =
+            calculateWeightStatistics(
+                weights
+            );
+
+
+        const liveBirds =
+            getNumber(
+                "liveBirds"
+            );
+
+
+        const mortality =
+            getNumber(
+                "mortalityWeek"
+            );
+
+
+        const feedTotal =
+            getNumber(
+                "feedTotal"
+            );
+
+
+        const waterTotal =
+            getNumber(
+                "waterTotal"
+            );
+
+
+        const feedPerBird =
+            getNumber(
+                "feedPerBird"
+            );
+
+
+        const waterPerBird =
+            getNumber(
+                "waterPerBird"
+            );
+
+
+        const evaluationDate =
+            getGregorianDateForSupabase(
+                getValue(
+                    "evaluationDate"
+                )
+            );
+
+
+        const notes =
+            getValue(
+                "weeklyNotes"
+            );
+
+
+        const editingRecord =
+            editingRecordId
+
+                ? weeklyRecords.find(
+                    item =>
+                        String(item.id) ===
+                        String(editingRecordId)
+                )
+
+                : null;
+
+
+        const recordId =
+            editingRecord
+                ? editingRecord.id
+                : null;
+
+
+        const payload = {
+
+            ...(recordId
+                ? {
+                    id:
+                        recordId
+                }
+                : {}),
+
+            owner_id:
+                currentUser.id,
+
+            farm_id:
+                currentFlock.farm_id,
+
+            house_id:
+                currentFlock.house_id,
+
+            flock_id:
+                currentFlock.id,
+
+            week_number:
+                week,
+
+            evaluation_date:
+                evaluationDate,
+
+            sample_count:
+                stats.count,
+
+            average_weight_g:
+                stats.mean,
+
+            sd_weight_g:
+                stats.sd,
+
+            cv_percent:
+                stats.cv,
+
+            uniformity_10_percent:
+                stats.uniformity10,
+
+            uniformity_15_percent:
+                stats.uniformity15,
+
+            min_weight_g:
+                stats.min,
+
+            max_weight_g:
+                stats.max,
+
+            live_birds:
+                liveBirds,
+
+            mortality_count:
+                mortality,
+
+            feed_total_kg:
+                feedTotal,
+
+            water_total_liter:
+                waterTotal,
+
+            feed_per_bird_g:
+                feedPerBird,
+
+            water_per_bird_ml:
+                waterPerBird,
+
+            notes:
+                notes,
+
+            weights:
+                weights
+
+        };
+
+
+        console.log(
+            "WEEKLY PAYLOAD:",
+            payload
+        );
+
+
+        if (saveButton) {
+
+            saveButton.disabled =
+                true;
+
+            saveButton.textContent =
+                "در حال ذخیره...";
+
+        }
+
+
+        let query =
+            supabaseClient
+                .from(
+                    "weekly_records"
+                );
+
+
+        let result;
+
+
+        if (recordId) {
+
+            result =
+                await query
+                    .update(
+                        payload
+                    )
+                    .eq(
+                        "id",
+                        recordId
+                    )
+                    .eq(
+                        "owner_id",
+                        currentUser.id
+                    )
+                    .select()
+                    .single();
+
+        }
+
+        else {
+
+            result =
+                await query
+                    .upsert(
+                        payload,
+                        {
+                            onConflict:
+                                "flock_id,week_number"
+                        }
+                    )
+                    .select()
+                    .single();
+
+        }
+
+
+        const {
+            data,
+            error
+        } =
+            result;
+
+
+        if (error) {
+
+            console.error(
+                "Save weekly error:",
+                error
+            );
+
+
+            if (saveButton) {
+
+                saveButton.disabled =
+                    false;
+
+                saveButton.textContent =
+                    editingRecordId
+                        ? "ذخیره تغییرات"
+                        : "ذخیره گزارش هفتگی";
+
+            }
+
+
+            alert(
+                "ذخیره گزارش انجام نشد:\n" +
+                error.message
+            );
+
+
+            return;
+
+        }
+
+
+        console.log(
+            "WEEKLY RECORD SAVED:",
+            data
+        );
+
+
+        const wasEditing =
+            Boolean(
+                editingRecordId
+            );
+
+
+        alert(
+            wasEditing
+                ? "گزارش هفتگی با موفقیت ویرایش شد."
+                : "گزارش هفتگی با موفقیت ذخیره شد."
+        );
+
+
+        clearWeeklyForm();
+
+        await loadHistory();
+
+    }
+
+    catch (error) {
+
+        console.error(
+            "Weekly save error:",
+            error
+        );
+
+
+        alert(
+            "ذخیره گزارش انجام نشد:\n" +
+            (
+                error?.message ||
+                "خطای نامشخص"
+            )
+        );
+
+
+        if (saveButton) {
+
+            saveButton.disabled =
+                false;
+
+            saveButton.textContent =
+                editingRecordId
+                    ? "ذخیره تغییرات"
+                    : "ذخیره گزارش هفتگی";
+
+        }
+
+    }
+
+}
+
+
+/* =========================================================
+   LOAD HISTORY
+========================================================= */
+
+async function loadHistory() {
+
+    if (
+        !currentFlock ||
+        !currentUser
+    ) {
+
+        return;
+
+    }
+
+
+    const {
+        data,
+        error
+    } =
+        await supabaseClient
+            .from(
+                "weekly_records"
+            )
+            .select("*")
+            .eq(
+                "flock_id",
+                currentFlock.id
+            )
+            .eq(
+                "owner_id",
+                currentUser.id
+            )
+            .order(
+                "week_number",
+                {
+                    ascending:
+                        true
+                }
+            );
+
+
+    if (error) {
+
+        console.error(
+            "History error:",
+            error
+        );
+
+
+        const history =
+            document.getElementById(
+                "weeklyHistory"
+            );
+
+
+        if (history) {
+
+            history.innerHTML = `
+
+                <p>
+                    خطا در دریافت سوابق.
+                </p>
+
+            `;
+
+        }
+
+
+        return;
+
+    }
+
+
+    weeklyRecords =
+        data || [];
+
+
+    renderHistory();
+
+}
+
+
+/* =========================================================
+   HISTORY
+========================================================= */
+
+function renderHistory() {
+
+    const container =
+        document.getElementById(
+            "weeklyHistory"
+        );
+
+
+    if (!container) {
+
+        return;
+
+    }
+
+
+    if (
+        !weeklyRecords.length
+    ) {
+
+        container.innerHTML = `
+
+            <p>
+                هنوز گزارش هفتگی ثبت نشده است.
+            </p>
+
+        `;
+
+        return;
+
+    }
+
+
+    container.innerHTML = `
+
+        <div
+            style="
+                overflow-x:auto;
+            "
+        >
+
+            <table>
+
+                <thead>
+
+                    <tr>
+
+                        <th>
+                            هفته
+                        </th>
+
+                        <th>
+                            تاریخ
+                        </th>
+
+                        <th>
+                            میانگین
+                        </th>
+
+                        <th>
+                            SD
+                        </th>
+
+                        <th>
+                            CV
+                        </th>
+
+                        <th>
+                            یکنواختی ±10
+                        </th>
+
+                        <th>
+                            یکنواختی ±15
+                        </th>
+
+                        <th>
+                            تلفات
+                        </th>
+
+                        <th>
+                            دان
+                        </th>
+
+                        <th>
+                            آب
+                        </th>
+
+                        <th>
+                            عملیات
+                        </th>
+
+                    </tr>
+
+                </thead>
+
+                <tbody>
+
+                    ${
+                        weeklyRecords
+                            .map(
+                                record => `
+
+                                    <tr>
+
+                                        <td>
+                                            ${formatNumber(
+                                                record.week_number,
+                                                0
+                                            )}
+                                        </td>
+
+                                        <td>
+                                            ${formatDateDisplay(
+                                                record.evaluation_date
+                                            )}
+                                        </td>
+
+                                        <td>
+                                            ${formatNumber(
+                                                record.average_weight_g,
+                                                1
+                                            )}
+                                        </td>
+
+                                        <td>
+                                            ${formatNumber(
+                                                record.sd_weight_g,
+                                                1
+                                            )}
+                                        </td>
+
+                                        <td>
+                                            ${formatNumber(
+                                                record.cv_percent,
+                                                2
+                                            )}%
+                                        </td>
+
+                                        <td>
+                                            ${formatNumber(
+                                                record.uniformity_10_percent,
+                                                1
+                                            )}%
+                                        </td>
+
+                                        <td>
+                                            ${formatNumber(
+                                                record.uniformity_15_percent,
+                                                1
+                                            )}%
+                                        </td>
+
+                                        <td>
+                                            ${formatNumber(
+                                                record.mortality_count,
+                                                0
+                                            )}
+                                        </td>
+
+                                        <td>
+                                            ${formatNumber(
+                                                record.feed_total_kg,
+                                                1
+                                            )}
+                                        </td>
+
+                                        <td>
+                                            ${formatNumber(
+                                                record.water_total_liter,
+                                                1
+                                            )}
+                                        </td>
+
+                                        <td>
+
+                                            <button
+                                                type="button"
+                                                class="btn btn-secondary"
+                                                onclick="editWeeklyRecord('${escapeHTMLAttribute(record.id)}')"
+                                            >
+                                                ✏️ ویرایش
+                                            </button>
+
+                                        </td>
+
+                                    </tr>
+
+                                `
+                            )
+                            .join("")
+                    }
+
+                </tbody>
+
+            </table>
+
+        </div>
+
+    `;
+
+}
+
+
+/* =========================================================
+   DATE DISPLAY
+========================================================= */
+
+function formatDateDisplay(
+    date
+) {
+
+    if (!date) {
+
+        return "-";
+
+    }
+
+
+    const text =
+        String(date);
+
+
+    if (
+        text.includes("/")
+    ) {
+
+        return convertDigitsToPersian(
+            text
+        );
+
+    }
+
+
+    const parts =
+        text
+            .substring(
+                0,
+                10
+            )
+            .split("-");
+
+
+    if (
+        parts.length !== 3
+    ) {
+
+        return convertDigitsToPersian(
+            text
+        );
+
+    }
+
+
+    const gy =
+        Number(parts[0]);
+
+
+    const gm =
+        Number(parts[1]);
+
+
+    const gd =
+        Number(parts[2]);
+
+
+    if (
+        !Number.isInteger(gy) ||
+        !Number.isInteger(gm) ||
+        !Number.isInteger(gd)
+    ) {
+
+        return convertDigitsToPersian(
+            text
+        );
+
+    }
+
+
+    const jalali =
+        gregorianToJalali(
+            gy,
+            gm,
+            gd
+        );
+
+
+    return convertDigitsToPersian(
+        `${jalali[0]}/${padNumber(jalali[1], 2)}/${padNumber(jalali[2], 2)}`
+    );
+
+}
+
+
+/* =========================================================
+   GET VALUE
+========================================================= */
+
+function getValue(
+    id
+) {
+
+    const element =
+        document.getElementById(
+            id
+        );
+
+
+    if (!element) {
+
+        return "";
+
+    }
+
+
+    return String(
+        element.value || ""
+    ).trim();
+
+}
+
+
+/* =========================================================
+   GET NUMBER
+========================================================= */
+
+function getNumber(
+    id
+) {
+
+    const value =
+        getValue(id);
+
+
+    if (!value) {
+
+        return 0;
+
+    }
+
+
+    const normalized =
+        normalizeNumberString(
+            value
+        );
+
+
+    const number =
+        Number(
+            normalized
+        );
+
+
+    return Number.isFinite(
+        number
+    )
+        ? number
+        : 0;
+
+}
+
+
+/* =========================================================
+   FORMAT NUMBER
+========================================================= */
+
+function formatNumber(
+    value,
+    decimals = 1
+) {
+
+    if (
+        value === null ||
+        value === undefined ||
+        value === ""
+    ) {
+
+        return "-";
+
+    }
+
+
+    const number =
+        Number(value);
+
+
+    if (
+        !Number.isFinite(
+            number
+        )
+    ) {
+
+        return "-";
+
+    }
+
+
+    return number.toLocaleString(
+        "fa-IR",
+        {
+
+            minimumFractionDigits:
+                decimals,
+
+            maximumFractionDigits:
+                decimals
+
+        }
+    );
+
+}
+
+
+/* =========================================================
+   PRODUCTION LABEL
+========================================================= */
+
+function getProductionLabel(
+    type
+) {
+
+    const labels = {
+
+        broiler:
+            "گوشتی",
+
+        layer:
+            "تخم‌گذار",
+
+        pullet:
+            "پولت",
+
+        breeder:
+            "مرغ مادر"
+
+    };
+
+
+    return (
+        labels[type] ||
+        type ||
+        "-"
+    );
+
+}
+
+
+/* =========================================================
+   DIGITS TO PERSIAN
+========================================================= */
+
+function convertDigitsToPersian(
+    value
+) {
+
+    return String(
+        value ?? ""
+    ).replace(
+        /\d/g,
+        digit =>
+            "۰۱۲۳۴۵۶۷۸۹"[
+                Number(digit)
+            ]
+    );
+
+}
+
+
+/* =========================================================
+   NORMALIZE DATE DIGITS
+========================================================= */
+
+function normalizeDateDigits(
+    value
+) {
+
+    return String(
+        value ?? ""
+    )
+    .replace(
+        /[۰-۹]/g,
+        digit =>
+            String(
+                digit.charCodeAt(0) -
+                1776
+            )
+    )
+    .replace(
+        /[٠-٩]/g,
+        digit =>
+            String(
+                digit.charCodeAt(0) -
+                1632
+            )
+    );
+
+}
+
+
+/* =========================================================
+   PAD
+========================================================= */
+
+function padNumber(
+    value,
+    length
+) {
+
+    return String(
+        value
+    ).padStart(
+        length,
+        "0"
+    );
+
+}
+
+
+/* =========================================================
+   ESCAPE HTML
+========================================================= */
+
+function escapeHTML(
+    value
+) {
+
+    return String(
+        value ?? ""
+    )
+
+    .replaceAll(
+        "&",
+        "&amp;"
+    )
+
+    .replaceAll(
+        "<",
+        "&lt;"
+    )
+
+    .replaceAll(
+        ">",
+        "&gt;"
+    )
+
+    .replaceAll(
+        '"',
+        "&quot;"
+    )
+
+    .replaceAll(
+        "'",
+        "&#039;"
+    );
+
+}
+
+
+/* =========================================================
+   ESCAPE ATTRIBUTE
+========================================================= */
+
+function escapeHTMLAttribute(
+    value
+) {
+
+    return String(
+        value ?? ""
+    )
+
+    .replaceAll(
+        "\\",
+        "\\\\"
+    )
+
+    .replaceAll(
+        "'",
+        "\\'"
+    )
+
+    .replaceAll(
+        "\n",
+        "\\n"
+    )
+
+    .replaceAll(
+        "\r",
+        "\\r"
+    );
+
+}
+
+
+/* =========================================================
+   JALALI CALENDAR MATH
+   No external date library required
+========================================================= */
+
+function jalaliToGregorian(
+    jy,
+    jm,
+    jd
+) {
+
+    jy =
+        Number(jy);
+
+    jm =
+        Number(jm);
+
+    jd =
+        Number(jd);
+
+
+    const jy2 =
+        jy - 979;
+
+
+    let days =
+        365 * jy2;
+
+
+    days +=
+        Math.floor(
+            jy2 / 33
+        ) * 8;
+
+
+    days +=
+        Math.floor(
+            (
+                jy2 % 33
+            ) + 3
+            / 4
+        );
+
+
+    if (
+        jm <= 6
+    ) {
+
+        days +=
+            (
+                jm - 1
+            ) * 31;
+
+    }
+
+    else {
+
+        days +=
+            (
+                jm - 7
+            ) * 30 +
+            186;
+
+    }
+
+
+    days +=
+        jd - 1;
+
+
+    let gy =
+        1600 +
+        400 *
+        Math.floor(
+            days / 146097
+        );
+
+
+    days %=
+        146097;
+
+
+    if (
+        days >= 36525
+    ) {
+
+        days--;
+
+        gy +=
+            100 *
+            Math.floor(
+                days / 36524
+            );
+
+        days %=
+            36524;
+
+        if (
+            days >= 365
+        ) {
+
+            days++;
+
+        }
+
+    }
+
+
+    gy +=
+        4 *
+        Math.floor(
+            days / 1461
+        );
+
+
+    days %=
+        1461;
+
+
+    if (
+        days >= 366
+    ) {
+
+        gy +=
+            Math.floor(
+                (
+                    days - 1
+                ) / 365
+            );
+
+        days =
+            (
+                days - 1
+            ) %
+            365;
+
+    }
+
+
+    let gd =
+        days + 1;
+
+
+    const monthDays = [
+
+        31,
+        (
+            (
+                gy % 4 === 0 &&
+                gy % 100 !== 0
+            ) ||
+            gy % 400 === 0
+        )
+            ? 29
+            : 28,
+        31,
+        30,
+        31,
+        30,
+        31,
+        31,
+        30,
+        31,
+        30,
+        31
+
+    ];
+
+
+    let gm = 1;
+
+
+    while (
+        gm <= 12 &&
+        gd >
+        monthDays[gm - 1]
+    ) {
+
+        gd -=
+            monthDays[gm - 1];
+
+        gm++;
+
+    }
+
+
+    return [
+        gy,
+        gm,
+        gd
+    ];
+
+}
+
+
+/* =========================================================
+   GREGORIAN → JALALI
+========================================================= */
+
+function gregorianToJalali(
+    gy,
+    gm,
+    gd
+) {
+
+    gy =
+        Number(gy);
+
+    gm =
+        Number(gm);
+
+    gd =
+        Number(gd);
+
+
+    const gDaysInMonth = [
+
+        31,
+        28,
+        31,
+        30,
+        31,
+        30,
+        31,
+        31,
+        30,
+        31,
+        30,
+        31
+
+    ];
+
+
+    const jDaysInMonth = [
+
+        31,
+        31,
+        31,
+        31,
+        31,
+        31,
+        30,
+        30,
+        30,
+        30,
+        30,
+        29
+
+    ];
+
+
+    let gy2 =
+        gy - 1600;
+
+
+    let gm2 =
+        gm - 1;
+
+
+    let gd2 =
+        gd - 1;
+
+
+    let gDayNo =
+        365 * gy2;
+
+
+    gDayNo +=
+        Math.floor(
+            (
+                gy2 + 3
+            ) / 4
+        );
+
+
+    gDayNo -=
+        Math.floor(
+            (
+                gy2 + 99
+            ) / 100
+        );
+
+
+    gDayNo +=
+        Math.floor(
+            (
+                gy2 + 399
+            ) / 400
+        );
+
+
+    for (
+        let i = 0;
+        i < gm2;
+        i++
+    ) {
+
+        gDayNo +=
+            gDaysInMonth[i];
+
+    }
+
+
+    if (
+        gm2 > 1 &&
+        (
+            gy % 4 === 0 &&
+            (
+                gy % 100 !== 0 ||
+                gy % 400 === 0
+            )
+        )
+    ) {
+
+        gDayNo++;
+
+    }
+
+
+    gDayNo +=
+        gd2;
+
+
+    let jDayNo =
+        gDayNo - 79;
+
+
+    const jNp =
+        Math.floor(
+            jDayNo / 12053
+        );
+
+
+    jDayNo %=
+        12053;
+
+
+    let jy =
+        979 +
+        33 * jNp +
+        4 *
+        Math.floor(
+            jDayNo / 1461
+        );
+
+
+    jDayNo %=
+        1461;
+
+
+    if (
+        jDayNo >= 366
+    ) {
+
+        jy +=
+            Math.floor(
+                (
+                    jDayNo - 1
+                ) / 365
+            );
+
+        jDayNo =
+            (
+                jDayNo - 1
+            ) %
+            365;
+
+    }
+
+
+    let jm;
+
+
+    for (
+        jm = 0;
+        jm < 11 &&
+        jDayNo >=
+        jDaysInMonth[jm];
+        jm++
+    ) {
+
+        jDayNo -=
+            jDaysInMonth[jm];
+
+    }
+
+
+    const jd =
+        jDayNo + 1;
+
+
+    return [
+        jy,
+        jm + 1,
+        jd
+    ];
+
+}
+
+
+/* =========================================================
+   JALALI LEAP YEAR
+========================================================= */
+
+function isLeapJalaliYear(
+    jy
+) {
+
+    const gy =
+        jalaliToGregorian(
+            jy,
+            1,
+            1
+        )[0];
+
+
+    const next =
+        jalaliToGregorian(
+            jy + 1,
+            1,
+            1
+        );
+
+
+    const current =
+        jalaliToGregorian(
+            jy,
+            1,
+            1
+        );
+
+
+    const days =
+        (
+            new Date(
+                next[0],
+                next[1] - 1,
+                next[2]
+            ).getTime() -
+            new Date(
+                current[0],
+                current[1] - 1,
+                current[2]
+            ).getTime()
+        ) /
+        86400000;
+
+
+    return days === 366;
+
+}
+
+
+/* =========================================================
+   EXPOSE
+========================================================= */
+
+window.normalizeNumberString =
+    normalizeNumberString;
+
+window.addWeightInput =
+    addWeightInput;
+
+window.addTwentyWeights =
+    addTwentyWeights;
+
+window.clearWeights =
+    clearWeights;
+
+window.getWeights =
+    getWeights;
+
+window.calculateWeekly =
+    calculateWeekly;
+
+window.saveWeeklyRecord =
+    saveWeeklyRecord;
+
+window.editWeeklyRecord =
+    editWeeklyRecord;
+
+window.cancelEditWeeklyRecord =
+    cancelEditWeeklyRecord;
+
+window.getGregorianDateForSupabase =
+    getGregorianDateForSupabase;
+
+window.convertDatabaseDateToShamsi =
+    convertDatabaseDateToShamsi;
+
+window.formatDateDisplay =
+    formatDateDisplay;
+
+window.setToday =
+    setToday;

@@ -498,13 +498,7 @@ async function loadMedications() {
         await supabaseClient
             .from("medications")
             .select("*")
-            .eq(
-                "active",
-                true
-            )
-            .order(
-                "name"
-            );
+            .order("name");
 
     if (error) {
         throw error;
@@ -514,6 +508,10 @@ async function loadMedications() {
         document.getElementById(
             "treatmentMedication"
         );
+
+    if (!select) {
+        return;
+    }
 
     select.innerHTML = `
         <option value="">
@@ -544,34 +542,46 @@ async function loadMedications() {
     );
 
 
-    select.addEventListener(
-        "change",
-        event => {
+    /*
+     * تکمیل خودکار ماده مؤثره
+     */
 
-            const selected =
-                (data || [])
-                    .find(
-                        item =>
-                            item.id ===
-                            event.target.value
-                    );
+    select.onchange = function () {
 
-            if (!selected) return;
+        const selected =
+            (data || []).find(
+                item =>
+                    String(item.id) ===
+                    String(this.value)
+            );
 
+        if (!selected) {
+            return;
+        }
+
+        const nameInput =
             document.getElementById(
                 "treatmentMedicationName"
-            ).value =
-                selected.name || "";
+            );
 
+        const activeInput =
             document.getElementById(
                 "treatmentActive"
-            ).value =
+            );
+
+        if (nameInput) {
+
+            nameInput.value =
+                selected.name || "";
+        }
+
+        if (activeInput) {
+
+            activeInput.value =
                 selected.active_ingredient || "";
         }
-    );
+    };
 }
-
-
 /* =========================================================
    VACCINATION
 ========================================================= */

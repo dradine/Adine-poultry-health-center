@@ -1,6 +1,6 @@
 /* =========================================================
    ADINE POULTRY HEALTH CENTER
-   WEEKLY MONITORING
+   WEEKLY MONITORING - SUPABASE VERSION
    ========================================================= */
 
 let currentUser = null;
@@ -228,6 +228,13 @@ function setToday() {
         );
 
 
+    if (!input) {
+
+        return;
+
+    }
+
+
     const date =
         new Date();
 
@@ -335,9 +342,11 @@ function clearWeights() {
         "weightsContainer"
     ).innerHTML = "";
 
+
     document.getElementById(
         "resultsCard"
-    ).style.display = "none";
+    ).style.display =
+        "none";
 
 }
 
@@ -513,17 +522,23 @@ function calculateWeightStatistics(
 
     return {
 
-        count: n,
+        count:
+            n,
 
-        mean,
+        mean:
+            mean,
 
-        sd,
+        sd:
+            sd,
 
-        cv,
+        cv:
+            cv,
 
-        uniformity10,
+        uniformity10:
+            uniformity10,
 
-        uniformity15,
+        uniformity15:
+            uniformity15,
 
         min:
             Math.min(
@@ -535,13 +550,17 @@ function calculateWeightStatistics(
                 ...weights
             ),
 
-        lower10,
+        lower10:
+            lower10,
 
-        upper10,
+        upper10:
+            upper10,
 
-        lower15,
+        lower15:
+            lower15,
 
-        upper15
+        upper15:
+            upper15
 
     };
 
@@ -634,7 +653,7 @@ function renderResults(
 
 
 /* =========================================================
-   METRIC CARD
+   METRIC
    ========================================================= */
 
 function metric(
@@ -662,7 +681,7 @@ function metric(
 
 
 /* =========================================================
-   CHART
+   WEIGHT CHART
    ========================================================= */
 
 function drawWeightChart(
@@ -684,6 +703,13 @@ function drawWeightChart(
         document.getElementById(
             "weightChart"
         );
+
+
+    if (!canvas) {
+
+        return;
+
+    }
 
 
     if (weightChart) {
@@ -713,7 +739,9 @@ function drawWeightChart(
 
                 data: {
 
-                    labels,
+                    labels:
+
+                        labels,
 
                     datasets: [
 
@@ -806,39 +834,7 @@ function drawWeightChart(
                         true,
 
                     maintainAspectRatio:
-                        false,
-
-                    scales: {
-
-                        y: {
-
-                            title: {
-
-                                display:
-                                    true,
-
-                                text:
-                                    "وزن (گرم)"
-
-                            }
-
-                        },
-
-                        x: {
-
-                            title: {
-
-                                display:
-                                    true,
-
-                                text:
-                                    "شماره نمونه"
-
-                            }
-
-                        }
-
-                    }
+                        false
 
                 }
 
@@ -849,7 +845,7 @@ function drawWeightChart(
 
 
 /* =========================================================
-   SAVE
+   SAVE TO SUPABASE
    ========================================================= */
 
 async function saveWeeklyRecord() {
@@ -942,6 +938,13 @@ async function saveWeeklyRecord() {
         );
 
 
+    /*
+     * IMPORTANT
+     *
+     * These names MUST match the Supabase
+     * weekly_records schema.
+     */
+
     const payload = {
 
         owner_id:
@@ -964,35 +967,50 @@ async function saveWeeklyRecord() {
                 "evaluationDate"
             ) || null,
 
+
+        /* =========================
+           WEIGHT STATISTICS
+           ========================= */
+
         sample_count:
             stats.count,
 
-        average_weight:
+        average_weight_g:
             stats.mean,
 
-        sd:
+        sd_weight_g:
             stats.sd,
 
-        cv:
+        cv_percent:
             stats.cv,
 
-        uniformity_10:
+        uniformity_10_percent:
             stats.uniformity10,
 
-        uniformity_15:
+        uniformity_15_percent:
             stats.uniformity15,
 
-        min_weight:
+        min_weight_g:
             stats.min,
 
-        max_weight:
+        max_weight_g:
             stats.max,
+
+
+        /* =========================
+           FLOCK
+           ========================= */
 
         live_birds:
             liveBirds,
 
-        mortality:
+        mortality_count:
             mortality,
+
+
+        /* =========================
+           FEED / WATER
+           ========================= */
 
         feed_total_kg:
             feedTotal,
@@ -1006,10 +1024,20 @@ async function saveWeeklyRecord() {
         water_per_bird_ml:
             waterPerBird,
 
+
+        /* =========================
+           NOTES
+           ========================= */
+
         notes:
             getValue(
                 "weeklyNotes"
             ),
+
+
+        /* =========================
+           RAW WEIGHTS
+           ========================= */
 
         weights:
             weights
@@ -1017,7 +1045,14 @@ async function saveWeeklyRecord() {
     };
 
 
+    console.log(
+        "WEEKLY SUPABASE PAYLOAD:",
+        payload
+    );
+
+
     const {
+        data,
         error
     } =
         await supabaseClient
@@ -1030,7 +1065,9 @@ async function saveWeeklyRecord() {
                     onConflict:
                         "flock_id,week_number"
                 }
-            );
+            )
+            .select()
+            .single();
 
 
     if (error) {
@@ -1050,6 +1087,12 @@ async function saveWeeklyRecord() {
     }
 
 
+    console.log(
+        "WEEKLY RECORD SAVED:",
+        data
+    );
+
+
     alert(
         "گزارش هفتگی با موفقیت ذخیره شد."
     );
@@ -1061,7 +1104,7 @@ async function saveWeeklyRecord() {
 
 
 /* =========================================================
-   HISTORY
+   HISTORY FROM SUPABASE
    ========================================================= */
 
 async function loadHistory() {
@@ -1093,7 +1136,8 @@ async function loadHistory() {
             .order(
                 "week_number",
                 {
-                    ascending: true
+                    ascending:
+                        true
                 }
             );
 
@@ -1137,6 +1181,13 @@ function renderHistory() {
         );
 
 
+    if (!container) {
+
+        return;
+
+    }
+
+
     if (!weeklyRecords.length) {
 
         container.innerHTML = `
@@ -1152,7 +1203,11 @@ function renderHistory() {
 
     container.innerHTML = `
 
-        <div style="overflow-x:auto;">
+        <div
+            style="
+                overflow-x:auto;
+            "
+        >
 
             <table>
 
@@ -1166,6 +1221,10 @@ function renderHistory() {
 
                         <th>
                             میانگین
+                        </th>
+
+                        <th>
+                            SD
                         </th>
 
                         <th>
@@ -1186,6 +1245,10 @@ function renderHistory() {
 
                         <th>
                             دان
+                        </th>
+
+                        <th>
+                            آب
                         </th>
 
                     </tr>
@@ -1211,35 +1274,42 @@ function renderHistory() {
 
                                         <td>
                                             ${formatNumber(
-                                                record.average_weight,
+                                                record.average_weight_g,
                                                 1
                                             )}
                                         </td>
 
                                         <td>
                                             ${formatNumber(
-                                                record.cv,
+                                                record.sd_weight_g,
+                                                1
+                                            )}
+                                        </td>
+
+                                        <td>
+                                            ${formatNumber(
+                                                record.cv_percent,
                                                 2
                                             )}%
                                         </td>
 
                                         <td>
                                             ${formatNumber(
-                                                record.uniformity_10,
+                                                record.uniformity_10_percent,
                                                 1
                                             )}%
                                         </td>
 
                                         <td>
                                             ${formatNumber(
-                                                record.uniformity_15,
+                                                record.uniformity_15_percent,
                                                 1
                                             )}%
                                         </td>
 
                                         <td>
                                             ${formatNumber(
-                                                record.mortality,
+                                                record.mortality_count,
                                                 0
                                             )}
                                         </td>
@@ -1247,6 +1317,13 @@ function renderHistory() {
                                         <td>
                                             ${formatNumber(
                                                 record.feed_total_kg,
+                                                1
+                                            )}
+                                        </td>
+
+                                        <td>
+                                            ${formatNumber(
+                                                record.water_total_liter,
                                                 1
                                             )}
                                         </td>
@@ -1286,7 +1363,7 @@ function getValue(
     return element
         ? String(
             element.value || ""
-          ).trim()
+        ).trim()
         : "";
 
 }
@@ -1310,12 +1387,20 @@ function getNumber(
     const number =
         Number(
             value
-                .replaceAll(",", "")
-                .replaceAll("٬", "")
+                .replaceAll(
+                    ",",
+                    ""
+                )
+                .replaceAll(
+                    "٬",
+                    ""
+                )
         );
 
 
-    return Number.isFinite(number)
+    return Number.isFinite(
+        number
+    )
         ? number
         : 0;
 
@@ -1327,9 +1412,33 @@ function formatNumber(
     decimals = 1
 ) {
 
-    return Number(
-        value || 0
-    ).toLocaleString(
+    if (
+        value === null ||
+        value === undefined ||
+        value === ""
+    ) {
+
+        return "-";
+
+    }
+
+
+    const number =
+        Number(value);
+
+
+    if (
+        !Number.isFinite(
+            number
+        )
+    ) {
+
+        return "-";
+
+    }
+
+
+    return number.toLocaleString(
         "fa-IR",
         {
             minimumFractionDigits:

@@ -1350,237 +1350,347 @@ function setField(
 /* =========================================================
    SAVE TO SUPABASE
    ========================================================= */
-function getGregorianDateForSupabase(value) {
 
-    if (!value) {
-        return null;
-    }
-
-    const text =
-        String(value)
-            .replace(/[۰-۹]/g, function(d) {
-                return String(
-                    d.charCodeAt(0) - 1776
-                );
-            })
-            .replace(/[٠-٩]/g, function(d) {
-                return String(
-                    d.charCodeAt(0) - 1632
-                );
-            })
-            .trim();
-
-    const parts =
-        text.split("/");
-
-    if (parts.length !== 3) {
-
-        throw new Error(
-            "فرمت تاریخ صحیح نیست. مثال: ۱۴۰۵/۰۵/۱۸"
-        );
-
-    }
-
-    const jy =
-        Number(parts[0]);
-
-    const jm =
-        Number(parts[1]);
-
-    const jd =
-        Number(parts[2]);
-
-    if (
-        !Number.isInteger(jy) ||
-        !Number.isInteger(jm) ||
-        !Number.isInteger(jd) ||
-        jm < 1 ||
-        jm > 12 ||
-        jd < 1 ||
-        jd > 31
-    ) {
-
-        throw new Error(
-            "تاریخ شمسی واردشده صحیح نیست."
-        );
-
-    }
-
-    const date =
-        new persianDate()
-            .year(jy)
-            .month(jm - 1)
-            .date(jd);
-
-    return date
-        .toCalendar("gregorian")
-        .format("YYYY-MM-DD");
-
-}
 async function saveWeeklyRecord() {
-try {
-    if (!currentFlock) {
 
-        alert(
-            "ابتدا گله را انتخاب کنید."
+    try {
+
+        if (!currentFlock) {
+
+            alert(
+                "ابتدا گله را انتخاب کنید."
+            );
+
+            return;
+
+        }
+
+
+        const week =
+            getNumber(
+                "weekNumber"
+            );
+
+
+        if (
+            !week ||
+            week < 1
+        ) {
+
+            alert(
+                "شماره هفته را وارد کنید."
+            );
+
+            return;
+
+        }
+
+
+        const weights =
+            getWeights();
+
+
+        if (weights.length < 2) {
+
+            alert(
+                "برای ذخیره گزارش حداقل دو وزن وارد کنید."
+            );
+
+            return;
+
+        }
+
+
+        const stats =
+            calculateWeightStatistics(
+                weights
+            );
+
+
+        const liveBirds =
+            getNumber(
+                "liveBirds"
+            );
+
+
+        const mortality =
+            getNumber(
+                "mortalityWeek"
+            );
+
+
+        const feedTotal =
+            getNumber(
+                "feedTotal"
+            );
+
+
+        const waterTotal =
+            getNumber(
+                "waterTotal"
+            );
+
+
+        const feedPerBird =
+            getNumber(
+                "feedPerBird"
+            );
+
+
+        const waterPerBird =
+            getNumber(
+                "waterPerBird"
+            );
+
+
+        /* =====================================================
+           FIND EDITING RECORD
+           ===================================================== */
+
+        const editingRecord =
+            editingRecordId
+                ? weeklyRecords.find(
+                    item =>
+                        String(item.id) ===
+                        String(editingRecordId)
+                  )
+                : null;
+
+
+        const recordId =
+            editingRecord
+                ? editingRecord.id
+                : null;
+
+
+        /* =====================================================
+           CONVERT SHAMSI DATE TO GREGORIAN
+           ===================================================== */
+
+        const evaluationDate =
+            getGregorianDateForSupabase(
+                getValue(
+                    "evaluationDate"
+                )
+            );
+
+
+        /* =====================================================
+           PAYLOAD
+           ===================================================== */
+
+        const payload = {
+
+            ...(recordId
+                ? {
+                    id:
+                        recordId
+                  }
+                : {}),
+
+
+            owner_id:
+                currentUser.id,
+
+            farm_id:
+                currentFlock.farm_id,
+
+            house_id:
+                currentFlock.house_id,
+
+            flock_id:
+                currentFlock.id,
+
+            week_number:
+                week,
+
+            evaluation_date:
+                evaluationDate,
+
+
+            /* =========================
+               WEIGHT STATISTICS
+               ========================= */
+
+            sample_count:
+                stats.count,
+
+            average_weight_g:
+                stats.mean,
+
+            sd_weight_g:
+                stats.sd,
+
+            cv_percent:
+                stats.cv,
+
+            uniformity_10_percent:
+                stats.uniformity10,
+
+            uniformity_15_percent:
+                stats.uniformity15,
+
+            min_weight_g:
+                stats.min,
+
+            max_weight_g:
+                stats.max,
+
+
+            /* =========================
+               FLOCK
+               ========================= */
+
+            live_birds:
+                liveBirds,
+
+            mortality_count:
+                mortality,
+
+
+            /* =========================
+               FEED / WATER
+               ========================= */
+
+            feed_total_kg:
+                feedTotal,
+
+            water_total_liter:
+                waterTotal,
+
+            feed_per_bird_g:
+                feedPerBird,
+
+            water_per_bird_ml:
+                waterPerBird,
+
+
+            /* =========================
+               NOTES
+               ========================= */
+
+            notes:
+                getValue(
+                    "weeklyNotes"
+                ),
+
+
+            /* =========================
+               RAW WEIGHTS
+               ========================= */
+
+            weights:
+                weights
+
+        };
+
+
+        console.log(
+            "WEEKLY SUPABASE PAYLOAD:",
+            payload
         );
 
-        return;
-} catch (error) {
 
-    console.error(
-        "Weekly save error:",
-        error
-    );
+        /* =====================================================
+           SAVE / UPDATE
+           ===================================================== */
 
-    alert(
-        "ذخیره گزارش انجام نشد:\n" +
-        (
-            error?.message ||
-            "خطای نامشخص"
-        )
-    );
+        const {
+            data,
+            error
+        } =
+            await supabaseClient
+                .from(
+                    "weekly_records"
+                )
+                .upsert(
+                    payload,
+                    {
+                        onConflict:
+                            "flock_id,week_number"
+                    }
+                )
+                .select()
+                .single();
+
+
+        if (error) {
+
+            console.error(
+                "Save weekly error:",
+                error
+            );
+
+            alert(
+                "ذخیره گزارش انجام نشد:\n" +
+                error.message
+            );
+
+            return;
+
+        }
+
+
+        console.log(
+            "WEEKLY RECORD SAVED:",
+            data
+        );
+
+
+        /* =====================================================
+           SUCCESS MESSAGE
+           ===================================================== */
+
+        if (editingRecordId) {
+
+            alert(
+                "گزارش هفتگی با موفقیت ویرایش شد."
+            );
+
+        }
+
+        else {
+
+            alert(
+                "گزارش هفتگی با موفقیت ذخیره شد."
+            );
+
+        }
+
+
+        /* =====================================================
+           CLEAR FORM
+           ===================================================== */
+
+        clearWeeklyForm();
+
+
+        /* =====================================================
+           RELOAD HISTORY
+           ===================================================== */
+
+        await loadHistory();
+
+    }
+
+    catch (error) {
+
+        console.error(
+            "Weekly save error:",
+            error
+        );
+
+        alert(
+            "ذخیره گزارش انجام نشد:\n" +
+            (
+                error?.message ||
+                "خطای نامشخص"
+            )
+        );
+
+    }
 
 }
-    }
-
-
-    const week =
-        getNumber(
-            "weekNumber"
-        );
-
-
-    if (
-        !week ||
-        week < 1
-    ) {
-
-        alert(
-            "شماره هفته را وارد کنید."
-        );
-
-        return;
-
-    }
-
-
-    const weights =
-        getWeights();
-
-
-    if (weights.length < 2) {
-
-        alert(
-            "برای ذخیره گزارش حداقل دو وزن وارد کنید."
-        );
-
-        return;
-
-    }
-
-
-    const stats =
-        calculateWeightStatistics(
-            weights
-        );
-
-
-    const liveBirds =
-        getNumber(
-            "liveBirds"
-        );
-
-
-    const mortality =
-        getNumber(
-            "mortalityWeek"
-        );
-
-
-    const feedTotal =
-        getNumber(
-            "feedTotal"
-        );
-
-
-    const waterTotal =
-        getNumber(
-            "waterTotal"
-        );
-
-
-    const feedPerBird =
-        getNumber(
-            "feedPerBird"
-        );
-
-
-    const waterPerBird =
-        getNumber(
-            "waterPerBird"
-        );
-
-
-    /*
-     * اگر در حالت ویرایش هستیم،
-     * رکورد قبلی را پیدا می‌کنیم.
-     */
-
-    const editingRecord =
-        editingRecordId
-            ? weeklyRecords.find(
-                item =>
-                    String(item.id) ===
-                    String(editingRecordId)
-              )
-            : null;
-
-
-    /*
-     * برای حفظ همان ID
-     */
-
-    const recordId =
-        editingRecord
-            ? editingRecord.id
-            : null;
-
-
-    const payload = {
-
-        /*
-         * در حالت ویرایش ID همان رکورد
-         * حفظ می‌شود.
-         */
-
-        ...(recordId
-            ? {
-                id:
-                    recordId
-              }
-            : {}),
-
-
-        owner_id:
-            currentUser.id,
-
-        farm_id:
-            currentFlock.farm_id,
-
-        house_id:
-            currentFlock.house_id,
-
-        flock_id:
-            currentFlock.id,
-
-        week_number:
-            week,
-
-        evaluation_date:
-    getGregorianDateForSupabase(
-        getValue("evaluationDate")
-    ),
 
         /* =========================
            WEIGHT STATISTICS

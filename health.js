@@ -1,7 +1,6 @@
 /* =========================================================
    ADINE POULTRY HEALTH CENTER
    HEALTH MODULE
-   Supabase
    ========================================================= */
 
 let currentUser = null;
@@ -9,10 +8,6 @@ let currentFlock = null;
 let currentFarm = null;
 let currentHouse = null;
 
-
-/* =========================================================
-   INIT
-========================================================= */
 
 document.addEventListener(
     "DOMContentLoaded",
@@ -32,8 +27,10 @@ async function initHealth() {
                 .auth
                 .getSession();
 
-
-        if (error || !data.session) {
+        if (
+            error ||
+            !data.session
+        ) {
 
             location.href =
                 "login.html?message=" +
@@ -42,17 +39,23 @@ async function initHealth() {
                 );
 
             return;
-
         }
-
 
         currentUser =
             data.session.user;
 
-
         await loadSelection();
 
         setupTabs();
+
+        if (
+            window.jalaliDate
+        ) {
+
+            window.jalaliDate
+                .prepareDateFields();
+
+        }
 
         setDefaultDates();
 
@@ -74,15 +77,12 @@ async function initHealth() {
             error.message,
             "error"
         );
-
     }
-
 }
 
 
-
 /* =========================================================
-   SELECTION
+   FLOCK
 ========================================================= */
 
 async function loadSelection() {
@@ -91,7 +91,6 @@ async function loadSelection() {
         typeof getCurrentSelection === "function"
             ? getCurrentSelection()
             : {};
-
 
     if (!selection.flockId) {
 
@@ -103,9 +102,7 @@ async function loadSelection() {
             "flocks.html";
 
         return;
-
     }
-
 
     const {
         data: flock,
@@ -124,13 +121,9 @@ async function loadSelection() {
             )
             .maybeSingle();
 
-
     if (error) {
-
         throw error;
-
     }
-
 
     if (!flock) {
 
@@ -142,9 +135,7 @@ async function loadSelection() {
             "flocks.html";
 
         return;
-
     }
-
 
     currentFlock =
         flock;
@@ -164,12 +155,9 @@ async function loadSelection() {
             )
             .maybeSingle();
 
-
     if (!farmResult.error) {
-
         currentFarm =
             farmResult.data;
-
     }
 
 
@@ -187,29 +175,22 @@ async function loadSelection() {
             )
             .maybeSingle();
 
-
     if (!houseResult.error) {
-
         currentHouse =
             houseResult.data;
-
     }
 
 
-    const info =
-        [
+    const info = [
 
-            currentFarm?.name,
+        currentFarm?.name,
+        currentHouse?.name,
+        currentFlock.flock_name,
+        currentFlock.strain
 
-            currentHouse?.name,
-
-            currentFlock.flock_name,
-
-            currentFlock.strain
-
-        ]
-        .filter(Boolean)
-        .join(" | ");
+    ]
+    .filter(Boolean)
+    .join(" | ");
 
 
     document.getElementById(
@@ -219,9 +200,7 @@ async function loadSelection() {
 
 
     calculateAge();
-
 }
-
 
 
 /* =========================================================
@@ -233,54 +212,48 @@ function calculateAge() {
     if (
         !currentFlock?.placement_date
     ) {
-
         return;
-
     }
 
+    let age = null;
 
-    const age =
-        typeof calculateAgeDays === "function"
+    if (
+        typeof calculateAgeDays ===
+        "function"
+    ) {
 
-            ? calculateAgeDays(
+        age =
+            calculateAgeDays(
                 currentFlock.placement_date
-            )
-
-            : null;
-
-
-    if (age === null) {
-
-        return;
-
+            );
     }
 
+    if (
+        age === null ||
+        age === undefined
+    ) {
+        return;
+    }
 
-    const fields = [
-
+    [
         "vaccinationAge",
-
         "antibodyAge"
-
-    ];
-
-
-    fields.forEach(id => {
+    ]
+    .forEach(id => {
 
         const el =
             document.getElementById(id);
 
-        if (el && !el.value) {
+        if (
+            el &&
+            !el.value
+        ) {
 
             el.value =
                 age;
-
         }
-
     });
-
 }
-
 
 
 /* =========================================================
@@ -302,7 +275,6 @@ function setupTabs() {
                     const tab =
                         button.dataset.tab;
 
-
                     document
                         .querySelectorAll(
                             ".health-tab"
@@ -314,7 +286,6 @@ function setupTabs() {
                             );
 
                         });
-
 
                     document
                         .querySelectorAll(
@@ -328,33 +299,25 @@ function setupTabs() {
 
                         });
 
-
                     button.classList.add(
                         "active"
                     );
-
 
                     const panel =
                         document.getElementById(
                             "panel-" + tab
                         );
 
-
                     if (panel) {
 
                         panel.classList.add(
                             "active"
                         );
-
                     }
-
                 }
             );
-
         });
-
 }
-
 
 
 /* =========================================================
@@ -364,42 +327,31 @@ function setupTabs() {
 function setDefaultDates() {
 
     const today =
-        typeof todayISO === "function"
-
-            ? todayISO()
-
-            : new Date()
-                .toISOString()
-                .slice(0, 10);
-
+        window.jalaliDate
+            ? window.jalaliDate.todayJalali()
+            : "";
 
     [
-
         "vaccinationDate",
-
         "antibodyDate",
-
         "labDate",
-
         "treatmentDate"
-
     ]
     .forEach(id => {
 
         const el =
             document.getElementById(id);
 
-        if (el) {
+        if (
+            el &&
+            !el.value
+        ) {
 
             el.value =
                 today;
-
         }
-
     });
-
 }
-
 
 
 /* =========================================================
@@ -411,13 +363,10 @@ async function loadCatalogs() {
     await Promise.all([
 
         loadDiseases(),
-
         loadVaccines(),
-
         loadMedications()
 
     ]);
-
 }
 
 
@@ -438,44 +387,28 @@ async function loadDiseases() {
                 "category"
             );
 
-
     if (error) {
-
         throw error;
-
     }
 
-
-    const selects = [
-
+    [
         "vaccinationDisease",
-
         "antibodyDisease",
-
         "labDisease",
-
         "treatmentDisease"
-
-    ];
-
-
-    selects.forEach(id => {
+    ]
+    .forEach(id => {
 
         const select =
             document.getElementById(id);
 
-
         if (!select) return;
 
-
         select.innerHTML = `
-
             <option value="">
                 انتخاب کنید
             </option>
-
         `;
-
 
         (data || []).forEach(
             disease => {
@@ -485,26 +418,19 @@ async function loadDiseases() {
                         "option"
                     );
 
-
                 option.value =
                     disease.code;
-
 
                 option.textContent =
                     disease.name_fa;
 
-
                 select.appendChild(
                     option
                 );
-
             }
         );
-
     });
-
 }
-
 
 
 async function loadVaccines() {
@@ -524,28 +450,20 @@ async function loadVaccines() {
                 "name"
             );
 
-
     if (error) {
-
         throw error;
-
     }
-
 
     const select =
         document.getElementById(
             "vaccinationVaccine"
         );
 
-
     select.innerHTML = `
-
         <option value="">
             انتخاب واکسن
         </option>
-
     `;
-
 
     (data || []).forEach(
         vaccine => {
@@ -555,28 +473,20 @@ async function loadVaccines() {
                     "option"
                 );
 
-
             option.value =
                 vaccine.id;
 
-
             option.textContent =
                 vaccine.manufacturer
-
                     ? `${vaccine.name} — ${vaccine.manufacturer}`
-
                     : vaccine.name;
-
 
             select.appendChild(
                 option
             );
-
         }
     );
-
 }
-
 
 
 async function loadMedications() {
@@ -596,28 +506,20 @@ async function loadMedications() {
                 "name"
             );
 
-
     if (error) {
-
         throw error;
-
     }
-
 
     const select =
         document.getElementById(
             "treatmentMedication"
         );
 
-
     select.innerHTML = `
-
         <option value="">
             انتخاب دارو
         </option>
-
     `;
-
 
     (data || []).forEach(
         medication => {
@@ -627,23 +529,17 @@ async function loadMedications() {
                     "option"
                 );
 
-
             option.value =
                 medication.id;
 
-
             option.textContent =
                 medication.active_ingredient
-
                     ? `${medication.name} — ${medication.active_ingredient}`
-
                     : medication.name;
-
 
             select.appendChild(
                 option
             );
-
         }
     );
 
@@ -660,26 +556,20 @@ async function loadMedications() {
                             event.target.value
                     );
 
-
             if (!selected) return;
-
 
             document.getElementById(
                 "treatmentMedicationName"
             ).value =
                 selected.name || "";
 
-
             document.getElementById(
                 "treatmentActive"
             ).value =
                 selected.active_ingredient || "";
-
         }
     );
-
 }
-
 
 
 /* =========================================================
@@ -700,90 +590,116 @@ async function saveVaccination(event) {
 
     event.preventDefault();
 
+    try {
 
-    const payload = {
+        const payload = {
 
-        owner_id:
-            currentUser.id,
+            owner_id:
+                currentUser.id,
 
-        farm_id:
-            currentFlock.farm_id,
+            farm_id:
+                currentFlock.farm_id,
 
-        house_id:
-            currentFlock.house_id,
+            house_id:
+                currentFlock.house_id,
 
-        flock_id:
-            currentFlock.id,
+            flock_id:
+                currentFlock.id,
 
-        vaccine_id:
-            value(
-                "vaccinationVaccine"
-            ),
+            vaccine_id:
+                value(
+                    "vaccinationVaccine"
+                ),
 
-        vaccination_date:
-            value(
-                "vaccinationDate"
-            ),
+            vaccination_date:
+                value(
+                    "vaccinationDate"
+                ),
 
-        flock_age_days:
-            numberOrNull(
-                "vaccinationAge"
-            ),
+            flock_age_days:
+                numberOrNull(
+                    "vaccinationAge"
+                ),
 
-        dose:
-            value(
-                "vaccinationDose"
-            ),
+            dose:
+                value(
+                    "vaccinationDose"
+                ),
 
-        route:
-            value(
-                "vaccinationRoute"
-            ),
+            route:
+                value(
+                    "vaccinationRoute"
+                ),
 
-        batch_number:
-            value(
-                "vaccinationBatch"
-            ),
+            batch_number:
+                value(
+                    "vaccinationBatch"
+                ),
 
-        expiry_date:
-            value(
-                "vaccinationExpiry"
-            ),
+            expiry_date:
+                value(
+                    "vaccinationExpiry"
+                ),
 
-        notes:
-            value(
-                "vaccinationNotes"
-            )
+            notes:
+                value(
+                    "vaccinationNotes"
+                )
+        };
 
-    };
+
+        if (
+            !payload.vaccine_id ||
+            !payload.vaccination_date
+        ) {
+
+            showStatus(
+                "واکسن و تاریخ واکسیناسیون الزامی است.",
+                "error"
+            );
+
+            return;
+        }
 
 
-    if (
-        !payload.vaccine_id ||
-        !payload.vaccination_date
-    ) {
+        const {
+            error
+        } =
+            await supabaseClient
+                .from("vaccinations")
+                .insert(
+                    payload
+                );
+
+        if (error) {
+            throw error;
+        }
+
+
+        event.target.reset();
+
+        if (
+            window.jalaliDate
+        ) {
+            window.jalaliDate
+                .prepareDateFields();
+        }
+
+        setDefaultDates();
+
+        calculateAge();
+
 
         showStatus(
-            "واکسن و تاریخ واکسیناسیون الزامی است.",
-            "error"
+            "واکسیناسیون با موفقیت ثبت شد.",
+            "success"
         );
 
-        return;
+        await loadHistory();
 
     }
 
-
-    const {
-        error
-    } =
-        await supabaseClient
-            .from("vaccinations")
-            .insert(
-                payload
-            );
-
-
-    if (error) {
+    catch (error) {
 
         console.error(error);
 
@@ -792,29 +708,8 @@ async function saveVaccination(event) {
             error.message,
             "error"
         );
-
-        return;
-
     }
-
-
-    event.target.reset();
-
-    setDefaultDates();
-
-    calculateAge();
-
-
-    showStatus(
-        "واکسیناسیون با موفقیت ثبت شد.",
-        "success"
-    );
-
-
-    await loadHistory();
-
 }
-
 
 
 /* =========================================================
@@ -835,142 +730,149 @@ async function saveAntibody(event) {
 
     event.preventDefault();
 
+    try {
 
-    const payload = {
+        const payload = {
 
-        owner_id:
-            currentUser.id,
+            owner_id:
+                currentUser.id,
 
-        farm_id:
-            currentFlock.farm_id,
+            farm_id:
+                currentFlock.farm_id,
 
-        house_id:
-            currentFlock.house_id,
+            house_id:
+                currentFlock.house_id,
 
-        flock_id:
-            currentFlock.id,
+            flock_id:
+                currentFlock.id,
 
-        disease_code:
-            value(
-                "antibodyDisease"
-            ),
+            disease_code:
+                value(
+                    "antibodyDisease"
+                ),
 
-        test_type:
-            value(
-                "antibodyTestType"
-            ) || "ELISA",
+            test_type:
+                value(
+                    "antibodyTestType"
+                ) || "ELISA",
 
-        antibody_stage:
-            value(
-                "antibodyStage"
-            ),
+            antibody_stage:
+                value(
+                    "antibodyStage"
+                ),
 
-        test_date:
-            value(
-                "antibodyDate"
-            ),
+            test_date:
+                value(
+                    "antibodyDate"
+                ),
 
-        flock_age_days:
-            numberOrNull(
-                "antibodyAge"
-            ),
+            flock_age_days:
+                numberOrNull(
+                    "antibodyAge"
+                ),
 
-        sample_count:
-            numberOrNull(
-                "antibodySamples"
-            ),
+            sample_count:
+                numberOrNull(
+                    "antibodySamples"
+                ),
 
-        mean_value:
-            null,
+            mean_value:
+                null,
 
-        gmt:
-            numberOrNull(
-                "antibodyGMT"
-            ),
+            gmt:
+                numberOrNull(
+                    "antibodyGMT"
+                ),
 
-        cv_percent:
-            numberOrNull(
-                "antibodyCV"
-            ),
+            cv_percent:
+                numberOrNull(
+                    "antibodyCV"
+                ),
 
-        min_value:
-            numberOrNull(
-                "antibodyMin"
-            ),
+            min_value:
+                numberOrNull(
+                    "antibodyMin"
+                ),
 
-        max_value:
-            numberOrNull(
-                "antibodyMax"
-            ),
+            max_value:
+                numberOrNull(
+                    "antibodyMax"
+                ),
 
-        lab_name:
-            value(
-                "antibodyLab"
-            ),
+            lab_name:
+                value(
+                    "antibodyLab"
+                ),
 
-        notes:
-            value(
-                "antibodyNotes"
-            )
+            notes:
+                value(
+                    "antibodyNotes"
+                )
+        };
 
-    };
+
+        if (
+            !payload.disease_code ||
+            !payload.test_date
+        ) {
+
+            showStatus(
+                "بیماری و تاریخ آزمایش الزامی است.",
+                "error"
+            );
+
+            return;
+        }
 
 
-    if (
-        !payload.disease_code ||
-        !payload.test_date
-    ) {
+        const {
+            error
+        } =
+            await supabaseClient
+                .from("antibody_tests")
+                .insert(
+                    payload
+                );
+
+        if (error) {
+            throw error;
+        }
+
+
+        event.target.reset();
+
+        if (
+            window.jalaliDate
+        ) {
+            window.jalaliDate
+                .prepareDateFields();
+        }
+
+        setDefaultDates();
+
+        calculateAge();
+
 
         showStatus(
-            "بیماری و تاریخ آزمایش الزامی است.",
-            "error"
+            "تیتر آنتی‌بادی ثبت شد.",
+            "success"
         );
 
-        return;
+        await loadHistory();
 
     }
 
+    catch (error) {
 
-    const {
-        error
-    } =
-        await supabaseClient
-            .from("antibody_tests")
-            .insert(
-                payload
-            );
-
-
-    if (error) {
+        console.error(error);
 
         showStatus(
             "ثبت تیتر انجام نشد: " +
             error.message,
             "error"
         );
-
-        return;
-
     }
-
-
-    event.target.reset();
-
-    setDefaultDates();
-
-    calculateAge();
-
-
-    showStatus(
-        "تیتر آنتی‌بادی ثبت شد.",
-        "success"
-    );
-
-
-    await loadHistory();
-
 }
-
 
 
 /* =========================================================
@@ -991,131 +893,138 @@ async function saveLab(event) {
 
     event.preventDefault();
 
+    try {
 
-    const payload = {
+        const payload = {
 
-        owner_id:
-            currentUser.id,
+            owner_id:
+                currentUser.id,
 
-        farm_id:
-            currentFlock.farm_id,
+            farm_id:
+                currentFlock.farm_id,
 
-        house_id:
-            currentFlock.house_id,
+            house_id:
+                currentFlock.house_id,
 
-        flock_id:
-            currentFlock.id,
+            flock_id:
+                currentFlock.id,
 
-        test_date:
-            value(
-                "labDate"
-            ),
+            test_date:
+                value(
+                    "labDate"
+                ),
 
-        test_type:
-            value(
-                "labType"
-            ),
+            test_type:
+                value(
+                    "labType"
+                ),
 
-        disease_code:
-            value(
-                "labDisease"
-            ),
+            disease_code:
+                value(
+                    "labDisease"
+                ),
 
-        sample_type:
-            value(
-                "labSampleType"
-            ),
+            sample_type:
+                value(
+                    "labSampleType"
+                ),
 
-        sample_count:
-            numberOrNull(
-                "labSampleCount"
-            ),
+            sample_count:
+                numberOrNull(
+                    "labSampleCount"
+                ),
 
-        positive_count:
-            numberOrNull(
-                "labPositiveCount"
-            ),
+            positive_count:
+                numberOrNull(
+                    "labPositiveCount"
+                ),
 
-        result:
-            value(
-                "labResult"
-            ),
+            result:
+                value(
+                    "labResult"
+                ),
 
-        ct_value:
-            numberOrNull(
-                "labCT"
-            ),
+            ct_value:
+                numberOrNull(
+                    "labCT"
+                ),
 
-        antibiotic_sensitivity:
-            value(
-                "labSensitivity"
-            ),
+            antibiotic_sensitivity:
+                value(
+                    "labSensitivity"
+                ),
 
-        laboratory:
-            value(
-                "labLaboratory"
-            ),
+            laboratory:
+                value(
+                    "labLaboratory"
+                ),
 
-        notes:
-            value(
-                "labNotes"
-            )
+            notes:
+                value(
+                    "labNotes"
+                )
+        };
 
-    };
+
+        if (
+            !payload.test_date
+        ) {
+
+            showStatus(
+                "تاریخ آزمایش الزامی است.",
+                "error"
+            );
+
+            return;
+        }
 
 
-    if (
-        !payload.test_date
-    ) {
+        const {
+            error
+        } =
+            await supabaseClient
+                .from("lab_tests")
+                .insert(
+                    payload
+                );
+
+        if (error) {
+            throw error;
+        }
+
+
+        event.target.reset();
+
+        if (
+            window.jalaliDate
+        ) {
+            window.jalaliDate
+                .prepareDateFields();
+        }
+
+        setDefaultDates();
+
 
         showStatus(
-            "تاریخ آزمایش الزامی است.",
-            "error"
+            "آزمایش ثبت شد.",
+            "success"
         );
 
-        return;
+        await loadHistory();
 
     }
 
+    catch (error) {
 
-    const {
-        error
-    } =
-        await supabaseClient
-            .from("lab_tests")
-            .insert(
-                payload
-            );
-
-
-    if (error) {
+        console.error(error);
 
         showStatus(
             "ثبت آزمایش انجام نشد: " +
             error.message,
             "error"
         );
-
-        return;
-
     }
-
-
-    event.target.reset();
-
-    setDefaultDates();
-
-
-    showStatus(
-        "آزمایش ثبت شد.",
-        "success"
-    );
-
-
-    await loadHistory();
-
 }
-
 
 
 /* =========================================================
@@ -1136,141 +1045,144 @@ async function saveTreatment(event) {
 
     event.preventDefault();
 
+    try {
 
-    const medicationId =
-        value(
-            "treatmentMedication"
-        );
+        const payload = {
 
+            owner_id:
+                currentUser.id,
 
-    const payload = {
+            farm_id:
+                currentFlock.farm_id,
 
-        owner_id:
-            currentUser.id,
+            house_id:
+                currentFlock.house_id,
 
-        farm_id:
-            currentFlock.farm_id,
+            flock_id:
+                currentFlock.id,
 
-        house_id:
-            currentFlock.house_id,
+            treatment_date:
+                value(
+                    "treatmentDate"
+                ),
 
-        flock_id:
-            currentFlock.id,
+            end_date:
+                value(
+                    "treatmentEnd"
+                ),
 
-        treatment_date:
-            value(
-                "treatmentDate"
-            ),
+            disease_code:
+                value(
+                    "treatmentDisease"
+                ),
 
-        end_date:
-            value(
-                "treatmentEnd"
-            ),
+            medication_id:
+                value(
+                    "treatmentMedication"
+                ),
 
-        disease_code:
-            value(
-                "treatmentDisease"
-            ),
+            medication_name:
+                value(
+                    "treatmentMedicationName"
+                ),
 
-        medication_id:
-            medicationId || null,
+            active_ingredient:
+                value(
+                    "treatmentActive"
+                ),
 
-        medication_name:
-            value(
-                "treatmentMedicationName"
-            ),
+            dose:
+                value(
+                    "treatmentDose"
+                ),
 
-        active_ingredient:
-            value(
-                "treatmentActive"
-            ),
+            route:
+                value(
+                    "treatmentRoute"
+                ),
 
-        dose:
-            value(
-                "treatmentDose"
-            ),
+            duration:
+                value(
+                    "treatmentDuration"
+                ),
 
-        route:
-            value(
-                "treatmentRoute"
-            ),
+            withdrawal_period:
+                value(
+                    "treatmentWithdrawal"
+                ),
 
-        duration:
-            value(
-                "treatmentDuration"
-            ),
+            result:
+                value(
+                    "treatmentResult"
+                ),
 
-        withdrawal_period:
-            value(
-                "treatmentWithdrawal"
-            ),
-
-        result:
-            value(
-                "treatmentResult"
-            ),
-
-        notes:
-            value(
-                "treatmentNotes"
-            )
-
-    };
+            notes:
+                value(
+                    "treatmentNotes"
+                )
+        };
 
 
-    if (
-        !payload.treatment_date ||
-        !payload.medication_name
-    ) {
+        if (
+            !payload.treatment_date ||
+            !payload.medication_name
+        ) {
+
+            showStatus(
+                "تاریخ شروع و نام دارو الزامی است.",
+                "error"
+            );
+
+            return;
+        }
+
+
+        const {
+            error
+        } =
+            await supabaseClient
+                .from("treatments")
+                .insert(
+                    payload
+                );
+
+        if (error) {
+            throw error;
+        }
+
+
+        event.target.reset();
+
+        if (
+            window.jalaliDate
+        ) {
+            window.jalaliDate
+                .prepareDateFields();
+        }
+
+        setDefaultDates();
+
 
         showStatus(
-            "تاریخ شروع و نام دارو الزامی است.",
-            "error"
+            "درمان با موفقیت ثبت شد.",
+            "success"
         );
 
-        return;
+        await loadHistory();
 
     }
 
+    catch (error) {
 
-    const {
-        error
-    } =
-        await supabaseClient
-            .from("treatments")
-            .insert(
-                payload
-            );
-
-
-    if (error) {
+        console.error(error);
 
         showStatus(
             "ثبت درمان انجام نشد: " +
             error.message,
             "error"
         );
-
-        return;
-
     }
-
-
-    event.target.reset();
-
-    setDefaultDates();
-
-
-    showStatus(
-        "درمان با موفقیت ثبت شد.",
-        "success"
-    );
-
-
-    await loadHistory();
-
 }
-
 
 
 /* =========================================================
@@ -1284,31 +1196,22 @@ async function loadHistory() {
             "healthTable"
         );
 
-
     table.innerHTML = `
-
         <tr>
             <td colspan="5">
                 در حال دریافت سوابق...
             </td>
         </tr>
-
     `;
 
 
     const [
-
         vaccinationsResult,
-
         antibodiesResult,
-
         labsResult,
-
         treatmentsResult
-
     ] =
         await Promise.all([
-
 
             supabaseClient
                 .from("vaccinations")
@@ -1378,8 +1281,7 @@ async function loadHistory() {
                     "flock_id",
                     currentFlock.id
                 )
-
-    ]);
+        ]);
 
 
     if (
@@ -1390,30 +1292,21 @@ async function loadHistory() {
     ) {
 
         console.error(
-
             vaccinationsResult.error,
-
             antibodiesResult.error,
-
             labsResult.error,
-
             treatmentsResult.error
-
         );
 
-
         table.innerHTML = `
-
             <tr>
                 <td colspan="5">
                     خطا در دریافت سوابق
                 </td>
             </tr>
-
         `;
 
         return;
-
     }
 
 
@@ -1428,8 +1321,13 @@ async function loadHistory() {
                 id:
                     item.id,
 
+                table:
+                    "vaccinations",
+
                 date:
-                    item.vaccination_date,
+                    displayHealthDate(
+                        item.vaccination_date
+                    ),
 
                 type:
                     "واکسیناسیون",
@@ -1440,21 +1338,13 @@ async function loadHistory() {
 
                 details:
                     [
-
                         item.dose,
-
-                        routeLabel(
-                            item.route
-                        ),
-
+                        routeLabel(item.route),
                         item.notes
-
                     ]
                     .filter(Boolean)
                     .join(" | ")
-
             });
-
         });
 
 
@@ -1466,8 +1356,13 @@ async function loadHistory() {
                 id:
                     item.id,
 
+                table:
+                    "antibody_tests",
+
                 date:
-                    item.test_date,
+                    displayHealthDate(
+                        item.test_date
+                    ),
 
                 type:
                     "تیتر آنتی‌بادی",
@@ -1477,29 +1372,23 @@ async function loadHistory() {
 
                 details:
                     [
-
                         stageLabel(
                             item.antibody_stage
                         ),
-
                         item.test_type,
-
                         item.gmt
-                            ? "GMT: " + item.gmt
+                            ? "GMT: " +
+                              item.gmt
                             : "",
-
                         item.cv_percent
                             ? "CV: " +
                               item.cv_percent +
                               "%"
                             : ""
-
                     ]
                     .filter(Boolean)
                     .join(" | ")
-
             });
-
         });
 
 
@@ -1511,8 +1400,13 @@ async function loadHistory() {
                 id:
                     item.id,
 
+                table:
+                    "lab_tests",
+
                 date:
-                    item.test_date,
+                    displayHealthDate(
+                        item.test_date
+                    ),
 
                 type:
                     "آزمایش",
@@ -1522,22 +1416,16 @@ async function loadHistory() {
 
                 details:
                     [
-
                         item.disease_code,
-
                         item.result,
-
                         item.ct_value !== null
                             ? "Ct: " +
                               item.ct_value
                             : ""
-
                     ]
                     .filter(Boolean)
                     .join(" | ")
-
             });
-
         });
 
 
@@ -1549,8 +1437,13 @@ async function loadHistory() {
                 id:
                     item.id,
 
+                table:
+                    "treatments",
+
                 date:
-                    item.treatment_date,
+                    displayHealthDate(
+                        item.treatment_date
+                    ),
 
                 type:
                     "درمان",
@@ -1560,24 +1453,29 @@ async function loadHistory() {
 
                 details:
                     [
-
                         item.dose,
-
-                        routeLabel(
-                            item.route
-                        ),
-
+                        routeLabel(item.route),
                         item.result,
-
                         item.notes
-
                     ]
                     .filter(Boolean)
                     .join(" | ")
-
             });
-
         });
+
+
+    if (!rows.length) {
+
+        table.innerHTML = `
+            <tr>
+                <td colspan="5">
+                    هنوز سابقه‌ای برای این گله ثبت نشده است.
+                </td>
+            </tr>
+        `;
+
+        return;
+    }
 
 
     rows.sort(
@@ -1587,27 +1485,6 @@ async function loadHistory() {
                     String(a.date)
                 )
     );
-
-
-    if (!rows.length) {
-
-        table.innerHTML = `
-
-            <tr>
-
-                <td colspan="5">
-
-                    هنوز سابقه‌ای برای این گله ثبت نشده است.
-
-                </td>
-
-            </tr>
-
-        `;
-
-        return;
-
-    }
 
 
     table.innerHTML =
@@ -1631,31 +1508,33 @@ async function loadHistory() {
                     </td>
 
                     <td>
-                        ${escapeSafe(row.details || "-")}
+                        ${escapeSafe(
+                            row.details || "-"
+                        )}
                     </td>
 
                     <td>
+
                         <button
                             class="btn btn-danger"
                             onclick="
                                 deleteRecord(
                                     '${row.id}',
-                                    '${row.type}'
+                                    '${row.table}'
                                 )
                             ">
 
                             حذف
 
                         </button>
+
                     </td>
 
                 </tr>
 
             `)
             .join("");
-
 }
-
 
 
 /* =========================================================
@@ -1664,7 +1543,7 @@ async function loadHistory() {
 
 async function deleteRecord(
     id,
-    type
+    tableName
 ) {
 
     if (
@@ -1672,53 +1551,27 @@ async function deleteRecord(
             "آیا این رکورد حذف شود؟"
         )
     ) {
-
         return;
-
     }
 
 
-    let tableName = null;
+    const allowedTables = [
+
+        "vaccinations",
+        "antibody_tests",
+        "lab_tests",
+        "treatments"
+
+    ];
 
 
     if (
-        type === "واکسیناسیون"
+        !allowedTables.includes(
+            tableName
+        )
     ) {
-
-        tableName =
-            "vaccinations";
-
+        return;
     }
-
-    else if (
-        type === "تیتر آنتی‌بادی"
-    ) {
-
-        tableName =
-            "antibody_tests";
-
-    }
-
-    else if (
-        type === "آزمایش"
-    ) {
-
-        tableName =
-            "lab_tests";
-
-    }
-
-    else if (
-        type === "درمان"
-    ) {
-
-        tableName =
-            "treatments";
-
-    }
-
-
-    if (!tableName) return;
 
 
     const {
@@ -1746,7 +1599,6 @@ async function deleteRecord(
         );
 
         return;
-
     }
 
 
@@ -1757,9 +1609,7 @@ async function deleteRecord(
 
 
     await loadHistory();
-
 }
-
 
 
 /* =========================================================
@@ -1771,18 +1621,58 @@ function value(id) {
     const el =
         document.getElementById(id);
 
+    if (!el) {
+        return null;
+    }
 
-    if (!el) return null;
 
-
-    const result =
+    let result =
         String(
             el.value || ""
         ).trim();
 
 
-    return result || null;
+    if (!result) {
+        return null;
+    }
 
+
+    const dateIds = [
+
+        "vaccinationDate",
+        "vaccinationExpiry",
+        "antibodyDate",
+        "labDate",
+        "treatmentDate",
+        "treatmentEnd"
+
+    ];
+
+
+    if (
+        dateIds.includes(id)
+    ) {
+
+        const iso =
+            window.jalaliDate
+                ? window.jalaliDate
+                    .jalaliToISO(result)
+                : null;
+
+
+        if (!iso) {
+
+            throw new Error(
+                "تاریخ واردشده معتبر نیست. فرمت صحیح: ۱۴۰۵/۰۵/۲۹"
+            );
+        }
+
+
+        return iso;
+    }
+
+
+    return result;
 }
 
 
@@ -1791,13 +1681,10 @@ function numberOrNull(id) {
     const v =
         value(id);
 
-
     if (
         v === null
     ) {
-
         return null;
-
     }
 
 
@@ -1808,7 +1695,30 @@ function numberOrNull(id) {
     return Number.isFinite(number)
         ? number
         : null;
+}
 
+
+function displayHealthDate(
+    isoDate
+) {
+
+    if (!isoDate) {
+        return "-";
+    }
+
+
+    if (
+        window.jalaliDate
+    ) {
+
+        return window.jalaliDate
+            .isoToJalali(
+                isoDate
+            );
+    }
+
+
+    return isoDate;
 }
 
 
@@ -1839,12 +1749,14 @@ function routeLabel(route) {
 
         other:
             "سایر"
-
     };
 
 
-    return map[route] || route || "";
-
+    return (
+        map[route] ||
+        route ||
+        ""
+    );
 }
 
 
@@ -1863,7 +1775,6 @@ function stageLabel(stage) {
 
         routine:
             "پایش روتین"
-
     };
 
 
@@ -1872,7 +1783,6 @@ function stageLabel(stage) {
         stage ||
         ""
     );
-
 }
 
 
@@ -1886,7 +1796,6 @@ function escapeSafe(value) {
         return escapeHTML(
             value
         );
-
     }
 
 
@@ -1913,7 +1822,6 @@ function escapeSafe(value) {
         "'",
         "&#039;"
     );
-
 }
 
 
@@ -1946,7 +1854,6 @@ function showStatus(
         },
         5000
     );
-
 }
 
 

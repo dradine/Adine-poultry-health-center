@@ -3,8 +3,10 @@
    SUPABASE CONFIGURATION
    ========================================================= */
 
+
 const SUPABASE_URL =
     "https://vzcczkavlopznljnnehp.supabase.co";
+
 
 const SUPABASE_PUBLISHABLE_KEY =
     "sb_publishable_4jMgvqKI__-MsmMQtEiCig_M9WjhvN9";
@@ -17,6 +19,7 @@ const supabaseClient =
     );
 
 
+
 /* =========================================================
    CURRENT USER
    ========================================================= */
@@ -27,7 +30,9 @@ async function getCurrentUser() {
         data,
         error
     } =
-        await supabaseClient.auth.getUser();
+        await supabaseClient
+            .auth
+            .getUser();
 
 
     if (error) {
@@ -45,6 +50,7 @@ async function getCurrentUser() {
     return data.user || null;
 
 }
+
 
 
 /* =========================================================
@@ -71,7 +77,10 @@ async function getCurrentProfile() {
         await supabaseClient
             .from("profiles")
             .select("*")
-            .eq("id", user.id)
+            .eq(
+                "id",
+                user.id
+            )
             .maybeSingle();
 
 
@@ -92,6 +101,7 @@ async function getCurrentProfile() {
 }
 
 
+
 /* =========================================================
    ACCESS
    ========================================================= */
@@ -102,22 +112,34 @@ async function checkUserAccess() {
         await getCurrentUser();
 
 
+    /* -----------------------------------------
+       کاربر وارد نشده
+       ----------------------------------------- */
+
     if (!user) {
 
         return {
 
-            authenticated: false,
+            authenticated:
+                false,
 
-            allowed: false,
+            allowed:
+                false,
 
-            user: null,
+            user:
+                null,
 
-            profile: null
+            profile:
+                null
 
         };
 
     }
 
+
+    /* -----------------------------------------
+       دریافت پروفایل
+       ----------------------------------------- */
 
     const profile =
         await getCurrentProfile();
@@ -127,28 +149,156 @@ async function checkUserAccess() {
 
         return {
 
-            authenticated: true,
+            authenticated:
+                true,
 
-            allowed: false,
+            allowed:
+                false,
 
             user,
 
-            profile: null
+            profile:
+                null
 
         };
 
     }
 
 
-    const allowed =
-        profile.access_status === "approved" ||
-        profile.role === "owner" ||
-        profile.role === "admin";
+    /* -----------------------------------------
+       وضعیت حساب
+       ----------------------------------------- */
 
+    const status =
+        String(
+            profile.status ||
+            ""
+        )
+        .trim()
+        .toLowerCase();
+
+
+    const accessStatus =
+        String(
+            profile.access_status ||
+            ""
+        )
+        .trim()
+        .toLowerCase();
+
+
+    const role =
+        String(
+            profile.role ||
+            ""
+        )
+        .trim()
+        .toLowerCase();
+
+
+
+    /* -----------------------------------------
+       حساب‌های تأیید شده
+       ----------------------------------------- */
+
+    const isApproved =
+        accessStatus ===
+        "approved";
+
+
+    const isActive =
+        status ===
+        "active";
+
+
+    const isOwner =
+        role ===
+        "owner";
+
+
+    const isAdmin =
+        role ===
+        "admin";
+
+
+
+    /* -----------------------------------------
+       وضعیت‌های مسدودکننده
+       ----------------------------------------- */
+
+    const isBlocked =
+        status ===
+        "blocked";
+
+
+    const isSuspended =
+        status ===
+        "suspended";
+
+
+    const isRemoved =
+        status ===
+        "removed";
+
+
+    const isDenied =
+        accessStatus ===
+        "blocked" ||
+        accessStatus ===
+        "suspended" ||
+        accessStatus ===
+        "removed";
+
+
+
+    /* -----------------------------------------
+       تصمیم نهایی
+       ----------------------------------------- */
+
+    let allowed =
+        false;
+
+
+    /*
+     * اگر حساب صراحتاً مسدود،
+     * معلق یا حذف شده باشد،
+     * اجازه ورود نمی‌دهیم.
+     */
+
+    if (
+        isBlocked ||
+        isSuspended ||
+        isRemoved ||
+        isDenied
+    ) {
+
+        allowed =
+            false;
+
+    }
+
+    else if (
+        isApproved ||
+        isActive ||
+        isOwner ||
+        isAdmin
+    ) {
+
+        allowed =
+            true;
+
+    }
+
+
+
+    /* -----------------------------------------
+       نتیجه
+       ----------------------------------------- */
 
     return {
 
-        authenticated: true,
+        authenticated:
+            true,
 
         allowed,
 
@@ -161,6 +311,7 @@ async function checkUserAccess() {
 }
 
 
+
 /* =========================================================
    LOGOUT
    ========================================================= */
@@ -170,7 +321,9 @@ async function logoutUser() {
     const {
         error
     } =
-        await supabaseClient.auth.signOut();
+        await supabaseClient
+            .auth
+            .signOut();
 
 
     if (error) {

@@ -1,7 +1,7 @@
 /* =========================================================
    ADINE POULTRY HEALTH CENTER
    WEEKLY MONITORING - SUPABASE VERSION
-   STABLE VERSION
+   STABLE FIXED VERSION
    Persian + English Numbers
    Shamsi Date
    Editing Records
@@ -13,17 +13,9 @@
    ========================================================= */
 
 let currentUser = null;
-
 let currentFlock = null;
-
 let weeklyRecords = [];
-
 let weightChart = null;
-
-/*
- * اگر null باشد یعنی ثبت جدید.
- * اگر مقدار داشته باشد یعنی در حال ویرایش رکورد است.
- */
 let editingRecordId = null;
 
 
@@ -41,13 +33,7 @@ async function initializeWeekly() {
 
     try {
 
-        /*
-         * مهم:
-         * فیلدهای number را به text تبدیل می‌کنیم
-         * تا آیفون بتواند اعداد فارسی را نیز دریافت کند.
-         */
         prepareNumericInputs();
-
 
         const access =
             await checkUserAccess();
@@ -62,7 +48,6 @@ async function initializeWeekly() {
                 );
 
             return;
-
         }
 
 
@@ -75,7 +60,6 @@ async function initializeWeekly() {
             await logoutUser();
 
             return;
-
         }
 
 
@@ -84,7 +68,6 @@ async function initializeWeekly() {
 
 
         setToday();
-
 
         await loadCurrentFlock();
 
@@ -110,33 +93,16 @@ async function initializeWeekly() {
    NUMERIC INPUT PREPARATION
    ========================================================= */
 
-/*
- * مشکل اصلی آیفون:
- *
- * input type="number"
- *
- * در بعضی حالت‌ها اعداد فارسی را قبول نمی‌کند.
- *
- * بنابراین فیلدهای عددی را به text تبدیل می‌کنیم
- * و خودمان مقدار را به عدد استاندارد تبدیل می‌کنیم.
- */
-
 function prepareNumericInputs() {
 
     const numericIds = [
 
         "weekNumber",
-
         "liveBirds",
-
         "mortalityWeek",
-
         "feedTotal",
-
         "waterTotal",
-
         "feedPerBird",
-
         "waterPerBird"
 
     ];
@@ -146,25 +112,17 @@ function prepareNumericInputs() {
         id => {
 
             const input =
-                document.getElementById(
-                    id
-                );
+                document.getElementById(id);
 
 
             if (!input) {
-
                 return;
-
             }
 
 
-            input.type =
-                "text";
+            input.type = "text";
 
-
-            input.inputMode =
-                "decimal";
-
+            input.inputMode = "decimal";
 
             input.setAttribute(
                 "autocomplete",
@@ -180,13 +138,8 @@ function prepareNumericInputs() {
     );
 
 
-    /*
-     * اگر وزن‌هایی از قبل در صفحه وجود داشته باشند
-     */
     document
-        .querySelectorAll(
-            ".bird-weight"
-        )
+        .querySelectorAll(".bird-weight")
         .forEach(
             input => {
 
@@ -204,24 +157,16 @@ function prepareNumericInputs() {
    PREPARE WEIGHT INPUT
    ========================================================= */
 
-function prepareWeightInput(
-    input
-) {
+function prepareWeightInput(input) {
 
     if (!input) {
-
         return;
-
     }
 
 
-    input.type =
-        "text";
+    input.type = "text";
 
-
-    input.inputMode =
-        "decimal";
-
+    input.inputMode = "decimal";
 
     input.setAttribute(
         "autocomplete",
@@ -240,27 +185,18 @@ function prepareWeightInput(
    NUMBER INPUT HANDLER
    ========================================================= */
 
-function attachNumberInputHandler(
-    input
-) {
+function attachNumberInputHandler(input) {
 
     if (!input) {
-
         return;
-
     }
 
 
-    /*
-     * جلوگیری از نصب چندباره event
-     */
     if (
         input.dataset.numberPrepared ===
         "true"
     ) {
-
         return;
-
     }
 
 
@@ -272,11 +208,6 @@ function attachNumberInputHandler(
         "input",
         function () {
 
-            /*
-             * فقط اعداد و علامت‌های مجاز را نگه می‌داریم.
-             *
-             * تبدیل عدد فارسی به انگلیسی
-             */
             this.value =
                 normalizeNumberString(
                     this.value
@@ -292,26 +223,7 @@ function attachNumberInputHandler(
    NORMALIZE NUMBERS
    ========================================================= */
 
-/*
- * تبدیل:
- *
- * ۰۱۲۳۴۵۶۷۸۹
- *
- * و:
- *
- * ٠١٢٣٤٥٦٧٨٩
- *
- * به:
- *
- * 0123456789
- *
- * همچنین جداکننده‌های فارسی و عربی
- * به فرمت قابل محاسبه تبدیل می‌شوند.
- */
-
-function normalizeNumberString(
-    value
-) {
+function normalizeNumberString(value) {
 
     if (
         value === null ||
@@ -327,9 +239,7 @@ function normalizeNumberString(
         String(value);
 
 
-    /*
-     * فارسی
-     */
+    /* Persian digits */
     text =
         text.replace(
             /[۰-۹]/g,
@@ -344,9 +254,7 @@ function normalizeNumberString(
         );
 
 
-    /*
-     * عربی
-     */
+    /* Arabic digits */
     text =
         text.replace(
             /[٠-٩]/g,
@@ -361,9 +269,7 @@ function normalizeNumberString(
         );
 
 
-    /*
-     * جداکننده هزارگان فارسی
-     */
+    /* Thousand separators */
     text =
         text.replaceAll(
             "٬",
@@ -371,9 +277,6 @@ function normalizeNumberString(
         );
 
 
-    /*
-     * جداکننده هزارگان انگلیسی
-     */
     text =
         text.replaceAll(
             ",",
@@ -381,9 +284,7 @@ function normalizeNumberString(
         );
 
 
-    /*
-     * ممیز فارسی
-     */
+    /* Persian decimal separator */
     text =
         text.replaceAll(
             "٫",
@@ -391,9 +292,7 @@ function normalizeNumberString(
         );
 
 
-    /*
-     * ممیز عربی
-     */
+    /* Arabic decimal separator */
     text =
         text.replaceAll(
             "،",
@@ -401,9 +300,7 @@ function normalizeNumberString(
         );
 
 
-    /*
-     * فقط اعداد، نقطه و منفی
-     */
+    /* Only numeric characters */
     text =
         text.replace(
             /[^0-9.\-]/g,
@@ -411,9 +308,7 @@ function normalizeNumberString(
         );
 
 
-    /*
-     * فقط یک نقطه اعشار
-     */
+    /* Only one decimal point */
     const firstDot =
         text.indexOf(".");
 
@@ -438,9 +333,7 @@ function normalizeNumberString(
     }
 
 
-    /*
-     * فقط یک منفی در ابتدای عدد
-     */
+    /* Only one minus at beginning */
     if (
         text.includes("-")
     ) {
@@ -452,11 +345,10 @@ function normalizeNumberString(
                     : ""
             ) +
 
-            text
-                .replace(
-                    /-/g,
-                    ""
-                );
+            text.replace(
+                /-/g,
+                ""
+            );
 
     }
 
@@ -501,7 +393,6 @@ async function loadCurrentFlock() {
         `;
 
         return;
-
     }
 
 
@@ -533,9 +424,7 @@ async function loadCurrentFlock() {
 
     if (error || !data) {
 
-        console.error(
-            error
-        );
+        console.error(error);
 
         container.innerHTML = `
             <p>
@@ -544,7 +433,6 @@ async function loadCurrentFlock() {
         `;
 
         return;
-
     }
 
 
@@ -614,9 +502,7 @@ function setToday() {
 
 
     if (!input) {
-
         return;
-
     }
 
 
@@ -628,14 +514,9 @@ function setToday() {
         new Intl.DateTimeFormat(
             "fa-IR-u-ca-persian",
             {
-                year:
-                    "numeric",
-
-                month:
-                    "2-digit",
-
-                day:
-                    "2-digit"
+                year: "numeric",
+                month: "2-digit",
+                day: "2-digit"
             }
         );
 
@@ -677,9 +558,7 @@ function setToday() {
    WEIGHTS
    ========================================================= */
 
-function addWeightInput(
-    value = ""
-) {
+function addWeightInput(value = "") {
 
     const container =
         document.getElementById(
@@ -688,9 +567,7 @@ function addWeightInput(
 
 
     if (!container) {
-
         return;
-
     }
 
 
@@ -699,9 +576,7 @@ function addWeightInput(
 
 
     const wrapper =
-        document.createElement(
-            "div"
-        );
+        document.createElement("div");
 
 
     wrapper.className =
@@ -716,15 +591,11 @@ function addWeightInput(
 
         <input
             type="text"
-            min="0"
-            step="0.1"
             inputmode="decimal"
             class="bird-weight"
             placeholder="گرم"
             value="${escapeHTMLAttribute(
-                normalizeNumberString(
-                    value
-                )
+                normalizeNumberString(value)
             )}"
         >
 
@@ -742,9 +613,7 @@ function addWeightInput(
         );
 
 
-    prepareWeightInput(
-        input
-    );
+    prepareWeightInput(input);
 
 }
 
@@ -806,8 +675,7 @@ function clearWeights() {
 
         weightChart.destroy();
 
-        weightChart =
-            null;
+        weightChart = null;
 
     }
 
@@ -837,10 +705,6 @@ function getWeights() {
                     );
 
 
-                /*
-                 * مقدار نرمال‌شده را دوباره
-                 * داخل input می‌گذاریم.
-                 */
                 input.value =
                     normalized;
 
@@ -877,7 +741,6 @@ function calculateWeekly() {
         );
 
         return;
-
     }
 
 
@@ -887,10 +750,7 @@ function calculateWeekly() {
         );
 
 
-    renderResults(
-        result
-    );
-
+    renderResults(result);
 
     drawWeightChart(
         weights,
@@ -918,12 +778,30 @@ function calculateWeekly() {
    STATISTICS
    ========================================================= */
 
-function calculateWeightStatistics(
-    weights
-) {
+function calculateWeightStatistics(weights) {
 
     const n =
         weights.length;
+
+
+    if (!n) {
+
+        return {
+            count: 0,
+            mean: 0,
+            sd: 0,
+            cv: 0,
+            uniformity10: 0,
+            uniformity15: 0,
+            min: 0,
+            max: 0,
+            lower10: 0,
+            upper10: 0,
+            lower15: 0,
+            upper15: 0
+        };
+
+    }
 
 
     const mean =
@@ -937,6 +815,11 @@ function calculateWeightStatistics(
         ) / n;
 
 
+    /*
+     * SD جامعه
+     * چون کل نمونه واردشده به عنوان
+     * جمعیت محاسباتی همین ارزیابی در نظر گرفته می‌شود.
+     */
     const squared =
         weights.map(
             value =>
@@ -1010,45 +893,31 @@ function calculateWeightStatistics(
 
     return {
 
-        count:
-            n,
+        count: n,
 
-        mean:
-            mean,
+        mean: mean,
 
-        sd:
-            sd,
+        sd: sd,
 
-        cv:
-            cv,
+        cv: cv,
 
-        uniformity10:
-            uniformity10,
+        uniformity10: uniformity10,
 
-        uniformity15:
-            uniformity15,
+        uniformity15: uniformity15,
 
         min:
-            Math.min(
-                ...weights
-            ),
+            Math.min(...weights),
 
         max:
-            Math.max(
-                ...weights
-            ),
+            Math.max(...weights),
 
-        lower10:
-            lower10,
+        lower10: lower10,
 
-        upper10:
-            upper10,
+        upper10: upper10,
 
-        lower15:
-            lower15,
+        lower15: lower15,
 
-        upper15:
-            upper15
+        upper15: upper15
 
     };
 
@@ -1059,9 +928,7 @@ function calculateWeightStatistics(
    RESULTS
    ========================================================= */
 
-function renderResults(
-    result
-) {
+function renderResults(result) {
 
     const container =
         document.getElementById(
@@ -1070,9 +937,7 @@ function renderResults(
 
 
     if (!container) {
-
         return;
-
     }
 
 
@@ -1151,10 +1016,7 @@ function renderResults(
    METRIC
    ========================================================= */
 
-function metric(
-    title,
-    value
-) {
+function metric(title, value) {
 
     return `
 
@@ -1190,7 +1052,6 @@ function drawWeightChart(
     ) {
 
         return;
-
     }
 
 
@@ -1201,9 +1062,7 @@ function drawWeightChart(
 
 
     if (!canvas) {
-
         return;
-
     }
 
 
@@ -1229,13 +1088,11 @@ function drawWeightChart(
             canvas,
             {
 
-                type:
-                    "line",
+                type: "line",
 
                 data: {
 
-                    labels:
-                        labels,
+                    labels: labels,
 
                     datasets: [
 
@@ -1264,10 +1121,7 @@ function drawWeightChart(
                                 ),
 
                             borderDash:
-                                [
-                                    6,
-                                    6
-                                ],
+                                [6, 6],
 
                             pointRadius:
                                 0
@@ -1286,10 +1140,7 @@ function drawWeightChart(
                                 ),
 
                             borderDash:
-                                [
-                                    4,
-                                    4
-                                ],
+                                [4, 4],
 
                             pointRadius:
                                 0
@@ -1308,10 +1159,7 @@ function drawWeightChart(
                                 ),
 
                             borderDash:
-                                [
-                                    4,
-                                    4
-                                ],
+                                [4, 4],
 
                             pointRadius:
                                 0
@@ -1324,8 +1172,7 @@ function drawWeightChart(
 
                 options: {
 
-                    responsive:
-                        true,
+                    responsive: true,
 
                     maintainAspectRatio:
                         false
@@ -1342,9 +1189,7 @@ function drawWeightChart(
    START EDIT
    ========================================================= */
 
-function editWeeklyRecord(
-    recordId
-) {
+function editWeeklyRecord(recordId) {
 
     const record =
         weeklyRecords.find(
@@ -1361,7 +1206,6 @@ function editWeeklyRecord(
         );
 
         return;
-
     }
 
 
@@ -1369,13 +1213,59 @@ function editWeeklyRecord(
         record.id;
 
 
-    setField(
+    /*
+     * عددها
+     */
+    setNumericField(
         "weekNumber",
         record.week_number
     );
 
 
-    setField(
+    setNumericField(
+        "liveBirds",
+        record.live_birds
+    );
+
+
+    setNumericField(
+        "mortalityWeek",
+        record.mortality_count
+    );
+
+
+    setNumericField(
+        "feedTotal",
+        record.feed_total_kg
+    );
+
+
+    setNumericField(
+        "waterTotal",
+        record.water_total_liter
+    );
+
+
+    setNumericField(
+        "feedPerBird",
+        record.feed_per_bird_g
+    );
+
+
+    setNumericField(
+        "waterPerBird",
+        record.water_per_bird_ml
+    );
+
+
+    /*
+     * تاریخ
+     *
+     * مهم:
+     * دیگر normalizeNumberString روی تاریخ
+     * اعمال نمی‌شود.
+     */
+    setTextField(
         "evaluationDate",
         convertDatabaseDateToShamsi(
             record.evaluation_date
@@ -1383,45 +1273,15 @@ function editWeeklyRecord(
     );
 
 
-    setField(
-        "liveBirds",
-        record.live_birds
-    );
-
-
-    setField(
-        "mortalityWeek",
-        record.mortality_count
-    );
-
-
-    setField(
-        "feedTotal",
-        record.feed_total_kg
-    );
-
-
-    setField(
-        "waterTotal",
-        record.water_total_liter
-    );
-
-
-    setField(
-        "feedPerBird",
-        record.feed_per_bird_g
-    );
-
-
-    setField(
-        "waterPerBird",
-        record.water_per_bird_ml
-    );
-
-
-    setField(
+    /*
+     * یادداشت
+     *
+     * مهم:
+     * یادداشت هم نباید مثل عدد پردازش شود.
+     */
+    setTextField(
         "weeklyNotes",
-        record.notes
+        record.notes || ""
     );
 
 
@@ -1464,8 +1324,7 @@ function editWeeklyRecord(
                 error
             );
 
-            savedWeights =
-                [];
+            savedWeights = [];
 
         }
 
@@ -1473,9 +1332,7 @@ function editWeeklyRecord(
 
 
     if (
-        Array.isArray(
-            savedWeights
-        ) &&
+        Array.isArray(savedWeights) &&
         savedWeights.length
     ) {
 
@@ -1513,11 +1370,8 @@ function editWeeklyRecord(
 
     window.scrollTo(
         {
-            top:
-                0,
-
-            behavior:
-                "smooth"
+            top: 0,
+            behavior: "smooth"
         }
     );
 
@@ -1627,7 +1481,7 @@ function showEditMode() {
 
         weekText.textContent =
             week
-                ? ` — هفته ${week}`
+                ? ` — هفته ${convertDigitsToPersian(week)}`
                 : "";
 
     }
@@ -1641,36 +1495,7 @@ function showEditMode() {
 
 function cancelEditWeeklyRecord() {
 
-    editingRecordId =
-        null;
-
-
-    const saveButton =
-        document.querySelector(
-            'button[onclick="saveWeeklyRecord()"]'
-        );
-
-
-    if (saveButton) {
-
-        saveButton.textContent =
-            "ذخیره گزارش هفتگی";
-
-    }
-
-
-    const notice =
-        document.getElementById(
-            "editModeNotice"
-        );
-
-
-    if (notice) {
-
-        notice.remove();
-
-    }
-
+    editingRecordId = null;
 
     clearWeeklyForm();
 
@@ -1689,19 +1514,12 @@ function clearWeeklyForm() {
     const fields = [
 
         "weekNumber",
-
         "liveBirds",
-
         "mortalityWeek",
-
         "feedTotal",
-
         "waterTotal",
-
         "feedPerBird",
-
         "waterPerBird",
-
         "weeklyNotes"
 
     ];
@@ -1759,14 +1577,12 @@ function clearWeeklyForm() {
 
         weightChart.destroy();
 
-        weightChart =
-            null;
+        weightChart = null;
 
     }
 
 
-    editingRecordId =
-        null;
+    editingRecordId = null;
 
 
     const saveButton =
@@ -1776,6 +1592,8 @@ function clearWeeklyForm() {
 
 
     if (saveButton) {
+
+        saveButton.disabled = false;
 
         saveButton.textContent =
             "ذخیره گزارش هفتگی";
@@ -1799,24 +1617,20 @@ function clearWeeklyForm() {
 
 
 /* =========================================================
-   SET FIELD
+   SET NUMERIC FIELD
    ========================================================= */
 
-function setField(
+function setNumericField(
     id,
     value
 ) {
 
     const element =
-        document.getElementById(
-            id
-        );
+        document.getElementById(id);
 
 
     if (!element) {
-
         return;
-
     }
 
 
@@ -1825,8 +1639,7 @@ function setField(
         value === undefined
     ) {
 
-        element.value =
-            "";
+        element.value = "";
 
         return;
 
@@ -1842,17 +1655,40 @@ function setField(
 
 
 /* =========================================================
-   SAVE TO SUPABASE
+   SET TEXT FIELD
    ========================================================= */
 
-function getGregorianDateForSupabase(
+function setTextField(
+    id,
     value
 ) {
 
+    const element =
+        document.getElementById(id);
+
+
+    if (!element) {
+        return;
+    }
+
+
+    element.value =
+        value === null ||
+        value === undefined
+            ? ""
+            : String(value);
+
+}
+
+
+/* =========================================================
+   SAVE DATE
+   ========================================================= */
+
+function getGregorianDateForSupabase(value) {
+
     if (!value) {
-
         return null;
-
     }
 
 
@@ -1887,9 +1723,7 @@ function getGregorianDateForSupabase(
         text.split("/");
 
 
-    if (
-        parts.length !== 3
-    ) {
+    if (parts.length !== 3) {
 
         throw new Error(
             "فرمت تاریخ صحیح نیست. مثال: ۱۴۰۵/۰۵/۱۸"
@@ -1927,9 +1761,6 @@ function getGregorianDateForSupabase(
     }
 
 
-    /*
-     * استفاده از persianDate موجود در پروژه
-     */
     if (
         typeof persianDate !==
         "function"
@@ -2052,9 +1883,6 @@ async function saveWeeklyRecord() {
             );
 
 
-        /*
-         * تاریخ شمسی → میلادی
-         */
         const evaluationDate =
             getGregorianDateForSupabase(
                 getValue(
@@ -2063,10 +1891,6 @@ async function saveWeeklyRecord() {
             );
 
 
-        /*
-         * اگر در حالت ویرایش هستیم،
-         * همان رکورد قبلی را پیدا می‌کنیم.
-         */
         const editingRecord =
             editingRecordId
                 ? weeklyRecords.find(
@@ -2087,117 +1911,74 @@ async function saveWeeklyRecord() {
 
             ...(recordId
                 ? {
-                    id:
-                        recordId
+                    id: recordId
                 }
                 : {}),
-
 
             owner_id:
                 currentUser.id,
 
-
             farm_id:
                 currentFlock.farm_id,
-
 
             house_id:
                 currentFlock.house_id,
 
-
             flock_id:
                 currentFlock.id,
-
 
             week_number:
                 week,
 
-
             evaluation_date:
                 evaluationDate,
-
-
-            /*
-             * WEIGHT STATISTICS
-             */
 
             sample_count:
                 stats.count,
 
-
             average_weight_g:
                 stats.mean,
-
 
             sd_weight_g:
                 stats.sd,
 
-
             cv_percent:
                 stats.cv,
-
 
             uniformity_10_percent:
                 stats.uniformity10,
 
-
             uniformity_15_percent:
                 stats.uniformity15,
-
 
             min_weight_g:
                 stats.min,
 
-
             max_weight_g:
                 stats.max,
-
-
-            /*
-             * FLOCK
-             */
 
             live_birds:
                 liveBirds,
 
-
             mortality_count:
                 mortality,
-
-
-            /*
-             * FEED / WATER
-             */
 
             feed_total_kg:
                 feedTotal,
 
-
             water_total_liter:
                 waterTotal,
-
 
             feed_per_bird_g:
                 feedPerBird,
 
-
             water_per_bird_ml:
                 waterPerBird,
-
-
-            /*
-             * NOTES
-             */
 
             notes:
                 getValue(
                     "weeklyNotes"
                 ),
-
-
-            /*
-             * RAW WEIGHTS
-             */
 
             weights:
                 weights
@@ -2211,9 +1992,6 @@ async function saveWeeklyRecord() {
         );
 
 
-        /*
-         * جلوگیری از دوبار کلیک هنگام ذخیره
-         */
         const saveButton =
             document.querySelector(
                 'button[onclick="saveWeeklyRecord()"]'
@@ -2222,8 +2000,7 @@ async function saveWeeklyRecord() {
 
         if (saveButton) {
 
-            saveButton.disabled =
-                true;
+            saveButton.disabled = true;
 
             saveButton.textContent =
                 "در حال ذخیره...";
@@ -2236,9 +2013,7 @@ async function saveWeeklyRecord() {
             error
         } =
             await supabaseClient
-                .from(
-                    "weekly_records"
-                )
+                .from("weekly_records")
                 .upsert(
                     payload,
                     {
@@ -2276,7 +2051,6 @@ async function saveWeeklyRecord() {
                 error.message
             );
 
-
             return;
 
         }
@@ -2294,25 +2068,14 @@ async function saveWeeklyRecord() {
             );
 
 
-        if (wasEditing) {
-
-            alert(
-                "گزارش هفتگی با موفقیت ویرایش شد."
-            );
-
-        }
-
-        else {
-
-            alert(
-                "گزارش هفتگی با موفقیت ذخیره شد."
-            );
-
-        }
+        alert(
+            wasEditing
+                ? "گزارش هفتگی با موفقیت ویرایش شد."
+                : "گزارش هفتگی با موفقیت ذخیره شد."
+        );
 
 
         clearWeeklyForm();
-
 
         await loadHistory();
 
@@ -2359,15 +2122,13 @@ async function saveWeeklyRecord() {
 
 
 /* =========================================================
-   HISTORY FROM SUPABASE
+   HISTORY
    ========================================================= */
 
 async function loadHistory() {
 
     if (!currentFlock) {
-
         return;
-
     }
 
 
@@ -2376,9 +2137,7 @@ async function loadHistory() {
         error
     } =
         await supabaseClient
-            .from(
-                "weekly_records"
-            )
+            .from("weekly_records")
             .select("*")
             .eq(
                 "flock_id",
@@ -2391,8 +2150,7 @@ async function loadHistory() {
             .order(
                 "week_number",
                 {
-                    ascending:
-                        true
+                    ascending: true
                 }
             );
 
@@ -2421,9 +2179,7 @@ async function loadHistory() {
 
         }
 
-
         return;
-
     }
 
 
@@ -2449,9 +2205,7 @@ function renderHistory() {
 
 
     if (!container) {
-
         return;
-
     }
 
 
@@ -2464,17 +2218,12 @@ function renderHistory() {
         `;
 
         return;
-
     }
 
 
     container.innerHTML = `
 
-        <div
-            style="
-                overflow-x:auto;
-            "
-        >
+        <div style="overflow-x:auto;">
 
             <table>
 
@@ -2482,54 +2231,31 @@ function renderHistory() {
 
                     <tr>
 
-                        <th>
-                            هفته
-                        </th>
+                        <th>هفته</th>
 
-                        <th>
-                            تاریخ
-                        </th>
+                        <th>تاریخ</th>
 
-                        <th>
-                            میانگین
-                        </th>
+                        <th>میانگین</th>
 
-                        <th>
-                            SD
-                        </th>
+                        <th>SD</th>
 
-                        <th>
-                            CV
-                        </th>
+                        <th>CV</th>
 
-                        <th>
-                            یکنواختی ±10
-                        </th>
+                        <th>یکنواختی ±10</th>
 
-                        <th>
-                            یکنواختی ±15
-                        </th>
+                        <th>یکنواختی ±15</th>
 
-                        <th>
-                            تلفات
-                        </th>
+                        <th>تلفات</th>
 
-                        <th>
-                            دان
-                        </th>
+                        <th>دان</th>
 
-                        <th>
-                            آب
-                        </th>
+                        <th>آب</th>
 
-                        <th>
-                            عملیات
-                        </th>
+                        <th>عملیات</th>
 
                     </tr>
 
                 </thead>
-
 
                 <tbody>
 
@@ -2547,13 +2273,11 @@ function renderHistory() {
                                             )}
                                         </td>
 
-
                                         <td>
                                             ${formatDateDisplay(
                                                 record.evaluation_date
                                             )}
                                         </td>
-
 
                                         <td>
                                             ${formatNumber(
@@ -2562,14 +2286,12 @@ function renderHistory() {
                                             )}
                                         </td>
 
-
                                         <td>
                                             ${formatNumber(
                                                 record.sd_weight_g,
                                                 1
                                             )}
                                         </td>
-
 
                                         <td>
                                             ${formatNumber(
@@ -2578,14 +2300,12 @@ function renderHistory() {
                                             )}%
                                         </td>
 
-
                                         <td>
                                             ${formatNumber(
                                                 record.uniformity_10_percent,
                                                 1
                                             )}%
                                         </td>
-
 
                                         <td>
                                             ${formatNumber(
@@ -2594,14 +2314,12 @@ function renderHistory() {
                                             )}%
                                         </td>
 
-
                                         <td>
                                             ${formatNumber(
                                                 record.mortality_count,
                                                 0
                                             )}
                                         </td>
-
 
                                         <td>
                                             ${formatNumber(
@@ -2610,14 +2328,12 @@ function renderHistory() {
                                             )}
                                         </td>
 
-
                                         <td>
                                             ${formatNumber(
                                                 record.water_total_liter,
                                                 1
                                             )}
                                         </td>
-
 
                                         <td>
 
@@ -2653,27 +2369,18 @@ function renderHistory() {
    DATE DISPLAY
    ========================================================= */
 
-function formatDateDisplay(
-    date
-) {
+function formatDateDisplay(date) {
 
     if (!date) {
-
         return "-";
-
     }
 
 
-    /*
-     * اگر قبلاً شمسی باشد
-     */
     const text =
         String(date);
 
 
-    if (
-        text.includes("/")
-    ) {
+    if (text.includes("/")) {
 
         return convertDigitsToPersian(
             text
@@ -2686,9 +2393,7 @@ function formatDateDisplay(
         text.split("-");
 
 
-    if (
-        parts.length !== 3
-    ) {
+    if (parts.length !== 3) {
 
         return convertDigitsToPersian(
             text
@@ -2696,11 +2401,6 @@ function formatDateDisplay(
 
     }
 
-
-    /*
-     * تاریخ دیتابیس میلادی است.
-     * تبدیل به شمسی واقعی.
-     */
 
     try {
 
@@ -2711,22 +2411,14 @@ function formatDateDisplay(
 
             const gregorianDate =
                 new persianDate(
-                    parts[0] +
-                    "-" +
-                    parts[1] +
-                    "-" +
-                    parts[2]
+                    `${parts[0]}-${parts[1]}-${parts[2]}`
                 );
 
 
             const shamsi =
                 gregorianDate
-                    .toCalendar(
-                        "persian"
-                    )
-                    .format(
-                        "YYYY/MM/DD"
-                    );
+                    .toCalendar("persian")
+                    .format("YYYY/MM/DD");
 
 
             return convertDigitsToPersian(
@@ -2747,9 +2439,6 @@ function formatDateDisplay(
     }
 
 
-    /*
-     * اگر تبدیل‌کننده موجود نبود
-     */
     return convertDigitsToPersian(
         text
     );
@@ -2758,17 +2447,13 @@ function formatDateDisplay(
 
 
 /* =========================================================
-   DATABASE DATE → SHAMSI FOR EDIT
+   DATABASE DATE → SHAMSI
    ========================================================= */
 
-function convertDatabaseDateToShamsi(
-    date
-) {
+function convertDatabaseDateToShamsi(date) {
 
     if (!date) {
-
         return "";
-
     }
 
 
@@ -2776,9 +2461,7 @@ function convertDatabaseDateToShamsi(
         String(date).split("-");
 
 
-    if (
-        parts.length !== 3
-    ) {
+    if (parts.length !== 3) {
 
         return String(date);
 
@@ -2800,12 +2483,8 @@ function convertDatabaseDateToShamsi(
 
             const shamsi =
                 gregorian
-                    .toCalendar(
-                        "persian"
-                    )
-                    .format(
-                        "YYYY/MM/DD"
-                    );
+                    .toCalendar("persian")
+                    .format("YYYY/MM/DD");
 
 
             return convertDigitsToPersian(
@@ -2837,9 +2516,7 @@ function convertDatabaseDateToShamsi(
    DIGITS TO PERSIAN
    ========================================================= */
 
-function convertDigitsToPersian(
-    value
-) {
+function convertDigitsToPersian(value) {
 
     return String(
         value ?? ""
@@ -2861,20 +2538,14 @@ function convertDigitsToPersian(
    HELPERS
    ========================================================= */
 
-function getValue(
-    id
-) {
+function getValue(id) {
 
     const element =
-        document.getElementById(
-            id
-        );
+        document.getElementById(id);
 
 
     if (!element) {
-
         return "";
-
     }
 
 
@@ -2889,18 +2560,14 @@ function getValue(
    GET NUMBER
    ========================================================= */
 
-function getNumber(
-    id
-) {
+function getNumber(id) {
 
     const value =
         getValue(id);
 
 
     if (!value) {
-
         return 0;
-
     }
 
 
@@ -2911,14 +2578,10 @@ function getNumber(
 
 
     const number =
-        Number(
-            normalized
-        );
+        Number(normalized);
 
 
-    return Number.isFinite(
-        number
-    )
+    return Number.isFinite(number)
         ? number
         : 0;
 
@@ -2950,9 +2613,7 @@ function formatNumber(
 
 
     if (
-        !Number.isFinite(
-            number
-        )
+        !Number.isFinite(number)
     ) {
 
         return "-";
@@ -2980,9 +2641,7 @@ function formatNumber(
    PRODUCTION LABEL
    ========================================================= */
 
-function getProductionLabel(
-    type
-) {
+function getProductionLabel(type) {
 
     const labels = {
 
@@ -3014,9 +2673,7 @@ function getProductionLabel(
    ESCAPE HTML
    ========================================================= */
 
-function escapeHTML(
-    value
-) {
+function escapeHTML(value) {
 
     return String(
         value ?? ""
@@ -3054,9 +2711,7 @@ function escapeHTML(
    ESCAPE HTML ATTRIBUTE
    ========================================================= */
 
-function escapeHTMLAttribute(
-    value
-) {
+function escapeHTMLAttribute(value) {
 
     return String(
         value ?? ""

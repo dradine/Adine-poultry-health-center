@@ -1,7 +1,8 @@
 /* =========================================================
    ADINE POULTRY HEALTH CENTER
    WEEKLY MONITORING - SUPABASE VERSION
-   WITH EDITING
+   STABLE VERSION
+   SHAMSI DATE + EDITING + PERSIAN NUMBERS
    ========================================================= */
 
 let currentUser = null;
@@ -11,8 +12,8 @@ let weeklyRecords = [];
 let weightChart = null;
 
 /*
- * اگر null باشد یعنی ثبت جدید.
- * اگر مقدار داشته باشد یعنی در حال ویرایش همان رکورد هستیم.
+ * null = ثبت جدید
+ * مقدار = ویرایش رکورد موجود
  */
 let editingRecordId = null;
 
@@ -35,7 +36,7 @@ async function initializeWeekly() {
             await checkUserAccess();
 
 
-        if (!access.authenticated) {
+        if (!access || !access.authenticated) {
 
             location.href =
                 "login.html?message=" +
@@ -75,12 +76,16 @@ async function initializeWeekly() {
     catch (error) {
 
         console.error(
-            "Weekly initialization:",
+            "Weekly initialization error:",
             error
         );
 
         alert(
-            "خطا در راه‌اندازی ثبت هفتگی."
+            "خطا در راه‌اندازی ثبت هفتگی:\n" +
+            (
+                error?.message ||
+                "خطای نامشخص"
+            )
         );
 
     }
@@ -104,7 +109,14 @@ async function loadCurrentFlock() {
         );
 
 
-    if (!selection.flockId) {
+    if (!container) {
+
+        return;
+
+    }
+
+
+    if (!selection || !selection.flockId) {
 
         container.innerHTML = `
 
@@ -156,6 +168,7 @@ async function loadCurrentFlock() {
     if (error || !data) {
 
         console.error(
+            "Load flock error:",
             error
         );
 
@@ -224,7 +237,7 @@ async function loadCurrentFlock() {
 
 
 /* =========================================================
-   DATE
+   DATE - TODAY SHAMSI
    ========================================================= */
 
 function setToday() {
@@ -234,50 +247,34 @@ function setToday() {
             "evaluationDate"
         );
 
+
     if (!input) {
+
         return;
+
     }
+
 
     const today =
         new Date();
 
-    const formatter =
-        new Intl.DateTimeFormat(
-            "fa-IR-u-ca-persian",
-            {
-                year: "numeric",
-                month: "2-digit",
-                day: "2-digit"
-            }
+
+    const shamsi =
+        gregorianToJalali(
+            today.getFullYear(),
+            today.getMonth() + 1,
+            today.getDate()
         );
 
-    const parts =
-        formatter.formatToParts(
-            today
-        );
-
-    const year =
-        parts.find(
-            item =>
-                item.type === "year"
-        )?.value || "";
-
-    const month =
-        parts.find(
-            item =>
-                item.type === "month"
-        )?.value || "";
-
-    const day =
-        parts.find(
-            item =>
-                item.type === "day"
-        )?.value || "";
 
     input.value =
-        `${year}/${month}/${day}`;
+        toPersianDigits(
+            `${shamsi.jy}/${pad2(shamsi.jm)}/${pad2(shamsi.jd)}`
+        );
 
 }
+
+
 /* =========================================================
    WEIGHTS
    ========================================================= */
@@ -290,6 +287,17 @@ function addWeightInput(
         document.getElementById(
             "weightsContainer"
         );
+
+
+    if (!container) {
+
+        console.error(
+            "weightsContainer not found."
+        );
+
+        return;
+
+    }
 
 
     const index =
@@ -309,7 +317,7 @@ function addWeightInput(
     wrapper.innerHTML = `
 
         <label>
-            ${index}
+            ${formatNumber(index, 0)}
         </label>
 
         <input
@@ -319,7 +327,7 @@ function addWeightInput(
             inputmode="decimal"
             class="bird-weight"
             placeholder="گرم"
-            value="${value}"
+            value="${escapeHTMLAttribute(value)}"
         >
 
     `;
@@ -333,6 +341,19 @@ function addWeightInput(
 
 
 function addTwentyWeights() {
+
+    const container =
+        document.getElementById(
+            "weightsContainer"
+        );
+
+
+    if (!container) {
+
+        return;
+
+    }
+
 
     for (
         let i = 0;
@@ -349,15 +370,42 @@ function addTwentyWeights() {
 
 function clearWeights() {
 
-    document.getElementById(
-        "weightsContainer"
-    ).innerHTML = "";
+    const container =
+        document.getElementById(
+            "weightsContainer"
+        );
 
 
-    document.getElementById(
-        "resultsCard"
-    ).style.display =
-        "none";
+    if (container) {
+
+        container.innerHTML =
+            "";
+
+    }
+
+
+    const resultsCard =
+        document.getElementById(
+            "resultsCard"
+        );
+
+
+    if (resultsCard) {
+
+        resultsCard.style.display =
+            "none";
+
+    }
+
+
+    if (weightChart) {
+
+        weightChart.destroy();
+
+        weightChart =
+            null;
+
+    }
 
 }
 
@@ -378,7 +426,7 @@ function getWeights() {
         .from(inputs)
         .map(
             input =>
-                Number(
+                parseFlexibleNumber(
                     input.value
                 )
         )
@@ -397,42 +445,71 @@ function getWeights() {
 
 function calculateWeekly() {
 
-    const weights =
-        getWeights();
+    try {
+
+        const weights =
+            getWeights();
 
 
-    if (weights.length < 2) {
+        if (weights.length < 2) {
 
-        alert(
-            "حداقل دو وزن برای محاسبه لازم است."
+            alert(
+                "حداقل دو وزن برای محاسبه لازم است."
+            );
+
+            return;
+
+        }
+
+
+        const result =
+            calculateWeightStatistics(
+                weights
+            );
+
+
+        renderResults(
+            result
         );
 
-        return;
+
+        drawWeightChart(
+            weights,
+            result
+        );
+
+
+        const resultsCard =
+            document.getElementById(
+                "resultsCard"
+            );
+
+
+        if (resultsCard) {
+
+            resultsCard.style.display =
+                "block";
+
+        }
 
     }
 
+    catch (error) {
 
-    const result =
-        calculateWeightStatistics(
-            weights
+        console.error(
+            "Calculate error:",
+            error
         );
 
+        alert(
+            "خطا در محاسبه:\n" +
+            (
+                error?.message ||
+                "خطای نامشخص"
+            )
+        );
 
-    renderResults(
-        result
-    );
-
-
-    drawWeightChart(
-        weights,
-        result
-    );
-
-
-    document.getElementById(
-        "resultsCard"
-    ).style.display =
-        "block";
+    }
 
 }
 
@@ -592,6 +669,13 @@ function renderResults(
         );
 
 
+    if (!container) {
+
+        return;
+
+    }
+
+
     container.innerHTML = `
 
         ${metric(
@@ -705,6 +789,10 @@ function drawWeightChart(
         "undefined"
     ) {
 
+        console.warn(
+            "Chart.js is not loaded."
+        );
+
         return;
 
     }
@@ -751,7 +839,6 @@ function drawWeightChart(
                 data: {
 
                     labels:
-
                         labels,
 
                     datasets: [
@@ -850,6 +937,7 @@ function drawWeightChart(
                 }
 
             }
+
         );
 
 }
@@ -886,19 +974,22 @@ function editWeeklyRecord(
         record.id;
 
 
-    /*
-     * اطلاعات اصلی
-     */
-
     setField(
         "weekNumber",
         record.week_number
     );
 
 
+    /*
+     * Supabase تاریخ را میلادی می‌دهد.
+     * آن را برای فرم به شمسی تبدیل می‌کنیم.
+     */
+
     setField(
         "evaluationDate",
-        record.evaluation_date
+        formatDateForInput(
+            record.evaluation_date
+        )
     );
 
 
@@ -944,28 +1035,24 @@ function editWeeklyRecord(
     );
 
 
-    /*
-     * وزن‌ها
-     */
-
     const weightsContainer =
         document.getElementById(
             "weightsContainer"
         );
 
 
-    weightsContainer.innerHTML =
-        "";
+    if (weightsContainer) {
+
+        weightsContainer.innerHTML =
+            "";
+
+    }
 
 
     let savedWeights =
         record.weights;
 
 
-    /*
-     * اگر Supabase وزن‌ها را
-     * به صورت JSON string برگرداند
-     */
     if (
         typeof savedWeights ===
         "string"
@@ -980,9 +1067,7 @@ function editWeeklyRecord(
 
         }
 
-        catch (
-            error
-        ) {
+        catch (error) {
 
             console.error(
                 "Weight JSON parse error:",
@@ -1014,12 +1099,8 @@ function editWeeklyRecord(
     }
 
 
-    /*
-     * اگر وزن خام موجود نبود،
-     * حداقل یک ورودی ایجاد شود.
-     */
-
     if (
+        !weightsContainer ||
         !weightsContainer.children.length
     ) {
 
@@ -1027,10 +1108,6 @@ function editWeeklyRecord(
 
     }
 
-
-    /*
-     * محاسبه مجدد
-     */
 
     if (
         getWeights().length >= 2
@@ -1041,16 +1118,8 @@ function editWeeklyRecord(
     }
 
 
-    /*
-     * عنوان حالت ویرایش
-     */
-
     showEditMode();
 
-
-    /*
-     * برگشت به بالای فرم
-     */
 
     window.scrollTo(
         {
@@ -1063,7 +1132,7 @@ function editWeeklyRecord(
 
 
 /* =========================================================
-   EDIT MODE UI
+   EDIT MODE
    ========================================================= */
 
 function showEditMode() {
@@ -1095,8 +1164,10 @@ function showEditMode() {
                 "div"
             );
 
+
         editNotice.id =
             "editModeNotice";
+
 
         editNotice.style.cssText = `
             margin-bottom:15px;
@@ -1110,6 +1181,7 @@ function showEditMode() {
 
 
         editNotice.innerHTML = `
+
             ✏️ در حال ویرایش گزارش هفته
             <span id="editingWeekText"></span>
 
@@ -1121,6 +1193,7 @@ function showEditMode() {
             >
                 لغو ویرایش
             </button>
+
         `;
 
 
@@ -1176,40 +1249,13 @@ function cancelEditWeeklyRecord() {
         null;
 
 
-    const saveButton =
-        document.querySelector(
-            'button[onclick="saveWeeklyRecord()"]'
-        );
-
-
-    if (saveButton) {
-
-        saveButton.textContent =
-            "ذخیره گزارش هفتگی";
-
-    }
-
-
-    const notice =
-        document.getElementById(
-            "editModeNotice"
-        );
-
-
-    if (notice) {
-
-        notice.remove();
-
-    }
-
-
     clearWeeklyForm();
 
 }
 
 
 /* =========================================================
-   CLEAR FORM AFTER SAVE / CANCEL
+   CLEAR FORM
    ========================================================= */
 
 function clearWeeklyForm() {
@@ -1251,16 +1297,32 @@ function clearWeeklyForm() {
     );
 
 
-    document.getElementById(
-        "weightsContainer"
-    ).innerHTML =
-        "";
+    const weightsContainer =
+        document.getElementById(
+            "weightsContainer"
+        );
 
 
-    document.getElementById(
-        "resultsCard"
-    ).style.display =
-        "none";
+    if (weightsContainer) {
+
+        weightsContainer.innerHTML =
+            "";
+
+    }
+
+
+    const resultsCard =
+        document.getElementById(
+            "resultsCard"
+        );
+
+
+    if (resultsCard) {
+
+        resultsCard.style.display =
+            "none";
+
+    }
 
 
     if (weightChart) {
@@ -1342,7 +1404,9 @@ function setField(
 
 
     element.value =
-        value;
+        normalizeDigits(
+            String(value)
+        );
 
 }
 
@@ -1443,9 +1507,18 @@ async function saveWeeklyRecord() {
             );
 
 
-        /* =====================================================
-           FIND EDITING RECORD
-           ===================================================== */
+        /*
+         * تاریخ فرم شمسی است.
+         * Supabase ستون date می‌خواهد.
+         */
+
+        const evaluationDate =
+            getGregorianDateForSupabase(
+                getValue(
+                    "evaluationDate"
+                )
+            );
+
 
         const editingRecord =
             editingRecordId
@@ -1462,22 +1535,6 @@ async function saveWeeklyRecord() {
                 ? editingRecord.id
                 : null;
 
-
-        /* =====================================================
-           CONVERT SHAMSI DATE TO GREGORIAN
-           ===================================================== */
-
-        const evaluationDate =
-            getGregorianDateForSupabase(
-                getValue(
-                    "evaluationDate"
-                )
-            );
-
-
-        /* =====================================================
-           PAYLOAD
-           ===================================================== */
 
         const payload = {
 
@@ -1508,10 +1565,6 @@ async function saveWeeklyRecord() {
                 evaluationDate,
 
 
-            /* =========================
-               WEIGHT STATISTICS
-               ========================= */
-
             sample_count:
                 stats.count,
 
@@ -1537,20 +1590,12 @@ async function saveWeeklyRecord() {
                 stats.max,
 
 
-            /* =========================
-               FLOCK
-               ========================= */
-
             live_birds:
                 liveBirds,
 
             mortality_count:
                 mortality,
 
-
-            /* =========================
-               FEED / WATER
-               ========================= */
 
             feed_total_kg:
                 feedTotal,
@@ -1565,19 +1610,11 @@ async function saveWeeklyRecord() {
                 waterPerBird,
 
 
-            /* =========================
-               NOTES
-               ========================= */
-
             notes:
                 getValue(
                     "weeklyNotes"
                 ),
 
-
-            /* =========================
-               RAW WEIGHTS
-               ========================= */
 
             weights:
                 weights
@@ -1586,14 +1623,10 @@ async function saveWeeklyRecord() {
 
 
         console.log(
-            "WEEKLY SUPABASE PAYLOAD:",
+            "WEEKLY PAYLOAD:",
             payload
         );
 
-
-        /* =====================================================
-           SAVE / UPDATE
-           ===================================================== */
 
         const {
             data,
@@ -1617,7 +1650,7 @@ async function saveWeeklyRecord() {
         if (error) {
 
             console.error(
-                "Save weekly error:",
+                "Supabase save error:",
                 error
             );
 
@@ -1637,10 +1670,6 @@ async function saveWeeklyRecord() {
         );
 
 
-        /* =====================================================
-           SUCCESS MESSAGE
-           ===================================================== */
-
         if (editingRecordId) {
 
             alert(
@@ -1658,16 +1687,8 @@ async function saveWeeklyRecord() {
         }
 
 
-        /* =====================================================
-           CLEAR FORM
-           ===================================================== */
-
         clearWeeklyForm();
 
-
-        /* =====================================================
-           RELOAD HISTORY
-           ===================================================== */
 
         await loadHistory();
 
@@ -1692,166 +1713,9 @@ async function saveWeeklyRecord() {
 
 }
 
-        /* =========================
-           WEIGHT STATISTICS
-           ========================= */
-
-        sample_count:
-            stats.count,
-
-        average_weight_g:
-            stats.mean,
-
-        sd_weight_g:
-            stats.sd,
-
-        cv_percent:
-            stats.cv,
-
-        uniformity_10_percent:
-            stats.uniformity10,
-
-        uniformity_15_percent:
-            stats.uniformity15,
-
-        min_weight_g:
-            stats.min,
-
-        max_weight_g:
-            stats.max,
-
-
-        /* =========================
-           FLOCK
-           ========================= */
-
-        live_birds:
-            liveBirds,
-
-        mortality_count:
-            mortality,
-
-
-        /* =========================
-           FEED / WATER
-           ========================= */
-
-        feed_total_kg:
-            feedTotal,
-
-        water_total_liter:
-            waterTotal,
-
-        feed_per_bird_g:
-            feedPerBird,
-
-        water_per_bird_ml:
-            waterPerBird,
-
-
-        /* =========================
-           NOTES
-           ========================= */
-
-        notes:
-            getValue(
-                "weeklyNotes"
-            ),
-
-
-        /* =========================
-           RAW WEIGHTS
-           ========================= */
-
-        weights:
-            weights
-
-    };
-
-
-    console.log(
-        "WEEKLY SUPABASE PAYLOAD:",
-        payload
-    );
-
-
-    const {
-        data,
-        error
-    } =
-        await supabaseClient
-            .from(
-                "weekly_records"
-            )
-            .upsert(
-                payload,
-                {
-                    onConflict:
-                        "flock_id,week_number"
-                }
-            )
-            .select()
-            .single();
-
-
-    if (error) {
-
-        console.error(
-            "Save weekly error:",
-            error
-        );
-
-        alert(
-            "ذخیره گزارش انجام نشد:\n" +
-            error.message
-        );
-
-        return;
-
-    }
-
-
-    console.log(
-        "WEEKLY RECORD SAVED:",
-        data
-    );
-
-
-    if (editingRecordId) {
-
-        alert(
-            "گزارش هفتگی با موفقیت ویرایش شد."
-        );
-
-    }
-
-    else {
-
-        alert(
-            "گزارش هفتگی با موفقیت ذخیره شد."
-        );
-
-    }
-
-
-    /*
-     * فرم را به حالت عادی برمی‌گردانیم.
-     */
-
-    clearWeeklyForm();
-
-
-    /*
-     * سوابق را دوباره از Supabase می‌خوانیم.
-     */
-
-    await loadHistory();
-
-}
-
 
 /* =========================================================
-   HISTORY FROM SUPABASE
+   HISTORY
    ========================================================= */
 
 async function loadHistory() {
@@ -1896,11 +1760,21 @@ async function loadHistory() {
             error
         );
 
-        document.getElementById(
-            "weeklyHistory"
-        ).innerHTML = `
-            خطا در دریافت سوابق.
-        `;
+        const history =
+            document.getElementById(
+                "weeklyHistory"
+            );
+
+
+        if (history) {
+
+            history.innerHTML = `
+                <p>
+                    خطا در دریافت سوابق.
+                </p>
+            `;
+
+        }
 
         return;
 
@@ -2009,7 +1883,6 @@ function renderHistory() {
                     </tr>
 
                 </thead>
-
 
                 <tbody>
 
@@ -2134,33 +2007,619 @@ function formatDateDisplay(
     }
 
 
+    const text =
+        String(date)
+            .trim();
+
+
     const parts =
-        String(date).split("-");
+        text.split("T")[0]
+            .split("-");
 
 
     if (
         parts.length !== 3
     ) {
 
-        return String(date);
+        return text;
 
     }
 
 
-    return (
-        parts[2] +
-        "/" +
-        parts[1] +
-        "/" +
-        parts[0]
+    const gy =
+        Number(parts[0]);
+
+
+    const gm =
+        Number(parts[1]);
+
+
+    const gd =
+        Number(parts[2]);
+
+
+    if (
+        !Number.isInteger(gy) ||
+        !Number.isInteger(gm) ||
+        !Number.isInteger(gd)
+    ) {
+
+        return text;
+
+    }
+
+
+    const shamsi =
+        gregorianToJalali(
+            gy,
+            gm,
+            gd
+        );
+
+
+    return toPersianDigits(
+        `${shamsi.jy}/${pad2(shamsi.jm)}/${pad2(shamsi.jd)}`
     );
 
 }
 
 
 /* =========================================================
-   HELPERS
+   DATE FOR EDIT FORM
    ========================================================= */
+
+function formatDateForInput(
+    date
+) {
+
+    return formatDateDisplay(
+        date
+    );
+
+}
+
+
+/* =========================================================
+   SHAMSI -> GREGORIAN
+   NO EXTERNAL LIBRARY REQUIRED
+   ========================================================= */
+
+function getGregorianDateForSupabase(
+    value
+) {
+
+    if (!value) {
+
+        return null;
+
+    }
+
+
+    const text =
+        normalizeDigits(
+            String(value)
+        )
+        .trim()
+        .replaceAll(
+            "-",
+            "/"
+        )
+        .replaceAll(
+            ".",
+            "/"
+        );
+
+
+    const parts =
+        text.split("/");
+
+
+    if (
+        parts.length !== 3
+    ) {
+
+        throw new Error(
+            "فرمت تاریخ صحیح نیست. مثال: ۱۴۰۵/۰۵/۱۸"
+        );
+
+    }
+
+
+    const jy =
+        Number(parts[0]);
+
+
+    const jm =
+        Number(parts[1]);
+
+
+    const jd =
+        Number(parts[2]);
+
+
+    if (
+        !Number.isInteger(jy) ||
+        !Number.isInteger(jm) ||
+        !Number.isInteger(jd)
+    ) {
+
+        throw new Error(
+            "تاریخ شمسی واردشده صحیح نیست."
+        );
+
+    }
+
+
+    if (
+        jy < 1200 ||
+        jy > 1600 ||
+        jm < 1 ||
+        jm > 12 ||
+        jd < 1 ||
+        jd > 31
+    ) {
+
+        throw new Error(
+            "تاریخ شمسی واردشده خارج از محدوده صحیح است."
+        );
+
+    }
+
+
+    const gregorian =
+        jalaliToGregorian(
+            jy,
+            jm,
+            jd
+        );
+
+
+    return (
+        String(gregorian.gy).padStart(4, "0") +
+        "-" +
+        String(gregorian.gm).padStart(2, "0") +
+        "-" +
+        String(gregorian.gd).padStart(2, "0")
+    );
+
+}
+
+
+/* =========================================================
+   JALALI -> GREGORIAN
+   ========================================================= */
+
+function jalaliToGregorian(
+    jy,
+    jm,
+    jd
+) {
+
+    const jy2 =
+        jy - 979;
+
+
+    let days =
+        365 * jy2;
+
+
+    days +=
+        Math.floor(
+            jy2 / 33
+        ) * 8;
+
+
+    days +=
+        Math.floor(
+            (
+                (jy2 % 33) + 3
+            ) / 4
+        );
+
+
+    for (
+        let i = 0;
+        i < jm - 1;
+        i++
+    ) {
+
+        days +=
+            i < 6
+                ? 31
+                : 30;
+
+    }
+
+
+    days +=
+        jd - 1;
+
+
+    let gy =
+        1600 +
+        400 *
+        Math.floor(
+            days / 146097
+        );
+
+
+    days =
+        days % 146097;
+
+
+    if (days >= 36525) {
+
+        days--;
+
+        gy +=
+            100 *
+            Math.floor(
+                days / 36524
+            );
+
+        days =
+            days % 36524;
+
+
+        if (days >= 365) {
+
+            days++;
+
+        }
+
+    }
+
+
+    gy +=
+        4 *
+        Math.floor(
+            days / 1461
+        );
+
+
+    days =
+        days % 1461;
+
+
+    if (days >= 366) {
+
+        gy +=
+            Math.floor(
+                (days - 1) / 365
+            );
+
+        days =
+            (days - 1) % 365;
+
+    }
+
+
+    let gd =
+        days + 1;
+
+
+    const leap =
+        (
+            gy % 4 === 0 &&
+            (
+                gy % 100 !== 0 ||
+                gy % 400 === 0
+            )
+        );
+
+
+    const monthDays = [
+
+        31,
+
+        leap ? 29 : 28,
+
+        31,
+
+        30,
+
+        31,
+
+        30,
+
+        31,
+
+        31,
+
+        30,
+
+        31,
+
+        30,
+
+        31
+
+    ];
+
+
+    let gm =
+        1;
+
+
+    while (
+        gd >
+        monthDays[gm - 1]
+    ) {
+
+        gd -=
+            monthDays[gm - 1];
+
+        gm++;
+
+    }
+
+
+    return {
+
+        gy:
+            gy,
+
+        gm:
+            gm,
+
+        gd:
+            gd
+
+    };
+
+}
+
+
+/* =========================================================
+   GREGORIAN -> JALALI
+   ========================================================= */
+
+function gregorianToJalali(
+    gy,
+    gm,
+    gd
+) {
+
+    const gdm = [
+
+        0,
+
+        31,
+
+        59,
+
+        90,
+
+        120,
+
+        151,
+
+        181,
+
+        212,
+
+        243,
+
+        273,
+
+        304,
+
+        334
+
+    ];
+
+
+    let gy2 =
+        gy;
+
+
+    if (gm > 2) {
+
+        gy2++;
+
+    }
+
+
+    let days =
+        355666 +
+        (
+            365 * gy
+        ) +
+        Math.floor(
+            (gy2 + 3) / 4
+        ) -
+        Math.floor(
+            (gy2 + 99) / 100
+        ) +
+        Math.floor(
+            (gy2 + 399) / 400
+        ) +
+        gd +
+        gdm[gm - 1];
+
+
+    let jy =
+        -1595 +
+        33 *
+        Math.floor(
+            days / 12053
+        );
+
+
+    days =
+        days % 12053;
+
+
+    jy +=
+        4 *
+        Math.floor(
+            days / 1461
+        );
+
+
+    days =
+        days % 1461;
+
+
+    if (days > 365) {
+
+        jy +=
+            Math.floor(
+                (days - 1) / 365
+            );
+
+        days =
+            (days - 1) % 365;
+
+    }
+
+
+    let jm;
+
+
+    if (days < 186) {
+
+        jm =
+            1 +
+            Math.floor(
+                days / 31
+            );
+
+    }
+
+    else {
+
+        jm =
+            7 +
+            Math.floor(
+                (days - 186) / 30
+            );
+
+    }
+
+
+    const jd =
+        1 +
+        (
+            days < 186
+                ? days % 31
+                : (days - 186) % 30
+        );
+
+
+    return {
+
+        jy:
+            jy,
+
+        jm:
+            jm,
+
+        jd:
+            jd
+
+    };
+
+}
+
+
+/* =========================================================
+   NUMBER HELPERS
+   ========================================================= */
+
+function normalizeDigits(
+    value
+) {
+
+    return String(
+        value ?? ""
+    )
+    .replace(
+        /[۰-۹]/g,
+        function(digit) {
+
+            return String(
+                digit.charCodeAt(0) -
+                1776
+            );
+
+        }
+    )
+    .replace(
+        /[٠-٩]/g,
+        function(digit) {
+
+            return String(
+                digit.charCodeAt(0) -
+                1632
+            );
+
+        }
+    );
+
+}
+
+
+function parseFlexibleNumber(
+    value
+) {
+
+    if (
+        value === null ||
+        value === undefined
+    ) {
+
+        return 0;
+
+    }
+
+
+    let text =
+        normalizeDigits(
+            value
+        );
+
+
+    text =
+        text
+            .replaceAll(
+                ",",
+                ""
+            )
+            .replaceAll(
+                "٬",
+                ""
+            )
+            .replaceAll(
+                "٫",
+                "."
+            )
+            .replace(
+                /،/g,
+                ""
+            )
+            .trim();
+
+
+    if (!text) {
+
+        return 0;
+
+    }
+
+
+    const number =
+        Number(text);
+
+
+    return Number.isFinite(
+        number
+    )
+        ? number
+        : 0;
+
+}
+
 
 function getValue(
     id
@@ -2175,7 +2634,7 @@ function getValue(
     return element
         ? String(
             element.value || ""
-          ).trim()
+        ).trim()
         : "";
 
 }
@@ -2185,39 +2644,16 @@ function getNumber(
     id
 ) {
 
-    const value =
-        getValue(id);
-
-
-    if (!value) {
-
-        return 0;
-
-    }
-
-
-    const number =
-        Number(
-            value
-                .replaceAll(
-                    ",",
-                    ""
-                )
-                .replaceAll(
-                    "٬",
-                    ""
-                )
-        );
-
-
-    return Number.isFinite(
-        number
-    )
-        ? number
-        : 0;
+    return parseFlexibleNumber(
+        getValue(id)
+    );
 
 }
 
+
+/* =========================================================
+   FORMAT NUMBER
+   ========================================================= */
 
 function formatNumber(
     value,
@@ -2264,6 +2700,45 @@ function formatNumber(
 }
 
 
+function toPersianDigits(
+    value
+) {
+
+    return String(
+        value
+    )
+    .replace(
+        /\d/g,
+        function(digit) {
+
+            return "۰۱۲۳۴۵۶۷۸۹"[
+                Number(digit)
+            ];
+
+        }
+    );
+
+}
+
+
+function pad2(
+    value
+) {
+
+    return String(
+        value
+    ).padStart(
+        2,
+        "0"
+    );
+
+}
+
+
+/* =========================================================
+   PRODUCTION TYPE
+   ========================================================= */
+
 function getProductionLabel(
     type
 ) {
@@ -2293,6 +2768,10 @@ function getProductionLabel(
 
 }
 
+
+/* =========================================================
+   HTML SECURITY
+   ========================================================= */
 
 function escapeHTML(
     value

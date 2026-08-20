@@ -499,32 +499,27 @@
 </div>
 
 
-<script
-    src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"
-></script>
-
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
 <script src="supabase-config.js"></script>
-
 <script src="standards.js"></script>
-
 <script src="standard-data.js"></script>
-
 <script src="poultry-utils.js"></script>
-
 <script src="weekly-storage.js"></script>
-
 <script src="comparison-engine.js"></script>
-
 <script src="app-core.js"></script>
-
 <script src="genetics-ui.js"></script>
-
 <script src="weekly-engine.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></<script src="https://cdn.jsdelivr.net/npm/persian-date@1.1.0/dist/persian-date.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/persian-datepicker@1.2.0/dist/js/persian-datepicker.min.js"></script> 
-  <script>
 
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+
+<script src="https://cdn.jsdelivr.net/npm/persian-date@1.1.0/dist/persian-date.min.js"></script>
+
+<script src="https://cdn.jsdelivr.net/npm/persian-datepicker@1.2.0/dist/js/persian-datepicker.min.js"></script>
+
+<script>
 function openJalaliCalendar() {
 
     const input =
@@ -532,52 +527,59 @@ function openJalaliCalendar() {
             "evaluationDate"
         );
 
-    if (!input) {
-        return;
-    }
+    if (!input) return;
 
     if (
         typeof jQuery === "undefined" ||
         typeof jQuery.fn.persianDatepicker === "undefined"
     ) {
-
-        alert(
-            "تقویم شمسی هنوز بارگذاری نشده است."
-        );
-
+        alert("تقویم شمسی هنوز بارگذاری نشده است.");
         return;
-
     }
 
-    jQuery(input).persianDatepicker({
-        format: "YYYY/MM/DD",
-        autoClose: true,
-        initialValue: false,
-        observer: true,
-        calendarType: "persian",
-        onSelect: function(unix) {
+    if (!jQuery(input).data("datepicker-initialized")) {
 
-            const date =
-                new persianDate(unix);
+        jQuery(input).persianDatepicker({
 
-            input.value =
-                date.format(
-                    "YYYY/MM/DD"
-                );
+            format: "YYYY/MM/DD",
 
-        }
-    });
+            autoClose: true,
+
+            initialValue: false,
+
+            observer: true,
+
+            calendarType: "persian",
+
+            onSelect: function(unix) {
+
+                const date =
+                    new persianDate(unix);
+
+                input.value =
+                    date.format(
+                        "YYYY/MM/DD"
+                    );
+
+            }
+
+        });
+
+        jQuery(input).data(
+            "datepicker-initialized",
+            true
+        );
+
+    }
 
     jQuery(input).persianDatepicker(
         "show"
     );
 
 }
+</script>
 
-</script>  
 <script src="weekly.js"></script>
-
-
 </body>
 
 </html>

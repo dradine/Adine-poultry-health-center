@@ -2673,3 +2673,73 @@ window.deleteRecord =
 
 window.printHealthHistory =
     printHealthHistory;
+/* =========================================================
+   HEALTH - SMALL PERSIAN CALENDAR
+   فقط برای فیلدهای تاریخ صفحه Health
+   ========================================================= */
+
+(function () {
+  function initHealthCalendar() {
+    // اگر تقویم شمسی در پروژه وجود دارد، از همان استفاده می‌کنیم
+    if (typeof jQuery === "undefined" || typeof jQuery.fn.persianDatepicker === "undefined") {
+      console.warn("Persian datepicker library is not available.");
+      return;
+    }
+
+    const selectors = [
+      '#vaccinationDate',
+      '#testDate',
+      '#treatmentStartDate',
+      '#treatmentEndDate',
+      'input[name="vaccinationDate"]',
+      'input[name="testDate"]',
+      'input[name="treatmentStartDate"]',
+      'input[name="treatmentEndDate"]'
+    ];
+
+    selectors.forEach(function (selector) {
+      document.querySelectorAll(selector).forEach(function (input) {
+
+        // جلوگیری از دوباره فعال شدن
+        if (input.dataset.healthCalendarReady === "1") return;
+
+        input.dataset.healthCalendarReady = "1";
+
+        $(input).persianDatepicker({
+          format: 'YYYY/MM/DD',
+          autoClose: true,
+          initialValue: false,
+          observer: true,
+          calendarType: 'persian',
+          calendar: {
+            persian: {
+              locale: 'fa',
+              leapYearMode: 'algorithmic'
+            }
+          },
+          toolbox: {
+            calendarSwitch: false
+          },
+          navigator: {
+            enabled: true,
+            scroll: {
+              enabled: false
+            }
+          },
+          responsive: true
+        });
+      });
+    });
+  }
+
+  // بعد از آماده شدن کامل صفحه
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", initHealthCalendar);
+  } else {
+    initHealthCalendar();
+  }
+
+  // اگر صفحه Health به صورت SPA باز و بسته می‌شود
+  setTimeout(initHealthCalendar, 500);
+  setTimeout(initHealthCalendar, 1500);
+})();

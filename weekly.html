@@ -3,53 +3,58 @@
 
 <head>
 
-<meta charset="UTF-8">
+    <meta charset="UTF-8">
 
-<meta
-    name="viewport"
-    content="width=device-width, initial-scale=1, viewport-fit=cover"
->
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1, viewport-fit=cover"
+    >
 
-<meta
-    name="theme-color"
-    content="#173f35"
->
+    <meta
+        name="theme-color"
+        content="#173f35"
+    >
 
-<title>
-ثبت اطلاعات هفتگی | آدینه
-</title>
+    <title>
+        ثبت هفتگی | مرکز تخصصی سلامت طیور آدینه
+    </title>
 
-<link rel="stylesheet" href="app.css">
+    <link
+        rel="stylesheet"
+        href="app.css"
+    >
 
 </head>
 
 
 <body>
 
+<div class="app-shell">
+
 
 <header class="topbar">
 
-<div class="brand">
+    <div class="brand">
 
-<img
-    src="IMG_4309.png"
-    alt="آدینه"
->
+        <img
+            src="IMG_4309.png"
+            alt="مرکز تخصصی سلامت طیور آدینه"
+        >
 
-<span>
-ثبت اطلاعات هفتگی
-</span>
+        <span>
+            ثبت هفتگی
+        </span>
 
-</div>
+    </div>
 
 
-<button
-    type="button"
-    class="btn btn-secondary"
-    onclick="location.href='Dashboard.html'"
->
-داشبورد
-</button>
+    <button
+        class="btn btn-secondary"
+        type="button"
+        onclick="location.href='Dashboard.html'"
+    >
+        داشبورد
+    </button>
 
 </header>
 
@@ -60,25 +65,38 @@
 
 
 <h1 class="page-title">
-ثبت ارزیابی هفتگی گله
+    پایش هفتگی گله
 </h1>
 
 
-<p
-    id="flockInfo"
-    class="page-description"
->
+<p class="page-description">
+    ثبت وزن، یکنواختی، مصرف دان، آب و عملکرد هفتگی
 </p>
 
 
-<!-- =====================================================
-     WEEK
-===================================================== -->
+<!-- CURRENT FLOCK -->
 
 <section class="card">
 
 <h2 class="card-title">
-اطلاعات ارزیابی
+    گله انتخاب‌شده
+</h2>
+
+<div id="currentFlock">
+
+    در حال بارگذاری...
+
+</div>
+
+</section>
+
+
+<!-- WEEK -->
+
+<section class="card">
+
+<h2 class="card-title">
+    اطلاعات هفته
 </h2>
 
 
@@ -87,12 +105,31 @@
 
 <div class="form-group">
 
-<label>
-تاریخ ارزیابی
+<label for="weekNumber">
+    هفته گله *
 </label>
 
 <input
-    id="recordDate"
+    id="weekNumber"
+    type="number"
+    min="1"
+    max="100"
+    required
+    inputmode="numeric"
+    placeholder="مثلاً 4"
+>
+
+</div>
+
+
+<div class="form-group">
+
+<label for="evaluationDate">
+    تاریخ ارزیابی
+</label>
+
+<input
+    id="evaluationDate"
     type="date"
 >
 
@@ -101,16 +138,15 @@
 
 <div class="form-group">
 
-<label>
-سن گله - روز
+<label for="liveBirds">
+    تعداد زنده
 </label>
 
 <input
-    id="ageDays"
+    id="liveBirds"
     type="number"
-    min="1"
-    step="1"
-    placeholder="مثلاً 28"
+    min="0"
+    inputmode="numeric"
 >
 
 </div>
@@ -118,32 +154,15 @@
 
 <div class="form-group">
 
-<label>
-تعداد پرنده موجود
+<label for="mortalityWeek">
+    تلفات این هفته
 </label>
 
 <input
-    id="birdCount"
+    id="mortalityWeek"
     type="number"
     min="0"
-    step="1"
->
-
-</div>
-
-
-<div class="form-group">
-
-<label>
-تعداد تلفات این هفته
-</label>
-
-<input
-    id="mortalityCount"
-    type="number"
-    min="0"
-    step="1"
-    value="0"
+    inputmode="numeric"
 >
 
 </div>
@@ -154,62 +173,55 @@
 </section>
 
 
-<!-- =====================================================
-     WEIGHTS
-===================================================== -->
+<!-- WEIGHT -->
 
 <section class="card">
 
 <h2 class="card-title">
-ثبت وزن‌ها
+    ثبت وزن‌ها
 </h2>
 
 
-<p class="page-description">
-
-وزن نمونه‌ها را وارد کنید.
-با زدن «افزودن وزن»، هر نمونه ذخیره می‌شود.
-
+<p>
+برای محاسبه دقیق، وزن تک‌تک پرندگان نمونه را وارد کنید.
 </p>
 
 
-<div class="form-grid">
+<div class="button-row">
 
-
-<div class="form-group">
-
-<label>
-وزن نمونه - گرم
-</label>
-
-<input
-    id="weightInput"
-    type="number"
-    min="1"
-    step="0.1"
-    inputmode="decimal"
-    placeholder="مثلاً 1850"
+<button
+    class="btn btn-primary"
+    type="button"
+    onclick="addWeightInput()"
 >
+    + افزودن وزن
+</button>
+
+
+<button
+    class="btn btn-secondary"
+    type="button"
+    onclick="addTwentyWeights()"
+>
+    + افزودن ۲۰ وزن
+</button>
+
+
+<button
+    class="btn btn-secondary"
+    type="button"
+    onclick="clearWeights()"
+>
+    پاک کردن
+</button>
 
 </div>
 
 
-<div class="form-group">
-
-<label>
-تعداد نمونه
-</label>
-
-<input
-    id="sampleCount"
-    type="number"
-    min="1"
-    step="1"
-    value="1"
+<div
+    id="weightsContainer"
+    class="weights-grid"
 >
-
-</div>
-
 
 </div>
 
@@ -217,52 +229,59 @@
 <div class="button-row">
 
 <button
-    type="button"
     class="btn btn-primary"
-    id="addWeightBtn"
->
-افزودن وزن
-</button>
-
-
-<button
     type="button"
-    class="btn btn-secondary"
-    id="clearWeightsBtn"
+    onclick="calculateWeekly()"
 >
-پاک کردن وزن‌ها
+    محاسبه
 </button>
 
 </div>
-
-
-<div
-    id="weightsList"
-    class="list-card"
-    style="margin-top:16px"
->
-هنوز وزنی ثبت نشده است.
-</div>
-
-
-<div
-    id="weightResult"
-    style="margin-top:16px"
->
-</div>
-
 
 </section>
 
 
-<!-- =====================================================
-     FEED WATER
-===================================================== -->
+<!-- RESULTS -->
+
+<section
+    id="resultsCard"
+    class="card"
+    style="display:none;"
+>
+
+<h2 class="card-title">
+    نتیجه محاسبات
+</h2>
+
+
+<div
+    id="results"
+    class="results-grid"
+>
+
+</div>
+
+
+<div
+    id="weightChartContainer"
+    style="margin-top:20px;"
+>
+
+<canvas
+    id="weightChart"
+></canvas>
+
+</div>
+
+</section>
+
+
+<!-- FEED / WATER -->
 
 <section class="card">
 
 <h2 class="card-title">
-مصرف دان و آب
+    مصرف دان و آب
 </h2>
 
 
@@ -271,17 +290,15 @@
 
 <div class="form-group">
 
-<label>
-مصرف دان
+<label for="feedTotal">
+    کل دان مصرفی هفته (کیلوگرم)
 </label>
 
 <input
-    id="feed"
+    id="feedTotal"
     type="number"
     min="0"
     step="0.01"
-    inputmode="decimal"
-    placeholder="مقدار مصرف دوره"
 >
 
 </div>
@@ -289,17 +306,47 @@
 
 <div class="form-group">
 
-<label>
-مصرف آب
+<label for="waterTotal">
+    کل آب مصرفی هفته (لیتر)
 </label>
 
 <input
-    id="water"
+    id="waterTotal"
     type="number"
     min="0"
     step="0.01"
-    inputmode="decimal"
-    placeholder="مقدار مصرف دوره"
+>
+
+</div>
+
+
+<div class="form-group">
+
+<label for="feedPerBird">
+    دان روزانه هر پرنده (گرم)
+</label>
+
+<input
+    id="feedPerBird"
+    type="number"
+    min="0"
+    step="0.1"
+>
+
+</div>
+
+
+<div class="form-group">
+
+<label for="waterPerBird">
+    آب روزانه هر پرنده (میلی‌لیتر)
+</label>
+
+<input
+    id="waterPerBird"
+    type="number"
+    min="0"
+    step="0.1"
 >
 
 </div>
@@ -310,56 +357,60 @@
 </section>
 
 
-<!-- =====================================================
-     NOTES
-===================================================== -->
+<!-- NOTES -->
 
 <section class="card">
 
 <h2 class="card-title">
-یادداشت فنی
+    یادداشت هفتگی
 </h2>
 
 
 <textarea
-    id="notes"
+    id="weeklyNotes"
     rows="5"
-    placeholder="مشاهدات، وضعیت بستر، تهویه، بیماری، واکسیناسیون، دان، آب و..."
+    placeholder="کیفیت بستر، تهویه، آمونیاک، وضعیت مدفوع، مصرف، رفتار گله و سایر مشاهدات..."
 ></textarea>
 
+
+<div class="button-row">
+
+<button
+    class="btn btn-primary"
+    type="button"
+    onclick="saveWeeklyRecord()"
+>
+    ذخیره گزارش هفتگی
+</button>
+
+
+<button
+    class="btn btn-secondary"
+    type="button"
+    onclick="location.href='reports.html'"
+>
+    مشاهده گزارش‌ها
+</button>
+
+</div>
 
 </section>
 
 
-<!-- =====================================================
-     SAVE
-===================================================== -->
+<!-- HISTORY -->
 
 <section class="card">
 
-<div
-    id="saveMessage"
->
+<h2 class="card-title">
+    سوابق ثبت‌شده
+</h2>
+
+
+<div id="weeklyHistory">
+
+    در حال بارگذاری...
+
 </div>
-
-
-<button
-    type="button"
-    class="btn btn-primary"
-    id="saveBtn"
->
-ذخیره ارزیابی هفتگی
-</button>
-
-
-<button
-    type="button"
-    class="btn btn-secondary"
-    id="reportBtn"
-    style="margin-top:10px"
->
-مشاهده گزارش گله
-</button>
 
 </section>
 
@@ -369,797 +420,78 @@
 </main>
 
 
-<script src="app-core.js"></script>
-<script src="standard-data.js"></script>
+<nav class="bottom-nav">
+
+<button
+    type="button"
+    onclick="location.href='Dashboard.html'"
+>
+    🏠
+    <br>
+    خانه
+</button>
+
+
+<button
+    type="button"
+    onclick="location.href='Farms.html'"
+>
+    🏭
+    <br>
+    فارم‌ها
+</button>
+
+
+<button
+    class="active"
+    type="button"
+    onclick="location.href='weekly.html'"
+>
+    ⚖️
+    <br>
+    هفتگی
+</button>
+
+
+<button
+    type="button"
+    onclick="location.href='reports.html'"
+>
+    📊
+    <br>
+    گزارش
+</button>
+
+</nav>
+
+
+</div>
+
+
+<script
+    src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"
+></script>
+
+
+<script src="supabase-config.js"></script>
+
 <script src="standards.js"></script>
+
+<script src="standard-data.js"></script>
+
 <script src="poultry-utils.js"></script>
+
 <script src="weekly-storage.js"></script>
+
 <script src="comparison-engine.js"></script>
+
+<script src="app-core.js"></script>
+
 <script src="genetics-ui.js"></script>
+
 <script src="weekly-engine.js"></script>
 
-
-<script>
-
-"use strict";
-
-
-/* =====================================================
-   CURRENT FLOCK
-===================================================== */
-
-const selection =
-    getCurrentSelection();
-
-
-if (!selection.flockId) {
-
-    location.href =
-        "records.html";
-
-}
-
-
-const flock =
-    getFlocks()
-        .find(
-            item =>
-                item.id ===
-                selection.flockId
-        );
-
-
-if (!flock) {
-
-    location.href =
-        "records.html";
-
-}
-
-
-const farm =
-    getFarms()
-        .find(
-            item =>
-                item.id ===
-                flock.farmId
-        );
-
-
-const house =
-    getHouses()
-        .find(
-            item =>
-                item.id ===
-                flock.houseId
-        );
-
-
-document.getElementById(
-    "flockInfo"
-).textContent =
-
-    `${farm?.name || "-"} | ` +
-    `${house?.name || "-"} | ` +
-    `${flock.flockName || "-"} | ` +
-    `${flock.strain || "-"}`;
-
-
-/* =====================================================
-   ELEMENTS
-===================================================== */
-
-const recordDate =
-    document.getElementById(
-        "recordDate"
-    );
-
-
-const ageDays =
-    document.getElementById(
-        "ageDays"
-    );
-
-
-const birdCount =
-    document.getElementById(
-        "birdCount"
-    );
-
-
-const mortalityCount =
-    document.getElementById(
-        "mortalityCount"
-    );
-
-
-const weightInput =
-    document.getElementById(
-        "weightInput"
-    );
-
-
-const sampleCount =
-    document.getElementById(
-        "sampleCount"
-    );
-
-
-const weightsList =
-    document.getElementById(
-        "weightsList"
-    );
-
-
-const weightResult =
-    document.getElementById(
-        "weightResult"
-    );
-
-
-const feed =
-    document.getElementById(
-        "feed"
-    );
-
-
-const water =
-    document.getElementById(
-        "water"
-    );
-
-
-const notes =
-    document.getElementById(
-        "notes"
-    );
-
-
-const saveMessage =
-    document.getElementById(
-        "saveMessage"
-    );
-
-
-/* =====================================================
-   DEFAULTS
-===================================================== */
-
-recordDate.value =
-    todayISO();
-
-
-if (
-    flock.placementDate
-) {
-
-    const calculated =
-        calculateAgeDays(
-            flock.placementDate,
-            todayISO()
-        );
-
-
-    if (
-        calculated !== null
-    ) {
-
-        ageDays.value =
-            calculated;
-
-    }
-
-}
-
-
-birdCount.value =
-    flock.birdCount || "";
-
-
-/* =====================================================
-   WEIGHTS
-===================================================== */
-
-let weights = [];
-
-
-/* =====================================================
-   RENDER WEIGHTS
-===================================================== */
-
-function renderWeights() {
-
-    if (!weights.length) {
-
-        weightsList.innerHTML =
-            "هنوز وزنی ثبت نشده است.";
-
-        weightResult.innerHTML =
-            "";
-
-        return;
-
-    }
-
-
-    weightsList.innerHTML = `
-
-        <div>
-
-            <strong>
-                تعداد نمونه:
-            </strong>
-
-            ${weights.length}
-
-        </div>
-
-        <div
-            style="
-                display:flex;
-                flex-wrap:wrap;
-                gap:8px;
-                margin-top:12px;
-            "
-        >
-
-            ${
-                weights
-                    .map(
-                        (
-                            weight,
-                            index
-                        ) => `
-
-                            <span
-                                class="badge"
-                                style="
-                                    padding:7px 10px;
-                                    border-radius:8px;
-                                    background:#eef2ef;
-                                "
-                            >
-
-                                ${index + 1}:
-                                ${formatNumber(
-                                    weight,
-                                    0
-                                )}
-                                گرم
-
-                            </span>
-
-                        `
-                    )
-                    .join("")
-            }
-
-        </div>
-
-    `;
-
-
-    const result =
-        calculateWeightAnalysis(
-            weights
-        );
-
-
-    weightResult.innerHTML = `
-
-        <div class="stats-grid">
-
-            <div class="stat-card">
-
-                <span>
-                    میانگین
-                </span>
-
-                <strong>
-                    ${formatNumber(
-                        result.mean,
-                        1
-                    )}
-                    گرم
-                </strong>
-
-            </div>
-
-
-            <div class="stat-card">
-
-                <span>
-                    SD
-                </span>
-
-                <strong>
-                    ${formatNumber(
-                        result.sd,
-                        1
-                    )}
-                </strong>
-
-            </div>
-
-
-            <div class="stat-card">
-
-                <span>
-                    CV
-                </span>
-
-                <strong>
-                    ${formatNumber(
-                        result.cv,
-                        1
-                    )}%
-                </strong>
-
-            </div>
-
-
-            <div class="stat-card">
-
-                <span>
-                    یکنواختی ±10%
-                </span>
-
-                <strong>
-                    ${formatNumber(
-                        result.uniformity10,
-                        1
-                    )}%
-                </strong>
-
-            </div>
-
-
-            <div class="stat-card">
-
-                <span>
-                    یکنواختی ±15%
-                </span>
-
-                <strong>
-                    ${formatNumber(
-                        result.uniformity15,
-                        1
-                    )}%
-                </strong>
-
-            </div>
-
-
-            <div class="stat-card">
-
-                <span>
-                    حداقل
-                </span>
-
-                <strong>
-                    ${formatNumber(
-                        result.min,
-                        0
-                    )}
-                </strong>
-
-            </div>
-
-
-            <div class="stat-card">
-
-                <span>
-                    حداکثر
-                </span>
-
-                <strong>
-                    ${formatNumber(
-                        result.max,
-                        0
-                    )}
-                </strong>
-
-            </div>
-
-        </div>
-
-    `;
-
-}
-
-
-/* =====================================================
-   ADD WEIGHT
-===================================================== */
-
-document.getElementById(
-    "addWeightBtn"
-)
-.addEventListener(
-    "click",
-    function() {
-
-        const value =
-            Number(
-                weightInput.value
-            );
-
-
-        const count =
-            Math.max(
-                1,
-                Number(
-                    sampleCount.value ||
-                    1
-                )
-            );
-
-
-        if (
-            !Number.isFinite(value) ||
-            value <= 0
-        ) {
-
-            alert(
-                "وزن معتبر وارد کنید."
-            );
-
-            return;
-
-        }
-
-
-        for (
-            let i = 0;
-            i < count;
-            i++
-        ) {
-
-            weights.push(
-                value
-            );
-
-        }
-
-
-        weightInput.value =
-            "";
-
-
-        renderWeights();
-
-    }
-);
-
-
-/* =====================================================
-   CLEAR
-===================================================== */
-
-document.getElementById(
-    "clearWeightsBtn"
-)
-.addEventListener(
-    "click",
-    function() {
-
-        weights = [];
-
-        renderWeights();
-
-    }
-);
-
-
-/* =====================================================
-   SAVE
-===================================================== */
-
-document.getElementById(
-    "saveBtn"
-)
-.addEventListener(
-    "click",
-    function() {
-
-        saveMessage.innerHTML =
-            "";
-
-
-        const age =
-            Number(
-                ageDays.value
-            );
-
-
-        if (
-            !Number.isFinite(age) ||
-            age <= 0
-        ) {
-
-            saveMessage.innerHTML = `
-
-                <div class="info-box">
-
-                    سن گله را وارد کنید.
-
-                </div>
-
-            `;
-
-            return;
-
-        }
-
-
-        if (
-            !weights.length
-        ) {
-
-            saveMessage.innerHTML = `
-
-                <div class="info-box">
-
-                    حداقل یک وزن وارد کنید.
-
-                </div>
-
-            `;
-
-            return;
-
-        }
-
-
-        if (
-            hasWeeklyRecordAtAge(
-                flock.id,
-                age
-            )
-        ) {
-
-            const confirmed =
-                confirm(
-                    "برای این سن قبلاً رکورد ثبت شده است. آیا رکورد جدید جایگزین شود؟"
-                );
-
-
-            if (!confirmed) {
-
-                return;
-
-            }
-
-        }
-
-
-        const analysis =
-            calculateWeightAnalysis(
-                weights
-            );
-
-
-        const standard =
-            getStandard(
-                flock.productionType,
-                flock.genetics,
-                flock.strain
-            );
-
-
-        const standardWeight =
-            standard
-                ? getStandardValueAtAge(
-                    standard,
-                    "bodyWeight",
-                    age
-                )
-                : null;
-
-
-        const record = {
-
-            id:
-                createId("weekly"),
-
-            flockId:
-                flock.id,
-
-            farmId:
-                flock.farmId,
-
-            houseId:
-                flock.houseId,
-
-            date:
-                recordDate.value ||
-                todayISO(),
-
-            ageDays:
-                age,
-
-            birdCount:
-                Number(
-                    birdCount.value ||
-                    flock.birdCount ||
-                    0
-                ),
-
-            mortalityCount:
-                Number(
-                    mortalityCount.value ||
-                    0
-                ),
-
-            mortality:
-                calculateMortalityRate(
-                    Number(
-                        mortalityCount.value ||
-                        0
-                    ),
-                    Number(
-                        birdCount.value ||
-                        flock.birdCount ||
-                        0
-                    )
-                ),
-
-            livability:
-                calculateLivability(
-                    calculateMortalityRate(
-                        Number(
-                            mortalityCount.value ||
-                            0
-                        ),
-                        Number(
-                            birdCount.value ||
-                            flock.birdCount ||
-                            0
-                        )
-                    )
-                ),
-
-            sampleCount:
-                analysis.count,
-
-            averageWeight:
-                analysis.mean,
-
-            sd:
-                analysis.sd,
-
-            cv:
-                analysis.cv,
-
-            uniformity10:
-                analysis.uniformity10,
-
-            uniformity15:
-                analysis.uniformity15,
-
-            minWeight:
-                analysis.min,
-
-            maxWeight:
-                analysis.max,
-
-            feed:
-                feed.value === ""
-                    ? null
-                    : Number(
-                        feed.value
-                    ),
-
-            water:
-                water.value === ""
-                    ? null
-                    : Number(
-                        water.value
-                    ),
-
-            fcr:
-                null,
-
-            standardWeight,
-
-            standardDifference:
-                standardWeight === null
-                    ? null
-                    : analysis.mean -
-                      standardWeight,
-
-            standardDifferencePercent:
-                standardWeight === null
-                    ? null
-                    : (
-                        (
-                            analysis.mean -
-                            standardWeight
-                        ) /
-                        standardWeight
-                    ) *
-                    100,
-
-            notes:
-                notes.value || "",
-
-            weights:
-                [...weights],
-
-            createdAt:
-                new Date()
-                    .toISOString(),
-
-            updatedAt:
-                new Date()
-                    .toISOString()
-
-        };
-
-
-        /*
-            اگر رکوردی با همین سن وجود دارد،
-            همان رکورد را به‌روزرسانی می‌کنیم.
-        */
-
-        const old =
-            getFlockRecordByAge(
-                flock.id,
-                age
-            );
-
-
-        if (old) {
-
-            record.id =
-                old.id;
-
-            record.createdAt =
-                old.createdAt;
-
-        }
-
-
-        saveWeeklyRecord(
-            record
-        );
-
-
-        saveMessage.innerHTML = `
-
-            <div class="info-box">
-
-                ارزیابی هفتگی با موفقیت ذخیره شد.
-
-            </div>
-
-        `;
-
-    }
-);
-
-
-/* =====================================================
-   REPORT
-===================================================== */
-
-document.getElementById(
-    "reportBtn"
-)
-.addEventListener(
-    "click",
-    function() {
-
-        location.href =
-            "reports.html";
-
-    }
-);
-
-
-renderWeights();
-
-</script>
+<script src="weekly.js"></script>
 
 
 </body>

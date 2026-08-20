@@ -1028,126 +1028,118 @@ function calculateWeekly() {
    WEIGHT STATISTICS
 ========================================================= */
 
-function calculateWeightStatistics(
-    weights
-) {
+function calculateWeightStatistics(weights) {
 
-    const validWeights =
-        weights
-            .map(
-                value =>
-                    Number(
-                        normalizeNumberString(
-                            value
-                        )
-                    )
-            )
-            .filter(
-                value =>
-                    Number.isFinite(value) &&
-                    value > 0
-            );
+    // پاک سازی و تبدیل صحیح وزن‌ها
+    const cleanWeights = (Array.isArray(weights) ? weights : [])
+        .map(value => {
+
+            if (value === null || value === undefined) {
+                return NaN;
+            }
+
+            let text = String(value)
+                .trim()
+                .replace(/,/g, "")
+                .replace(/٬/g, "")
+                .replace(/[۰-۹]/g, function (d) {
+                    return "۰۱۲۳۴۵۶۷۸۹".indexOf(d);
+                })
+                .replace(/[٠-٩]/g, function (d) {
+                    return "٠١٢٣٤٥٦٧٨٩".indexOf(d);
+                });
+
+            return Number(text);
+
+        })
+        .filter(value =>
+            Number.isFinite(value) &&
+            value > 0
+        );
 
 
-    const n =
-        validWeights.length;
+    const count = cleanWeights.length;
 
 
-    if (
-        n < 2
-    ) {
+    if (count === 0) {
 
         return {
-
-            count: n,
-
+            count: 0,
             mean: 0,
-
             sd: 0,
-
             cv: 0,
-
             uniformity10: 0,
-
             uniformity15: 0,
-
             min: 0,
-
             max: 0,
-
             lower10: 0,
-
             upper10: 0,
-
             lower15: 0,
-
             upper15: 0
-
         };
 
     }
 
 
-    /* MEAN */
 
-    const sum =
-        validWeights.reduce(
-            (
-                total,
-                weight
-            ) =>
-                total + weight,
-            0
-        );
+    // مرتب سازی برای کنترل بهتر داده‌ها
+    const sorted =
+        [...cleanWeights]
+        .sort((a,b)=>a-b);
 
 
+
+    // میانگین وزن
     const mean =
-        sum / n;
-
-
-    /* POPULATION SD */
-
-    const squaredDifferences =
-        validWeights.map(
-            weight =>
-                Math.pow(
-                    weight - mean,
-                    2
-                )
-        );
-
-
-    const variance =
-        squaredDifferences.reduce(
-            (
-                total,
-                value
-            ) =>
-                total + value,
+        sorted.reduce(
+            (sum,value)=>sum + value,
             0
-        ) / n;
+        ) / count;
+
+
+
+    // انحراف معیار جامعه
+    const variance =
+        sorted.reduce(
+            (sum,value)=>{
+
+                return sum +
+                    Math.pow(
+                        value - mean,
+                        2
+                    );
+
+            },
+            0
+        ) / count;
+
 
 
     const sd =
-        Math.sqrt(
-            variance
-        );
+        Math.sqrt(variance);
 
 
-    /* CV */
 
+    // ضریب تغییرات
     const cv =
         mean > 0
-
-            ? (
-                sd /
-                mean
-            ) * 100
-
-            : 0;
+        ?
+        (sd / mean) * 100
+        :
+        0;
 
 
-    /* ±10 */
+
+    /*
+        محاسبه یکنواختی استاندارد مرغداری
+
+        10 درصد:
+        میانگین ± 10%
+
+        15 درصد:
+        میانگین ± 15%
+    */
+
 
     const lower10 =
         mean * 0.90;
@@ -1157,8 +1149,6 @@ function calculateWeightStatistics(
         mean * 1.10;
 
 
-    /* ±15 */
-
     const lower15 =
         mean * 0.85;
 
@@ -1167,97 +1157,87 @@ function calculateWeightStatistics(
         mean * 1.15;
 
 
-    /* UNIFORMITY ±10 */
 
-    const uniformCount10 =
-        validWeights.filter(
-            weight =>
+    const uniform10Count =
+        sorted.filter(weight => {
+
+            return (
                 weight >= lower10 &&
                 weight <= upper10
-        ).length;
+            );
+
+        }).length;
 
 
-    const uniformity10 =
-        (
-            uniformCount10 /
-            n
-        ) * 100;
 
+    const uniform15Count =
+        sorted.filter(weight => {
 
-    /* UNIFORMITY ±15 */
-
-    const uniformCount15 =
-        validWeights.filter(
-            weight =>
+            return (
                 weight >= lower15 &&
                 weight <= upper15
-        ).length;
+            );
 
+        }).length;
 
-    const uniformity15 =
-        (
-            uniformCount15 /
-            n
-        ) * 100;
-
-
-    /* MIN / MAX */
-
-    const min =
-        Math.min(
-            ...validWeights
-        );
-
-
-    const max =
-        Math.max(
-            ...validWeights
-        );
 
 
     return {
 
-        count:
-            n,
+        count,
 
         mean:
-            mean,
+            Number(mean.toFixed(2)),
+
 
         sd:
-            sd,
+            Number(sd.toFixed(2)),
+
 
         cv:
-            cv,
+            Number(cv.toFixed(2)),
+
 
         uniformity10:
-            uniformity10,
+            Number(
+                ((uniform10Count / count) * 100)
+                .toFixed(2)
+            ),
+
 
         uniformity15:
-            uniformity15,
+            Number(
+                ((uniform15Count / count) * 100)
+                .toFixed(2)
+            ),
+
 
         min:
-            min,
+            sorted[0],
+
 
         max:
-            max,
+            sorted[count-1],
+
 
         lower10:
-            lower10,
+            Number(lower10.toFixed(2)),
+
 
         upper10:
-            upper10,
+            Number(upper10.toFixed(2)),
+
 
         lower15:
-            lower15,
+            Number(lower15.toFixed(2)),
+
 
         upper15:
-            upper15
+            Number(upper15.toFixed(2))
 
     };
 
 }
-
-
 /* =========================================================
    RESULTS
 ========================================================= */

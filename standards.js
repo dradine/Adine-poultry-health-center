@@ -1,665 +1,40 @@
+"use strict";
+
 /* =========================================================
-   ADINE POULTRY HEALTH CENTER
-   PROFESSIONAL POULTRY STANDARDS ENGINE
-   VERSION 3.0
-   Updated: 2026
+   ADINEH POULTRY HEALTH CENTER
+   STANDARD ENGINE
+   =========================================================
 
-   ---------------------------------------------------------
-   RESPONSIBILITY
-   ---------------------------------------------------------
-
-   This file is the STANDARD ENGINE.
-
-   It does NOT invent numerical standards.
-
-   Numerical performance data are stored in:
-       standard-data.js
-
-   Genetic catalog:
-       standard-data.js
-       standard-data.js / POULTRY_CATALOG
-
-   This file provides:
-
-       - standard lookup
-       - age interpolation
-       - metric lookup
-       - actual vs standard comparison
-       - weekly comparison
-       - FCR comparison
-       - layer metrics
-       - breeder metrics
-       - broiler metrics
-       - data validation
-       - source validation
-       - backward compatibility
-
-   ---------------------------------------------------------
-   DATA PRINCIPLE
-   ---------------------------------------------------------
-
-   Official breeder data only.
-
-   Never:
-       - guess a standard
-       - mix broiler with breeder
-       - mix layer strains
-       - extrapolate outside documented age range
-       - silently use another strain's standard
-       - treat FCR as interchangeable between production types
+   This file handles:
+   - Standard lookup
+   - Age interpolation
+   - Actual vs standard comparison
+   - FCR calculation
+   - Weekly comparison
+   - Standard validation
 
 ========================================================= */
 
-"use strict";
-
 
 /* =========================================================
-   DATABASE CONFIGURATION
+   ENGINE CONFIG
 ========================================================= */
 
 const STANDARD_ENGINE_CONFIG = {
 
-    version:
-        "3.0",
+    version: "3.0",
 
-    country:
-        "Iran",
+    allowExtrapolation: false,
 
-    interpolation:
-        "linear",
+    interpolation: "linear",
 
-    allowExtrapolation:
-        false,
+    tolerancePercent: 5,
 
-    missingStandard:
-        "null",
+    fcrDecimals: 3,
 
-    numericDataPolicy:
-        "official-breeder-documentation-only",
+    weightDecimals: 0,
 
-    comparisonTolerancePercent:
-        5,
-
-    fcrPrecision:
-        3,
-
-    weightPrecision:
-        0,
-
-    percentagePrecision:
-        2
-
-};
-
-
-/* =========================================================
-   STANDARD METRIC DEFINITIONS
-========================================================= */
-
-const STANDARD_METRICS = {
-
-
-    /* =====================================================
-       BROILER
-    ===================================================== */
-
-    broiler: {
-
-        bodyWeight: {
-
-            key:
-                "bodyWeight",
-
-            label:
-                "وزن بدن",
-
-            unit:
-                "g",
-
-            higherIsBetter:
-                null
-
-        },
-
-        dailyGain: {
-
-            key:
-                "dailyGain",
-
-            label:
-                "افزایش وزن روزانه",
-
-            unit:
-                "g/day",
-
-            higherIsBetter:
-                null
-
-        },
-
-        dailyFeed: {
-
-            key:
-                "dailyFeed",
-
-            label:
-                "مصرف دان روزانه",
-
-            unit:
-                "g/bird/day",
-
-            higherIsBetter:
-                false
-
-        },
-
-        cumulativeFeed: {
-
-            key:
-                "cumulativeFeed",
-
-            label:
-                "مصرف تجمعی دان",
-
-            unit:
-                "g/bird",
-
-            higherIsBetter:
-                false
-
-        },
-
-        fcr: {
-
-            key:
-                "fcr",
-
-            label:
-                "ضریب تبدیل غذایی",
-
-            unit:
-                "kg/kg",
-
-            higherIsBetter:
-                false
-
-        },
-
-        mortality: {
-
-            key:
-                "mortality",
-
-            label:
-                "تلفات تجمعی",
-
-            unit:
-                "%",
-
-            higherIsBetter:
-                false
-
-        },
-
-        livability: {
-
-            key:
-                "livability",
-
-            label:
-                "زنده‌مانی",
-
-            unit:
-                "%",
-
-            higherIsBetter:
-                true
-
-        },
-
-        uniformity: {
-
-            key:
-                "uniformity",
-
-            label:
-                "یکنواختی",
-
-            unit:
-                "%",
-
-            higherIsBetter:
-                true
-
-        }
-
-    },
-
-
-    /* =====================================================
-       BREEDER
-    ===================================================== */
-
-    breeder: {
-
-        bodyWeight: {
-
-            key:
-                "bodyWeight",
-
-            label:
-                "وزن بدن",
-
-            unit:
-                "g"
-
-        },
-
-        dailyFeed: {
-
-            key:
-                "dailyFeed",
-
-            label:
-                "مصرف دان روزانه",
-
-            unit:
-                "g/bird/day"
-
-        },
-
-        cumulativeFeed: {
-
-            key:
-                "cumulativeFeed",
-
-            label:
-                "مصرف تجمعی دان",
-
-            unit:
-                "g/bird"
-
-        },
-
-        uniformity: {
-
-            key:
-                "uniformity",
-
-            label:
-                "یکنواختی",
-
-            unit:
-                "%",
-
-            higherIsBetter:
-                true
-
-        },
-
-        mortality: {
-
-            key:
-                "mortality",
-
-            label:
-                "تلفات",
-
-            unit:
-                "%",
-
-            higherIsBetter:
-                false
-
-        },
-
-        livability: {
-
-            key:
-                "livability",
-
-            label:
-                "زنده‌مانی",
-
-            unit:
-                "%",
-
-            higherIsBetter:
-                true
-
-        },
-
-        eggProduction: {
-
-            key:
-                "eggProduction",
-
-            label:
-                "تولید تخم‌مرغ",
-
-            unit:
-                "%",
-
-            higherIsBetter:
-                true
-
-        },
-
-        cumulativeEggs: {
-
-            key:
-                "cumulativeEggs",
-
-            label:
-                "تخم‌مرغ تجمعی به ازای مرغ",
-
-            unit:
-                "egg/hen",
-
-            higherIsBetter:
-                true
-
-        },
-
-        hatchability: {
-
-            key:
-                "hatchability",
-
-            label:
-                "قابلیت جوجه‌درآوری",
-
-            unit:
-                "%",
-
-            higherIsBetter:
-                true
-
-        },
-
-        fertility: {
-
-            key:
-                "fertility",
-
-            label:
-                "باروری",
-
-            unit:
-                "%",
-
-            higherIsBetter:
-                true
-
-        }
-
-    },
-
-
-    /* =====================================================
-       LAYER
-    ===================================================== */
-
-    layer: {
-
-        bodyWeight: {
-
-            key:
-                "bodyWeight",
-
-            label:
-                "وزن بدن",
-
-            unit:
-                "g"
-
-        },
-
-        dailyFeed: {
-
-            key:
-                "dailyFeed",
-
-            label:
-                "مصرف دان روزانه",
-
-            unit:
-                "g/bird/day"
-
-        },
-
-        cumulativeFeed: {
-
-            key:
-                "cumulativeFeed",
-
-            label:
-                "مصرف تجمعی دان",
-
-            unit:
-                "g/bird"
-
-        },
-
-        uniformity: {
-
-            key:
-                "uniformity",
-
-            label:
-                "یکنواختی",
-
-            unit:
-                "%",
-
-            higherIsBetter:
-                true
-
-        },
-
-        eggProduction: {
-
-            key:
-                "eggProduction",
-
-            label:
-                "تولید تخم‌مرغ",
-
-            unit:
-                "%",
-
-            higherIsBetter:
-                true
-
-        },
-
-        eggWeight: {
-
-            key:
-                "eggWeight",
-
-            label:
-                "وزن تخم‌مرغ",
-
-            unit:
-                "g"
-
-        },
-
-        eggMass: {
-
-            key:
-                "eggMass",
-
-            label:
-                "Egg Mass",
-
-            unit:
-                "g/hen/day",
-
-            higherIsBetter:
-                null
-
-        },
-
-        fcr: {
-
-            key:
-                "fcr",
-
-            label:
-                "ضریب تبدیل غذایی",
-
-            unit:
-                "kg feed/kg egg mass",
-
-            higherIsBetter:
-                false
-
-        },
-
-        mortality: {
-
-            key:
-                "mortality",
-
-            label:
-                "تلفات",
-
-            unit:
-                "%",
-
-            higherIsBetter:
-                false
-
-        },
-
-        livability: {
-
-            key:
-                "livability",
-
-            label:
-                "زنده‌مانی",
-
-            unit:
-                "%",
-
-            higherIsBetter:
-                true
-
-        }
-
-    },
-
-
-    /* =====================================================
-       PULLET
-    ===================================================== */
-
-    pullet: {
-
-        bodyWeight: {
-
-            key:
-                "bodyWeight",
-
-            label:
-                "وزن بدن",
-
-            unit:
-                "g"
-
-        },
-
-        dailyGain: {
-
-            key:
-                "dailyGain",
-
-            label:
-                "افزایش وزن روزانه",
-
-            unit:
-                "g/day"
-
-        },
-
-        dailyFeed: {
-
-            key:
-                "dailyFeed",
-
-            label:
-                "مصرف دان روزانه",
-
-            unit:
-                "g/bird/day"
-
-        },
-
-        cumulativeFeed: {
-
-            key:
-                "cumulativeFeed",
-
-            label:
-                "مصرف تجمعی دان",
-
-            unit:
-                "g/bird"
-
-        },
-
-        uniformity: {
-
-            key:
-                "uniformity",
-
-            label:
-                "یکنواختی",
-
-            unit:
-                "%",
-
-            higherIsBetter:
-                true
-
-        },
-
-        mortality: {
-
-            key:
-                "mortality",
-
-            label:
-                "تلفات",
-
-            unit:
-                "%",
-
-            higherIsBetter:
-                false
-
-        },
-
-        livability: {
-
-            key:
-                "livability",
-
-            label:
-                "زنده‌مانی",
-
-            unit:
-                "%",
-
-            higherIsBetter:
-                true
-
-        }
-
-    }
+    percentageDecimals: 2
 
 };
 
@@ -668,301 +43,72 @@ const STANDARD_METRICS = {
    PRODUCTION TYPE NORMALIZATION
 ========================================================= */
 
-function normalizeProductionType(
-    type
-) {
+function normalizeProductionType(type) {
 
     const value =
-        String(
-            type || ""
-        )
-        .trim()
-        .toLowerCase();
+        String(type || "")
+            .trim()
+            .toLowerCase();
 
     const aliases = {
 
-        broiler:
-            "broiler",
+        broiler: "broiler",
+        meat: "broiler",
+        گوشتی: "broiler",
 
-        گوشتی:
-            "broiler",
+        breeder: "breeder",
+        parent: "breeder",
+        parentstock: "breeder",
+        مادر: "breeder",
 
-        meat:
-            "broiler",
+        layer: "layer",
+        layers: "layer",
+        تخمگذار: "layer",
+        "تخم‌گذار": "layer",
 
-        breeder:
-            "breeder",
-
-        مادر:
-            "breeder",
-
-        parent:
-            "breeder",
-
-        parentstock:
-            "breeder",
-
-        layer:
-            "layer",
-
-        layers:
-            "layer",
-
-        تخمگذار:
-            "layer",
-
-        تخم‌گذار:
-            "layer",
-
-        pullet:
-            "pullet",
-
-        پولت:
-            "pullet"
+        pullet: "pullet",
+        پولت: "pullet"
 
     };
 
-    return (
-        aliases[value] ||
-        value ||
-        null
-    );
-
+    return aliases[value] || value || null;
 }
 
 
 /* =========================================================
-   NORMALIZE GENETIC NAME
+   NUMBER HELPERS
 ========================================================= */
 
-function normalizeStandardName(
-    value
-) {
+function toFiniteNumber(value) {
 
-    return String(
-        value || ""
-    )
+    const number = Number(value);
 
-        .trim()
-
-        .toLowerCase()
-
-        .replace(
-            /[_\-]+/g,
-            " "
-        )
-
-        .replace(
-            /\s+/g,
-            " "
-        );
-
+    return Number.isFinite(number)
+        ? number
+        : null;
 }
 
 
-/* =========================================================
-   ROUNDING
-========================================================= */
+function roundValue(value, decimals = 2) {
 
-function roundStandardValue(
-    value,
-    decimals = 2
-) {
+    const number = Number(value);
 
-    const number =
-        Number(value);
-
-    if (
-        !Number.isFinite(
-            number
-        )
-    ) {
-
+    if (!Number.isFinite(number)) {
         return null;
-
     }
 
     const factor =
-        Math.pow(
-            10,
-            decimals
-        );
+        Math.pow(10, decimals);
 
     return (
-        Math.round(
-            number *
-            factor
-        ) /
+        Math.round(number * factor) /
         factor
     );
-
 }
 
 
 /* =========================================================
-   STANDARD DATA SOURCE
-========================================================= */
-
-function getVerifiedStandardDatabase() {
-
-    if (
-        typeof VERIFIED_STANDARDS !==
-        "undefined"
-    ) {
-
-        return VERIFIED_STANDARDS;
-
-    }
-
-    return {};
-
-}
-
-
-/* =========================================================
-   GET RAW STANDARD
-========================================================= */
-
-function getRawStandard(
-    type,
-    geneticsId,
-    strain
-) {
-
-    const normalizedType =
-        normalizeProductionType(
-            type
-        );
-
-    const database =
-        getVerifiedStandardDatabase();
-
-    if (
-        !normalizedType ||
-        !database[normalizedType]
-    ) {
-
-        return null;
-
-    }
-
-
-    const typeDatabase =
-        database[
-            normalizedType
-        ];
-
-
-    let geneticData =
-        typeDatabase[
-            geneticsId
-        ];
-
-
-    /*
-     * Backward compatibility:
-     * resolve genetics by strain name.
-     */
-
-    if (
-        !geneticData
-    ) {
-
-        const target =
-            normalizeStandardName(
-                strain ||
-                geneticsId
-            );
-
-        for (
-            const geneticKey of
-            Object.keys(
-                typeDatabase
-            )
-        ) {
-
-            const candidate =
-                typeDatabase[
-                    geneticKey
-                ];
-
-            if (
-                candidate &&
-                candidate[
-                    strain
-                ]
-            ) {
-
-                geneticData =
-                    candidate;
-
-                break;
-
-            }
-
-
-            if (
-                candidate &&
-                typeof candidate ===
-                    "object"
-            ) {
-
-                const productKey =
-                    Object.keys(
-                        candidate
-                    )
-                    .find(
-                        key =>
-                            normalizeStandardName(
-                                key
-                            ) ===
-                            target
-                    );
-
-                if (
-                    productKey
-                ) {
-
-                    geneticData =
-                        candidate;
-
-                    break;
-
-                }
-
-            }
-
-        }
-
-    }
-
-
-    if (
-        !geneticData
-    ) {
-
-        return null;
-
-    }
-
-
-    const targetStrain =
-        strain ||
-        geneticsId;
-
-
-    return (
-        geneticData[
-            targetStrain
-        ] ||
-        null
-    );
-
-}
-
-
-/* =========================================================
-   PUBLIC STANDARD LOOKUP
+   GET STANDARD
 ========================================================= */
 
 function getStandard(
@@ -971,17 +117,104 @@ function getStandard(
     strain
 ) {
 
-    return getRawStandard(
-        type,
-        geneticsId,
-        strain
-    );
+    const normalizedType =
+        normalizeProductionType(type);
 
+    if (
+        typeof VERIFIED_STANDARDS ===
+        "undefined"
+    ) {
+        return null;
+    }
+
+    const typeData =
+        VERIFIED_STANDARDS[
+            normalizedType
+        ];
+
+    if (!typeData) {
+        return null;
+    }
+
+    let geneticsData =
+        typeData[geneticsId];
+
+    /*
+     * Try to resolve genetics by strain.
+     */
+
+    if (!geneticsData && strain) {
+
+        const target =
+            String(strain)
+                .trim()
+                .toLowerCase();
+
+        const match =
+            Object.keys(typeData)
+                .find(id => {
+
+                    const item =
+                        typeData[id];
+
+                    return Object.keys(item)
+                        .some(name =>
+                            String(name)
+                                .trim()
+                                .toLowerCase() ===
+                            target
+                        );
+
+                });
+
+        if (match) {
+            geneticsData =
+                typeData[match];
+        }
+    }
+
+    if (!geneticsData) {
+        return null;
+    }
+
+    if (strain) {
+
+        return (
+            geneticsData[strain] ||
+            geneticsData[
+                Object.keys(geneticsData)
+                    .find(name =>
+                        String(name)
+                            .trim()
+                            .toLowerCase() ===
+                        String(strain)
+                            .trim()
+                            .toLowerCase()
+                    )
+            ] ||
+            null
+        );
+
+    }
+
+    /*
+     * If only one strain exists,
+     * return it.
+     */
+
+    const strains =
+        Object.keys(geneticsData);
+
+    if (strains.length === 1) {
+        return geneticsData[strains[0]];
+    }
+
+    return null;
 }
 
 
 /* =========================================================
-   GET STANDARD RECORDS
+   GET RECORDS
 ========================================================= */
 
 function getStandardRecords(
@@ -1003,45 +236,25 @@ function getStandardRecords(
             standard.records
         )
     ) {
-
         return [];
-
     }
 
     return standard.records
-        .filter(
-            record =>
-                record &&
-                Number.isFinite(
-                    Number(
-                        record.ageDays
-                    )
-                )
-        )
-        .map(
-            record => ({
-                ...record,
-
-                ageDays:
-                    Number(
-                        record.ageDays
-                    )
-            })
+        .filter(record =>
+            Number.isFinite(
+                Number(record.ageDays)
+            )
         )
         .sort(
-            (
-                a,
-                b
-            ) =>
-                a.ageDays -
-                b.ageDays
+            (a, b) =>
+                Number(a.ageDays) -
+                Number(b.ageDays)
         );
-
 }
 
 
 /* =========================================================
-   GET STANDARD AGE RANGE
+   STANDARD AGE RANGE
 ========================================================= */
 
 function getStandardAgeRange(
@@ -1055,36 +268,24 @@ function getStandardAgeRange(
         ) ||
         !standard.records.length
     ) {
-
         return null;
-
     }
 
     const records =
         standard.records
-            .filter(
-                item =>
-                    Number.isFinite(
-                        Number(
-                            item.ageDays
-                        )
-                    )
+            .filter(record =>
+                Number.isFinite(
+                    Number(record.ageDays)
+                )
             )
             .sort(
-                (
-                    a,
-                    b
-                ) =>
+                (a, b) =>
                     Number(a.ageDays) -
                     Number(b.ageDays)
             );
 
-    if (
-        !records.length
-    ) {
-
+    if (!records.length) {
         return null;
-
     }
 
     return {
@@ -1102,15 +303,11 @@ function getStandardAgeRange(
             )
 
     };
-
 }
 
 
 /* =========================================================
-   GET STANDARD VALUE AT AGE
-   ---------------------------------------------------------
-   IMPORTANT:
-   No extrapolation outside official data.
+   VALUE AT AGE
 ========================================================= */
 
 function getStandardValueAtAge(
@@ -1125,119 +322,68 @@ function getStandardValueAtAge(
             standard.records
         )
     ) {
-
         return null;
-
     }
-
 
     const age =
-        Number(
-            ageDays
-        );
+        Number(ageDays);
 
-
-    if (
-        !Number.isFinite(
-            age
-        )
-    ) {
-
+    if (!Number.isFinite(age)) {
         return null;
-
     }
 
-
-    const records =
+    const points =
         standard.records
+            .map(record => ({
 
-            .map(
-                record => ({
+                age:
+                    Number(
+                        record.ageDays
+                    ),
 
-                    age:
-                        Number(
-                            record.ageDays
-                        ),
-
-                    value:
-                        Number(
-                            record[
-                                metric
-                            ]
-                        )
-
-                })
-            )
-
-            .filter(
-                item =>
-
-                    Number.isFinite(
-                        item.age
-                    ) &&
-
-                    Number.isFinite(
-                        item.value
+                value:
+                    Number(
+                        record[metric]
                     )
-            )
 
+            }))
+            .filter(point =>
+                Number.isFinite(point.age) &&
+                Number.isFinite(point.value)
+            )
             .sort(
-                (
-                    a,
-                    b
-                ) =>
-                    a.age -
-                    b.age
+                (a, b) =>
+                    a.age - b.age
             );
 
-
-    if (
-        !records.length
-    ) {
-
+    if (!points.length) {
         return null;
-
     }
-
 
     /*
      * Never extrapolate.
      */
 
     if (
-        age <
-        records[0].age ||
-        age >
-        records[
-            records.length - 1
-        ].age
+        age < points[0].age ||
+        age > points[points.length - 1].age
     ) {
-
         return null;
-
     }
 
-
     /*
-     * Exact documented age.
+     * Exact point.
      */
 
     const exact =
-        records.find(
-            item =>
-                item.age ===
-                age
+        points.find(
+            point =>
+                point.age === age
         );
 
-
-    if (
-        exact
-    ) {
-
+    if (exact) {
         return exact.value;
-
     }
-
 
     /*
      * Linear interpolation.
@@ -1245,70 +391,54 @@ function getStandardValueAtAge(
 
     for (
         let i = 1;
-        i < records.length;
+        i < points.length;
         i++
     ) {
 
         const previous =
-            records[i - 1];
+            points[i - 1];
 
         const next =
-            records[i];
-
+            points[i];
 
         if (
             age >= previous.age &&
             age <= next.age
         ) {
 
-            const distance =
+            const denominator =
                 next.age -
                 previous.age;
 
-
-            if (
-                distance <= 0
-            ) {
-
+            if (denominator <= 0) {
                 return previous.value;
-
             }
-
 
             const ratio =
                 (
                     age -
                     previous.age
                 ) /
-                distance;
+                denominator;
 
-
-            return roundStandardValue(
-
+            return roundValue(
                 previous.value +
-
                 (
                     next.value -
                     previous.value
                 ) *
                 ratio,
-
                 3
-
             );
-
         }
-
     }
 
-
     return null;
-
 }
 
 
 /* =========================================================
-   GET COMPLETE STANDARD AT AGE
+   COMPLETE STANDARD AT AGE
 ========================================================= */
 
 function getStandardAtAge(
@@ -1325,300 +455,186 @@ function getStandardAtAge(
             strain
         );
 
-
-    if (
-        !standard
-    ) {
-
+    if (!standard) {
         return null;
-
     }
 
+    const metrics = {
+
+        bodyWeight:
+            "bodyWeight",
+
+        dailyGain:
+            "dailyGain",
+
+        dailyFeed:
+            "dailyFeed",
+
+        cumulativeFeed:
+            "cumulativeFeed",
+
+        fcr:
+            "fcr",
+
+        mortality:
+            "mortality",
+
+        livability:
+            "livability",
+
+        uniformity10:
+            "uniformity10",
+
+        uniformity15:
+            "uniformity15",
+
+        cv:
+            "cv",
+
+        dailyWater:
+            "dailyWater",
+
+        eggProduction:
+            "eggProduction",
+
+        henDayProduction:
+            "henDayProduction",
+
+        eggWeight:
+            "eggWeight",
+
+        eggMass:
+            "eggMass",
+
+        cumulativeEggs:
+            "cumulativeEggs",
+
+        fertility:
+            "fertility",
+
+        hatchability:
+            "hatchability"
+
+    };
 
     const result = {
 
         ageDays:
-            Number(
-                ageDays
-            ),
-
-        bodyWeight:
-            getStandardValueAtAge(
-                standard,
-                "bodyWeight",
-                ageDays
-            ),
-
-        dailyGain:
-            getStandardValueAtAge(
-                standard,
-                "dailyGain",
-                ageDays
-            ),
-
-        dailyFeed:
-            getStandardValueAtAge(
-                standard,
-                "dailyFeed",
-                ageDays
-            ),
-
-        cumulativeFeed:
-            getStandardValueAtAge(
-                standard,
-                "cumulativeFeed",
-                ageDays
-            ),
-
-        fcr:
-            getStandardValueAtAge(
-                standard,
-                "fcr",
-                ageDays
-            ),
-
-        mortality:
-            getStandardValueAtAge(
-                standard,
-                "mortality",
-                ageDays
-            ),
-
-        livability:
-            getStandardValueAtAge(
-                standard,
-                "livability",
-                ageDays
-            ),
-
-        uniformity:
-            getStandardValueAtAge(
-                standard,
-                "uniformity",
-                ageDays
-            ),
-
-        eggProduction:
-            getStandardValueAtAge(
-                standard,
-                "eggProduction",
-                ageDays
-            ),
-
-        eggWeight:
-            getStandardValueAtAge(
-                standard,
-                "eggWeight",
-                ageDays
-            ),
-
-        eggMass:
-            getStandardValueAtAge(
-                standard,
-                "eggMass",
-                ageDays
-            ),
-
-        cumulativeEggs:
-            getStandardValueAtAge(
-                standard,
-                "cumulativeEggs",
-                ageDays
-            ),
-
-        fertility:
-            getStandardValueAtAge(
-                standard,
-                "fertility",
-                ageDays
-            ),
-
-        hatchability:
-            getStandardValueAtAge(
-                standard,
-                "hatchability",
-                ageDays
-            )
+            Number(ageDays)
 
     };
 
+    Object.keys(metrics)
+        .forEach(key => {
 
-    /*
-     * Remove unavailable metrics.
-     */
+            const value =
+                getStandardValueAtAge(
+                    standard,
+                    metrics[key],
+                    ageDays
+                );
 
-    Object.keys(
-        result
-    ).forEach(
-        key => {
-
-            if (
-                key !==
-                    "ageDays" &&
-
-                result[key] ===
-                    null
-            ) {
-
-                delete result[key];
-
+            if (value !== null) {
+                result[key] = value;
             }
 
-        }
-    );
-
+        });
 
     return result;
-
 }
 
 
 /* =========================================================
-   ACTUAL VALUE NORMALIZATION
-========================================================= */
-
-function toFiniteNumber(
-    value
-) {
-
-    const number =
-        Number(value);
-
-    return Number.isFinite(
-        number
-    )
-        ? number
-        : null;
-
-}
-
-
-/* =========================================================
-   COMPARE ACTUAL WITH STANDARD
+   ACTUAL VS STANDARD
 ========================================================= */
 
 function compareStandardValue(
     actual,
     standard,
-    metric,
-    tolerancePercent =
-        STANDARD_ENGINE_CONFIG
-            .comparisonTolerancePercent
+    metric
 ) {
 
     const actualValue =
-        toFiniteNumber(
-            actual
-        );
+        toFiniteNumber(actual);
 
     const standardValue =
-        toFiniteNumber(
-            standard
-        );
-
+        toFiniteNumber(standard);
 
     if (
-        actualValue ===
-            null ||
-
-        standardValue ===
-            null ||
-
-        standardValue ===
-            0
+        actualValue === null ||
+        standardValue === null
     ) {
 
         return {
 
-            actual:
-                actualValue,
+            actual: actualValue,
 
-            standard:
-                standardValue,
+            standard: standardValue,
 
-            difference:
-                null,
+            difference: null,
 
-            percentage:
-                null,
+            differencePercent: null,
 
-            status:
-                "no-standard",
-
-            metric
+            status: "no-standard"
 
         };
-
     }
-
 
     const difference =
         actualValue -
         standardValue;
 
-
-    const percentage =
-        (
-            difference /
-            standardValue
-        ) *
-        100;
-
-
-    /*
-     * Generic comparison status.
-     *
-     * Direction is interpreted later according
-     * to metric definition.
-     */
+    const differencePercent =
+        standardValue !== 0
+            ? (
+                difference /
+                standardValue
+            ) * 100
+            : null;
 
     let status =
         "within-range";
 
-
     if (
-        percentage >
-        tolerancePercent
+        differencePercent !== null &&
+        differencePercent >
+            STANDARD_ENGINE_CONFIG
+                .tolerancePercent
     ) {
-
-        status =
-            "above";
-
+        status = "above";
     }
     else if (
-        percentage <
-        -tolerancePercent
+        differencePercent !== null &&
+        differencePercent <
+            -STANDARD_ENGINE_CONFIG
+                .tolerancePercent
     ) {
-
-        status =
-            "below";
-
+        status = "below";
     }
-
 
     return {
 
         actual:
-            roundStandardValue(
+            roundValue(
                 actualValue,
                 3
             ),
 
         standard:
-            roundStandardValue(
+            roundValue(
                 standardValue,
                 3
             ),
 
         difference:
-            roundStandardValue(
+            roundValue(
                 difference,
                 3
             ),
 
-        percentage:
-            roundStandardValue(
-                percentage,
+        differencePercent:
+            roundValue(
+                differencePercent,
                 2
             ),
 
@@ -1627,49 +643,59 @@ function compareStandardValue(
         metric
 
     };
-
 }
 
 
 /* =========================================================
    METRIC DIRECTION
-   ---------------------------------------------------------
-   Important for FCR and mortality:
-   lower is better.
-
-   Weight:
-   cannot automatically classify as good/bad because
-   deviation from target can be either direction.
 ========================================================= */
 
-function getMetricDefinition(
-    type,
-    metric
-) {
+const STANDARD_METRIC_DIRECTION = {
 
-    const normalizedType =
-        normalizeProductionType(
-            type
-        );
+    bodyWeight: "target",
 
-    return (
-        STANDARD_METRICS[
-            normalizedType
-        ]?.[
-            metric
-        ] ||
-        null
-    );
+    dailyGain: "higher",
 
-}
+    dailyFeed: "lower",
+
+    cumulativeFeed: "lower",
+
+    fcr: "lower",
+
+    mortality: "lower",
+
+    livability: "higher",
+
+    uniformity10: "higher",
+
+    uniformity15: "higher",
+
+    cv: "lower",
+
+    dailyWater: "target",
+
+    eggProduction: "higher",
+
+    henDayProduction: "higher",
+
+    eggWeight: "target",
+
+    eggMass: "higher",
+
+    cumulativeEggs: "higher",
+
+    fertility: "higher",
+
+    hatchability: "higher"
+
+};
 
 
 /* =========================================================
-   INTERPRET PERFORMANCE
+   INTERPRET COMPARISON
 ========================================================= */
 
-function interpretStandardComparison(
-    type,
+function interpretComparison(
     metric,
     comparison
 ) {
@@ -1689,61 +715,30 @@ function interpretStandardComparison(
                 "استاندارد موجود نیست"
 
         };
-
     }
 
-
-    const definition =
-        getMetricDefinition(
-            type,
+    const direction =
+        STANDARD_METRIC_DIRECTION[
             metric
-        );
-
+        ] || "target";
 
     if (
-        !definition
+        comparison.status ===
+        "within-range"
     ) {
 
         return {
 
             status:
-                comparison.status,
+                "within-range",
 
             label:
-                "قابل مقایسه"
+                "در محدوده استاندارد"
 
         };
-
     }
 
-
-    /*
-     * FCR / mortality / feed:
-     * below standard is generally favorable.
-     */
-
-    if (
-        definition.higherIsBetter ===
-        false
-    ) {
-
-        if (
-            comparison.status ===
-            "below"
-        ) {
-
-            return {
-
-                status:
-                    "better",
-
-                label:
-                    "بهتر از استاندارد"
-
-            };
-
-        }
-
+    if (direction === "higher") {
 
         if (
             comparison.status ===
@@ -1752,39 +747,7 @@ function interpretStandardComparison(
 
             return {
 
-                status:
-                    "worse",
-
-                label:
-                    "ضعیف‌تر از استاندارد"
-
-            };
-
-        }
-
-    }
-
-
-    /*
-     * Livability / uniformity /
-     * egg production:
-     * above standard is favorable.
-     */
-
-    if (
-        definition.higherIsBetter ===
-        true
-    ) {
-
-        if (
-            comparison.status ===
-            "above"
-        ) {
-
-            return {
-
-                status:
-                    "better",
+                status: "better",
 
                 label:
                     "بهتر از استاندارد"
@@ -1793,6 +756,17 @@ function interpretStandardComparison(
 
         }
 
+        return {
+
+            status: "worse",
+
+            label:
+                "پایین‌تر از استاندارد"
+
+        };
+    }
+
+    if (direction === "lower") {
 
         if (
             comparison.status ===
@@ -1801,29 +775,36 @@ function interpretStandardComparison(
 
             return {
 
-                status:
-                    "worse",
+                status: "better",
 
                 label:
-                    "ضعیف‌تر از استاندارد"
+                    "بهتر از استاندارد"
 
             };
 
         }
 
-    }
+        return {
 
+            status: "worse",
+
+            label:
+                "بالاتر از استاندارد"
+
+        };
+    }
 
     return {
 
         status:
-            "within-range",
+            comparison.status,
 
         label:
-            "در محدوده استاندارد"
+            comparison.status === "above"
+                ? "بالاتر از هدف"
+                : "پایین‌تر از هدف"
 
     };
-
 }
 
 
@@ -1845,14 +826,11 @@ function buildMetricComparison(
             metric
         );
 
-
     const interpretation =
-        interpretStandardComparison(
-            type,
+        interpretComparison(
             metric,
             comparison
         );
-
 
     return {
 
@@ -1861,12 +839,11 @@ function buildMetricComparison(
         ...interpretation
 
     };
-
 }
 
 
 /* =========================================================
-   BUILD WEEKLY STANDARD COMPARISON
+   WEEKLY STANDARD COMPARISON
 ========================================================= */
 
 function buildWeeklyStandardComparison(
@@ -1885,71 +862,45 @@ function buildWeeklyStandardComparison(
             ageDays
         );
 
-
-    if (
-        !standard
-    ) {
+    if (!standard) {
 
         return {
 
-            available:
-                false,
+            available: false,
 
             ageDays:
                 Number(ageDays),
 
-            standard:
-                null,
+            standard: null,
 
-            comparisons:
-                {},
+            comparisons: {},
 
             message:
-                "برای این ژنتیک و سن، استاندارد عددی معتبر ثبت نشده است."
+                "استاندارد معتبر برای این ژنتیک و سن موجود نیست."
 
         };
-
     }
 
-
     const comparisons = {};
-
 
     Object.keys(
         actualMetrics
     )
-    .forEach(
-        metric => {
+    .forEach(metric => {
 
-            const actual =
-                actualMetrics[
-                    metric
-                ];
+        comparisons[metric] =
+            buildMetricComparison(
+                type,
+                metric,
+                actualMetrics[metric],
+                standard[metric]
+            );
 
-            const target =
-                standard[
-                    metric
-                ];
-
-
-            comparisons[
-                metric
-            ] =
-                buildMetricComparison(
-                    type,
-                    metric,
-                    actual,
-                    target
-                );
-
-        }
-    );
-
+    });
 
     return {
 
-        available:
-            true,
+        available: true,
 
         ageDays:
             Number(ageDays),
@@ -1959,41 +910,11 @@ function buildWeeklyStandardComparison(
         comparisons
 
     };
-
 }
 
 
 /* =========================================================
-   FCR CALCULATION
-   ---------------------------------------------------------
    BROILER FCR
-
-   FCR =
-       feed consumed / live-weight gain
-
-   For a flock:
-
-       Feed kg
-       ----------------
-       Live weight gain kg
-
-   Weight gain is based on flock live biomass.
-
-   ---------------------------------------------------------
-
-   IMPORTANT:
-
-   Do NOT calculate FCR from only one bird's
-   current weight.
-
-   The correct weekly flock calculation requires:
-
-       opening bird count
-       closing bird count
-       opening average weight
-       closing average weight
-       feed consumed during period
-
 ========================================================= */
 
 function calculateBroilerFCR({
@@ -2005,19 +926,13 @@ function calculateBroilerFCR({
 } = {}) {
 
     const feed =
-        toFiniteNumber(
-            feedKg
-        );
+        toFiniteNumber(feedKg);
 
-    const openingCount =
-        toFiniteNumber(
-            openingBirds
-        );
+    const openingBirdCount =
+        toFiniteNumber(openingBirds);
 
-    const closingCount =
-        toFiniteNumber(
-            closingBirds
-        );
+    const closingBirdCount =
+        toFiniteNumber(closingBirds);
 
     const openingWeight =
         toFiniteNumber(
@@ -2029,167 +944,125 @@ function calculateBroilerFCR({
             closingAverageWeightG
         );
 
-
     if (
         feed === null ||
-        openingCount === null ||
-        closingCount === null ||
+        openingBirdCount === null ||
+        closingBirdCount === null ||
         openingWeight === null ||
         closingWeight === null
     ) {
 
         return {
 
-            value:
-                null,
+            valid: false,
 
-            valid:
-                false,
+            value: null,
 
             reason:
                 "اطلاعات کافی برای محاسبه FCR وجود ندارد."
 
         };
-
     }
-
 
     if (
         feed < 0 ||
-        openingCount <= 0 ||
-        closingCount <= 0 ||
+        openingBirdCount <= 0 ||
+        closingBirdCount <= 0 ||
         openingWeight < 0 ||
         closingWeight <= 0
     ) {
 
         return {
 
-            value:
-                null,
+            valid: false,
 
-            valid:
-                false,
+            value: null,
 
             reason:
                 "مقادیر ورودی FCR معتبر نیستند."
 
         };
-
     }
-
-
-    /*
-     * Opening biomass.
-     */
 
     const openingBiomassKg =
         (
-            openingCount *
-            openingWeightG
-        ) /
-        1000;
-
-
-    /*
-     * Closing biomass.
-     */
+            openingBirdCount *
+            openingWeight
+        ) / 1000;
 
     const closingBiomassKg =
         (
-            closingCount *
+            closingBirdCount *
             closingWeight
-        ) /
-        1000;
+        ) / 1000;
 
-
-    const weightGainKg =
+    const gainKg =
         closingBiomassKg -
         openingBiomassKg;
 
-
-    if (
-        weightGainKg <= 0
-    ) {
+    if (gainKg <= 0) {
 
         return {
 
-            value:
-                null,
+            valid: false,
 
-            valid:
-                false,
-
-            reason:
-                "افزایش زیست‌توده مثبت نیست؛ FCR قابل محاسبه نیست.",
+            value: null,
 
             openingBiomassKg,
 
             closingBiomassKg,
 
-            weightGainKg
+            gainKg,
+
+            reason:
+                "افزایش زیست‌توده مثبت نیست."
 
         };
-
     }
-
 
     const fcr =
         feed /
-        weightGainKg;
-
+        gainKg;
 
     return {
 
+        valid:
+            Number.isFinite(fcr),
+
         value:
-            roundStandardValue(
+            roundValue(
                 fcr,
                 STANDARD_ENGINE_CONFIG
-                    .fcrPrecision
-            ),
-
-        valid:
-            Number.isFinite(
-                fcr
+                    .fcrDecimals
             ),
 
         feedKg:
-            roundStandardValue(
-                feed,
-                3
-            ),
+            roundValue(feed, 3),
 
         openingBiomassKg:
-            roundStandardValue(
+            roundValue(
                 openingBiomassKg,
                 3
             ),
 
         closingBiomassKg:
-            roundStandardValue(
+            roundValue(
                 closingBiomassKg,
                 3
             ),
 
-        weightGainKg:
-            roundStandardValue(
-                weightGainKg,
+        gainKg:
+            roundValue(
+                gainKg,
                 3
             )
 
     };
-
 }
 
 
 /* =========================================================
-   FCR USING FEED PER BIRD
-   ---------------------------------------------------------
-   Useful when only average feed/bird/day is available.
-
-   This is a secondary calculation path.
-
-   It must be labelled as estimated unless actual
-   flock feed consumption is available.
+   ESTIMATED FCR
 ========================================================= */
 
 function calculateFCRFromFeedPerBird({
@@ -2199,15 +1072,13 @@ function calculateFCRFromFeedPerBird({
     closingAverageWeightG
 } = {}) {
 
-    const feedPerBird =
+    const feed =
         toFiniteNumber(
             feedPerBirdPerDayG
         );
 
     const numberOfDays =
-        toFiniteNumber(
-            days
-        );
+        toFiniteNumber(days);
 
     const openingWeight =
         toFiniteNumber(
@@ -2219,9 +1090,8 @@ function calculateFCRFromFeedPerBird({
             closingAverageWeightG
         );
 
-
     if (
-        feedPerBird === null ||
+        feed === null ||
         numberOfDays === null ||
         openingWeight === null ||
         closingWeight === null
@@ -2229,109 +1099,60 @@ function calculateFCRFromFeedPerBird({
 
         return {
 
-            value:
-                null,
+            valid: false,
 
-            valid:
-                false,
+            estimated: true,
 
-            estimated:
-                true,
-
-            reason:
-                "اطلاعات کافی برای محاسبه FCR وجود ندارد."
+            value: null
 
         };
-
     }
 
-
     const feedConsumedG =
-        feedPerBird *
+        feed *
         numberOfDays;
-
 
     const gainG =
         closingWeight -
         openingWeight;
 
-
-    if (
-        gainG <= 0
-    ) {
+    if (gainG <= 0) {
 
         return {
 
-            value:
-                null,
+            valid: false,
 
-            valid:
-                false,
+            estimated: true,
 
-            estimated:
-                true,
-
-            reason:
-                "افزایش وزن مثبت نیست."
+            value: null
 
         };
-
     }
-
-
-    const fcr =
-        feedConsumedG /
-        gainG;
-
 
     return {
 
+        valid: true,
+
+        estimated: true,
+
         value:
-            roundStandardValue(
-                fcr,
-                STANDARD_ENGINE_CONFIG
-                    .fcrPrecision
-            ),
-
-        valid:
-            Number.isFinite(
-                fcr
-            ),
-
-        estimated:
-            true,
-
-        feedConsumedG:
-            roundStandardValue(
-                feedConsumedG,
-                2
-            ),
-
-        weightGainG:
-            roundStandardValue(
+            roundValue(
+                feedConsumedG /
                 gainG,
-                2
-            )
+                STANDARD_ENGINE_CONFIG
+                    .fcrDecimals
+            ),
+
+        feedConsumedG,
+
+        gainG
 
     };
-
 }
 
 
 /* =========================================================
    LAYER FCR
-   ---------------------------------------------------------
-   Layer FCR is NOT the same as broiler FCR.
-
-   FCR =
-       kg feed
-       -------------------------
-       kg egg mass
-
-   Egg mass:
-
-       egg production fraction
-       × average egg weight
 ========================================================= */
 
 function calculateLayerFCR({
@@ -2341,20 +1162,15 @@ function calculateLayerFCR({
 } = {}) {
 
     const feed =
-        toFiniteNumber(
-            feedKg
-        );
+        toFiniteNumber(feedKg);
 
     const eggs =
-        toFiniteNumber(
-            eggsProduced
-        );
+        toFiniteNumber(eggsProduced);
 
     const eggWeight =
         toFiniteNumber(
             averageEggWeightG
         );
-
 
     if (
         feed === null ||
@@ -2364,19 +1180,12 @@ function calculateLayerFCR({
 
         return {
 
-            value:
-                null,
+            valid: false,
 
-            valid:
-                false,
-
-            reason:
-                "اطلاعات کافی برای FCR تخمگذار وجود ندارد."
+            value: null
 
         };
-
     }
-
 
     if (
         feed < 0 ||
@@ -2386,90 +1195,57 @@ function calculateLayerFCR({
 
         return {
 
-            value:
-                null,
+            valid: false,
 
-            valid:
-                false,
-
-            reason:
-                "مقادیر FCR تخمگذار معتبر نیستند."
+            value: null
 
         };
-
     }
-
-
-    /*
-     * Egg mass in kg.
-     */
 
     const eggMassKg =
         (
             eggs *
             eggWeight
-        ) /
-        1000;
+        ) / 1000;
 
-
-    if (
-        eggMassKg <= 0
-    ) {
+    if (eggMassKg <= 0) {
 
         return {
 
-            value:
-                null,
+            valid: false,
 
-            valid:
-                false,
-
-            reason:
-                "Egg Mass مثبت نیست."
+            value: null
 
         };
-
     }
-
 
     const fcr =
         feed /
         eggMassKg;
 
-
     return {
 
+        valid: true,
+
         value:
-            roundStandardValue(
+            roundValue(
                 fcr,
                 STANDARD_ENGINE_CONFIG
-                    .fcrPrecision
-            ),
-
-        valid:
-            Number.isFinite(
-                fcr
-            ),
-
-        feedKg:
-            roundStandardValue(
-                feed,
-                3
+                    .fcrDecimals
             ),
 
         eggMassKg:
-            roundStandardValue(
+            roundValue(
                 eggMassKg,
                 3
             )
 
     };
-
 }
 
 
 /* =========================================================
-   BREEDER FEED / EGG MASS SUPPORT
+   EGG MASS
 ========================================================= */
 
 function calculateEggMass({
@@ -2487,52 +1263,33 @@ function calculateEggMass({
             averageEggWeightG
         );
 
-
     if (
         production === null ||
         eggWeight === null
     ) {
-
         return null;
-
     }
-
 
     if (
         production < 0 ||
         production > 100 ||
         eggWeight <= 0
     ) {
-
         return null;
-
     }
 
-
-    /*
-     * Example:
-     *
-     * 90% production × 60g egg
-     * = 54g egg mass / hen / day
-     */
-
-    return roundStandardValue(
-
+    return roundValue(
         (
-            production /
-            100
+            production / 100
         ) *
         eggWeight,
-
         2
-
     );
-
 }
 
 
 /* =========================================================
-   WEEKLY FCR RESULT
+   FCR COMPARISON
 ========================================================= */
 
 function buildFCRComparison(
@@ -2541,12 +1298,6 @@ function buildFCRComparison(
     standardFCR
 ) {
 
-    const type =
-        normalizeProductionType(
-            productionType
-        );
-
-
     if (
         actualFCR === null ||
         actualFCR === undefined
@@ -2554,30 +1305,23 @@ function buildFCRComparison(
 
         return {
 
-            available:
-                false,
+            available: false,
 
-            actual:
-                null,
+            actual: null,
 
             standard:
                 toFiniteNumber(
                     standardFCR
                 ),
 
-            difference:
-                null,
+            difference: null,
 
-            percentage:
-                null,
+            differencePercent: null,
 
-            status:
-                "no-actual"
+            status: "no-actual"
 
         };
-
     }
-
 
     if (
         standardFCR === null ||
@@ -2586,55 +1330,183 @@ function buildFCRComparison(
 
         return {
 
-            available:
-                true,
+            available: true,
 
             actual:
-                roundStandardValue(
+                roundValue(
                     actualFCR,
                     3
                 ),
 
-            standard:
-                null,
+            standard: null,
 
-            difference:
-                null,
+            difference: null,
 
-            percentage:
-                null,
+            differencePercent: null,
 
-            status:
-                "no-standard"
+            status: "no-standard"
 
         };
-
     }
-
-
-    const comparison =
-        buildMetricComparison(
-            type,
-            "fcr",
-            actualFCR,
-            standardFCR
-        );
-
 
     return {
 
-        available:
-            true,
+        available: true,
 
-        ...comparison
+        ...buildMetricComparison(
+            productionType,
+            "fcr",
+            actualFCR,
+            standardFCR
+        )
 
     };
-
 }
 
 
 /* =========================================================
-   STANDARD SOURCE VALIDATION
+   ACTUAL VS STANDARD SERIES
+========================================================= */
+
+function buildActualVsStandardSeries(
+    type,
+    geneticsId,
+    strain,
+    actualRecords,
+    metric
+) {
+
+    if (
+        !Array.isArray(
+            actualRecords
+        )
+    ) {
+        return [];
+    }
+
+    const standard =
+        getStandard(
+            type,
+            geneticsId,
+            strain
+        );
+
+    return actualRecords.map(
+        record => {
+
+            const age =
+                Number(
+                    record.ageDays ??
+                    record.age ??
+                    record.days
+                );
+
+            const actual =
+                toFiniteNumber(
+                    record[metric]
+                );
+
+            const standardValue =
+                standard
+                    ? getStandardValueAtAge(
+                        standard,
+                        metric,
+                        age
+                    )
+                    : null;
+
+            return {
+
+                ageDays:
+                    Number.isFinite(age)
+                        ? age
+                        : null,
+
+                actual,
+
+                standard:
+                    standardValue,
+
+                difference:
+                    actual !== null &&
+                    standardValue !== null
+                        ? roundValue(
+                            actual -
+                            standardValue,
+                            3
+                        )
+                        : null,
+
+                differencePercent:
+                    actual !== null &&
+                    standardValue !== null &&
+                    standardValue !== 0
+                        ? roundValue(
+                            (
+                                (
+                                    actual -
+                                    standardValue
+                                ) /
+                                standardValue
+                            ) * 100,
+                            2
+                        )
+                        : null
+
+            };
+
+        }
+    );
+}
+
+
+/* =========================================================
+   STANDARD SERIES
+========================================================= */
+
+function buildStandardSeries(
+    type,
+    geneticsId,
+    strain,
+    ages,
+    metric
+) {
+
+    if (
+        !Array.isArray(ages)
+    ) {
+        return [];
+    }
+
+    const standard =
+        getStandard(
+            type,
+            geneticsId,
+            strain
+        );
+
+    if (!standard) {
+        return [];
+    }
+
+    return ages.map(age => ({
+
+        ageDays:
+            Number(age),
+
+        value:
+            getStandardValueAtAge(
+                standard,
+                metric,
+                age
+            )
+
+    }));
+}
+
+
+/* =========================================================
+   STANDARD VALIDATION
 ========================================================= */
 
 function validateStandardSource(
@@ -2643,28 +1515,20 @@ function validateStandardSource(
 
     const errors = [];
 
-
-    if (
-        !standard
-    ) {
+    if (!standard) {
 
         return {
 
-            valid:
-                false,
+            valid: false,
 
             errors: [
-                "Standard record is missing."
+                "Standard not found."
             ]
 
         };
-
     }
 
-
-    if (
-        !standard.sourceYear
-    ) {
+    if (!standard.sourceYear) {
 
         errors.push(
             "sourceYear is missing."
@@ -2672,17 +1536,13 @@ function validateStandardSource(
 
     }
 
-
-    if (
-        !standard.sourceStatus
-    ) {
+    if (!standard.sourceStatus) {
 
         errors.push(
             "sourceStatus is missing."
         );
 
     }
-
 
     if (
         !Array.isArray(
@@ -2691,11 +1551,10 @@ function validateStandardSource(
     ) {
 
         errors.push(
-            "records array is missing."
+            "records is missing."
         );
 
     }
-
 
     return {
 
@@ -2705,12 +1564,11 @@ function validateStandardSource(
         errors
 
     };
-
 }
 
 
 /* =========================================================
-   VALIDATE STANDARD RECORDS
+   STANDARD RECORD VALIDATION
 ========================================================= */
 
 function validateStandardRecords(
@@ -2719,24 +1577,18 @@ function validateStandardRecords(
 
     const errors = [];
 
-
-    if (
-        !standard
-    ) {
+    if (!standard) {
 
         return {
 
-            valid:
-                false,
+            valid: false,
 
             errors: [
-                "Standard does not exist."
+                "Standard missing."
             ]
 
         };
-
     }
-
 
     if (
         !Array.isArray(
@@ -2746,122 +1598,52 @@ function validateStandardRecords(
 
         return {
 
-            valid:
-                false,
+            valid: false,
 
             errors: [
-                "records must be an array."
+                "records must be array."
             ]
 
         };
-
     }
 
-
-    let previousAge =
-        null;
-
+    let previousAge = null;
 
     standard.records.forEach(
-        (
-            record,
-            index
-        ) => {
+        (record, index) => {
 
             const age =
                 Number(
                     record.ageDays
                 );
 
-
             if (
-                !Number.isFinite(
-                    age
-                )
+                !Number.isFinite(age)
             ) {
 
                 errors.push(
-                    `Record ${index + 1}: invalid ageDays.`
+                    `Record ${index + 1}: invalid ageDays`
                 );
 
                 return;
 
             }
 
-
             if (
-                previousAge !==
-                    null &&
+                previousAge !== null &&
                 age <= previousAge
             ) {
 
                 errors.push(
-                    `Record ${index + 1}: ageDays must be strictly increasing.`
+                    `Record ${index + 1}: ageDays must increase`
                 );
 
             }
 
-
-            previousAge =
-                age;
-
-
-            Object.keys(
-                record
-            )
-            .forEach(
-                key => {
-
-                    if (
-                        key ===
-                        "ageDays"
-                    ) {
-
-                        return;
-
-                    }
-
-
-                    const value =
-                        record[
-                            key
-                        ];
-
-
-                    if (
-                        value ===
-                            null ||
-                        value ===
-                            undefined ||
-                        value ===
-                            ""
-                    ) {
-
-                        return;
-
-                    }
-
-
-                    if (
-                        !Number.isFinite(
-                            Number(
-                                value
-                            )
-                        )
-                    ) {
-
-                        errors.push(
-                            `Record ${index + 1}: ${key} is not numeric.`
-                        );
-
-                    }
-
-                }
-            );
+            previousAge = age;
 
         }
     );
-
 
     return {
 
@@ -2871,12 +1653,11 @@ function validateStandardRecords(
         errors
 
     };
-
 }
 
 
 /* =========================================================
-   FIND ALL AVAILABLE STANDARD PRODUCTS
+   AVAILABLE STANDARDS
 ========================================================= */
 
 function listAvailableStandards(
@@ -2884,79 +1665,41 @@ function listAvailableStandards(
 ) {
 
     const normalizedType =
-        normalizeProductionType(
-            type
-        );
+        normalizeProductionType(type);
 
+    if (
+        typeof VERIFIED_STANDARDS ===
+        "undefined"
+    ) {
+        return [];
+    }
 
-    const database =
-        getVerifiedStandardDatabase();
-
-
-    const typeDatabase =
-        database[
+    const typeData =
+        VERIFIED_STANDARDS[
             normalizedType
         ];
 
-
-    if (
-        !typeDatabase
-    ) {
-
+    if (!typeData) {
         return [];
-
     }
-
 
     const result = [];
 
-
-    Object.keys(
-        typeDatabase
-    )
-    .forEach(
-        geneticsId => {
+    Object.keys(typeData)
+        .forEach(geneticsId => {
 
             const genetics =
-                typeDatabase[
+                typeData[
                     geneticsId
                 ];
 
-
-            if (
-                !genetics ||
-                typeof genetics !==
-                    "object"
-            ) {
-
-                return;
-
-            }
-
-
-            Object.keys(
-                genetics
-            )
-            .forEach(
-                strain => {
+            Object.keys(genetics)
+                .forEach(strain => {
 
                     const standard =
                         genetics[
                             strain
                         ];
-
-
-                    if (
-                        !standard ||
-                        !Array.isArray(
-                            standard.records
-                        )
-                    ) {
-
-                        return;
-
-                    }
-
 
                     result.push({
 
@@ -2976,7 +1719,11 @@ function listAvailableStandards(
                             null,
 
                         recordCount:
-                            standard.records.length,
+                            Array.isArray(
+                                standard.records
+                            )
+                                ? standard.records.length
+                                : 0,
 
                         ageRange:
                             getStandardAgeRange(
@@ -2985,590 +1732,12 @@ function listAvailableStandards(
 
                     });
 
-                }
-            );
+                });
 
-        }
-    );
-
+        });
 
     return result;
-
 }
-
-
-/* =========================================================
-   GET STANDARD FOR CURRENT FLOCK
-   ---------------------------------------------------------
-   Compatibility function used by weekly-engine.js.
-========================================================= */
-
-function getStandardForCurrentFlock(
-    flock
-) {
-
-    if (
-        !flock
-    ) {
-
-        return null;
-
-    }
-
-
-    const type =
-        normalizeProductionType(
-
-            flock.productionType ||
-
-            flock.type ||
-
-            flock.production_type
-
-        );
-
-
-    const geneticsId =
-        flock.geneticsId ||
-
-        flock.genetics ||
-
-        flock.geneticId ||
-
-        null;
-
-
-    const strain =
-        flock.strain ||
-
-        flock.geneticStrain ||
-
-        flock.geneticsName ||
-
-        null;
-
-
-    return getStandard(
-        type,
-        geneticsId,
-        strain
-    );
-
-}
-
-
-/* =========================================================
-   BUILD REPORT STANDARD LINE
-   ---------------------------------------------------------
-   Used for charts.
-
-   IMPORTANT:
-   Missing standard = null.
-
-   We never replace it with zero.
-========================================================= */
-
-function buildStandardSeries(
-    type,
-    geneticsId,
-    strain,
-    ages,
-    metric = "bodyWeight"
-) {
-
-    const standard =
-        getStandard(
-            type,
-            geneticsId,
-            strain
-        );
-
-
-    if (
-        !standard ||
-        !Array.isArray(
-            ages
-        )
-    ) {
-
-        return [];
-
-    }
-
-
-    return ages.map(
-        age => ({
-
-            ageDays:
-                Number(age),
-
-            value:
-                getStandardValueAtAge(
-                    standard,
-                    metric,
-                    age
-                )
-
-        })
-    );
-
-}
-
-
-/* =========================================================
-   BUILD ACTUAL VS STANDARD SERIES
-========================================================= */
-
-function buildActualVsStandardSeries(
-    type,
-    geneticsId,
-    strain,
-    actualRecords,
-    metric = "bodyWeight"
-) {
-
-    if (
-        !Array.isArray(
-            actualRecords
-        )
-    ) {
-
-        return [];
-
-    }
-
-
-    const standard =
-        getStandard(
-            type,
-            geneticsId,
-            strain
-        );
-
-
-    return actualRecords.map(
-        record => {
-
-            const age =
-                Number(
-                    record.ageDays ??
-                    record.age ??
-                    record.days
-                );
-
-
-            const actual =
-                toFiniteNumber(
-                    record[
-                        metric
-                    ]
-                );
-
-
-            const standardValue =
-                standard
-                    ? getStandardValueAtAge(
-                        standard,
-                        metric,
-                        age
-                    )
-                    : null;
-
-
-            return {
-
-                ageDays:
-                    Number.isFinite(
-                        age
-                    )
-                        ? age
-                        : null,
-
-                actual,
-
-                standard:
-                    standardValue,
-
-                difference:
-                    actual !== null &&
-                    standardValue !== null
-                        ? roundStandardValue(
-                            actual -
-                            standardValue,
-                            3
-                        )
-                        : null,
-
-                differencePercent:
-                    actual !== null &&
-                    standardValue !== null &&
-                    standardValue !== 0
-                        ? roundStandardValue(
-                            (
-                                (
-                                    actual -
-                                    standardValue
-                                ) /
-                                standardValue
-                            ) *
-                            100,
-                            2
-                        )
-                        : null
-
-            };
-
-        }
-    );
-
-}
-
-
-/* =========================================================
-   DATABASE STATUS
-========================================================= */
-
-function getStandardsDatabaseStatus() {
-
-    const result = {
-
-        engineVersion:
-            STANDARD_ENGINE_CONFIG
-                .version,
-
-        productionTypes:
-            [],
-
-        availableStandards:
-            {},
-
-        totalStandardPrograms:
-            0
-
-    };
-
-
-    [
-        "broiler",
-        "breeder",
-        "layer",
-        "pullet"
-    ]
-    .forEach(
-        type => {
-
-            const items =
-                listAvailableStandards(
-                    type
-                );
-
-
-            result.productionTypes
-                .push(type);
-
-
-            result.availableStandards[
-                type
-            ] =
-                items;
-
-
-            result.totalStandardPrograms +=
-                items.length;
-
-        }
-    );
-
-
-    return result;
-
-}
-
-
-/* =========================================================
-   BACKWARD COMPATIBILITY
-========================================================= */
-
-/*
- * Existing code in the project already uses:
- *
- *     getProduct()
- *     hasOfficialDocumentation()
- *     compareMetric()
- *     validateStandardRecord()
- *
- * Keep these functions available.
- */
-
-
-/* ---------------------------------------------------------
-   GET PRODUCT
---------------------------------------------------------- */
-
-function getProduct(
-    type,
-    genetics,
-    product
-) {
-
-    try {
-
-        const normalizedType =
-            normalizeProductionType(
-                type
-            );
-
-
-        /*
-         * First try the old POULTRY_STANDARDS
-         * structure if it exists.
-         */
-
-        if (
-            typeof POULTRY_STANDARDS !==
-            "undefined"
-        ) {
-
-            const typeNode =
-                POULTRY_STANDARDS[
-                    normalizedType
-                ];
-
-
-            const commercial =
-                typeNode
-                    ?.categories
-                    ?.commercial;
-
-
-            const geneticNode =
-                commercial
-                    ?.genetics
-                    ?.[genetics];
-
-
-            return (
-                geneticNode
-                    ?.products
-                    ?.[product]
-                ||
-                null
-            );
-
-        }
-
-
-    }
-    catch (
-        error
-    ) {
-
-        console.warn(
-            "getProduct:",
-            error
-        );
-
-    }
-
-
-    return null;
-
-}
-
-
-/* ---------------------------------------------------------
-   OFFICIAL DOCUMENTATION CHECK
---------------------------------------------------------- */
-
-function hasOfficialDocumentation(
-    type,
-    genetics,
-    product
-) {
-
-    const productData =
-        getProduct(
-            type,
-            genetics,
-            product
-        );
-
-
-    return Boolean(
-        productData &&
-        productData
-            .officialDocumentation ===
-            true
-    );
-
-}
-
-
-/* ---------------------------------------------------------
-   GENERIC COMPARE METRIC
---------------------------------------------------------- */
-
-function compareMetric(
-    actual,
-    standard
-) {
-
-    return compareStandardValue(
-        null,
-        actual,
-        standard
-    );
-
-}
-
-
-/* ---------------------------------------------------------
-   VALIDATE STANDARD RECORD
---------------------------------------------------------- */
-
-function validateStandardRecord(
-    record
-) {
-
-    if (
-        !record
-    ) {
-
-        return {
-
-            valid:
-                false,
-
-            errors: [
-                "Standard record is missing."
-            ]
-
-        };
-
-    }
-
-
-    const errors = [];
-
-
-    if (
-        !record.sourceYear &&
-        !record.version
-    ) {
-
-        errors.push(
-            "Standard source year/version is missing."
-        );
-
-    }
-
-
-    if (
-        !record.sourceStatus &&
-        !record.source
-    ) {
-
-        errors.push(
-            "Standard source information is missing."
-        );
-
-    }
-
-
-    if (
-        !Array.isArray(
-            record.records
-        )
-    ) {
-
-        errors.push(
-            "Standard records array is missing."
-        );
-
-    }
-
-
-    return {
-
-        valid:
-            errors.length === 0,
-
-        errors
-
-    };
-
-}
-
-
-/* =========================================================
-   STANDARD DATABASE POLICY
-========================================================= */
-
-const STANDARD_DATABASE_POLICY = {
-
-    numericValuesMayBeAddedOnlyIf: [
-
-        "officialPerformanceObjective",
-
-        "officialManagementGuide",
-
-        "officialParentStockGuide",
-
-        "officialRegionalGuide",
-
-        "officialLayerGuide",
-
-        "officialBreederGuide",
-
-        "officialPulletGuide",
-
-        "researchReference",
-
-        "iranianLocalReference"
-
-    ],
-
-
-    neverGuessNumbers:
-        true,
-
-
-    neverMixParentStockWithBroiler:
-        true,
-
-
-    neverMixLayerStrains:
-        true,
-
-
-    neverMixHousingPrograms:
-        true,
-
-
-    neverExtrapolateOutsideDocumentedAge:
-        true,
-
-
-    preservePreviousVersions:
-        true,
-
-
-    preserveRegionalVersions:
-        true,
-
-
-    preserveHistoricalRecords:
-        true,
-
-
-    preserveSourceDocument:
-        true,
-
-
-    preserveSourceYear:
-        true
-
-};
 
 
 /* =========================================================
@@ -3583,25 +1752,14 @@ if (
     window.STANDARD_ENGINE_CONFIG =
         STANDARD_ENGINE_CONFIG;
 
-    window.STANDARD_METRICS =
-        STANDARD_METRICS;
-
-    window.STANDARD_DATABASE_POLICY =
-        STANDARD_DATABASE_POLICY;
-
+    window.STANDARD_METRIC_DIRECTION =
+        STANDARD_METRIC_DIRECTION;
 
     window.normalizeProductionType =
         normalizeProductionType;
 
-    window.normalizeStandardName =
-        normalizeStandardName;
-
-
     window.getStandard =
         getStandard;
-
-    window.getRawStandard =
-        getRawStandard;
 
     window.getStandardRecords =
         getStandardRecords;
@@ -3615,19 +1773,17 @@ if (
     window.getStandardAtAge =
         getStandardAtAge;
 
+    window.compareStandardValue =
+        compareStandardValue;
 
-    window.buildWeeklyStandardComparison =
-        buildWeeklyStandardComparison;
+    window.interpretComparison =
+        interpretComparison;
 
     window.buildMetricComparison =
         buildMetricComparison;
 
-    window.compareStandardValue =
-        compareStandardValue;
-
-    window.interpretStandardComparison =
-        interpretStandardComparison;
-
+    window.buildWeeklyStandardComparison =
+        buildWeeklyStandardComparison;
 
     window.calculateBroilerFCR =
         calculateBroilerFCR;
@@ -3644,6 +1800,11 @@ if (
     window.buildFCRComparison =
         buildFCRComparison;
 
+    window.buildActualVsStandardSeries =
+        buildActualVsStandardSeries;
+
+    window.buildStandardSeries =
+        buildStandardSeries;
 
     window.validateStandardSource =
         validateStandardSource;
@@ -3654,34 +1815,4 @@ if (
     window.listAvailableStandards =
         listAvailableStandards;
 
-    window.getStandardForCurrentFlock =
-        getStandardForCurrentFlock;
-
-    window.buildStandardSeries =
-        buildStandardSeries;
-
-    window.buildActualVsStandardSeries =
-        buildActualVsStandardSeries;
-
-    window.getStandardsDatabaseStatus =
-        getStandardsDatabaseStatus;
-
-
-    window.getProduct =
-        getProduct;
-
-    window.hasOfficialDocumentation =
-        hasOfficialDocumentation;
-
-    window.compareMetric =
-        compareMetric;
-
-    window.validateStandardRecord =
-        validateStandardRecord;
-
 }
-
-
-/* =========================================================
-   END OF STANDARDS ENGINE
-========================================================= */

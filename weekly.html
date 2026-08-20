@@ -23,10 +23,12 @@
         rel="stylesheet"
         href="app.css"
     >
-<link
-    rel="stylesheet"
-    href="https://cdn.jsdelivr.net/npm/persian-datepicker@1.2.0/dist/css/persian-datepicker.min.css"
->
+
+    <link
+        rel="stylesheet"
+        href="https://cdn.jsdelivr.net/npm/persian-datepicker@1.2.0/dist/css/persian-datepicker.min.css"
+    >
+
 </head>
 
 
@@ -125,6 +127,8 @@
 </div>
 
 
+<!-- EVALUATION DATE -->
+
 <div class="form-group">
 
 <label for="evaluationDate">
@@ -141,13 +145,15 @@
         placeholder="۱۴۰۵/۰۵/۲۹"
         maxlength="10"
         readonly
-        onclick="openJalaliCalendar()"
-        style="cursor:pointer;"
+        style="
+            cursor:pointer;
+            width:100%;
+        "
     >
 
     <button
+        id="evaluationDateButton"
         type="button"
-        onclick="openJalaliCalendar()"
         style="
             position:absolute;
             left:8px;
@@ -164,6 +170,7 @@
     </button>
 
 </div>
+
 </div>
 
 
@@ -499,9 +506,22 @@
 </div>
 
 
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<!-- =====================================================
+     SUPABASE
+====================================================== -->
+
+<script
+    src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"
+></script>
+
 
 <script src="supabase-config.js"></script>
+
+
+<!-- =====================================================
+     CORE
+====================================================== -->
+
 <script src="standards.js"></script>
 <script src="standard-data.js"></script>
 <script src="poultry-utils.js"></script>
@@ -511,75 +531,148 @@
 <script src="genetics-ui.js"></script>
 <script src="weekly-engine.js"></script>
 
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
-<script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+<!-- =====================================================
+     CHART
+====================================================== -->
 
-<script src="https://cdn.jsdelivr.net/npm/persian-date@1.1.0/dist/persian-date.min.js"></script>
+<script
+    src="https://cdn.jsdelivr.net/npm/chart.js"
+></script>
 
-<script src="https://cdn.jsdelivr.net/npm/persian-datepicker@1.2.0/dist/js/persian-datepicker.min.js"></script>
+
+<!-- =====================================================
+     JQUERY
+====================================================== -->
+
+<script
+    src="https://code.jquery.com/jquery-3.7.1.min.js"
+></script>
+
+
+<!-- =====================================================
+     PERSIAN DATE
+====================================================== -->
+
+<script
+    src="https://cdn.jsdelivr.net/npm/persian-date@1.1.0/dist/persian-date.min.js"
+></script>
+
+
+<script
+    src="https://cdn.jsdelivr.net/npm/persian-datepicker@1.2.0/dist/js/persian-datepicker.min.js"
+></script>
+
+
+<!-- =====================================================
+     EVALUATION DATE - JALALI CALENDAR
+====================================================== -->
 
 <script>
-function openJalaliCalendar() {
 
-    const input =
-        document.getElementById(
-            "evaluationDate"
-        );
+document.addEventListener(
+    "DOMContentLoaded",
+    function () {
 
-    if (!input) return;
+        const input =
+            document.getElementById(
+                "evaluationDate"
+            );
 
-    if (
-        typeof jQuery === "undefined" ||
-        typeof jQuery.fn.persianDatepicker === "undefined"
-    ) {
-        alert("تقویم شمسی هنوز بارگذاری نشده است.");
-        return;
-    }
+        const button =
+            document.getElementById(
+                "evaluationDateButton"
+            );
 
-    if (!jQuery(input).data("datepicker-initialized")) {
 
-        jQuery(input).persianDatepicker({
+        if (!input) {
 
-            format: "YYYY/MM/DD",
+            return;
 
-            autoClose: true,
+        }
 
-            initialValue: false,
 
-            observer: true,
+        function showEvaluationCalendar() {
 
-            calendarType: "persian",
+            if (
+                typeof jQuery === "undefined" ||
+                typeof jQuery.fn.persianDatepicker === "undefined"
+            ) {
 
-            onSelect: function(unix) {
-
-                const date =
-                    new persianDate(unix);
-
-                input.value =
-                    date.format(
-                        "YYYY/MM/DD"
-                    );
+                return;
 
             }
 
-        });
 
-        jQuery(input).data(
-            "datepicker-initialized",
-            true
+            if (
+                !jQuery(input).data(
+                    "datepicker-initialized"
+                )
+            ) {
+
+                jQuery(input).persianDatepicker({
+
+                    format:
+                        "YYYY/MM/DD",
+
+                    autoClose:
+                        true,
+
+                    initialValue:
+                        false,
+
+                    observer:
+                        true,
+
+                    calendarType:
+                        "persian"
+
+                });
+
+
+                jQuery(input).data(
+                    "datepicker-initialized",
+                    true
+                );
+
+            }
+
+
+            jQuery(input).persianDatepicker(
+                "show"
+            );
+
+        }
+
+
+        input.addEventListener(
+            "click",
+            showEvaluationCalendar
         );
 
+
+        if (button) {
+
+            button.addEventListener(
+                "click",
+                showEvaluationCalendar
+            );
+
+        }
+
     }
+);
 
-    jQuery(input).persianDatepicker(
-        "show"
-    );
-
-}
 </script>
 
+
+<!-- =====================================================
+     WEEKLY
+====================================================== -->
+
 <script src="weekly.js"></script>
+
+
 </body>
 
 </html>

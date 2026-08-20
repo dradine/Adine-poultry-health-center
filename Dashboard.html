@@ -30,13 +30,17 @@
 
 <div class="app-shell">
 
+    <!-- =========================
+         TOP BAR
+    ========================== -->
+
     <header class="topbar">
 
         <div class="brand">
 
             <img
                 src="IMG_4309.png"
-                alt="آدینه"
+                alt="مرکز تخصصی سلامت طیور آدینه"
             >
 
             <span>
@@ -47,6 +51,10 @@
 
     </header>
 
+
+    <!-- =========================
+         MAIN
+    ========================== -->
 
     <main class="page">
 
@@ -64,7 +72,9 @@
             <section class="dashboard-grid">
 
 
-                <!-- ثبت فارم -->
+                <!-- =========================
+                     FARMS
+                ========================== -->
 
                 <a
                     class="menu-card"
@@ -86,7 +96,9 @@
                 </a>
 
 
-                <!-- سالن و گله -->
+                <!-- =========================
+                     FLOCKS
+                ========================== -->
 
                 <a
                     class="menu-card"
@@ -108,7 +120,9 @@
                 </a>
 
 
-                <!-- ثبت هفتگی -->
+                <!-- =========================
+                     WEEKLY
+                ========================== -->
 
                 <a
                     class="menu-card"
@@ -130,7 +144,9 @@
                 </a>
 
 
-                <!-- واکسیناسیون و دارو -->
+                <!-- =========================
+                     HEALTH
+                ========================== -->
 
                 <a
                     class="menu-card"
@@ -152,7 +168,9 @@
                 </a>
 
 
-                <!-- تلفات و بیماری -->
+                <!-- =========================
+                     MORTALITY
+                ========================== -->
 
                 <a
                     class="menu-card"
@@ -174,7 +192,9 @@
                 </a>
 
 
-                <!-- گزارش ها -->
+                <!-- =========================
+                     REPORTS
+                ========================== -->
 
                 <a
                     class="menu-card"
@@ -196,7 +216,9 @@
                 </a>
 
 
-                <!-- پرونده -->
+                <!-- =========================
+                     RECORDS
+                ========================== -->
 
                 <a
                     class="menu-card"
@@ -218,7 +240,9 @@
                 </a>
 
 
-                <!-- تنظیمات -->
+                <!-- =========================
+                     SETTINGS
+                ========================== -->
 
                 <a
                     class="menu-card"
@@ -247,7 +271,9 @@
     </main>
 
 
-    <!-- Bottom Navigation -->
+    <!-- =========================
+         BOTTOM NAVIGATION
+    ========================== -->
 
     <nav class="bottom-nav">
 
@@ -296,16 +322,98 @@
 </div>
 
 
-<!-- Core files -->
+<!-- =====================================================
+     SUPABASE
+     ===================================================== -->
+
+<script
+    src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"
+></script>
+
+<script src="supabase-config.js"></script>
+
+
+<!-- =====================================================
+     CORE APPLICATION FILES
+     ===================================================== -->
 
 <script src="standards.js"></script>
+
 <script src="standard-data.js"></script>
+
 <script src="poultry-utils.js"></script>
+
 <script src="weekly-storage.js"></script>
+
 <script src="comparison-engine.js"></script>
+
 <script src="app-core.js"></script>
+
 <script src="genetics-ui.js"></script>
+
 <script src="weekly-engine.js"></script>
+
+
+<!-- =====================================================
+     DASHBOARD
+     ===================================================== -->
+
+<script>
+
+document.addEventListener("DOMContentLoaded", async function () {
+
+    try {
+
+        const access = await checkUserAccess();
+
+        /*
+         * اگر کاربر وارد نشده باشد
+         */
+        if (!access.authenticated) {
+
+            window.location.href =
+                "login.html?message=" +
+                encodeURIComponent("ابتدا وارد سامانه شوید.");
+
+            return;
+        }
+
+
+        /*
+         * اگر حساب هنوز تأیید نشده باشد
+         */
+        if (!access.allowed) {
+
+            alert(
+                "دسترسی حساب شما هنوز توسط مدیریت تأیید نشده است."
+            );
+
+            await logoutUser();
+
+            return;
+        }
+
+
+        /*
+         * کاربر مجاز است
+         */
+        console.log(
+            "Adine Poultry Dashboard:",
+            access.profile
+        );
+
+    } catch (error) {
+
+        console.error(
+            "Dashboard authentication error:",
+            error
+        );
+
+    }
+
+});
+
+</script>
 
 </body>
 

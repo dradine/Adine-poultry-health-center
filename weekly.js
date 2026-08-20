@@ -1,0 +1,1404 @@
+/* =========================================================
+   ADINE POULTRY HEALTH CENTER
+   WEEKLY MONITORING
+   ========================================================= */
+
+let currentUser = null;
+let currentFlock = null;
+let weeklyRecords = [];
+
+let weightChart = null;
+
+
+/* =========================================================
+   INIT
+   ========================================================= */
+
+document.addEventListener(
+    "DOMContentLoaded",
+    initializeWeekly
+);
+
+
+async function initializeWeekly() {
+
+    try {
+
+        const access =
+            await checkUserAccess();
+
+
+        if (!access.authenticated) {
+
+            location.href =
+                "login.html?message=" +
+                encodeURIComponent(
+                    "ابتدا وارد سامانه شوید."
+                );
+
+            return;
+
+        }
+
+
+        if (!access.allowed) {
+
+            alert(
+                "حساب شما هنوز تأیید نشده است."
+            );
+
+            await logoutUser();
+
+            return;
+
+        }
+
+
+        currentUser =
+            access.user;
+
+
+        setToday();
+
+
+        await loadCurrentFlock();
+
+    }
+
+    catch (error) {
+
+        console.error(
+            "Weekly initialization:",
+            error
+        );
+
+        alert(
+            "خطا در راه‌اندازی ثبت هفتگی."
+        );
+
+    }
+
+}
+
+
+/* =========================================================
+   CURRENT FLOCK
+   ========================================================= */
+
+async function loadCurrentFlock() {
+
+    const selection =
+        getCurrentSelection();
+
+
+    const container =
+        document.getElementById(
+            "currentFlock"
+        );
+
+
+    if (!selection.flockId) {
+
+        container.innerHTML = `
+
+            <p>
+                ابتدا یک گله انتخاب کنید.
+            </p>
+
+            <button
+                class="btn btn-primary"
+                type="button"
+                onclick="location.href='flocks.html'"
+            >
+                انتخاب گله
+            </button>
+
+        `;
+
+        return;
+
+    }
+
+
+    const {
+        data,
+        error
+    } =
+        await supabaseClient
+            .from("flocks")
+            .select(`
+                *,
+                farms (
+                    name
+                ),
+                houses (
+                    name
+                )
+            `)
+            .eq(
+                "id",
+                selection.flockId
+            )
+            .eq(
+                "owner_id",
+                currentUser.id
+            )
+            .maybeSingle();
+
+
+    if (error || !data) {
+
+        console.error(
+            error
+        );
+
+        container.innerHTML = `
+            <p>
+                گله پیدا نشد.
+            </p>
+        `;
+
+        return;
+
+    }
+
+
+    currentFlock =
+        data;
+
+
+    container.innerHTML = `
+
+        <div class="farm-summary">
+
+            <strong>
+                🐔
+                ${escapeHTML(
+                    data.flock_name
+                )}
+            </strong>
+
+            <br>
+
+            فارم:
+            ${escapeHTML(
+                data.farms?.name || "-"
+            )}
+
+            <br>
+
+            سالن:
+            ${escapeHTML(
+                data.houses?.name || "-"
+            )}
+
+            <br>
+
+            نوع:
+            ${getProductionLabel(
+                data.production_type
+            )}
+
+            <br>
+
+            سویه:
+            ${escapeHTML(
+                data.genetics || "-"
+            )}
+
+        </div>
+
+    `;
+
+
+    await loadHistory();
+
+}
+
+
+/* =========================================================
+   DATE
+   ========================================================= */
+
+function setToday() {
+
+    const input =
+        document.getElementById(
+            "evaluationDate"
+        );
+
+
+    const date =
+        new Date();
+
+
+    const year =
+        date.getFullYear();
+
+
+    const month =
+        String(
+            date.getMonth() + 1
+        ).padStart(
+            2,
+            "0"
+        );
+
+
+    const day =
+        String(
+            date.getDate()
+        ).padStart(
+            2,
+            "0"
+        );
+
+
+    input.value =
+        `${year}-${month}-${day}`;
+
+}
+
+
+/* =========================================================
+   WEIGHTS
+   ========================================================= */
+
+function addWeightInput(
+    value = ""
+) {
+
+    const container =
+        document.getElementById(
+            "weightsContainer"
+        );
+
+
+    const index =
+        container.children.length + 1;
+
+
+    const wrapper =
+        document.createElement(
+            "div"
+        );
+
+
+    wrapper.className =
+        "weight-input";
+
+
+    wrapper.innerHTML = `
+
+        <label>
+            ${index}
+        </label>
+
+        <input
+            type="number"
+            min="0"
+            step="0.1"
+            inputmode="decimal"
+            class="bird-weight"
+            placeholder="گرم"
+            value="${value}"
+        >
+
+    `;
+
+
+    container.appendChild(
+        wrapper
+    );
+
+}
+
+
+function addTwentyWeights() {
+
+    for (
+        let i = 0;
+        i < 20;
+        i++
+    ) {
+
+        addWeightInput();
+
+    }
+
+}
+
+
+function clearWeights() {
+
+    document.getElementById(
+        "weightsContainer"
+    ).innerHTML = "";
+
+    document.getElementById(
+        "resultsCard"
+    ).style.display = "none";
+
+}
+
+
+/* =========================================================
+   GET WEIGHTS
+   ========================================================= */
+
+function getWeights() {
+
+    const inputs =
+        document.querySelectorAll(
+            ".bird-weight"
+        );
+
+
+    return Array
+        .from(inputs)
+        .map(
+            input =>
+                Number(
+                    input.value
+                )
+        )
+        .filter(
+            value =>
+                Number.isFinite(value) &&
+                value > 0
+        );
+
+}
+
+
+/* =========================================================
+   CALCULATE
+   ========================================================= */
+
+function calculateWeekly() {
+
+    const weights =
+        getWeights();
+
+
+    if (weights.length < 2) {
+
+        alert(
+            "حداقل دو وزن برای محاسبه لازم است."
+        );
+
+        return;
+
+    }
+
+
+    const result =
+        calculateWeightStatistics(
+            weights
+        );
+
+
+    renderResults(
+        result
+    );
+
+
+    drawWeightChart(
+        weights,
+        result
+    );
+
+
+    document.getElementById(
+        "resultsCard"
+    ).style.display =
+        "block";
+
+}
+
+
+/* =========================================================
+   STATISTICS
+   ========================================================= */
+
+function calculateWeightStatistics(
+    weights
+) {
+
+    const n =
+        weights.length;
+
+
+    const mean =
+        weights.reduce(
+            (
+                sum,
+                value
+            ) =>
+                sum + value,
+            0
+        ) / n;
+
+
+    const squared =
+        weights.map(
+            value =>
+                Math.pow(
+                    value - mean,
+                    2
+                )
+        );
+
+
+    const variance =
+        squared.reduce(
+            (
+                sum,
+                value
+            ) =>
+                sum + value,
+            0
+        ) / n;
+
+
+    const sd =
+        Math.sqrt(
+            variance
+        );
+
+
+    const cv =
+        mean > 0
+            ? (
+                sd / mean
+              ) * 100
+            : 0;
+
+
+    const lower10 =
+        mean * 0.90;
+
+
+    const upper10 =
+        mean * 1.10;
+
+
+    const lower15 =
+        mean * 0.85;
+
+
+    const upper15 =
+        mean * 1.15;
+
+
+    const uniformity10 =
+        (
+            weights.filter(
+                weight =>
+                    weight >= lower10 &&
+                    weight <= upper10
+            ).length / n
+        ) * 100;
+
+
+    const uniformity15 =
+        (
+            weights.filter(
+                weight =>
+                    weight >= lower15 &&
+                    weight <= upper15
+            ).length / n
+        ) * 100;
+
+
+    return {
+
+        count: n,
+
+        mean,
+
+        sd,
+
+        cv,
+
+        uniformity10,
+
+        uniformity15,
+
+        min:
+            Math.min(
+                ...weights
+            ),
+
+        max:
+            Math.max(
+                ...weights
+            ),
+
+        lower10,
+
+        upper10,
+
+        lower15,
+
+        upper15
+
+    };
+
+}
+
+
+/* =========================================================
+   RESULTS
+   ========================================================= */
+
+function renderResults(
+    result
+) {
+
+    const container =
+        document.getElementById(
+            "results"
+        );
+
+
+    container.innerHTML = `
+
+        ${metric(
+            "تعداد نمونه",
+            formatNumber(
+                result.count,
+                0
+            )
+        )}
+
+        ${metric(
+            "میانگین وزن",
+            formatNumber(
+                result.mean,
+                1
+            ) + " گرم"
+        )}
+
+        ${metric(
+            "SD",
+            formatNumber(
+                result.sd,
+                1
+            ) + " گرم"
+        )}
+
+        ${metric(
+            "CV",
+            formatNumber(
+                result.cv,
+                2
+            ) + "%"
+        )}
+
+        ${metric(
+            "یکنواختی ±10%",
+            formatNumber(
+                result.uniformity10,
+                1
+            ) + "%"
+        )}
+
+        ${metric(
+            "یکنواختی ±15%",
+            formatNumber(
+                result.uniformity15,
+                1
+            ) + "%"
+        )}
+
+        ${metric(
+            "حداقل وزن",
+            formatNumber(
+                result.min,
+                1
+            ) + " گرم"
+        )}
+
+        ${metric(
+            "حداکثر وزن",
+            formatNumber(
+                result.max,
+                1
+            ) + " گرم"
+        )}
+
+    `;
+
+}
+
+
+/* =========================================================
+   METRIC CARD
+   ========================================================= */
+
+function metric(
+    title,
+    value
+) {
+
+    return `
+
+        <div class="metric-card">
+
+            <div class="metric-title">
+                ${title}
+            </div>
+
+            <div class="metric-value">
+                ${value}
+            </div>
+
+        </div>
+
+    `;
+
+}
+
+
+/* =========================================================
+   CHART
+   ========================================================= */
+
+function drawWeightChart(
+    weights,
+    result
+) {
+
+    if (
+        typeof Chart ===
+        "undefined"
+    ) {
+
+        return;
+
+    }
+
+
+    const canvas =
+        document.getElementById(
+            "weightChart"
+        );
+
+
+    if (weightChart) {
+
+        weightChart.destroy();
+
+    }
+
+
+    const labels =
+        weights.map(
+            (
+                _,
+                index
+            ) =>
+                index + 1
+        );
+
+
+    weightChart =
+        new Chart(
+            canvas,
+            {
+
+                type:
+                    "line",
+
+                data: {
+
+                    labels,
+
+                    datasets: [
+
+                        {
+
+                            label:
+                                "وزن پرندگان",
+
+                            data:
+                                weights,
+
+                            tension:
+                                0.25
+
+                        },
+
+                        {
+
+                            label:
+                                "میانگین",
+
+                            data:
+                                weights.map(
+                                    () =>
+                                        result.mean
+                                ),
+
+                            borderDash:
+                                [
+                                    6,
+                                    6
+                                ],
+
+                            pointRadius:
+                                0
+
+                        },
+
+                        {
+
+                            label:
+                                "حد پایین ±10%",
+
+                            data:
+                                weights.map(
+                                    () =>
+                                        result.lower10
+                                ),
+
+                            borderDash:
+                                [
+                                    4,
+                                    4
+                                ],
+
+                            pointRadius:
+                                0
+
+                        },
+
+                        {
+
+                            label:
+                                "حد بالا ±10%",
+
+                            data:
+                                weights.map(
+                                    () =>
+                                        result.upper10
+                                ),
+
+                            borderDash:
+                                [
+                                    4,
+                                    4
+                                ],
+
+                            pointRadius:
+                                0
+
+                        }
+
+                    ]
+
+                },
+
+                options: {
+
+                    responsive:
+                        true,
+
+                    maintainAspectRatio:
+                        false,
+
+                    scales: {
+
+                        y: {
+
+                            title: {
+
+                                display:
+                                    true,
+
+                                text:
+                                    "وزن (گرم)"
+
+                            }
+
+                        },
+
+                        x: {
+
+                            title: {
+
+                                display:
+                                    true,
+
+                                text:
+                                    "شماره نمونه"
+
+                            }
+
+                        }
+
+                    }
+
+                }
+
+            }
+        );
+
+}
+
+
+/* =========================================================
+   SAVE
+   ========================================================= */
+
+async function saveWeeklyRecord() {
+
+    if (!currentFlock) {
+
+        alert(
+            "ابتدا گله را انتخاب کنید."
+        );
+
+        return;
+
+    }
+
+
+    const week =
+        getNumber(
+            "weekNumber"
+        );
+
+
+    if (
+        !week ||
+        week < 1
+    ) {
+
+        alert(
+            "شماره هفته را وارد کنید."
+        );
+
+        return;
+
+    }
+
+
+    const weights =
+        getWeights();
+
+
+    if (weights.length < 2) {
+
+        alert(
+            "برای ذخیره گزارش حداقل دو وزن وارد کنید."
+        );
+
+        return;
+
+    }
+
+
+    const stats =
+        calculateWeightStatistics(
+            weights
+        );
+
+
+    const liveBirds =
+        getNumber(
+            "liveBirds"
+        );
+
+
+    const mortality =
+        getNumber(
+            "mortalityWeek"
+        );
+
+
+    const feedTotal =
+        getNumber(
+            "feedTotal"
+        );
+
+
+    const waterTotal =
+        getNumber(
+            "waterTotal"
+        );
+
+
+    const feedPerBird =
+        getNumber(
+            "feedPerBird"
+        );
+
+
+    const waterPerBird =
+        getNumber(
+            "waterPerBird"
+        );
+
+
+    const payload = {
+
+        owner_id:
+            currentUser.id,
+
+        farm_id:
+            currentFlock.farm_id,
+
+        house_id:
+            currentFlock.house_id,
+
+        flock_id:
+            currentFlock.id,
+
+        week_number:
+            week,
+
+        evaluation_date:
+            getValue(
+                "evaluationDate"
+            ) || null,
+
+        sample_count:
+            stats.count,
+
+        average_weight:
+            stats.mean,
+
+        sd:
+            stats.sd,
+
+        cv:
+            stats.cv,
+
+        uniformity_10:
+            stats.uniformity10,
+
+        uniformity_15:
+            stats.uniformity15,
+
+        min_weight:
+            stats.min,
+
+        max_weight:
+            stats.max,
+
+        live_birds:
+            liveBirds,
+
+        mortality:
+            mortality,
+
+        feed_total_kg:
+            feedTotal,
+
+        water_total_liter:
+            waterTotal,
+
+        feed_per_bird_g:
+            feedPerBird,
+
+        water_per_bird_ml:
+            waterPerBird,
+
+        notes:
+            getValue(
+                "weeklyNotes"
+            ),
+
+        weights:
+            weights
+
+    };
+
+
+    const {
+        error
+    } =
+        await supabaseClient
+            .from(
+                "weekly_records"
+            )
+            .upsert(
+                payload,
+                {
+                    onConflict:
+                        "flock_id,week_number"
+                }
+            );
+
+
+    if (error) {
+
+        console.error(
+            "Save weekly error:",
+            error
+        );
+
+        alert(
+            "ذخیره گزارش انجام نشد:\n" +
+            error.message
+        );
+
+        return;
+
+    }
+
+
+    alert(
+        "گزارش هفتگی با موفقیت ذخیره شد."
+    );
+
+
+    await loadHistory();
+
+}
+
+
+/* =========================================================
+   HISTORY
+   ========================================================= */
+
+async function loadHistory() {
+
+    if (!currentFlock) {
+
+        return;
+
+    }
+
+
+    const {
+        data,
+        error
+    } =
+        await supabaseClient
+            .from(
+                "weekly_records"
+            )
+            .select("*")
+            .eq(
+                "flock_id",
+                currentFlock.id
+            )
+            .eq(
+                "owner_id",
+                currentUser.id
+            )
+            .order(
+                "week_number",
+                {
+                    ascending: true
+                }
+            );
+
+
+    if (error) {
+
+        console.error(
+            "History error:",
+            error
+        );
+
+        document.getElementById(
+            "weeklyHistory"
+        ).innerHTML = `
+            خطا در دریافت سوابق.
+        `;
+
+        return;
+
+    }
+
+
+    weeklyRecords =
+        data || [];
+
+
+    renderHistory();
+
+}
+
+
+/* =========================================================
+   HISTORY UI
+   ========================================================= */
+
+function renderHistory() {
+
+    const container =
+        document.getElementById(
+            "weeklyHistory"
+        );
+
+
+    if (!weeklyRecords.length) {
+
+        container.innerHTML = `
+            <p>
+                هنوز گزارش هفتگی ثبت نشده است.
+            </p>
+        `;
+
+        return;
+
+    }
+
+
+    container.innerHTML = `
+
+        <div style="overflow-x:auto;">
+
+            <table>
+
+                <thead>
+
+                    <tr>
+
+                        <th>
+                            هفته
+                        </th>
+
+                        <th>
+                            میانگین
+                        </th>
+
+                        <th>
+                            CV
+                        </th>
+
+                        <th>
+                            یکنواختی ±10
+                        </th>
+
+                        <th>
+                            یکنواختی ±15
+                        </th>
+
+                        <th>
+                            تلفات
+                        </th>
+
+                        <th>
+                            دان
+                        </th>
+
+                    </tr>
+
+                </thead>
+
+
+                <tbody>
+
+                    ${
+                        weeklyRecords
+                            .map(
+                                record => `
+
+                                    <tr>
+
+                                        <td>
+                                            ${formatNumber(
+                                                record.week_number,
+                                                0
+                                            )}
+                                        </td>
+
+                                        <td>
+                                            ${formatNumber(
+                                                record.average_weight,
+                                                1
+                                            )}
+                                        </td>
+
+                                        <td>
+                                            ${formatNumber(
+                                                record.cv,
+                                                2
+                                            )}%
+                                        </td>
+
+                                        <td>
+                                            ${formatNumber(
+                                                record.uniformity_10,
+                                                1
+                                            )}%
+                                        </td>
+
+                                        <td>
+                                            ${formatNumber(
+                                                record.uniformity_15,
+                                                1
+                                            )}%
+                                        </td>
+
+                                        <td>
+                                            ${formatNumber(
+                                                record.mortality,
+                                                0
+                                            )}
+                                        </td>
+
+                                        <td>
+                                            ${formatNumber(
+                                                record.feed_total_kg,
+                                                1
+                                            )}
+                                        </td>
+
+                                    </tr>
+
+                                `
+                            )
+                            .join("")
+                    }
+
+                </tbody>
+
+            </table>
+
+        </div>
+
+    `;
+
+}
+
+
+/* =========================================================
+   HELPERS
+   ========================================================= */
+
+function getValue(
+    id
+) {
+
+    const element =
+        document.getElementById(
+            id
+        );
+
+
+    return element
+        ? String(
+            element.value || ""
+          ).trim()
+        : "";
+
+}
+
+
+function getNumber(
+    id
+) {
+
+    const value =
+        getValue(id);
+
+
+    if (!value) {
+
+        return 0;
+
+    }
+
+
+    const number =
+        Number(
+            value
+                .replaceAll(",", "")
+                .replaceAll("٬", "")
+        );
+
+
+    return Number.isFinite(number)
+        ? number
+        : 0;
+
+}
+
+
+function formatNumber(
+    value,
+    decimals = 1
+) {
+
+    return Number(
+        value || 0
+    ).toLocaleString(
+        "fa-IR",
+        {
+            minimumFractionDigits:
+                decimals,
+
+            maximumFractionDigits:
+                decimals
+        }
+    );
+
+}
+
+
+function getProductionLabel(
+    type
+) {
+
+    const labels = {
+
+        broiler:
+            "گوشتی",
+
+        layer:
+            "تخم‌گذار",
+
+        pullet:
+            "پولت",
+
+        breeder:
+            "مرغ مادر"
+
+    };
+
+
+    return (
+        labels[type] ||
+        type ||
+        "-"
+    );
+
+}
+
+
+function escapeHTML(
+    value
+) {
+
+    return String(
+        value ?? ""
+    )
+    .replaceAll(
+        "&",
+        "&amp;"
+    )
+    .replaceAll(
+        "<",
+        "&lt;"
+    )
+    .replaceAll(
+        ">",
+        "&gt;"
+    )
+    .replaceAll(
+        '"',
+        "&quot;"
+    )
+    .replaceAll(
+        "'",
+        "&#039;"
+    );
+
+}

@@ -366,6 +366,12 @@ function standardRecord(
 
 /* =========================================================
    VERIFIED / IMPORTED STANDARD DATA
+=========================================================
+
+   IMPORTANT:
+   Numeric values must come from the applicable breeder
+   catalogue. Missing values remain null.
+
 ========================================================= */
 
 const VERIFIED_STANDARDS = {
@@ -433,18 +439,23 @@ const VERIFIED_STANDARDS = {
 const STANDARD_SOURCES = {
 
     aviagen:
+
         "Official Aviagen technical center",
 
     hyline:
+
         "Official Hy-Line technical resources",
 
     hendrix:
+
         "Official Hendrix Genetics technical resources",
 
     lohmann:
+
         "Official Lohmann Breeders technical resources",
 
     cobb:
+
         "Official Cobb technical resources"
 
 };
@@ -500,16 +511,17 @@ function getStrains(
 }
 
 
-/* =========================================================
-   STANDARD LOOKUP
-========================================================= */
-
 function getStandard(
     type,
     geneticsId,
     strain
 ) {
 
+    /*
+     * The flock form stores the selected strain name in both
+     * `genetics` and `strain`. Resolve that name back to the
+     * catalog genetics id when necessary.
+     */
     let resolvedGeneticsId =
         geneticsId;
 
@@ -521,9 +533,7 @@ function getStandard(
 
     if (
         catalog &&
-        Array.isArray(
-            catalog.genetics
-        )
+        Array.isArray(catalog.genetics)
     ) {
 
         const directGenetics =
@@ -573,20 +583,23 @@ function getStandard(
 
     }
 
-    return (
+    const standard =
         VERIFIED_STANDARDS
             [type]
             ?.[resolvedGeneticsId]
             ?.[resolvedStrain]
         ||
-        null
-    );
+        null;
+
+    return standard;
 
 }
 
 
 /* =========================================================
    STANDARD VALUE AT AGE
+   Linear interpolation between documented ages.
+   No extrapolation beyond the documented range.
 ========================================================= */
 
 function getStandardValueAtAge(
@@ -597,9 +610,7 @@ function getStandardValueAtAge(
 
     if (
         !standard ||
-        !Array.isArray(
-            standard.records
-        ) ||
+        !Array.isArray(standard.records) ||
         !standard.records.length
     ) {
 
@@ -620,104 +631,53 @@ function getStandardValueAtAge(
 
     const points =
         standard.records
-
             .map(
                 record => ({
-
                     age:
                         Number(
                             record.ageDays
                         ),
-
                     value:
                         Number(
                             record[metric]
                         )
-
                 })
             )
-
             .filter(
                 point =>
-                    Number.isFinite(
-                        point.age
-                    ) &&
-                    Number.isFinite(
-                        point.value
-                    )
+                    Number.isFinite(point.age) &&
+                    Number.isFinite(point.value)
             )
-
             .sort(
                 (a, b) =>
-                    a.age -
-                    b.age
+                    a.age - b.age
             );
 
-
-    if (
-        !points.length
-    ) {
-
+    if (!points.length) {
         return null;
-
     }
 
-
-    /*
-     * Never extrapolate outside
-     * the documented age range.
-     */
-
-    if (
-        age <
-            points[0].age ||
-        age >
-            points[
-                points.length - 1
-            ].age
-    ) {
-
+    if (age < points[0].age || age > points[points.length - 1].age) {
         return null;
-
     }
-
-
-    /*
-     * Exact documented age.
-     */
 
     const exact =
         points.find(
             point =>
-                point.age ===
-                age
+                point.age === age
         );
 
-    if (
-        exact
-    ) {
-
+    if (exact) {
         return exact.value;
-
     }
 
-
-    /*
-     * Linear interpolation.
-     */
-
-    for (
-        let i = 1;
-        i < points.length;
-        i++
-    ) {
+    for (let i = 1; i < points.length; i++) {
 
         const previous =
             points[i - 1];
 
         const next =
             points[i];
-
 
         if (
             age >= previous.age &&
@@ -734,7 +694,6 @@ function getStandardValueAtAge(
                     previous.age
                 );
 
-
             return Number(
                 (
                     previous.value +
@@ -743,538 +702,13 @@ function getStandardValueAtAge(
                         previous.value
                     ) *
                     ratio
-                )
-                .toFixed(2)
+                ).toFixed(2)
             );
 
         }
 
     }
-
 
     return null;
-
-}
-
-
-/* =========================================================
-   STANDARD AT AGE
-========================================================= */
-
-function getStandardAtAge(
-    type,
-    geneticsId,
-    strain,
-    ageDays
-) {
-
-    const standard =
-        getStandard(
-            type,
-            geneticsId,
-            strain
-        );
-
-    if (
-        !standard
-    ) {
-
-        return null;
-
-    }
-
-    const result = {
-
-        ageDays:
-            Number(ageDays),
-
-        bodyWeight:
-            getStandardValueAtAge(
-                standard,
-                "bodyWeight",
-                ageDays
-            ),
-
-        dailyGain:
-            getStandardValueAtAge(
-                standard,
-                "dailyGain",
-                ageDays
-            ),
-
-        dailyFeed:
-            getStandardValueAtAge(
-                standard,
-                "dailyFeed",
-                ageDays
-            ),
-
-        cumulativeFeed:
-            getStandardValueAtAge(
-                standard,
-                "cumulativeFeed",
-                ageDays
-            ),
-
-        fcr:
-            getStandardValueAtAge(
-                standard,
-                "fcr",
-                ageDays
-            ),
-
-        livability:
-            getStandardValueAtAge(
-                standard,
-                "livability",
-                ageDays
-            ),
-
-        mortality:
-            getStandardValueAtAge(
-                standard,
-                "mortality",
-                ageDays
-            ),
-
-        uniformity10:
-            getStandardValueAtAge(
-                standard,
-                "uniformity10",
-                ageDays
-            ),
-
-        uniformity15:
-            getStandardValueAtAge(
-                standard,
-                "uniformity15",
-                ageDays
-            ),
-
-        cv:
-            getStandardValueAtAge(
-                standard,
-                "cv",
-                ageDays
-            ),
-
-        dailyWater:
-            getStandardValueAtAge(
-                standard,
-                "dailyWater",
-                ageDays
-            ),
-
-        eggProduction:
-            getStandardValueAtAge(
-                standard,
-                "eggProduction",
-                ageDays
-            ),
-
-        henDayProduction:
-            getStandardValueAtAge(
-                standard,
-                "henDayProduction",
-                ageDays
-            ),
-
-        eggWeight:
-            getStandardValueAtAge(
-                standard,
-                "eggWeight",
-                ageDays
-            ),
-
-        eggMass:
-            getStandardValueAtAge(
-                standard,
-                "eggMass",
-                ageDays
-            ),
-
-        cumulativeEggs:
-            getStandardValueAtAge(
-                standard,
-                "cumulativeEggs",
-                ageDays
-            ),
-
-        fertility:
-            getStandardValueAtAge(
-                standard,
-                "fertility",
-                ageDays
-            ),
-
-        hatchability:
-            getStandardValueAtAge(
-                standard,
-                "hatchability",
-                ageDays
-            )
-
-    };
-
-
-    /*
-     * Remove metrics for which
-     * no official value exists.
-     */
-
-    Object.keys(
-        result
-    ).forEach(
-        key => {
-
-            if (
-                key !== "ageDays" &&
-                result[key] === null
-            ) {
-
-                delete result[key];
-
-            }
-
-        }
-    );
-
-
-    return result;
-
-}
-
-
-/* =========================================================
-   STANDARD SERIES FOR CHARTS
-========================================================= */
-
-function buildStandardSeries(
-    type,
-    geneticsId,
-    strain,
-    ages,
-    metric
-) {
-
-    if (
-        !Array.isArray(ages)
-    ) {
-
-        return [];
-
-    }
-
-
-    return ages.map(
-        age => ({
-
-            ageDays:
-                Number(age),
-
-            value:
-                getStandardValueAtAge(
-                    getStandard(
-                        type,
-                        geneticsId,
-                        strain
-                    ),
-                    metric,
-                    age
-                )
-
-        })
-    );
-
-}
-
-
-/* =========================================================
-   GET ALL AVAILABLE STANDARDS
-========================================================= */
-
-function listAvailableStandards(
-    type
-) {
-
-    const typeStandards =
-        VERIFIED_STANDARDS[
-            type
-        ];
-
-
-    if (
-        !typeStandards
-    ) {
-
-        return [];
-
-    }
-
-
-    const result = [];
-
-
-    Object.keys(
-        typeStandards
-    )
-    .forEach(
-        geneticsId => {
-
-            const genetics =
-                typeStandards[
-                    geneticsId
-                ];
-
-
-            Object.keys(
-                genetics
-            )
-            .forEach(
-                strain => {
-
-                    const standard =
-                        genetics[
-                            strain
-                        ];
-
-
-                    result.push({
-
-                        type,
-
-                        geneticsId,
-
-                        strain,
-
-                        sourceYear:
-                            standard.sourceYear ||
-                            null,
-
-                        sourceStatus:
-                            standard.sourceStatus ||
-                            null,
-
-                        recordCount:
-                            Array.isArray(
-                                standard.records
-                            )
-                                ? standard.records.length
-                                : 0
-
-                    });
-
-                }
-            );
-
-        }
-    );
-
-
-    return result;
-
-}
-
-
-/* =========================================================
-   DATABASE VALIDATION
-========================================================= */
-
-function validateStandardData() {
-
-    const errors = [];
-
-
-    Object.keys(
-        VERIFIED_STANDARDS
-    )
-    .forEach(
-        type => {
-
-            const typeData =
-                VERIFIED_STANDARDS[
-                    type
-                ];
-
-
-            Object.keys(
-                typeData
-            )
-            .forEach(
-                geneticsId => {
-
-                    const genetics =
-                        typeData[
-                            geneticsId
-                        ];
-
-
-                    Object.keys(
-                        genetics
-                    )
-                    .forEach(
-                        strain => {
-
-                            const standard =
-                                genetics[
-                                    strain
-                                ];
-
-
-                            if (
-                                !standard
-                            ) {
-
-                                errors.push(
-                                    `${type}/${geneticsId}/${strain}: standard missing`
-                                );
-
-                                return;
-
-                            }
-
-
-                            if (
-                                !standard.sourceYear
-                            ) {
-
-                                errors.push(
-                                    `${type}/${geneticsId}/${strain}: sourceYear missing`
-                                );
-
-                            }
-
-
-                            if (
-                                !Array.isArray(
-                                    standard.records
-                                )
-                            ) {
-
-                                errors.push(
-                                    `${type}/${geneticsId}/${strain}: records missing`
-                                );
-
-                                return;
-
-                            }
-
-
-                            let previousAge =
-                                null;
-
-
-                            standard.records.forEach(
-                                (
-                                    record,
-                                    index
-                                ) => {
-
-                                    const age =
-                                        Number(
-                                            record.ageDays
-                                        );
-
-
-                                    if (
-                                        !Number.isFinite(
-                                            age
-                                        )
-                                    ) {
-
-                                        errors.push(
-                                            `${type}/${geneticsId}/${strain}: invalid age at record ${index + 1}`
-                                        );
-
-                                    }
-
-
-                                    if (
-                                        previousAge !== null &&
-                                        age <= previousAge
-                                    ) {
-
-                                        errors.push(
-                                            `${type}/${geneticsId}/${strain}: age order invalid`
-                                        );
-
-                                    }
-
-
-                                    previousAge =
-                                        age;
-
-                                }
-                            );
-
-                        }
-                    );
-
-                }
-            );
-
-        }
-    );
-
-
-    return {
-
-        valid:
-            errors.length === 0,
-
-        errors
-
-    };
-
-}
-
-
-/* =========================================================
-   GLOBAL EXPORT
-========================================================= */
-
-if (
-    typeof window !==
-    "undefined"
-) {
-
-    window.POULTRY_CATALOG =
-        POULTRY_CATALOG;
-
-    window.PERFORMANCE_METRICS =
-        PERFORMANCE_METRICS;
-
-    window.VERIFIED_STANDARDS =
-        VERIFIED_STANDARDS;
-
-    window.STANDARD_SOURCES =
-        STANDARD_SOURCES;
-
-    window.getCatalog =
-        getCatalog;
-
-    window.getGenetics =
-        getGenetics;
-
-    window.getStrains =
-        getStrains;
-
-    window.getStandard =
-        getStandard;
-
-    window.getStandardValueAtAge =
-        getStandardValueAtAge;
-
-    window.getStandardAtAge =
-        getStandardAtAge;
-
-    window.buildStandardSeries =
-        buildStandardSeries;
-
-    window.listAvailableStandards =
-        listAvailableStandards;
-
-    window.validateStandardData =
-        validateStandardData;
 
 }

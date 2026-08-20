@@ -1029,218 +1029,45 @@ function calculateWeekly() {
 ========================================================= */
 
 function calculateWeightStatistics(weights) {
+    const cleanWeights=(Array.isArray(weights)?weights:[]).map(value=>{
+        if(value===null||value===undefined) return NaN;
+        const text=String(value).trim().replace(/,/g,"").replace(/٬/g,"")
+            .replace(/[۰-۹]/g,d=>"۰۱۲۳۴۵۶۷۸۹".indexOf(d))
+            .replace(/[٠-٩]/g,d=>"٠١٢٣٤٥٦٧٨٩".indexOf(d));
+        return Number(text);
+    }).filter(v=>Number.isFinite(v)&&v>0);
 
-    // پاک سازی و تبدیل صحیح وزن‌ها
-    const cleanWeights = (Array.isArray(weights) ? weights : [])
-        .map(value => {
+    const count=cleanWeights.length;
+    if(count===0) return {count:0,mean:null,sd:null,cv:null,uniformity10:null,uniformity15:null,min:null,max:null,lower10:null,upper10:null,lower15:null,upper15:null,dataQuality:{status:"no-data",message:"نمونه وزن وارد نشده است."}};
 
-            if (value === null || value === undefined) {
-                return NaN;
-            }
+    const sorted=[...cleanWeights].sort((a,b)=>a-b);
+    const mean=sorted.reduce((a,b)=>a+b,0)/count;
+    const variance=count>1 ? sorted.reduce((sum,v)=>sum+Math.pow(v-mean,2),0)/(count-1) : 0;
+    const sd=Math.sqrt(variance);
+    const cv=mean>0?(sd/mean)*100:null;
+    const lower10=mean*0.90, upper10=mean*1.10, lower15=mean*0.85, upper15=mean*1.15;
+    const u10=sorted.filter(v=>v>=lower10&&v<=upper10).length/count*100;
+    const u15=sorted.filter(v=>v>=lower15&&v<=upper15).length/count*100;
 
-            let text = String(value)
-                .trim()
-                .replace(/,/g, "")
-                .replace(/٬/g, "")
-                .replace(/[۰-۹]/g, function (d) {
-                    return "۰۱۲۳۴۵۶۷۸۹".indexOf(d);
-                })
-                .replace(/[٠-٩]/g, function (d) {
-                    return "٠١٢٣٤٥٦٧٨٩".indexOf(d);
-                });
-
-            return Number(text);
-
-        })
-        .filter(value =>
-            Number.isFinite(value) &&
-            value > 0
-        );
-
-
-    const count = cleanWeights.length;
-
-
-    if (count === 0) {
-
-        return {
-            count: 0,
-            mean: 0,
-            sd: 0,
-            cv: 0,
-            uniformity10: 0,
-            uniformity15: 0,
-            min: 0,
-            max: 0,
-            lower10: 0,
-            upper10: 0,
-            lower15: 0,
-            upper15: 0
-        };
-
-    }
-
-
-
-    // مرتب سازی برای کنترل بهتر داده‌ها
-    const sorted =
-        [...cleanWeights]
-        .sort((a,b)=>a-b);
-
-
-
-    // میانگین وزن
-    const mean =
-        sorted.reduce(
-            (sum,value)=>sum + value,
-            0
-        ) / count;
-
-
-
-    // انحراف معیار جامعه
-    const variance =
-        sorted.reduce(
-            (sum,value)=>{
-
-                return sum +
-                    Math.pow(
-                        value - mean,
-                        2
-                    );
-
-            },
-            0
-        ) / count;
-
-
-
-    const sd =
-        Math.sqrt(variance);
-
-
-
-    // ضریب تغییرات
-    const cv =
-        mean > 0
-        ?
-        (sd / mean) * 100
-        :
-        0;
-
-
-
-    /*
-        محاسبه یکنواختی استاندارد مرغداری
-
-        10 درصد:
-        میانگین ± 10%
-
-        15 درصد:
-        میانگین ± 15%
-    */
-
-
-    const lower10 =
-        mean * 0.90;
-
-
-    const upper10 =
-        mean * 1.10;
-
-
-    const lower15 =
-        mean * 0.85;
-
-
-    const upper15 =
-        mean * 1.15;
-
-
-
-    const uniform10Count =
-        sorted.filter(weight => {
-
-            return (
-                weight >= lower10 &&
-                weight <= upper10
-            );
-
-        }).length;
-
-
-
-    const uniform15Count =
-        sorted.filter(weight => {
-
-            return (
-                weight >= lower15 &&
-                weight <= upper15
-            );
-
-        }).length;
-
-
+    let status="good";
+    let message="حجم نمونه برای پایش عملیاتی مناسب است.";
+    if(count<2){status="invalid";message="برای محاسبه SD و CV حداقل 2 پرنده لازم است.";}
+    else if(count<30){status="insufficient";message="نمونه کمتر از 30 پرنده است؛ نتیجه برای تصمیم‌گیری گله‌ای با احتیاط تفسیر شود.";}
+    else if(count<50){status="acceptable";message="نمونه قابل استفاده است، اما برای پایش تجاری بهتر است نمونه نماینده بزرگ‌تر باشد.";}
 
     return {
-
         count,
-
-        mean:
-            Number(mean.toFixed(2)),
-
-
-        sd:
-            Number(sd.toFixed(2)),
-
-
-        cv:
-            Number(cv.toFixed(2)),
-
-
-        uniformity10:
-            Number(
-                ((uniform10Count / count) * 100)
-                .toFixed(2)
-            ),
-
-
-        uniformity15:
-            Number(
-                ((uniform15Count / count) * 100)
-                .toFixed(2)
-            ),
-
-
-        min:
-            sorted[0],
-
-
-        max:
-            sorted[count-1],
-
-
-        lower10:
-            Number(lower10.toFixed(2)),
-
-
-        upper10:
-            Number(upper10.toFixed(2)),
-
-
-        lower15:
-            Number(lower15.toFixed(2)),
-
-
-        upper15:
-            Number(upper15.toFixed(2))
-
+        mean:Number(mean.toFixed(2)),
+        sd:Number(sd.toFixed(2)),
+        cv:cv===null?null:Number(cv.toFixed(2)),
+        uniformity10:Number(u10.toFixed(2)),
+        uniformity15:Number(u15.toFixed(2)),
+        min:sorted[0],max:sorted[count-1],
+        lower10:Number(lower10.toFixed(2)),upper10:Number(upper10.toFixed(2)),
+        lower15:Number(lower15.toFixed(2)),upper15:Number(upper15.toFixed(2)),
+        dataQuality:{status,message,statisticalMethod:"sample SD (n-1); uniformity = proportion within ±10% / ±15% of sample mean"}
     };
-
 }
-/* =========================================================
-   RESULTS
-========================================================= */
 
 function renderResults(
     result

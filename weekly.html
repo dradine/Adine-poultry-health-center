@@ -2,6 +2,7 @@
 <html lang="fa" dir="rtl">
 
 <head>
+
     <meta charset="UTF-8">
 
     <meta
@@ -9,13 +10,22 @@
         content="width=device-width, initial-scale=1, viewport-fit=cover"
     >
 
-    <meta name="theme-color" content="#173f35">
+    <meta
+        name="theme-color"
+        content="#173f35"
+    >
 
-    <title>ثبت هفتگی | مرکز تخصصی سلامت طیور آدینه</title>
+    <title>
+        ثبت هفتگی | مرکز تخصصی سلامت طیور آدینه
+    </title>
 
-    <link rel="stylesheet" href="app.css">
+    <link
+        rel="stylesheet"
+        href="app.css"
+    >
 
     <style>
+
         /* =====================================================
            تقویم شمسی
         ===================================================== */
@@ -24,6 +34,7 @@
             position: relative;
             width: 100%;
         }
+
 
         #evaluationDate {
             width: 100%;
@@ -34,6 +45,7 @@
             text-align: center;
             font-size: 16px;
         }
+
 
         .jalali-calendar-button {
             position: absolute;
@@ -51,6 +63,7 @@
             z-index: 2;
         }
 
+
         .jalali-calendar {
             display: none;
             position: absolute;
@@ -66,6 +79,7 @@
             z-index: 99999;
         }
 
+
         .jalali-calendar-header {
             height: 55px;
             display: flex;
@@ -76,10 +90,12 @@
             color: white;
         }
 
+
         .jalali-month-title {
             font-size: 15px;
             font-weight: bold;
         }
+
 
         .jalali-nav-button {
             width: 42px;
@@ -92,9 +108,11 @@
             border-radius: 10px;
         }
 
+
         .jalali-nav-button:active {
             background: rgba(255,255,255,.15);
         }
+
 
         .jalali-weekdays {
             display: grid;
@@ -106,12 +124,14 @@
             font-weight: bold;
         }
 
+
         .jalali-days {
             display: grid;
             grid-template-columns: repeat(7, 1fr);
             gap: 5px;
             padding: 8px 10px 12px;
         }
+
 
         .jalali-day {
             width: 100%;
@@ -124,14 +144,17 @@
             color: #222;
         }
 
+
         .jalali-day:hover {
             background: #edf4f1;
         }
+
 
         .jalali-day.today {
             border: 2px solid #173f35;
             font-weight: bold;
         }
+
 
         .jalali-day.selected {
             background: #173f35;
@@ -139,15 +162,18 @@
             font-weight: bold;
         }
 
+
         .jalali-day.today.selected {
             border-color: #173f35;
         }
+
 
         .jalali-calendar-footer {
             border-top: 1px solid #eee;
             padding: 10px;
             text-align: center;
         }
+
 
         .jalali-today-button {
             border: 0;
@@ -159,15 +185,20 @@
             border-radius: 8px;
         }
 
+
         .jalali-today-button:hover {
             background: #edf4f1;
         }
 
+
         @media (max-width: 480px) {
+
             .jalali-calendar {
                 max-width: none;
             }
+
         }
+
     </style>
 
 </head>
@@ -178,531 +209,629 @@
 <div class="app-shell">
 
 
-<header class="topbar">
+    <!-- =====================================================
+         HEADER
+    ====================================================== -->
 
-    <div class="brand">
+    <header class="topbar">
 
-        <img
-            src="IMG_4309.png"
-            alt="مرکز تخصصی سلامت طیور آدینه"
+        <div class="brand">
+
+            <img
+                src="IMG_4309.png"
+                alt="مرکز تخصصی سلامت طیور آدینه"
+            >
+
+            <span>
+                ثبت هفتگی
+            </span>
+
+        </div>
+
+
+        <button
+            class="btn btn-secondary"
+            type="button"
+            onclick="location.href='Dashboard.html'"
         >
+            داشبورد
+        </button>
 
-        <span>ثبت هفتگی</span>
-
-    </div>
-
-
-    <button
-        class="btn btn-secondary"
-        type="button"
-        onclick="location.href='Dashboard.html'"
-    >
-        داشبورد
-    </button>
-
-</header>
+    </header>
 
 
-<main class="page">
 
-<div class="container">
+    <!-- =====================================================
+         MAIN
+    ====================================================== -->
 
+    <main class="page">
 
-<h1 class="page-title">
-    پایش هفتگی گله
-</h1>
-
-
-<p class="page-description">
-    ثبت وزن، یکنواختی، مصرف دان، آب و عملکرد هفتگی
-</p>
+        <div class="container">
 
 
-<section class="card">
+            <!-- =================================================
+                 TITLE
+            ================================================== -->
 
-<h2 class="card-title">
-    گله انتخاب‌شده
-</h2>
+            <h1 class="page-title">
+                پایش هفتگی گله
+            </h1>
 
-<div id="currentFlock">
-    در حال بارگذاری...
+
+            <p class="page-description">
+                ثبت وزن، یکنواختی، مصرف دان، آب و عملکرد هفتگی
+            </p>
+
+
+
+            <!-- =================================================
+                 CURRENT FLOCK
+            ================================================== -->
+
+            <section class="card">
+
+                <h2 class="card-title">
+                    گله انتخاب‌شده
+                </h2>
+
+
+                <div id="currentFlock">
+                    در حال بارگذاری...
+                </div>
+
+            </section>
+
+
+
+            <!-- =================================================
+                 WEEK INFORMATION
+            ================================================== -->
+
+            <section class="card">
+
+                <h2 class="card-title">
+                    اطلاعات هفته
+                </h2>
+
+
+                <div class="form-grid">
+
+
+                    <!-- هفته -->
+
+                    <div class="form-group">
+
+                        <label for="weekNumber">
+                            هفته گله *
+                        </label>
+
+
+                        <input
+                            id="weekNumber"
+                            type="number"
+                            min="1"
+                            max="100"
+                            required
+                            inputmode="numeric"
+                            placeholder="مثلاً 4"
+                        >
+
+                    </div>
+
+
+
+                    <!-- تاریخ -->
+
+                    <div class="form-group">
+
+                        <label for="evaluationDate">
+                            تاریخ ارزیابی
+                        </label>
+
+
+                        <div
+                            class="jalali-date-wrapper"
+                            id="jalaliDateWrapper"
+                        >
+
+                            <input
+                                id="evaluationDate"
+                                type="text"
+                                inputmode="numeric"
+                                autocomplete="off"
+                                placeholder="۱۴۰۵/۰۵/۲۹"
+                                maxlength="10"
+                                readonly
+                            >
+
+
+                            <button
+                                type="button"
+                                class="jalali-calendar-button"
+                                id="jalaliCalendarButton"
+                                aria-label="انتخاب تاریخ"
+                            >
+                                📅
+                            </button>
+
+
+                            <div
+                                id="jalaliCalendar"
+                                class="jalali-calendar"
+                            >
+
+                                <div class="jalali-calendar-header">
+
+                                    <button
+                                        type="button"
+                                        id="jalaliPrevButton"
+                                        class="jalali-nav-button"
+                                    >
+                                        ‹
+                                    </button>
+
+
+                                    <div
+                                        id="jalaliMonthTitle"
+                                        class="jalali-month-title"
+                                    >
+                                        -
+                                    </div>
+
+
+                                    <button
+                                        type="button"
+                                        id="jalaliNextButton"
+                                        class="jalali-nav-button"
+                                    >
+                                        ›
+                                    </button>
+
+                                </div>
+
+
+                                <div class="jalali-weekdays">
+
+                                    <div>ش</div>
+                                    <div>ی</div>
+                                    <div>د</div>
+                                    <div>س</div>
+                                    <div>چ</div>
+                                    <div>پ</div>
+                                    <div>ج</div>
+
+                                </div>
+
+
+                                <div
+                                    id="jalaliDays"
+                                    class="jalali-days"
+                                ></div>
+
+
+                                <div class="jalali-calendar-footer">
+
+                                    <button
+                                        type="button"
+                                        id="jalaliTodayButton"
+                                        class="jalali-today-button"
+                                    >
+                                        امروز
+                                    </button>
+
+                                </div>
+
+                            </div>
+
+                        </div>
+
+                    </div>
+
+
+
+                    <!-- تعداد زنده -->
+
+                    <div class="form-group">
+
+                        <label for="liveBirds">
+                            تعداد زنده
+                        </label>
+
+
+                        <input
+                            id="liveBirds"
+                            type="number"
+                            min="0"
+                            inputmode="numeric"
+                        >
+
+                    </div>
+
+
+
+                    <!-- تلفات -->
+
+                    <div class="form-group">
+
+                        <label for="mortalityWeek">
+                            تلفات این هفته
+                        </label>
+
+
+                        <input
+                            id="mortalityWeek"
+                            type="number"
+                            min="0"
+                            inputmode="numeric"
+                        >
+
+                    </div>
+
+
+                </div>
+
+            </section>
+
+
+
+            <!-- =================================================
+                 WEIGHTS
+            ================================================== -->
+
+            <section class="card">
+
+                <h2 class="card-title">
+                    ثبت وزن‌ها
+                </h2>
+
+
+                <p>
+                    برای محاسبه دقیق، وزن تک‌تک پرندگان نمونه را وارد کنید.
+                </p>
+
+
+                <div class="button-row">
+
+                    <button
+                        class="btn btn-primary"
+                        type="button"
+                        onclick="addWeightInput()"
+                    >
+                        + افزودن وزن
+                    </button>
+
+
+                    <button
+                        class="btn btn-secondary"
+                        type="button"
+                        onclick="addTwentyWeights()"
+                    >
+                        + افزودن ۲۰ وزن
+                    </button>
+
+
+                    <button
+                        class="btn btn-secondary"
+                        type="button"
+                        onclick="clearWeights()"
+                    >
+                        پاک کردن
+                    </button>
+
+                </div>
+
+
+                <div
+                    id="weightsContainer"
+                    class="weights-grid"
+                ></div>
+
+
+                <div class="button-row">
+
+                    <button
+                        class="btn btn-primary"
+                        type="button"
+                        onclick="calculateWeekly()"
+                    >
+                        محاسبه
+                    </button>
+
+                </div>
+
+            </section>
+
+
+
+            <!-- =================================================
+                 RESULTS
+            ================================================== -->
+
+            <section
+                id="resultsCard"
+                class="card"
+                style="display:none;"
+            >
+
+                <h2 class="card-title">
+                    نتیجه محاسبات
+                </h2>
+
+
+                <div
+                    id="results"
+                    class="results-grid"
+                ></div>
+
+
+                <div
+                    id="weightChartContainer"
+                    style="margin-top:20px;"
+                >
+
+                    <canvas id="weightChart"></canvas>
+
+                </div>
+
+            </section>
+
+
+
+            <!-- =================================================
+                 FEED / WATER
+            ================================================== -->
+
+            <section class="card">
+
+                <h2 class="card-title">
+                    مصرف دان و آب
+                </h2>
+
+
+                <div class="form-grid">
+
+
+                    <div class="form-group">
+
+                        <label for="feedTotal">
+                            کل دان مصرفی هفته (کیلوگرم)
+                        </label>
+
+
+                        <input
+                            id="feedTotal"
+                            type="number"
+                            min="0"
+                            step="0.01"
+                        >
+
+                    </div>
+
+
+
+                    <div class="form-group">
+
+                        <label for="waterTotal">
+                            کل آب مصرفی هفته (لیتر)
+                        </label>
+
+
+                        <input
+                            id="waterTotal"
+                            type="number"
+                            min="0"
+                            step="0.01"
+                        >
+
+                    </div>
+
+
+
+                    <div class="form-group">
+
+                        <label for="feedPerBird">
+                            دان روزانه هر پرنده (گرم)
+                        </label>
+
+
+                        <input
+                            id="feedPerBird"
+                            type="number"
+                            min="0"
+                            step="0.1"
+                        >
+
+                    </div>
+
+
+
+                    <div class="form-group">
+
+                        <label for="waterPerBird">
+                            آب روزانه هر پرنده (میلی‌لیتر)
+                        </label>
+
+
+                        <input
+                            id="waterPerBird"
+                            type="number"
+                            min="0"
+                            step="0.1"
+                        >
+
+                    </div>
+
+
+                </div>
+
+            </section>
+
+
+
+            <!-- =================================================
+                 NOTES
+            ================================================== -->
+
+            <section class="card">
+
+                <h2 class="card-title">
+                    یادداشت هفتگی
+                </h2>
+
+
+                <textarea
+                    id="weeklyNotes"
+                    rows="5"
+                    placeholder="کیفیت بستر، تهویه، آمونیاک، وضعیت مدفوع، مصرف، رفتار گله و سایر مشاهدات..."
+                ></textarea>
+
+
+                <div class="button-row">
+
+                    <button
+                        class="btn btn-primary"
+                        type="button"
+                        onclick="saveWeeklyRecord()"
+                    >
+                        ذخیره گزارش هفتگی
+                    </button>
+
+
+                    <button
+                        class="btn btn-secondary"
+                        type="button"
+                        onclick="location.href='reports.html'"
+                    >
+                        مشاهده گزارش‌ها
+                    </button>
+
+                </div>
+
+            </section>
+
+
+
+            <!-- =================================================
+                 HISTORY
+            ================================================== -->
+
+            <section class="card">
+
+                <h2 class="card-title">
+                    سوابق ثبت‌شده
+                </h2>
+
+
+                <div id="weeklyHistory">
+                    در حال بارگذاری...
+                </div>
+
+            </section>
+
+
+        </div>
+
+    </main>
+
+
+
+    <!-- =====================================================
+         BOTTOM NAVIGATION
+    ====================================================== -->
+
+    <nav class="bottom-nav">
+
+        <button
+            type="button"
+            onclick="location.href='Dashboard.html'"
+        >
+            🏠
+            <br>
+            خانه
+        </button>
+
+
+        <button
+            type="button"
+            onclick="location.href='Farms.html'"
+        >
+            🏭
+            <br>
+            فارم‌ها
+        </button>
+
+
+        <button
+            class="active"
+            type="button"
+            onclick="location.href='weekly.html'"
+        >
+            ⚖️
+            <br>
+            هفتگی
+        </button>
+
+
+        <button
+            type="button"
+            onclick="location.href='reports.html'"
+        >
+            📊
+            <br>
+            گزارش
+        </button>
+
+    </nav>
+
+
 </div>
 
-</section>
 
 
-<section class="card">
-
-<h2 class="card-title">
-    اطلاعات هفته
-</h2>
-
-
-<div class="form-grid">
-
-
-<div class="form-group">
-
-<label for="weekNumber">
-    هفته گله *
-</label>
-
-<input
-    id="weekNumber"
-    type="number"
-    min="1"
-    max="100"
-    required
-    inputmode="numeric"
-    placeholder="مثلاً 4"
->
-
-</div>
-
-
-<div class="form-group">
-
-<label for="evaluationDate">
-    تاریخ ارزیابی
-</label>
-
-<div
-    class="jalali-date-wrapper"
-    id="jalaliDateWrapper"
->
-
-<input
-    id="evaluationDate"
-    type="text"
-    inputmode="numeric"
-    autocomplete="off"
-    placeholder="۱۴۰۵/۰۵/۲۹"
-    maxlength="10"
-    readonly
->
-
-<button
-    type="button"
-    class="jalali-calendar-button"
-    id="jalaliCalendarButton"
-    aria-label="انتخاب تاریخ"
->
-    📅
-</button>
-
-
-<div
-    id="jalaliCalendar"
-    class="jalali-calendar"
->
-
-<div class="jalali-calendar-header">
-
-<button
-    type="button"
-    id="jalaliPrevButton"
-    class="jalali-nav-button"
->
-    ‹
-</button>
-
-
-<div
-    id="jalaliMonthTitle"
-    class="jalali-month-title"
->
-    -
-</div>
-
-
-<button
-    type="button"
-    id="jalaliNextButton"
-    class="jalali-nav-button"
->
-    ›
-</button>
-
-</div>
-
-
-<div class="jalali-weekdays">
-
-<div>ش</div>
-<div>ی</div>
-<div>د</div>
-<div>س</div>
-<div>چ</div>
-<div>پ</div>
-<div>ج</div>
-
-</div>
-
-
-<div
-    id="jalaliDays"
-    class="jalali-days"
-></div>
-
-
-<div class="jalali-calendar-footer">
-
-<button
-    type="button"
-    id="jalaliTodayButton"
-    class="jalali-today-button"
->
-    امروز
-</button>
-
-</div>
-
-</div>
-
-</div>
-
-</div>
-
-
-<div class="form-group">
-
-<label for="liveBirds">
-    تعداد زنده
-</label>
-
-<input
-    id="liveBirds"
-    type="number"
-    min="0"
-    inputmode="numeric"
->
-
-</div>
-
-
-<div class="form-group">
-
-<label for="mortalityWeek">
-    تلفات این هفته
-</label>
-
-<input
-    id="mortalityWeek"
-    type="number"
-    min="0"
-    inputmode="numeric"
->
-
-</div>
-
-
-</div>
-
-</section>
-
-
-<section class="card">
-
-<h2 class="card-title">
-    ثبت وزن‌ها
-</h2>
-
-
-<p>
-برای محاسبه دقیق، وزن تک‌تک پرندگان نمونه را وارد کنید.
-</p>
-
-
-<div class="button-row">
-
-<button
-    class="btn btn-primary"
-    type="button"
-    onclick="addWeightInput()"
->
-    + افزودن وزن
-</button>
-
-
-<button
-    class="btn btn-secondary"
-    type="button"
-    onclick="addTwentyWeights()"
->
-    + افزودن ۲۰ وزن
-</button>
-
-
-<button
-    class="btn btn-secondary"
-    type="button"
-    onclick="clearWeights()"
->
-    پاک کردن
-</button>
-
-</div>
-
-
-<div
-    id="weightsContainer"
-    class="weights-grid"
-></div>
-
-
-<div class="button-row">
-
-<button
-    class="btn btn-primary"
-    type="button"
-    onclick="calculateWeekly()"
->
-    محاسبه
-</button>
-
-</div>
-
-</section>
-
-
-<section
-    id="resultsCard"
-    class="card"
-    style="display:none;"
->
-
-<h2 class="card-title">
-    نتیجه محاسبات
-</h2>
-
-
-<div
-    id="results"
-    class="results-grid"
-></div>
-
-
-<div
-    id="weightChartContainer"
-    style="margin-top:20px;"
->
-
-<canvas id="weightChart"></canvas>
-
-</div>
-
-</section>
-
-
-<section class="card">
-
-<h2 class="card-title">
-    مصرف دان و آب
-</h2>
-
-
-<div class="form-grid">
-
-
-<div class="form-group">
-
-<label for="feedTotal">
-    کل دان مصرفی هفته (کیلوگرم)
-</label>
-
-<input
-    id="feedTotal"
-    type="number"
-    min="0"
-    step="0.01"
->
-
-</div>
-
-
-<div class="form-group">
-
-<label for="waterTotal">
-    کل آب مصرفی هفته (لیتر)
-</label>
-
-<input
-    id="waterTotal"
-    type="number"
-    min="0"
-    step="0.01"
->
-
-</div>
-
-
-<div class="form-group">
-
-<label for="feedPerBird">
-    دان روزانه هر پرنده (گرم)
-</label>
-
-<input
-    id="feedPerBird"
-    type="number"
-    min="0"
-    step="0.1"
->
-
-</div>
-
-
-<div class="form-group">
-
-<label for="waterPerBird">
-    آب روزانه هر پرنده (میلی‌لیتر)
-</label>
-
-<input
-    id="waterPerBird"
-    type="number"
-    min="0"
-    step="0.1"
->
-
-</div>
-
-
-</div>
-
-</section>
-
-
-<section class="card">
-
-<h2 class="card-title">
-    یادداشت هفتگی
-</h2>
-
-
-<textarea
-    id="weeklyNotes"
-    rows="5"
-    placeholder="کیفیت بستر، تهویه، آمونیاک، وضعیت مدفوع، مصرف، رفتار گله و سایر مشاهدات..."
-></textarea>
-
-
-<div class="button-row">
-
-<button
-    class="btn btn-primary"
-    type="button"
-    onclick="saveWeeklyRecord()"
->
-    ذخیره گزارش هفتگی
-</button>
-
-
-<button
-    class="btn btn-secondary"
-    type="button"
-    onclick="location.href='reports.html'"
->
-    مشاهده گزارش‌ها
-</button>
-
-</div>
-
-</section>
-
-
-<section class="card">
-
-<h2 class="card-title">
-    سوابق ثبت‌شده
-</h2>
-
-
-<div id="weeklyHistory">
-    در حال بارگذاری...
-</div>
-
-</section>
-
-
-</div>
-
-</main>
-
-
-<nav class="bottom-nav">
-
-<button
-    type="button"
-    onclick="location.href='Dashboard.html'"
->
-    🏠
-    <br>
-    خانه
-</button>
-
-
-<button
-    type="button"
-    onclick="location.href='Farms.html'"
->
-    🏭
-    <br>
-    فارم‌ها
-</button>
-
-
-<button
-    class="active"
-    type="button"
-    onclick="location.href='weekly.html'"
->
-    ⚖️
-    <br>
-    هفتگی
-</button>
-
-
-<button
-    type="button"
-    onclick="location.href='reports.html'"
->
-    📊
-    <br>
-    گزارش
-</button>
-
-</nav>
-
-
-</div>
-
-
-<!-- =====================================================
-     کتابخانه‌ها
-====================================================== -->
+<!-- =========================================================
+     LIBRARIES
+========================================================= -->
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+
+
+<!-- =========================================================
+     APPLICATION FILES
+========================================================= -->
 
 <script src="supabase-config.js"></script>
 
 <script src="standards.js"></script>
+
 <script src="standard-data.js"></script>
+
 <script src="poultry-utils.js"></script>
+
 <script src="weekly-storage.js"></script>
+
 <script src="comparison-engine.js"></script>
+
 <script src="app-core.js"></script>
+
 <script src="genetics-ui.js"></script>
 
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
-<!-- فقط یک بار -->
+
+<!-- =========================================================
+     فقط یک بار
+========================================================= -->
+
 <script src="weekly.js"></script>
 
 
-<!-- =====================================================
+
+<!-- =========================================================
      تقویم شمسی
-====================================================== -->
+========================================================= -->
 
 <script>
 
@@ -710,7 +839,9 @@
 
     "use strict";
 
+
     const monthNames = [
+
         "فروردین",
         "اردیبهشت",
         "خرداد",
@@ -723,50 +854,80 @@
         "دی",
         "بهمن",
         "اسفند"
+
     ];
 
+
     let calendarYear = 1405;
+
     let calendarMonth = 1;
 
+
+
+    /* =====================================================
+       اعداد فارسی
+    ===================================================== */
 
     function toPersianDigits(value) {
 
         return String(value).replace(
             /\d/g,
             function (digit) {
-                return "۰۱۲۳۴۵۶۷۸۹"[Number(digit)];
+
+                return "۰۱۲۳۴۵۶۷۸۹"[
+                    Number(digit)
+                ];
+
             }
         );
 
     }
 
 
+
+    /* =====================================================
+       تبدیل اعداد فارسی / عربی به انگلیسی
+    ===================================================== */
+
     function normalizeDigits(value) {
 
         return String(value || "")
+
             .replace(
                 /[۰-۹]/g,
                 function (digit) {
+
                     return String(
                         digit.charCodeAt(0) - 1776
                     );
+
                 }
             )
+
             .replace(
                 /[٠-٩]/g,
                 function (digit) {
+
                     return String(
                         digit.charCodeAt(0) - 1632
                     );
+
                 }
             );
 
     }
 
 
+
+    /* =====================================================
+       امروز به شمسی
+    ===================================================== */
+
     function getTodayJalali() {
 
-        const now = new Date();
+        const now =
+            new Date();
+
 
         const formatter =
             new Intl.DateTimeFormat(
@@ -778,141 +939,51 @@
                 }
             );
 
+
         const parts =
-            formatter.formatToParts(now);
-
-        return {
-
-            year: Number(
-                parts.find(
-                    p => p.type === "year"
-                ).value
-            ),
-
-            month: Number(
-                parts.find(
-                    p => p.type === "month"
-                ).value
-            ),
-
-            day: Number(
-                parts.find(
-                    p => p.type === "day"
-                ).value
-            )
-
-        };
-
-    }
-
-
-    function jalaliToGregorian(
-        jy,
-        jm,
-        jd
-    ) {
-
-        let gy =
-            jy + 621;
-
-        const breaks = [
-            -61, 9, 38, 199, 426, 686,
-            756, 818, 1111, 1181, 1210,
-            1635, 2060, 2097, 2192, 2262,
-            2324, 2394, 2456, 3178
-        ];
-
-        let leapJ = -14;
-
-        let jp = breaks[0];
-
-        let jump = 0;
-
-        for (
-            let i = 1;
-            i < breaks.length;
-            i++
-        ) {
-
-            const jm2 = breaks[i];
-
-            jump = jm2 - jp;
-
-            if (jy < jm2) {
-                break;
-            }
-
-            leapJ +=
-                Math.floor(jump / 33) * 8 +
-                Math.floor((jump % 33) / 4);
-
-            jp = jm2;
-
-        }
-
-        let n =
-            jy - jp;
-
-        if (n === jump) {
-
-            leapJ +=
-                Math.floor(jump / 33);
-
-        }
-
-        let leapG =
-            Math.floor(gy / 4) -
-            Math.floor(
-                (
-                    Math.floor(gy / 100) + 1
-                ) * 3 / 4
-            ) -
-            150;
-
-        let march =
-            20 +
-            leapJ -
-            leapG;
-
-        let days;
-
-        if (jm <= 6) {
-
-            days =
-                (jm - 1) * 31 +
-                (jd - 1);
-
-        } else {
-
-            days =
-                186 +
-                (jm - 7) * 30 +
-                (jd - 1);
-
-        }
-
-        const date =
-            new Date(
-                gy,
-                2,
-                march
+            formatter.formatToParts(
+                now
             );
 
-        date.setDate(
-            date.getDate() +
-            days
-        );
 
         return {
 
-            gy: date.getFullYear(),
-            gm: date.getMonth() + 1,
-            gd: date.getDate()
+            year:
+                Number(
+                    parts.find(
+                        p =>
+                            p.type ===
+                            "year"
+                    ).value
+                ),
+
+            month:
+                Number(
+                    parts.find(
+                        p =>
+                            p.type ===
+                            "month"
+                    ).value
+                ),
+
+            day:
+                Number(
+                    parts.find(
+                        p =>
+                            p.type ===
+                            "day"
+                    ).value
+                )
 
         };
 
     }
 
+
+
+    /* =====================================================
+       تعداد روزهای ماه
+    ===================================================== */
 
     function daysInJalaliMonth(
         year,
@@ -920,12 +991,18 @@
     ) {
 
         if (month <= 6) {
+
             return 31;
+
         }
 
+
         if (month <= 11) {
+
             return 30;
+
         }
+
 
         const current =
             jalaliToGregorian(
@@ -934,12 +1011,14 @@
                 1
             );
 
+
         const next =
             jalaliToGregorian(
                 year + 1,
                 1,
                 1
             );
+
 
         const currentDate =
             new Date(
@@ -948,12 +1027,14 @@
                 current.gd
             );
 
+
         const nextDate =
             new Date(
                 next.gy,
                 next.gm - 1,
                 next.gd
             );
+
 
         return Math.round(
             (
@@ -966,6 +1047,329 @@
     }
 
 
+
+    /* =====================================================
+       جلالی → میلادی
+    ===================================================== */
+
+    function jalaliToGregorian(
+        jy,
+        jm,
+        jd
+    ) {
+
+        let gy =
+            jy + 621;
+
+
+        const breaks = [
+
+            -61,
+            9,
+            38,
+            199,
+            426,
+            686,
+            756,
+            818,
+            1111,
+            1181,
+            1210,
+            1635,
+            2060,
+            2097,
+            2192,
+            2262,
+            2324,
+            2394,
+            2456,
+            3178
+
+        ];
+
+
+        let leapJ = -14;
+
+        let jp =
+            breaks[0];
+
+        let jump = 0;
+
+
+        for (
+            let i = 1;
+            i < breaks.length;
+            i++
+        ) {
+
+            const jm2 =
+                breaks[i];
+
+
+            jump =
+                jm2 - jp;
+
+
+            if (jy < jm2) {
+
+                break;
+
+            }
+
+
+            leapJ +=
+                Math.floor(
+                    jump / 33
+                ) * 8 +
+
+                Math.floor(
+                    (jump % 33) / 4
+                );
+
+
+            jp =
+                jm2;
+
+        }
+
+
+        let n =
+            jy - jp;
+
+
+        if (n === jump) {
+
+            leapJ +=
+                Math.floor(
+                    jump / 33
+                );
+
+        }
+
+
+        const leapG =
+            Math.floor(
+                gy / 4
+            ) -
+
+            Math.floor(
+                (
+                    Math.floor(
+                        gy / 100
+                    ) + 1
+                ) * 3 / 4
+            ) -
+
+            150;
+
+
+        const march =
+            20 +
+            leapJ -
+            leapG;
+
+
+        let days;
+
+
+        if (jm <= 6) {
+
+            days =
+                (jm - 1) * 31 +
+                (jd - 1);
+
+        }
+
+        else {
+
+            days =
+                186 +
+                (jm - 7) * 30 +
+                (jd - 1);
+
+        }
+
+
+        const date =
+            new Date(
+                gy,
+                2,
+                march
+            );
+
+
+        date.setDate(
+            date.getDate() +
+            days
+        );
+
+
+        return {
+
+            gy:
+                date.getFullYear(),
+
+            gm:
+                date.getMonth() + 1,
+
+            gd:
+                date.getDate()
+
+        };
+
+    }
+
+
+
+    /* =====================================================
+       میلادی → جلالی
+    ===================================================== */
+
+    function gregorianToJalali(
+        gy,
+        gm,
+        gd
+    ) {
+
+        const gdm = [
+
+            0,
+            31,
+            59,
+            90,
+            120,
+            151,
+            181,
+            212,
+            243,
+            273,
+            304,
+            334
+
+        ];
+
+
+        const gy2 =
+            gm > 2
+                ? gy + 1
+                : gy;
+
+
+        let days =
+            355666 +
+            (365 * gy) +
+            Math.floor(
+                (gy2 + 3) / 4
+            ) -
+            Math.floor(
+                (gy2 + 99) / 100
+            ) +
+            Math.floor(
+                (gy2 + 399) / 400
+            ) +
+            gd +
+            gdm[gm - 1];
+
+
+        let jy =
+            -1595 +
+            33 *
+            Math.floor(
+                days / 12053
+            );
+
+
+        days %=
+            12053;
+
+
+        jy +=
+            4 *
+            Math.floor(
+                days / 1461
+            );
+
+
+        days %=
+            1461;
+
+
+        if (days > 365) {
+
+            jy +=
+                Math.floor(
+                    (days - 1) / 365
+                );
+
+
+            days =
+                (days - 1) % 365;
+
+        }
+
+
+        let jm;
+
+
+        if (days < 186) {
+
+            jm =
+                1 +
+                Math.floor(
+                    days / 31
+                );
+
+        }
+
+        else {
+
+            jm =
+                7 +
+                Math.floor(
+                    (days - 186) / 30
+                );
+
+        }
+
+
+        let jd;
+
+
+        if (days < 186) {
+
+            jd =
+                1 +
+                (days % 31);
+
+        }
+
+        else {
+
+            jd =
+                1 +
+                (
+                    (days - 186) % 30
+                );
+
+        }
+
+
+        return {
+
+            year: jy,
+            month: jm,
+            day: jd
+
+        };
+
+    }
+
+
+
+    /* =====================================================
+       رندر تقویم
+    ===================================================== */
+
     function renderCalendar() {
 
         const days =
@@ -973,14 +1377,19 @@
                 "jalaliDays"
             );
 
+
         const title =
             document.getElementById(
                 "jalaliMonthTitle"
             );
 
+
         if (!days || !title) {
+
             return;
+
         }
+
 
         title.textContent =
             monthNames[
@@ -991,6 +1400,7 @@
                 calendarYear
             );
 
+
         days.innerHTML = "";
 
 
@@ -1000,6 +1410,7 @@
                 calendarMonth,
                 1
             );
+
 
         const firstDate =
             new Date(
@@ -1025,6 +1436,7 @@
                 document.createElement(
                     "div"
                 );
+
 
             days.appendChild(
                 empty
@@ -1057,13 +1469,21 @@
 
 
         const selectedYear =
-            Number(selected[0]);
+            Number(
+                selected[0]
+            );
+
 
         const selectedMonth =
-            Number(selected[1]);
+            Number(
+                selected[1]
+            );
+
 
         const selectedDay =
-            Number(selected[2]);
+            Number(
+                selected[2]
+            );
 
 
         for (
@@ -1077,10 +1497,14 @@
                     "button"
                 );
 
-            button.type = "button";
+
+            button.type =
+                "button";
+
 
             button.className =
                 "jalali-day";
+
 
             button.textContent =
                 toPersianDigits(
@@ -1089,9 +1513,14 @@
 
 
             if (
-                today.year === calendarYear &&
-                today.month === calendarMonth &&
-                today.day === day
+                today.year ===
+                    calendarYear &&
+
+                today.month ===
+                    calendarMonth &&
+
+                today.day ===
+                    day
             ) {
 
                 button.classList.add(
@@ -1102,9 +1531,14 @@
 
 
             if (
-                selectedYear === calendarYear &&
-                selectedMonth === calendarMonth &&
-                selectedDay === day
+                selectedYear ===
+                    calendarYear &&
+
+                selectedMonth ===
+                    calendarMonth &&
+
+                selectedDay ===
+                    day
             ) {
 
                 button.classList.add(
@@ -1119,6 +1553,7 @@
                 function (event) {
 
                     event.stopPropagation();
+
 
                     selectDate(
                         calendarYear,
@@ -1139,6 +1574,11 @@
     }
 
 
+
+    /* =====================================================
+       انتخاب تاریخ
+    ===================================================== */
+
     function selectDate(
         year,
         month,
@@ -1150,16 +1590,26 @@
                 "evaluationDate"
             );
 
+
         if (!input) {
+
             return;
+
         }
+
 
         const value =
             String(year) +
             "/" +
-            String(month).padStart(2, "0") +
+            String(month).padStart(
+                2,
+                "0"
+            ) +
             "/" +
-            String(day).padStart(2, "0");
+            String(day).padStart(
+                2,
+                "0"
+            );
 
 
         input.value =
@@ -1167,10 +1617,16 @@
                 value
             );
 
+
         closeCalendar();
 
     }
 
+
+
+    /* =====================================================
+       باز کردن
+    ===================================================== */
 
     function openCalendar() {
 
@@ -1179,14 +1635,19 @@
                 "jalaliCalendar"
             );
 
+
         const input =
             document.getElementById(
                 "evaluationDate"
             );
 
+
         if (!calendar) {
+
             return;
+
         }
+
 
         const today =
             getTodayJalali();
@@ -1205,15 +1666,23 @@
         ) {
 
             calendarYear =
-                Number(current[0]);
+                Number(
+                    current[0]
+                );
+
 
             calendarMonth =
-                Number(current[1]);
+                Number(
+                    current[1]
+                );
 
-        } else {
+        }
+
+        else {
 
             calendarYear =
                 today.year;
+
 
             calendarMonth =
                 today.month;
@@ -1223,11 +1692,17 @@
 
         renderCalendar();
 
+
         calendar.style.display =
             "block";
 
     }
 
+
+
+    /* =====================================================
+       بستن
+    ===================================================== */
 
     function closeCalendar() {
 
@@ -1235,6 +1710,7 @@
             document.getElementById(
                 "jalaliCalendar"
             );
+
 
         if (calendar) {
 
@@ -1246,11 +1722,19 @@
     }
 
 
+
+    /* =====================================================
+       ماه قبل
+    ===================================================== */
+
     function previousMonth() {
 
         calendarMonth--;
 
-        if (calendarMonth < 1) {
+
+        if (
+            calendarMonth < 1
+        ) {
 
             calendarMonth = 12;
 
@@ -1258,16 +1742,25 @@
 
         }
 
+
         renderCalendar();
 
     }
 
 
+
+    /* =====================================================
+       ماه بعد
+    ===================================================== */
+
     function nextMonth() {
 
         calendarMonth++;
 
-        if (calendarMonth > 12) {
+
+        if (
+            calendarMonth > 12
+        ) {
 
             calendarMonth = 1;
 
@@ -1275,15 +1768,22 @@
 
         }
 
+
         renderCalendar();
 
     }
 
 
-    function today() {
+
+    /* =====================================================
+       امروز
+    ===================================================== */
+
+    function selectToday() {
 
         const value =
             getTodayJalali();
+
 
         selectDate(
             value.year,
@@ -1294,6 +1794,11 @@
     }
 
 
+
+    /* =====================================================
+       INITIALIZE
+    ===================================================== */
+
     document.addEventListener(
         "DOMContentLoaded",
         function () {
@@ -1303,25 +1808,30 @@
                     "evaluationDate"
                 );
 
+
             const calendarButton =
                 document.getElementById(
                     "jalaliCalendarButton"
                 );
+
 
             const calendar =
                 document.getElementById(
                     "jalaliCalendar"
                 );
 
+
             const previous =
                 document.getElementById(
                     "jalaliPrevButton"
                 );
 
+
             const next =
                 document.getElementById(
                     "jalaliNextButton"
                 );
+
 
             const todayButton =
                 document.getElementById(
@@ -1333,30 +1843,46 @@
                 !input ||
                 !calendar
             ) {
+
                 return;
+
             }
 
+
+            /* تاریخ امروز */
 
             if (!input.value) {
 
                 const value =
                     getTodayJalali();
 
+
                 input.value =
                     toPersianDigits(
+
                         value.year +
                         "/" +
                         String(
                             value.month
-                        ).padStart(2, "0") +
+                        ).padStart(
+                            2,
+                            "0"
+                        ) +
                         "/" +
                         String(
                             value.day
-                        ).padStart(2, "0")
+                        ).padStart(
+                            2,
+                            "0"
+                        )
+
                     );
 
             }
 
+
+
+            /* کلیک روی ورودی */
 
             input.addEventListener(
                 "click",
@@ -1369,6 +1895,9 @@
                 }
             );
 
+
+
+            /* فوکوس */
 
             input.addEventListener(
                 "focus",
@@ -1380,64 +1909,98 @@
             );
 
 
-            calendarButton.addEventListener(
-                "click",
-                function (event) {
 
-                    event.stopPropagation();
+            /* دکمه تقویم */
 
-                    if (
-                        calendar.style.display ===
-                        "block"
-                    ) {
+            if (calendarButton) {
 
-                        closeCalendar();
+                calendarButton.addEventListener(
+                    "click",
+                    function (event) {
 
-                    } else {
+                        event.stopPropagation();
 
-                        openCalendar();
+
+                        if (
+                            calendar.style.display ===
+                            "block"
+                        ) {
+
+                            closeCalendar();
+
+                        }
+
+                        else {
+
+                            openCalendar();
+
+                        }
 
                     }
+                );
 
-                }
-            );
-
-
-            previous.addEventListener(
-                "click",
-                function (event) {
-
-                    event.stopPropagation();
-
-                    previousMonth();
-
-                }
-            );
+            }
 
 
-            next.addEventListener(
-                "click",
-                function (event) {
 
-                    event.stopPropagation();
+            /* ماه قبل */
 
-                    nextMonth();
+            if (previous) {
 
-                }
-            );
+                previous.addEventListener(
+                    "click",
+                    function (event) {
+
+                        event.stopPropagation();
+
+                        previousMonth();
+
+                    }
+                );
+
+            }
 
 
-            todayButton.addEventListener(
-                "click",
-                function (event) {
 
-                    event.stopPropagation();
+            /* ماه بعد */
 
-                    today();
+            if (next) {
 
-                }
-            );
+                next.addEventListener(
+                    "click",
+                    function (event) {
 
+                        event.stopPropagation();
+
+                        nextMonth();
+
+                    }
+                );
+
+            }
+
+
+
+            /* امروز */
+
+            if (todayButton) {
+
+                todayButton.addEventListener(
+                    "click",
+                    function (event) {
+
+                        event.stopPropagation();
+
+                        selectToday();
+
+                    }
+                );
+
+            }
+
+
+
+            /* جلوگیری از بسته شدن هنگام کار با تقویم */
 
             calendar.addEventListener(
                 "click",
@@ -1449,6 +2012,9 @@
             );
 
 
+
+            /* کلیک بیرون */
+
             document.addEventListener(
                 "click",
                 function (event) {
@@ -1457,6 +2023,7 @@
                         document.getElementById(
                             "jalaliDateWrapper"
                         );
+
 
                     if (
                         wrapper &&
@@ -1479,5 +2046,7 @@
 
 </script>
 
+
 </body>
+
 </html>

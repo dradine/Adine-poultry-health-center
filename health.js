@@ -1,5 +1,5 @@
 /* =========================================================
-   ADINE — HEALTH (Vaccination & Medicine) — SUPABASE
+   ADINE — HEALTH (Vaccination & Medicine)
    ========================================================= */
 
 let currentUser = null;
@@ -10,82 +10,92 @@ let healthRecords = [];
 
 document.addEventListener("DOMContentLoaded", initHealth);
 
+async function waitForSession(maxTries = 8) {
+  for (let i = 0; i < maxTries; i++) {
+    const { data, error } = await supabaseClient.auth.getSession();
+
+    if (error) {
+      console.warn("getSession error:", error);
+    }
+
+    if (data?.session?.user) {
+      return data.session;
+    }
+
+    // صبر کوتاه برای بازیابی session از localStorage
+    await new Promise((r) => setTimeout(r, 200));
+  }
+  return null;
+}
+
 async function initHealth() {
   try {
-    // بررسی وجود supabase
-    if (typeof supabaseClient === "undefined") {
-      alert("خطا: supabaseClient لود نشده. فایل supabase-config.js را چک کنید.");
+    if (typeof window.supabase === "undefined") {
+      alert("کتابخانه Supabase لود نشده است.");
       return;
     }
 
-    // اول Session را چک می‌کنیم (قابل‌اطمینان‌تر از getUser)
-    const { data: sessionData, error: sessionError } =
-      await supabaseClient.auth.getSession();
-
-    if (sessionError) {
-      console.error("Session error:", sessionError);
+    if (typeof supabaseClient === "undefined") {
+      alert("supabase-config.js لود نشده است.");
+      return;
     }
 
-    if (!sessionData?.session) {
+    const session = await waitForSession();
+
+    if (!session) {
+      console.error("No session found after retries");
       location.href =
         "login.html?message=" +
-        encodeURIComponent("ابتدا وارد سامانه شوید.");
+        encodeURIComponent("نشست شما منقضی شده. دوباره وارد شوید.");
       return;
     }
 
-    currentUser = sessionData.session.user;
+    currentUser = session.user;
+    console.log("Health auth OK:", currentUser.id);
 
-    // پروفایل اختیاری — اگر نبود بیرون نینداز
-    let profile = null;
-    try {
-      if (typeof getCurrentProfile === "function") {
-        profile = await getCurrentProfile();
-      }
-    } catch (e) {
-      console.warn("Profile load warning:", e);
-    }
-
-    // انتخاب گله
+    // ---- انتخاب گله ----
     const selection =
       typeof getCurrentSelection === "function"
         ? getCurrentSelection()
         : {};
 
     if (!selection.flockId) {
-      alert("ابتدا از بخش «سالن و گله» یک گله انتخاب کنید.");
+      alert("ابتدا از بخش سالن و گله، یک گله را انتخاب کنید.");
       location.href = "flocks.html";
       return;
     }
 
-    const flocks =
-      typeof getFlocks === "function" ? getFlocks() : [];
-    const farms =
-      typeof getFarms === "function" ? getFarms() : [];
-    const houses =
-      typeof getHouses === "function" ? getHouses() : [];
+    // گله‌ها در Supabase هستند؛ از selection استفاده می‌کنیم
+    currentFlock = {
+      id: selection.flockId,
+      farmId: selection.farmId || null,
+      houseId: selection.houseId || null,
+      flockName: selection.flockName || "گله انتخاب‌شده",
+      strain: selection.strain || "",
+      placementDate: selection.placementDate || ""
+    };
 
-    currentFlock =
-      flocks.find((f) => f.id === selection.flockId) || {
-        id: selection.flockId,
-        farmId: selection.farmId || null,
-        houseId: selection.houseId || null,
-        flockName: selection.flockName || "گله انتخاب‌شده",
-        strain: selection.strain || "",
-        placementDate: selection.placementDate || ""
-      };
-
-    currentFarm =
-      farms.find((f) => f.id === currentFlock.farmId) || null;
-    currentHouse =
-      houses.find((h) => h.id === currentFlock.houseId) || null;
+    // اگر از localStorage هم بود، اطلاعات بیشتر بگیر
+    if (typeof getFlocks === "function") {
+      const local = getFlocks().find((f) => f.id === selection.flockId);
+      if (local) {
+        currentFlock = {
+          id: local.id,
+          farmId: local.farmId || local.farm_id || selection.farmId,
+          houseId: local.houseId || local.house_id || selection.houseId,
+          flockName: local.flockName || local.name || local.flock_name,
+          strain: local.strain || "",
+          placementDate: local.placementDate || local.placement_date || ""
+        };
+      }
+    }
 
     const infoEl = document.getElementById("flockInfo");
     if (infoEl) {
       infoEl.textContent = [
-        currentFarm?.name || "",
-        currentHouse?.name || "",
-        currentFlock.flockName || currentFlock.name || "",
-        currentFlock.strain || ""
+        currentFlock.flockName || "",
+        currentFlock.strain || "",
+        "شناسه: " + String(currentFlock.id).slice(0, 8)
       ]
         .filter(Boolean)
         .join(" | ");
@@ -105,10 +115,7 @@ async function initHealth() {
       currentFlock.placementDate &&
       typeof calculateAgeDays === "function"
     ) {
-      const age = calculateAgeDays(
-        currentFlock.placementDate,
-        today
-      );
+      const age = calculateAgeDays(currentFlock.placementDate, today);
       const ageInput = document.getElementById("vaccineAge");
       if (ageInput && age !== null) ageInput.value = age;
     }
@@ -117,7 +124,7 @@ async function initHealth() {
     await loadHealthRecords();
   } catch (err) {
     console.error("Health init error:", err);
-    alert("خطا در راه‌اندازی بخش سلامت:\n" + (err.message || err));
+    alert("خطا در بخش سلامت:\n" + (err.message || err));
   }
 }
 
@@ -151,7 +158,7 @@ async function loadHealthRecords() {
     console.error("Load health error:", error);
     if (tbody) {
       tbody.innerHTML =
-        "<tr><td colspan=\"5\">خطا در دریافت سوابق: " +
+        '<tr><td colspan="5">خطا: ' +
         escapeSafe(error.message) +
         "</td></tr>";
     }
@@ -164,7 +171,6 @@ async function loadHealthRecords() {
 
 async function saveVaccination(event) {
   event.preventDefault();
-
   const btn = event.target.querySelector('button[type="submit"]');
   if (btn) {
     btn.disabled = true;
@@ -185,23 +191,16 @@ async function saveVaccination(event) {
       farm_id: currentFlock.farmId || null,
       house_id: currentFlock.houseId || null,
       flock_id: String(currentFlock.id),
-      flock_name:
-        currentFlock.flockName || currentFlock.name || null,
+      flock_name: currentFlock.flockName || null,
       type: "vaccination",
       record_date,
-      age_days: Number(
-        document.getElementById("vaccineAge").value || 0
-      ),
-      disease:
-        document.getElementById("vaccineDisease").value || null,
+      age_days: Number(document.getElementById("vaccineAge").value || 0),
+      disease: document.getElementById("vaccineDisease").value || null,
       name,
       manufacturer:
-        document.getElementById("vaccineManufacturer").value.trim() ||
-        null,
-      route:
-        document.getElementById("vaccineRoute").value || null,
-      notes:
-        document.getElementById("vaccineNotes").value.trim() || null
+        document.getElementById("vaccineManufacturer").value.trim() || null,
+      route: document.getElementById("vaccineRoute").value || null,
+      notes: document.getElementById("vaccineNotes").value.trim() || null
     };
 
     const { error } = await supabaseClient
@@ -209,7 +208,6 @@ async function saveVaccination(event) {
       .insert(payload);
 
     if (error) {
-      console.error("Save vaccine error:", error);
       alert("ذخیره واکسیناسیون انجام نشد:\n" + error.message);
       return;
     }
@@ -221,7 +219,7 @@ async function saveVaccination(event) {
         : new Date().toISOString().slice(0, 10);
 
     await loadHealthRecords();
-    alert("واکسیناسیون با موفقیت ثبت شد.");
+    alert("واکسیناسیون ثبت شد.");
   } finally {
     if (btn) {
       btn.disabled = false;
@@ -232,7 +230,6 @@ async function saveVaccination(event) {
 
 async function saveMedicine(event) {
   event.preventDefault();
-
   const btn = event.target.querySelector('button[type="submit"]');
   if (btn) {
     btn.disabled = true;
@@ -253,28 +250,18 @@ async function saveMedicine(event) {
       farm_id: currentFlock.farmId || null,
       house_id: currentFlock.houseId || null,
       flock_id: String(currentFlock.id),
-      flock_name:
-        currentFlock.flockName || currentFlock.name || null,
+      flock_name: currentFlock.flockName || null,
       type: "medicine",
       record_date,
-      end_date:
-        document.getElementById("medicineEnd").value || null,
+      end_date: document.getElementById("medicineEnd").value || null,
       name,
       active_ingredient:
-        document.getElementById("medicineActive").value.trim() ||
-        null,
-      reason:
-        document.getElementById("medicineReason").value.trim() ||
-        null,
-      route:
-        document.getElementById("medicineRoute").value || null,
-      dose:
-        document.getElementById("medicineDose").value.trim() || null,
-      duration:
-        document.getElementById("medicineDuration").value.trim() ||
-        null,
-      notes:
-        document.getElementById("medicineNotes").value.trim() || null
+        document.getElementById("medicineActive").value.trim() || null,
+      reason: document.getElementById("medicineReason").value.trim() || null,
+      route: document.getElementById("medicineRoute").value || null,
+      dose: document.getElementById("medicineDose").value.trim() || null,
+      duration: document.getElementById("medicineDuration").value.trim() || null,
+      notes: document.getElementById("medicineNotes").value.trim() || null
     };
 
     const { error } = await supabaseClient
@@ -282,7 +269,6 @@ async function saveMedicine(event) {
       .insert(payload);
 
     if (error) {
-      console.error("Save medicine error:", error);
       alert("ذخیره درمان انجام نشد:\n" + error.message);
       return;
     }
@@ -294,7 +280,7 @@ async function saveMedicine(event) {
         : new Date().toISOString().slice(0, 10);
 
     await loadHealthRecords();
-    alert("درمان با موفقیت ثبت شد.");
+    alert("درمان ثبت شد.");
   } finally {
     if (btn) {
       btn.disabled = false;
@@ -304,7 +290,7 @@ async function saveMedicine(event) {
 }
 
 async function deleteHealthRecord(id) {
-  if (!confirm("آیا از حذف این رکورد مطمئن هستید؟")) return;
+  if (!confirm("حذف این رکورد؟")) return;
 
   const { error } = await supabaseClient
     .from("health_records")
@@ -313,7 +299,6 @@ async function deleteHealthRecord(id) {
     .eq("owner_id", currentUser.id);
 
   if (error) {
-    console.error("Delete health error:", error);
     alert("حذف انجام نشد:\n" + error.message);
     return;
   }
@@ -322,15 +307,12 @@ async function deleteHealthRecord(id) {
 }
 
 function escapeSafe(value) {
-  if (typeof escapeHTML === "function") {
-    return escapeHTML(value);
-  }
+  if (typeof escapeHTML === "function") return escapeHTML(value);
   return String(value ?? "")
     .replaceAll("&", "&amp;")
     .replaceAll("<", "&lt;")
     .replaceAll(">", "&gt;")
-    .replaceAll('"', "&quot;")
-    .replaceAll("'", "&#039;");
+    .replaceAll('"', "&quot;");
 }
 
 function renderHealth() {
@@ -368,7 +350,6 @@ function renderHealth() {
     .map((r) => {
       const typeLabel =
         r.type === "vaccination" ? "واکسیناسیون" : "دارو / درمان";
-      const item = r.name || "-";
       let note = "-";
 
       if (r.type === "vaccination") {
@@ -396,16 +377,13 @@ function renderHealth() {
         <tr>
           <td>${escapeSafe(r.record_date || "-")}</td>
           <td>${typeLabel}</td>
-          <td>${escapeSafe(item)}</td>
+          <td>${escapeSafe(r.name || "-")}</td>
           <td>${escapeSafe(note)}</td>
           <td>
             <button type="button" class="btn btn-danger"
-              onclick="deleteHealthRecord('${r.id}')">
-              حذف
-            </button>
+              onclick="deleteHealthRecord('${r.id}')">حذف</button>
           </td>
-        </tr>
-      `;
+        </tr>`;
     })
     .join("");
 }

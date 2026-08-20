@@ -149,10 +149,10 @@
 
                             <input
                                 id="houseCapacity"
-                                type="number"
-                                min="0"
+                                type="text"
                                 inputmode="numeric"
-                                placeholder="مثلاً 25000"
+                                autocomplete="off"
+                                placeholder="مثلاً ۲۵۰۰۰"
                             >
 
                         </div>
@@ -166,9 +166,9 @@
 
                             <input
                                 id="houseLength"
-                                type="number"
-                                min="0"
-                                step="0.1"
+                                type="text"
+                                inputmode="decimal"
+                                autocomplete="off"
                             >
 
                         </div>
@@ -182,9 +182,9 @@
 
                             <input
                                 id="houseWidth"
-                                type="number"
-                                min="0"
-                                step="0.1"
+                                type="text"
+                                inputmode="decimal"
+                                autocomplete="off"
                             >
 
                         </div>
@@ -470,13 +470,16 @@
 
                             <input
                                 id="birdCount"
-                                type="number"
-                                min="0"
+                                type="text"
                                 inputmode="numeric"
+                                autocomplete="off"
+                                placeholder="مثلاً ۵۰۰۰۰"
                             >
 
                         </div>
 
+
+                        <!-- تاریخ شمسی -->
 
                         <div class="form-group">
 
@@ -486,7 +489,12 @@
 
                             <input
                                 id="placementDate"
-                                type="date"
+                                type="text"
+                                inputmode="numeric"
+                                autocomplete="off"
+                                placeholder="۱۴۰۵/۰۵/۲۹"
+                                maxlength="10"
+                                readonly
                             >
 
                         </div>
@@ -500,9 +508,10 @@
 
                             <input
                                 id="startAgeDays"
-                                type="number"
-                                min="0"
-                                value="1"
+                                type="text"
+                                inputmode="numeric"
+                                autocomplete="off"
+                                value="۱"
                             >
 
                         </div>
@@ -618,7 +627,6 @@
     src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"
 ></script>
 
-
 <script src="supabase-config.js"></script>
 
 
@@ -637,6 +645,7 @@
 <!-- FLOCKS -->
 
 <script src="flocks.js"></script>
+
 
 </body>
 

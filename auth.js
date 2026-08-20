@@ -1,100 +1,359 @@
-
 (function () {
 
     "use strict";
 
+
     window.AdineAuth = {
+
+
+        /* =====================================================
+           GET USER
+           ===================================================== */
 
         async getUser() {
 
             const {
                 data,
                 error
-            } = await supabaseClient.auth.getUser();
+            } =
+                await supabaseClient
+                    .auth
+                    .getUser();
+
 
             if (error) {
+
+                console.error(
+                    "getUser:",
+                    error
+                );
+
                 return null;
+
             }
 
+
             return data?.user || null;
+
         },
+
+
+        /* =====================================================
+           GET SESSION
+           ===================================================== */
 
         async getSession() {
 
             const {
                 data,
                 error
-            } = await supabaseClient.auth.getSession();
+            } =
+                await supabaseClient
+                    .auth
+                    .getSession();
+
 
             if (error) {
+
+                console.error(
+                    "getSession:",
+                    error
+                );
+
                 return null;
+
             }
+
 
             return data?.session || null;
+
         },
 
-        async getProfile(userId = null) {
 
-            const user = userId
-                ? { id: userId }
-                : await this.getUser();
+        /* =====================================================
+           GET PROFILE
+           ===================================================== */
+
+        async getProfile(
+            userId = null
+        ) {
+
+            const user =
+                userId
+                    ? { id: userId }
+                    : await this.getUser();
+
 
             if (!user) {
+
                 return null;
+
             }
+
 
             const {
                 data,
                 error
-            } = await supabaseClient
-                .from("profiles")
-                .select("*")
-                .eq("id", user.id)
-                .maybeSingle();
+            } =
+                await supabaseClient
+                    .from("profiles")
+                    .select("*")
+                    .eq(
+                        "id",
+                        user.id
+                    )
+                    .maybeSingle();
+
 
             if (error) {
-                console.error(error);
+
+                console.error(
+                    "getProfile:",
+                    error
+                );
+
                 return null;
+
             }
 
+
             return data;
+
         },
+
+
+        /* =====================================================
+           SIGN OUT
+           ===================================================== */
 
         async signOut() {
 
-            await supabaseClient.auth.signOut();
+            try {
 
-            window.location.href = "login.html";
+                await supabaseClient
+                    .auth
+                    .signOut();
+
+            }
+
+            catch (error) {
+
+                console.error(
+                    "signOut:",
+                    error
+                );
+
+            }
+
+
+            window.location.href =
+                "login.html";
+
         },
+
+
+        /* =====================================================
+           CHECK PROFILE ACCESS
+           ===================================================== */
+
+        isActiveProfile(profile) {
+
+            if (!profile) {
+
+                return false;
+
+            }
+
+
+            /*
+             * سیستم فعلی ممکن است از یکی از
+             * دو ساختار زیر استفاده کند:
+             *
+             * access_status = approved
+             *
+             * یا
+             *
+             * status = active
+             *
+             * هر دو را قبول می‌کنیم.
+             */
+
+
+            const approved =
+                profile.access_status ===
+                "approved";
+
+
+            const active =
+                profile.status ===
+                "active";
+
+
+            /*
+             * مالک و مدیر سیستم نیز در صورت
+             * فعال بودن نقش می‌توانند وارد شوند.
+             */
+
+            const owner =
+                profile.role ===
+                "owner";
+
+
+            const admin =
+                profile.role ===
+                "admin";
+
+
+            return (
+                approved ||
+                active ||
+                (
+                    owner &&
+                    profile.status !== "blocked" &&
+                    profile.status !== "removed" &&
+                    profile.status !== "suspended"
+                ) ||
+                (
+                    admin &&
+                    profile.status === "active"
+                )
+            );
+
+        },
+
+
+        /* =====================================================
+           ACCESS MESSAGE
+           ===================================================== */
+
+        getAccessMessage(profile) {
+
+            if (!profile) {
+
+                return "اطلاعات حساب شما پیدا نشد.";
+
+            }
+
+
+            const status =
+                profile.status;
+
+
+            const accessStatus =
+                profile.access_status;
+
+
+            if (
+                status === "pending" ||
+                accessStatus === "pending"
+            ) {
+
+                return (
+                    "ثبت‌نام شما انجام شده و در انتظار تأیید مالک است."
+                );
+
+            }
+
+
+            if (
+                status === "suspended" ||
+                accessStatus === "suspended"
+            ) {
+
+                return (
+                    "دسترسی حساب شما موقتاً غیرفعال شده است."
+                );
+
+            }
+
+
+            if (
+                status === "blocked" ||
+                accessStatus === "blocked"
+            ) {
+
+                return (
+                    "حساب شما مسدود شده است."
+                );
+
+            }
+
+
+            if (
+                status === "removed" ||
+                accessStatus === "removed"
+            ) {
+
+                return (
+                    "دسترسی شما به سامانه لغو شده است."
+                );
+
+            }
+
+
+            return (
+                "دسترسی شما به سامانه فعال نیست."
+            );
+
+        },
+
+
+        /* =====================================================
+           REQUIRE AUTH
+           ===================================================== */
 
         async requireAuth() {
 
 
-    const {
-        data: {
-            session
-        }
-    } =
-    await supabaseClient.auth.getSession();
+            const {
+                data: {
+                    session
+                }
+            } =
+                await supabaseClient
+                    .auth
+                    .getSession();
 
 
-    if (!session) {
+            /*
+             * کاربر لاگین نکرده
+             */
 
-        window.location.href =
-            "login.html";
+            if (!session) {
 
-        return null;
-    }
+                window.location.href =
+                    "login.html";
 
 
-    const user =
-        session.user;
+                return null;
 
-            const profile = await this.getProfile(user.id);
+            }
+
+
+            const user =
+                session.user;
+
+
+            /*
+             * دریافت پروفایل
+             */
+
+            const profile =
+                await this.getProfile(
+                    user.id
+                );
+
+
+            /*
+             * پروفایل پیدا نشد
+             */
 
             if (!profile) {
 
-                await supabaseClient.auth.signOut();
+                await supabaseClient
+                    .auth
+                    .signOut();
+
 
                 window.location.href =
                     "login.html?message=" +
@@ -102,73 +361,132 @@
                         "اطلاعات حساب شما پیدا نشد."
                     );
 
+
                 return null;
+
             }
 
-            if (profile.status !== "active") {
 
-                let message =
-                    "دسترسی شما به سامانه فعال نیست.";
+            /*
+             * بررسی دسترسی
+             */
 
-                if (profile.status === "pending") {
-                    message =
-                        "ثبت‌نام شما انجام شده و در انتظار تأیید مالک است.";
-                }
+            if (
+                !this.isActiveProfile(
+                    profile
+                )
+            ) {
 
-                if (profile.status === "suspended") {
-                    message =
-                        "دسترسی حساب شما موقتاً غیرفعال شده است.";
-                }
 
-                if (profile.status === "blocked") {
-                    message =
-                        "حساب شما مسدود شده است.";
-                }
+                const message =
+                    this.getAccessMessage(
+                        profile
+                    );
 
-                if (profile.status === "removed") {
-                    message =
-                        "دسترسی شما به سامانه لغو شده است.";
-                }
 
-                await supabaseClient.auth.signOut();
+                await supabaseClient
+                    .auth
+                    .signOut();
+
 
                 window.location.href =
                     "login.html?message=" +
-                    encodeURIComponent(message);
+                    encodeURIComponent(
+                        message
+                    );
+
 
                 return null;
+
             }
 
-            await supabaseClient
-                .rpc("update_my_activity");
+
+            /*
+             * ثبت آخرین فعالیت
+             *
+             * اگر RPC وجود داشته باشد
+             * اجرا می‌شود.
+             *
+             * خطای این قسمت نباید
+             * مانع ورود شود.
+             */
+
+            try {
+
+                await supabaseClient
+                    .rpc(
+                        "update_my_activity"
+                    );
+
+            }
+
+            catch (error) {
+
+                console.warn(
+                    "update_my_activity:",
+                    error
+                );
+
+            }
+
 
             return {
+
                 user,
                 profile
+
             };
+
         },
+
+
+        /* =====================================================
+           REQUIRE OWNER
+           ===================================================== */
 
         async requireOwner() {
 
-            const auth = await this.requireAuth();
+
+            const auth =
+                await this.requireAuth();
+
 
             if (!auth) {
+
                 return null;
+
             }
 
+
+            const profile =
+                auth.profile;
+
+
+            /*
+             * مالک باید owner باشد.
+             *
+             * برای وضعیت دسترسی همان
+             * منطق requireAuth استفاده می‌شود.
+             */
+
             if (
-                auth.profile.role !== "owner" ||
-                auth.profile.status !== "active"
+                profile.role !==
+                "owner"
             ) {
 
                 window.location.href =
-                    "dashboard.html";
+                    "Dashboard.html";
+
 
                 return null;
+
             }
 
+
             return auth;
+
         }
+
 
     };
 

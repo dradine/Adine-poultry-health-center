@@ -3,6 +3,8 @@
    WEEKLY PERFORMANCE ENGINE
 ========================================================= */
 
+"use strict";
+
 
 /* =========================================================
    BUILD WEIGHT RECORD
@@ -64,7 +66,8 @@ function buildWeeklyWeightRecord({
         calculateWeeklyFCR(
             flockId,
             averageWeight,
-            feed
+            feed,
+            ageDays
         );
 
 
@@ -114,17 +117,29 @@ function buildWeeklyWeightRecord({
         maxWeight:
             analysis.max,
 
+        /* -----------------------------------------
+           مصرف
+           ----------------------------------------- */
+
         feed:
-            feed === null
+            feed === null ||
+            feed === undefined ||
+            feed === ""
                 ? null
                 : Number(feed),
 
         water:
-            water === null
+            water === null ||
+            water === undefined ||
+            water === ""
                 ? null
                 : Number(water),
 
         fcr,
+
+        /* -----------------------------------------
+           تلفات
+           ----------------------------------------- */
 
         mortality,
 
@@ -134,6 +149,10 @@ function buildWeeklyWeightRecord({
                 : calculateLivability(
                     mortality
                 ),
+
+        /* -----------------------------------------
+           استاندارد
+           ----------------------------------------- */
 
         standardWeight,
 
@@ -157,7 +176,8 @@ function buildWeeklyWeightRecord({
                 ) *
                 100,
 
-        notes
+        notes:
+            notes || ""
 
     };
 
@@ -187,12 +207,14 @@ function saveWeeklyWeightRecord(
 
 /* =========================================================
    FCR
+   Feed / Weight Gain
 ========================================================= */
 
 function calculateWeeklyFCR(
     flockId,
     currentWeight,
-    currentFeed
+    currentFeed,
+    currentAgeDays = null
 ) {
 
     const feed =
@@ -201,9 +223,16 @@ function calculateWeeklyFCR(
         );
 
 
+    const weight =
+        Number(
+            currentWeight
+        );
+
+
     if (
         !Number.isFinite(feed) ||
-        currentWeight === null
+        feed <= 0 ||
+        !Number.isFinite(weight)
     ) {
 
         return null;
@@ -211,20 +240,88 @@ function calculateWeeklyFCR(
     }
 
 
-    const previous =
+    const records =
         getFlockWeeklyRecords(
             flockId
-        )
-        .filter(
-            item =>
-                Number(
-                    item.averageWeight
-                ) <
-                Number(
-                    currentWeight
+        );
+
+
+    if (
+        !Array.isArray(records) ||
+        records.length === 0
+    ) {
+
+        return null;
+
+    }
+
+
+    let previous = null;
+
+
+    /* -----------------------------------------
+       پیدا کردن رکورد سنی قبلی
+       ----------------------------------------- */
+
+    if (
+        currentAgeDays !== null &&
+        currentAgeDays !== undefined
+    ) {
+
+        previous =
+            records
+                .filter(
+                    item =>
+
+                        Number(
+                            item.ageDays
+                        ) <
+                        Number(
+                            currentAgeDays
+                        ) &&
+
+                        Number.isFinite(
+                            Number(
+                                item.averageWeight
+                            )
+                        )
                 )
-        )
-        .at(-1);
+                .sort(
+                    (
+                        a,
+                        b
+                    ) =>
+                        Number(
+                            b.ageDays
+                        ) -
+                        Number(
+                            a.ageDays
+                        )
+                )[0] || null;
+
+    }
+
+
+    /* -----------------------------------------
+       اگر سن موجود نبود،
+       آخرین رکورد قبلی را بگیر
+       ----------------------------------------- */
+
+    if (!previous) {
+
+        previous =
+            records
+                .filter(
+                    item =>
+                        Number.isFinite(
+                            Number(
+                                item.averageWeight
+                            )
+                        )
+                )
+                .at(-1) || null;
+
+    }
 
 
     if (!previous) {
@@ -234,13 +331,26 @@ function calculateWeeklyFCR(
     }
 
 
-    const gain =
-        Number(
-            currentWeight
-        ) -
+    const previousWeight =
         Number(
             previous.averageWeight
         );
+
+
+    if (
+        !Number.isFinite(
+            previousWeight
+        )
+    ) {
+
+        return null;
+
+    }
+
+
+    const gain =
+        weight -
+        previousWeight;
 
 
     if (
@@ -252,10 +362,7 @@ function calculateWeeklyFCR(
     }
 
 
-    return (
-        feed /
-        gain
-    );
+    return feed / gain;
 
 }
 
@@ -307,14 +414,14 @@ function getWeeklyPerformance(
         );
 
 
+    const standard =
+        getStandardForCurrentFlock(
+            flockId
+        );
+
+
     return records.map(
         record => {
-
-            const standard =
-                getStandardForCurrentFlock(
-                    flockId
-                );
-
 
             const standardWeight =
                 standard
@@ -333,7 +440,8 @@ function getWeeklyPerformance(
                 standardWeight,
 
                 weightDifference:
-                    standardWeight === null
+                    standardWeight === null ||
+                    record.averageWeight === null
                         ? null
                         : Number(
                             record.averageWeight
@@ -341,7 +449,8 @@ function getWeeklyPerformance(
                           standardWeight,
 
                 weightDifferencePercent:
-                    standardWeight === null
+                    standardWeight === null ||
+                    record.averageWeight === null
                         ? null
                         : (
                             (
@@ -401,6 +510,10 @@ function calculateFlockHealthIndex(
     let score = 100;
 
 
+    /* -----------------------------------------
+       CV
+       ----------------------------------------- */
+
     if (
         Number.isFinite(
             Number(
@@ -438,6 +551,10 @@ function calculateFlockHealthIndex(
 
     }
 
+
+    /* -----------------------------------------
+       Uniformity
+       ----------------------------------------- */
 
     if (
         Number.isFinite(
@@ -482,6 +599,10 @@ function calculateFlockHealthIndex(
 
     }
 
+
+    /* -----------------------------------------
+       Weight deviation
+       ----------------------------------------- */
 
     if (
         Number.isFinite(

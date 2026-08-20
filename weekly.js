@@ -234,46 +234,50 @@ function setToday() {
             "evaluationDate"
         );
 
-
     if (!input) {
-
         return;
-
     }
 
-
-    const date =
+    const today =
         new Date();
 
+    const formatter =
+        new Intl.DateTimeFormat(
+            "fa-IR-u-ca-persian",
+            {
+                year: "numeric",
+                month: "2-digit",
+                day: "2-digit"
+            }
+        );
+
+    const parts =
+        formatter.formatToParts(
+            today
+        );
 
     const year =
-        date.getFullYear();
-
+        parts.find(
+            item =>
+                item.type === "year"
+        )?.value || "";
 
     const month =
-        String(
-            date.getMonth() + 1
-        ).padStart(
-            2,
-            "0"
-        );
-
+        parts.find(
+            item =>
+                item.type === "month"
+        )?.value || "";
 
     const day =
-        String(
-            date.getDate()
-        ).padStart(
-            2,
-            "0"
-        );
-
+        parts.find(
+            item =>
+                item.type === "day"
+        )?.value || "";
 
     input.value =
-        `${year}-${month}-${day}`;
+        `${year}/${month}/${day}`;
 
 }
-
-
 /* =========================================================
    WEIGHTS
    ========================================================= */

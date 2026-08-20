@@ -19,8 +19,10 @@
         داشبورد | مرکز تخصصی سلامت طیور آدینه
     </title>
 
-    
-    
+    <link
+        rel="stylesheet"
+        href="app.css"
+    >
 
 </head>
 
@@ -38,10 +40,10 @@
 
             <img
                 src="IMG_4309.png"
-                alt="آدینه"
+                alt="مرکز تخصصی سلامت طیور آدینه"
             >
 
-            <div>
+            <div class="brand-text">
 
                 <strong>
                     مرکز تخصصی سلامت طیور آدینه
@@ -57,9 +59,9 @@
 
 
         <button
+            id="logoutButton"
             class="logout-btn"
             type="button"
-            onclick="logoutAndGo()"
         >
             خروج
         </button>
@@ -79,13 +81,21 @@
 
             <section class="welcome-card">
 
-                <h1>
-                    خوش آمدید
-                </h1>
+                <div>
 
-                <p id="welcomeText">
-                    در حال بارگذاری اطلاعات کاربر...
-                </p>
+                    <div class="welcome-label">
+                        مرکز تخصصی سلامت طیور آدینه
+                    </div>
+
+                    <h1>
+                        خوش آمدید
+                    </h1>
+
+                    <p id="welcomeText">
+                        در حال دریافت اطلاعات حساب...
+                    </p>
+
+                </div>
 
             </section>
 
@@ -93,18 +103,19 @@
 
             <!-- ACCOUNT STATUS -->
 
-            <section class="status-card">
+            <section class="account-status-card">
 
-                <div>
+                <div class="status-icon">
+                    ✓
+                </div>
+
+                <div class="status-content">
 
                     <strong>
                         وضعیت حساب
                     </strong>
 
-                    <span
-                        id="accountStatus"
-                        class="status-active"
-                    >
+                    <span id="accountStatus">
                         در حال بررسی...
                     </span>
 
@@ -118,176 +129,269 @@
 
             <section class="dashboard-section">
 
-                <h2>
-                    مدیریت گله
-                </h2>
+                <div class="section-heading">
+
+                    <div>
+
+                        <h2>
+                            مدیریت گله
+                        </h2>
+
+                        <p>
+                            ثبت، پایش، تحلیل و مدیریت اطلاعات پرورش
+                        </p>
+
+                    </div>
+
+                </div>
+
 
 
                 <div class="dashboard-grid">
 
+
+                    <!-- FARMS -->
 
                     <a
                         class="menu-card"
                         href="Farms.html"
                     >
 
-                        <span class="menu-icon">
+                        <div class="menu-icon">
                             🏭
-                        </span>
+                        </div>
 
-                        <span class="menu-title">
-                            ثبت فارم
-                        </span>
+                        <div class="menu-content">
 
-                        <span class="menu-description">
-                            ایجاد و مدیریت فارم‌ها
+                            <h3>
+                                ثبت فارم
+                            </h3>
+
+                            <p>
+                                ایجاد و مدیریت فارم‌ها
+                            </p>
+
+                        </div>
+
+                        <span class="menu-arrow">
+                            ←
                         </span>
 
                     </a>
 
 
+
+                    <!-- FLOCKS -->
 
                     <a
                         class="menu-card"
                         href="flocks.html"
                     >
 
-                        <span class="menu-icon">
+                        <div class="menu-icon">
                             🐔
-                        </span>
+                        </div>
 
-                        <span class="menu-title">
-                            سالن و گله
-                        </span>
+                        <div class="menu-content">
 
-                        <span class="menu-description">
-                            ثبت سالن و دوره پرورش
+                            <h3>
+                                سالن و گله
+                            </h3>
+
+                            <p>
+                                ثبت سالن، گله و سویه
+                            </p>
+
+                        </div>
+
+                        <span class="menu-arrow">
+                            ←
                         </span>
 
                     </a>
 
 
+
+                    <!-- WEEKLY -->
 
                     <a
                         class="menu-card"
                         href="weekly.html"
                     >
 
-                        <span class="menu-icon">
+                        <div class="menu-icon">
                             ⚖️
-                        </span>
+                        </div>
 
-                        <span class="menu-title">
-                            ثبت هفتگی
-                        </span>
+                        <div class="menu-content">
 
-                        <span class="menu-description">
-                            وزن، یکنواختی، دان و آب
+                            <h3>
+                                ثبت هفتگی
+                            </h3>
+
+                            <p>
+                                وزن، یکنواختی، دان و آب
+                            </p>
+
+                        </div>
+
+                        <span class="menu-arrow">
+                            ←
                         </span>
 
                     </a>
 
 
+
+                    <!-- HEALTH -->
 
                     <a
                         class="menu-card"
                         href="health.html"
                     >
 
-                        <span class="menu-icon">
+                        <div class="menu-icon">
                             💉
-                        </span>
+                        </div>
 
-                        <span class="menu-title">
-                            واکسیناسیون و دارو
-                        </span>
+                        <div class="menu-content">
 
-                        <span class="menu-description">
-                            برنامه و سوابق درمانی
+                            <h3>
+                                واکسیناسیون و دارو
+                            </h3>
+
+                            <p>
+                                برنامه واکسیناسیون و سوابق دارویی
+                            </p>
+
+                        </div>
+
+                        <span class="menu-arrow">
+                            ←
                         </span>
 
                     </a>
 
 
+
+                    <!-- MORTALITY -->
 
                     <a
                         class="menu-card"
                         href="mortality.html"
                     >
 
-                        <span class="menu-icon">
+                        <div class="menu-icon">
                             🩺
-                        </span>
+                        </div>
 
-                        <span class="menu-title">
-                            تلفات و بیماری
-                        </span>
+                        <div class="menu-content">
 
-                        <span class="menu-description">
-                            ثبت تلفات و مشکلات گله
+                            <h3>
+                                تلفات و بیماری
+                            </h3>
+
+                            <p>
+                                ثبت تلفات، علائم و بیماری‌ها
+                            </p>
+
+                        </div>
+
+                        <span class="menu-arrow">
+                            ←
                         </span>
 
                     </a>
 
 
+
+                    <!-- REPORTS -->
 
                     <a
                         class="menu-card"
                         href="reports.html"
                     >
 
-                        <span class="menu-icon">
+                        <div class="menu-icon">
                             📊
-                        </span>
+                        </div>
 
-                        <span class="menu-title">
-                            گزارش‌ها
-                        </span>
+                        <div class="menu-content">
 
-                        <span class="menu-description">
-                            نمودار و مقایسه با استاندارد
+                            <h3>
+                                گزارش‌ها و نمودارها
+                            </h3>
+
+                            <p>
+                                تحلیل عملکرد و مقایسه با استاندارد
+                            </p>
+
+                        </div>
+
+                        <span class="menu-arrow">
+                            ←
                         </span>
 
                     </a>
 
 
+
+                    <!-- RECORDS -->
 
                     <a
                         class="menu-card"
                         href="records.html"
                     >
 
-                        <span class="menu-icon">
+                        <div class="menu-icon">
                             🗂️
-                        </span>
+                        </div>
 
-                        <span class="menu-title">
-                            پرونده دوره‌ها
-                        </span>
+                        <div class="menu-content">
 
-                        <span class="menu-description">
-                            سوابق دوره‌های قبلی
+                            <h3>
+                                پرونده دوره‌ها
+                            </h3>
+
+                            <p>
+                                سوابق دوره‌های قبلی و آرشیو
+                            </p>
+
+                        </div>
+
+                        <span class="menu-arrow">
+                            ←
                         </span>
 
                     </a>
 
 
 
+                    <!-- SETTINGS -->
+
                     <a
                         class="menu-card"
                         href="settings.html"
                     >
 
-                        <span class="menu-icon">
+                        <div class="menu-icon">
                             ⚙️
-                        </span>
+                        </div>
 
-                        <span class="menu-title">
-                            تنظیمات
-                        </span>
+                        <div class="menu-content">
 
-                        <span class="menu-description">
-                            تنظیمات سامانه
+                            <h3>
+                                تنظیمات
+                            </h3>
+
+                            <p>
+                                تنظیمات حساب و سامانه
+                            </p>
+
+                        </div>
+
+                        <span class="menu-arrow">
+                            ←
                         </span>
 
                     </a>
@@ -304,10 +408,9 @@
 
 
 
-    <!-- BOTTOM NAVIGATION -->
+    <!-- BOTTOM NAV -->
 
     <nav class="bottom-nav">
-
 
         <button
             class="active"
@@ -319,10 +422,11 @@
                 🏠
             </span>
 
-            خانه
+            <small>
+                خانه
+            </small>
 
         </button>
-
 
 
         <button
@@ -334,10 +438,11 @@
                 🏭
             </span>
 
-            فارم‌ها
+            <small>
+                فارم‌ها
+            </small>
 
         </button>
-
 
 
         <button
@@ -349,10 +454,11 @@
                 ⚖️
             </span>
 
-            هفتگی
+            <small>
+                هفتگی
+            </small>
 
         </button>
-
 
 
         <button
@@ -364,10 +470,11 @@
                 📊
             </span>
 
-            گزارش
+            <small>
+                گزارش
+            </small>
 
         </button>
-
 
     </nav>
 
@@ -382,125 +489,235 @@
 
 <script src="supabase-config.js"></script>
 
-
-<!-- CORE -->
-
 <script src="app-core.js"></script>
+
 
 
 <script>
 
-async function loadDashboard() {
+document.addEventListener(
+    "DOMContentLoaded",
+    async function () {
 
-    try {
+        const welcomeText =
+            document.getElementById(
+                "welcomeText"
+            );
 
-        const result =
-            await checkUserAccess();
-
-
-        if (
-            !result ||
-            !result.authenticated
-        ) {
-
-            location.href =
-                "login.html?message=" +
-                encodeURIComponent(
-                    "ابتدا وارد سامانه شوید."
-                );
-
-            return;
-
-        }
-
-
-        const user =
-            result.user;
-
-
-        const name =
-            user?.user_metadata?.full_name ||
-            user?.user_metadata?.name ||
-            "دکتر ادینه";
-
-
-        document.getElementById(
-            "welcomeText"
-        ).textContent =
-            `سلام ${name}؛ به سامانه مرکز تخصصی سلامت طیور آدینه خوش آمدید.`;
-
-
-        const status =
+        const accountStatus =
             document.getElementById(
                 "accountStatus"
             );
 
 
-        if (result.allowed) {
+        try {
 
-            status.textContent =
+            /*
+             * اگر تابع checkUserAccess
+             * در app-core.js وجود داشته باشد
+             * از آن استفاده می‌کنیم.
+             */
+
+            if (
+                typeof checkUserAccess ===
+                "function"
+            ) {
+
+                const result =
+                    await checkUserAccess();
+
+
+                if (
+                    !result ||
+                    !result.authenticated
+                ) {
+
+                    location.href =
+                        "login.html?message=" +
+                        encodeURIComponent(
+                            "ابتدا وارد سامانه شوید."
+                        );
+
+                    return;
+
+                }
+
+
+                const user =
+                    result.user;
+
+
+                const fullName =
+                    user?.user_metadata?.full_name ||
+                    user?.user_metadata?.name ||
+                    "دکتر ادینه";
+
+
+                welcomeText.textContent =
+                    `سلام ${fullName}؛ به سامانه مرکز تخصصی سلامت طیور آدینه خوش آمدید.`;
+
+
+                if (
+                    result.allowed
+                ) {
+
+                    accountStatus.textContent =
+                        "حساب شما فعال است.";
+
+                    accountStatus.className =
+                        "account-active";
+
+                }
+
+                else {
+
+                    accountStatus.textContent =
+                        "حساب شما هنوز تأیید نشده است.";
+
+                    accountStatus.className =
+                        "account-warning";
+
+                }
+
+            }
+
+            else {
+
+                /*
+                 * اگر app-core تابع را نداشت،
+                 * خودمان وضعیت Session را می‌خوانیم.
+                 */
+
+                if (
+                    typeof supabaseClient ===
+                    "undefined"
+                ) {
+
+                    welcomeText.textContent =
+                        "خطا: supabaseClient پیدا نشد.";
+
+                    return;
+
+                }
+
+
+                const {
+                    data,
+                    error
+                } =
+                    await supabaseClient
+                        .auth
+                        .getSession();
+
+
+                if (
+                    error ||
+                    !data?.session
+                ) {
+
+                    location.href =
+                        "login.html?message=" +
+                        encodeURIComponent(
+                            "ابتدا وارد سامانه شوید."
+                        );
+
+                    return;
+
+                }
+
+
+                const user =
+                    data.session.user;
+
+
+                const fullName =
+                    user?.user_metadata?.full_name ||
+                    user?.user_metadata?.name ||
+                    "دکتر ادینه";
+
+
+                welcomeText.textContent =
+                    `سلام ${fullName}؛ به سامانه مرکز تخصصی سلامت طیور آدینه خوش آمدید.`;
+
+
+                accountStatus.textContent =
+                    "حساب شما فعال است.";
+
+                accountStatus.className =
+                    "account-active";
+
+            }
+
+        }
+
+        catch (error) {
+
+            console.error(
+                "Dashboard error:",
+                error
+            );
+
+
+            welcomeText.textContent =
+                "سلام دکتر ادینه؛ به سامانه مرکز تخصصی سلامت طیور آدینه خوش آمدید.";
+
+
+            accountStatus.textContent =
                 "حساب شما فعال است.";
 
-            status.className =
-                "status-active";
+            accountStatus.className =
+                "account-active";
 
-        } else {
+        }
 
-            status.textContent =
-                "حساب شما هنوز تأیید نشده است.";
+    });
 
-            status.className =
-                "status-warning";
+
+
+document.getElementById(
+    "logoutButton"
+).addEventListener(
+    "click",
+    async function () {
+
+        try {
+
+            if (
+                typeof logoutUser ===
+                "function"
+            ) {
+
+                await logoutUser();
+
+            }
+
+            else if (
+                typeof supabaseClient !==
+                "undefined"
+            ) {
+
+                await supabaseClient
+                    .auth
+                    .signOut();
+
+            }
+
+        }
+
+        catch (error) {
+
+            console.error(
+                "Logout:",
+                error
+            );
 
         }
 
 
-    }
-
-    catch (error) {
-
-        console.error(
-            "Dashboard error:",
-            error
-        );
-
-
-        document.getElementById(
-            "welcomeText"
-        ).textContent =
-            "خطا در دریافت اطلاعات حساب.";
+        location.href =
+            "login.html";
 
     }
-
-}
-
-
-async function logoutAndGo() {
-
-    try {
-
-        await logoutUser();
-
-    }
-
-    catch (error) {
-
-        console.error(
-            error
-        );
-
-    }
-
-
-    location.href =
-        "login.html";
-
-}
-
-
-document.addEventListener(
-    "DOMContentLoaded",
-    loadDashboard
 );
 
 </script>

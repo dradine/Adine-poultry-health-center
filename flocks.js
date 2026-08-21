@@ -742,236 +742,120 @@ async function deleteHouse(
 
 function setupGenetics() {
 
-    const production =
-        document.getElementById(
-            "productionType"
-        );
+    const production = document.getElementById("productionType");
+    const genetics = document.getElementById("genetics");
+    const strain = document.getElementById("flockStrain");
+    const program = document.getElementById("flockProgram");
 
+    if (!production || !genetics || !strain || !program) return;
 
-    if (!production) {
-
-        return;
-
-    }
-
-
-    production.addEventListener(
-        "change",
-        updateGenetics
-    );
-
+    production.addEventListener("change", updateGenetics);
+    genetics.addEventListener("change", updatePrograms);
 
     updateGenetics();
-
 }
 
 
 function updateGenetics() {
 
-    const type =
-        getValue(
-            "productionType"
-        );
+    const type = getValue("productionType");
+    const genetics = document.getElementById("genetics");
+    const strain = document.getElementById("flockStrain");
+    const program = document.getElementById("flockProgram");
 
+    if (!genetics || !strain || !program) return;
 
-    const genetics =
-        document.getElementById(
-            "genetics"
-        );
+    genetics.innerHTML = `<option value="">انتخاب شرکت / ژنتیک</option>`;
+    strain.innerHTML = `<option value="">انتخاب سویه / خط ژنتیکی</option>`;
+    program.innerHTML = `<option value="">انتخاب خودکار</option>`;
 
+    const catalog = typeof getGenetics === "function"
+        ? getGenetics(type)
+        : (window.POULTRY_CATALOG?.[type]?.genetics || []);
 
-    const program =
-        document.getElementById(
-            "flockProgram"
-        );
+    (catalog || []).forEach(item => {
+        const option = document.createElement("option");
+        option.value = item.id;
+        option.textContent = item.name;
+        genetics.appendChild(option);
+    });
 
-
-    if (!genetics || !program) {
-
-        return;
-
-    }
-
-
-    genetics.innerHTML = "";
-    program.innerHTML = "";
-
-
-    const groups = {
-
-        broiler: [
-
-            ["ross308", "Ross 308"],
-            ["cobb500", "Cobb 500"],
-            ["indianriver", "Indian River"],
-            ["arbor_acres", "Arbor Acres"],
-            ["arian", "آرین"]
-
-        ],
-
-        layer: [
-
-            ["hyline", "Hy-Line"],
-            ["lohmann", "Lohmann"],
-            ["isa", "ISA"],
-            ["novogen", "Novogen"],
-            ["bovans", "Bovans"]
-
-        ],
-
-        pullet: [
-
-            ["hyline", "Hy-Line"],
-            ["lohmann", "Lohmann"],
-            ["isa", "ISA"],
-            ["novogen", "Novogen"],
-            ["bovans", "Bovans"]
-
-        ],
-
-        breeder: [
-
-            ["ross_breeder", "Ross Parent Stock"],
-            ["cobb_breeder", "Cobb Parent Stock"],
-            ["arbor_breeder", "Arbor Acres Parent Stock"]
-
-        ]
-
-    };
-
-
-    const items =
-        groups[type] || [];
-
-
-    if (!items.length) {
-
-        genetics.innerHTML = `
-
-            <option value="">
-                ابتدا نوع پرورش را انتخاب کنید
-            </option>
-
-        `;
-
-        program.innerHTML = `
-
-            <option value="">
-                ابتدا نژاد / سویه را انتخاب کنید
-            </option>
-
-        `;
-
-        return;
-
-    }
-
-
-    genetics.innerHTML = `
-
-        <option value="">
-            انتخاب سویه
-        </option>
-
-    `;
-
-
-    items.forEach(
-        item => {
-
-            const option =
-                document.createElement(
-                    "option"
-                );
-
-
-            option.value =
-                item[0];
-
-
-            option.textContent =
-                item[1];
-
-
-            genetics.appendChild(
-                option
-            );
-
-        }
-    );
-
-
-    genetics.onchange =
-        updatePrograms;
-
+    genetics.disabled = !(catalog && catalog.length);
+    strain.disabled = true;
+    program.disabled = true;
 }
 
 
 function updatePrograms() {
 
-    const type =
-        getValue(
-            "productionType"
-        );
+    const type = getValue("productionType");
+    const geneticsId = getValue("genetics");
+    const genetics = document.getElementById("genetics");
+    const strain = document.getElementById("flockStrain");
+    const program = document.getElementById("flockProgram");
 
+    if (!genetics || !strain || !program) return;
 
-    const strain =
-        getValue(
-            "genetics"
-        );
+    strain.innerHTML = `<option value="">انتخاب سویه / خط ژنتیکی</option>`;
+    program.innerHTML = `<option value="">انتخاب خودکار</option>`;
 
-
-    const program =
-        document.getElementById(
-            "flockProgram"
-        );
-
-
-    program.innerHTML = "";
-
-
-    if (!strain) {
-
-        program.innerHTML = `
-
-            <option value="">
-                انتخاب سویه
-            </option>
-
-        `;
-
+    if (!geneticsId) {
+        strain.disabled = true;
+        program.disabled = true;
         return;
-
     }
 
+    const strains = typeof getStrains === "function"
+        ? getStrains(type, geneticsId)
+        : (window.POULTRY_CATALOG?.[type]?.genetics || [])
+            .find(g => g.id === geneticsId)?.strains || [];
 
-    const label =
-        document
-            .getElementById(
-                "genetics"
-            )
-            .selectedOptions[0]
-            ?.textContent || "";
+    (strains || []).forEach(item => {
+        const option = document.createElement("option");
+        option.value = item;
+        option.textContent = item;
+        strain.appendChild(option);
+    });
+
+    strain.disabled = !(strains && strains.length);
+    program.disabled = false;
+
+    const first = strain.options.length > 1 ? strain.options[1] : null;
+    if (first && strains.length === 1) {
+        strain.value = first.value;
+    }
+
+    updateStrainProgram();
+
+    strain.onchange = updateStrainProgram;
+}
 
 
-    const option =
-        document.createElement(
-            "option"
-        );
+function updateStrainProgram() {
 
+    const type = getValue("productionType");
+    const geneticsId = getValue("genetics");
+    const strainValue = getValue("flockStrain");
+    const genetics = document.getElementById("genetics");
+    const program = document.getElementById("flockProgram");
 
-    option.value =
-        `${type}_${strain}`;
+    if (!program) return;
 
+    program.innerHTML = `<option value="">انتخاب استاندارد / برنامه</option>`;
 
-    option.textContent =
-        `استاندارد ${label}`;
+    if (!geneticsId) {
+        program.disabled = true;
+        return;
+    }
 
+    const company = genetics?.selectedOptions?.[0]?.textContent || geneticsId;
+    const label = strainValue || company;
 
-    program.appendChild(
-        option
-    );
-
+    const option = document.createElement("option");
+    option.value = `${type}_${geneticsId}_${strainValue || "default"}`;
+    option.textContent = `استاندارد ${company}${strainValue ? " — " + strainValue : ""}`;
+    program.appendChild(option);
+    program.disabled = false;
 }
 
 
@@ -1169,6 +1053,7 @@ async function saveFlock(
             getValue("genetics"),
 
         strain:
+            getValue("flockStrain") ||
             getValue("genetics"),
 
         program:

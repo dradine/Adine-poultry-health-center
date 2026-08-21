@@ -227,8 +227,8 @@ const POULTRY_CATALOG = {
                 id: "cobb",
                 name: "Cobb",
                 strains: [
-                    "Cobb500",
-                    "Cobb800"
+                    "Cobb500 Parent Stock",
+                    "Cobb800 Parent Stock"
                 ]
             }
 
@@ -267,9 +267,12 @@ const PERFORMANCE_METRICS = {
     uniformity15: { label: "یکنواختی ±15%", unit: "%", direction: "higher" },
     cv: { label: "CV", unit: "%", direction: "lower" },
     dailyWater: { label: "مصرف آب روزانه", unit: "mL/bird/day", direction: "lower" },
-    eggProduction: { label: "تولید تخم‌مرغ", unit: "%", direction: "higher" },
+    henHousedProduction: { label: "تولید تخم‌مرغ", unit: "%", direction: "higher" },
     henDayProduction: { label: "Hen-Day", unit: "%", direction: "higher" },
+    henHousedProduction: { label: "Hen-Housed", unit: "%", direction: "higher" },
     eggWeight: { label: "وزن تخم‌مرغ", unit: "g", direction: "higher" },
+    haughUnit: { label: "Haugh Unit", unit: "HU", direction: "higher" },
+    shellStrength: { label: "استحکام پوسته", unit: "N", direction: "higher" },
     eggMass: { label: "Egg Mass", unit: "g/hen/day", direction: "higher" },
     cumulativeEggs: { label: "تخم تجمعی", unit: "egg/hen", direction: "higher" },
     fertility: { label: "نطفه‌داری", unit: "%", direction: "higher" },
@@ -288,10 +291,9 @@ const VERIFIED_STANDARDS = {
                 sourceYear: 2022,
                 sourceType: "official-performance-objective",
                 sourceLabel: "Aviagen Ross 308 Broiler Performance Objectives 2022 (As-Hatched)",
-                sourceUrl: "https://aviagen.com/na/brands/ross/products/ross-308",
-                notes: "As-hatched performance; official breeder objective. Weight, daily intake, cumulative intake and cumulative FCR are used where documented.",
+                sourceUrl: "https://ar.aviagen.com/assets/Tech_Center/Ross_Broiler/RossxRoss308-BroilerPerformanceObjectives2022-EN.pdf",
                 records: [
-                    standardRecord(1,  { bodyWeight: 62,  dailyFeed: 12, cumulativeFeed: 12,  fcr: 0.196 }),
+                    standardRecord(1,  { bodyWeight: 62,  dailyFeed: 12, cumulativeFeed: 12, fcr: 0.196 }),
                     standardRecord(7,  { bodyWeight: 213, dailyFeed: 35, cumulativeFeed: 166, fcr: 0.780 }),
                     standardRecord(14, { bodyWeight: 533, dailyFeed: 67, cumulativeFeed: 535, fcr: 1.005 }),
                     standardRecord(21, { bodyWeight: 978, dailyFeed: 99, cumulativeFeed: 1117, fcr: 1.142 }),
@@ -304,32 +306,117 @@ const VERIFIED_STANDARDS = {
             }
         }
     },
+
     layer: {
         hyline: {
             "W-80": {
                 sourceYear: 2026,
                 sourceType: "official-performance-standard",
-                sourceLabel: "Hy-Line W-80 Commercial Layers Performance Standards 2026 (مرکز بازه‌های رسمی وزن)",
+                sourceLabel: "Hy-Line W-80 Commercial Layers Performance Standards — April 2026",
                 sourceUrl: "https://www.hyline.com/filesimages/Hy-Line-Products/Hy-Line-Product-PDFs/W-80/80%20STD%20ENG.pdf",
                 records: [
-                    standardRecord(119, { bodyWeight: 1240 }),
-                    standardRecord(182, { bodyWeight: 1532.5 }),
-                    standardRecord(224, { bodyWeight: 1615 }),
-                    standardRecord(490, { bodyWeight: 1683 }),
-                    standardRecord(700, { bodyWeight: 1714.5 })
+                    standardRecord(119, { bodyWeight: 1240.5, dailyFeed: 73, dailyWater: 110, uniformity10: 90 }),
+                    standardRecord(126, { bodyWeight: 1286.5, dailyFeed: 75, dailyWater: 110 }),
+                    standardRecord(133, { bodyWeight: 1329.5, dailyFeed: 80.7, dailyWater: 121.1, eggProduction: 6.6, eggWeight: 45.45 }),
+                    standardRecord(140, { bodyWeight: 1368, dailyFeed: 84.55, dailyWater: 126.9, eggProduction: 43.35, eggWeight: 47.95 }),
+                    standardRecord(147, { bodyWeight: 1401.5, dailyFeed: 88.25, dailyWater: 132.6, eggProduction: 73.8, eggWeight: 49.75 }),
+                    standardRecord(154, { bodyWeight: 1432.5, dailyFeed: 92.1, dailyWater: 138.7, eggProduction: 83.5, eggWeight: 51.35 }),
+                    standardRecord(168, { bodyWeight: 1486.5, dailyFeed: 94.1, dailyWater: 141.1, eggProduction: 91.65, eggWeight: 54.3 }),
+                    standardRecord(182, { bodyWeight: 1532.5, dailyFeed: 97.3, dailyWater: 145.9, eggProduction: 94.4, eggWeight: 56.65 }),
+                    standardRecord(196, { bodyWeight: 1568.5, dailyFeed: 103.0, dailyWater: 154.7, eggProduction: 96.3, eggWeight: 59.55 }),
+                    standardRecord(224, { bodyWeight: 1600.5, dailyFeed: 107.0, dailyWater: 160.5, eggProduction: 92.7, eggWeight: 62.0 }),
+                    standardRecord(252, { bodyWeight: 1614.5, dailyFeed: 107.0, dailyWater: 160.6, eggProduction: 91.1, eggWeight: 63.1 }),
+                    standardRecord(280, { bodyWeight: 1618.5, dailyFeed: 107.0, dailyWater: 160.6, eggProduction: 90.4, eggWeight: 64.0 }),
+                    standardRecord(350, { bodyWeight: 1629.0, dailyFeed: 107.0, dailyWater: 160.6, eggProduction: 93.25, eggWeight: 64.55 }),
+                    standardRecord(420, { bodyWeight: 1635.0, dailyFeed: 107.0, dailyWater: 160.6, eggProduction: 91.55, eggWeight: 64.65 }),
+                    standardRecord(490, { bodyWeight: 1683.0, dailyFeed: 107.0, dailyWater: 160.6, eggProduction: 91.0, eggWeight: 64.5 }),
+                    standardRecord(560, { bodyWeight: 1695.0, dailyFeed: 107.0, dailyWater: 160.6, eggProduction: 86.95, eggWeight: 64.8 }),
+                    standardRecord(700, { bodyWeight: 1714.5, dailyFeed: 108.4, dailyWater: 166.2, eggProduction: 0, eggWeight: 64.9 })
+                ]
+            },
+            "W-80 Plus": {
+                sourceYear: 2024,
+                sourceType: "official-performance-standard",
+                sourceLabel: "Hy-Line W-80 Plus Commercial Layers Performance Standards",
+                sourceUrl: "https://www.hyline.com/filesimages/Hy-Line-Products/Hy-Line-Product-PDFs/W-80/80PLUS%20STD%20ENG.pdf",
+                records: [
+                    standardRecord(126, { bodyWeight: 1280, dailyFeed: 73 }),
+                    standardRecord(182, { bodyWeight: 1360, dailyFeed: 100 }),
+                    standardRecord(490, { bodyWeight: 1710, dailyFeed: 104.9, eggWeight: 63.4 }),
+                    standardRecord(700, { bodyWeight: 1820, dailyFeed: 113.2, eggWeight: 68.8 })
+                ]
+            },
+            "W-80 Pro": {
+                sourceYear: 2026,
+                sourceType: "official-performance-standard",
+                sourceLabel: "Hy-Line W-80 Pro Commercial Layers Performance Standards — 2026",
+                sourceUrl: "https://www.hyline.com/filesimages/Hy-Line-Products/Hy-Line-Product-PDFs/W-80/80R%20STD%20ENG.pdf",
+                records: [
+                    standardRecord(119, { bodyWeight: 1156 }),
+                    standardRecord(182, { bodyWeight: 1210 }),
+                    standardRecord(490, { bodyWeight: 1570, dailyFeed: 102.8, eggWeight: 62.4 }),
+                    standardRecord(700, { bodyWeight: 1701, dailyFeed: 106.4, eggWeight: 64.3 })
                 ]
             }
         }
     },
+
     pullet: {
         hyline: {
             "W-80": {
                 sourceYear: 2026,
                 sourceType: "official-performance-standard",
-                sourceLabel: "Hy-Line W-80 Commercial Layers Performance Standards 2026 (مرکز بازه‌های رسمی وزن)",
+                sourceLabel: "Hy-Line W-80 Commercial Layers Performance Standards — Rearing, April 2026",
                 sourceUrl: "https://www.hyline.com/filesimages/Hy-Line-Products/Hy-Line-Product-PDFs/W-80/80%20STD%20ENG.pdf",
                 records: [
-                    standardRecord(119, { bodyWeight: 1240 })
+                    standardRecord(7, { bodyWeight: 71, dailyFeed: 14.5, dailyWater: 21.5 }),
+                    standardRecord(14, { bodyWeight: 131, dailyFeed: 19, dailyWater: 28.5, uniformity10: 85 }),
+                    standardRecord(21, { bodyWeight: 196.5, dailyFeed: 22.5, dailyWater: 34.5 }),
+                    standardRecord(28, { bodyWeight: 268, dailyFeed: 26.5, dailyWater: 39.5 }),
+                    standardRecord(35, { bodyWeight: 346, dailyFeed: 31.5, dailyWater: 47, uniformity10: 80 }),
+                    standardRecord(42, { bodyWeight: 432, dailyFeed: 36, dailyWater: 54 }),
+                    standardRecord(49, { bodyWeight: 525, dailyFeed: 40.5, dailyWater: 60, uniformity10: 85 }),
+                    standardRecord(56, { bodyWeight: 621.5, dailyFeed: 44, dailyWater: 66 }),
+                    standardRecord(63, { bodyWeight: 718, dailyFeed: 47.5, dailyWater: 70.5 }),
+                    standardRecord(70, { bodyWeight: 811.5, dailyFeed: 50, dailyWater: 75.5 }),
+                    standardRecord(77, { bodyWeight: 897, dailyFeed: 53, dailyWater: 80 }),
+                    standardRecord(84, { bodyWeight: 973, dailyFeed: 56, dailyWater: 84.5 }),
+                    standardRecord(91, { bodyWeight: 1038, dailyFeed: 59.5, dailyWater: 89.5 }),
+                    standardRecord(98, { bodyWeight: 1096.5, dailyFeed: 63, dailyWater: 94.5 }),
+                    standardRecord(105, { bodyWeight: 1146.5, dailyFeed: 66, dailyWater: 99 }),
+                    standardRecord(112, { bodyWeight: 1193.5, dailyFeed: 70, dailyWater: 105 }),
+                    standardRecord(119, { bodyWeight: 1240.5, dailyFeed: 73, dailyWater: 110, uniformity10: 90 })
+                ]
+            }
+        }
+    },
+
+    breeder: {
+        aviagen_ross: {
+            "Ross 308": {
+                sourceYear: 2021,
+                sourceType: "official-performance-objective",
+                sourceLabel: "Ross 308 Parent Stock Performance Objectives 2021",
+                sourceUrl: "https://ross-intl.aviagen.com/assets/Tech_Center/Ross_PS/Ross308-ParentStock-PerformanceObjectives-2021-EN.pdf",
+                notes: "Official Ross 308 parent-stock objectives. Female body weight/feed, male body weight/feed, egg production, hatching eggs and hatchability are documented separately in the source.",
+                records: [
+                    standardRecord(175, { bodyWeight: 2970, dailyFeed: 127, henHousedProduction: 5.4, hatchability: 0 }),
+                    standardRecord(182, { bodyWeight: 3090, dailyFeed: 144, henHousedProduction: 23.3, hatchability: 78.3 }),
+                    standardRecord(189, { bodyWeight: 3190, dailyFeed: 159, henHousedProduction: 53.3, hatchability: 81.1 }),
+                    standardRecord(196, { bodyWeight: 3290, dailyFeed: 167, henHousedProduction: 74.7, hatchability: 83.5 }),
+                    standardRecord(203, { bodyWeight: 3360, dailyFeed: 167, henHousedProduction: 83.3, hatchability: 85.5 }),
+                    standardRecord(210, { bodyWeight: 3410, dailyFeed: 167, henHousedProduction: 86.2, hatchability: 87.2 }),
+                    standardRecord(217, { bodyWeight: 3450, dailyFeed: 167, henHousedProduction: 86.9, hatchability: 88.6 }),
+                    standardRecord(224, { bodyWeight: 3490, dailyFeed: 167, henHousedProduction: 86.2, hatchability: 89.6 }),
+                    standardRecord(238, { bodyWeight: 3570, dailyFeed: 167, henHousedProduction: 83.9, hatchability: 91.1 }),
+                    standardRecord(252, { bodyWeight: 3630, dailyFeed: 167, henHousedProduction: 81.6, hatchability: 91.6 }),
+                    standardRecord(280, { bodyWeight: 3725, dailyFeed: 165, henHousedProduction: 76.9, hatchability: 91.1 }),
+                    standardRecord(308, { bodyWeight: 3805, dailyFeed: 163, henHousedProduction: 72.3, hatchability: 89.1 }),
+                    standardRecord(336, { bodyWeight: 3885, dailyFeed: 162, henHousedProduction: 67.6, hatchability: 86.3 }),
+                    standardRecord(364, { bodyWeight: 3960, dailyFeed: 160, henHousedProduction: 63.0, hatchability: 82.4 }),
+                    standardRecord(392, { bodyWeight: 4005, dailyFeed: 157, henHousedProduction: 58.3, hatchability: 78.5 }),
+                    standardRecord(420, { bodyWeight: 4045, dailyFeed: 155, henHousedProduction: 53.7, hatchability: 0 }),
+                    standardRecord(448, { bodyWeight: 4085, dailyFeed: 154, henHousedProduction: 49.1, hatchability: 0 })
                 ]
             }
         }
@@ -346,79 +433,61 @@ const MANAGEMENT_STANDARD_VERSION = "2026.1";
 
 const MANAGEMENT_STANDARDS = {
     broiler: {
-        sourceLabel: "استاندارد مدیریتی گوشتی — مرکز تخصصی سلامت طیور آدینه",
+        sourceLabel: "استاندارد مدیریتی پایش گوشتی — نسخه 2026.1",
         sourceType: "management-standard",
         version: MANAGEMENT_STANDARD_VERSION,
-        waterFeedRatioBase: 2.0,
-        notes: "آب به‌عنوان هدف مدیریتی پایه بر مبنای حدود 2 برابر دان روزانه تنظیم شده و باید با دما، رطوبت، کیفیت آب، الکترولیت و شرایط فارم تفسیر شود.",
+        notes: "برای شاخص‌هایی که کاتالوگ رسمی سویه/نسخه در دسترس نیست، فقط اهداف مدیریتی پایش استفاده می‌شود. وزن و FCR از این پروفایل جایگزین استاندارد رسمی سویه نمی‌شوند.",
         records: [
-            standardRecord(1,  { bodyWeight: 42, dailyFeed: 13, dailyWater: 26, fcr: 0.23, cv: 10, uniformity10: 68, uniformity15: 86 }),
-            standardRecord(7,  { bodyWeight: 190, dailyFeed: 35, dailyWater: 70, fcr: 0.90, cv: 10, uniformity10: 68, uniformity15: 86 }),
-            standardRecord(14, { bodyWeight: 490, dailyFeed: 70, dailyWater: 140, fcr: 1.05, cv: 10, uniformity10: 68, uniformity15: 86 }),
-            standardRecord(21, { bodyWeight: 900, dailyFeed: 105, dailyWater: 210, fcr: 1.20, cv: 10, uniformity10: 68, uniformity15: 86 }),
-            standardRecord(28, { bodyWeight: 1400, dailyFeed: 145, dailyWater: 290, fcr: 1.35, cv: 10, uniformity10: 68, uniformity15: 86 }),
-            standardRecord(35, { bodyWeight: 1950, dailyFeed: 175, dailyWater: 350, fcr: 1.45, cv: 10, uniformity10: 68, uniformity15: 86 }),
-            standardRecord(42, { bodyWeight: 2500, dailyFeed: 195, dailyWater: 390, fcr: 1.55, cv: 10, uniformity10: 68, uniformity15: 86 }),
-            standardRecord(49, { bodyWeight: 3050, dailyFeed: 210, dailyWater: 420, fcr: 1.65, cv: 10, uniformity10: 68, uniformity15: 86 }),
-            standardRecord(56, { bodyWeight: 3600, dailyFeed: 220, dailyWater: 440, fcr: 1.75, cv: 10, uniformity10: 68, uniformity15: 86 })
-        ]
-    },
-    layer: {
-        sourceLabel: "استاندارد مدیریتی تخم‌گذار — مرکز تخصصی سلامت طیور آدینه",
-        sourceType: "management-standard",
-        version: MANAGEMENT_STANDARD_VERSION,
-        waterFeedRatioBase: 2.0,
-        notes: "آب به‌عنوان هدف مدیریتی پایه بر مبنای حدود 2 برابر دان روزانه تنظیم شده و باید با دما، رطوبت، کیفیت آب، الکترولیت و شرایط فارم تفسیر شود.",
-        records: [
-            standardRecord(119, { bodyWeight: 1240, dailyFeed: 85, dailyWater: 170, fcr: 1.95, cv: 8, uniformity10: 80, uniformity15: 90 }),
-            standardRecord(140, { bodyWeight: 1450, dailyFeed: 95, dailyWater: 190, fcr: 1.90, cv: 8, uniformity10: 80, uniformity15: 90 }),
-            standardRecord(168, { bodyWeight: 1550, dailyFeed: 102, dailyWater: 205, fcr: 1.90, cv: 8, uniformity10: 80, uniformity15: 90 }),
-            standardRecord(182, { bodyWeight: 1600, dailyFeed: 105, dailyWater: 210, fcr: 1.90, cv: 8, uniformity10: 80, uniformity15: 90 }),
-            standardRecord(224, { bodyWeight: 1650, dailyFeed: 108, dailyWater: 216, fcr: 1.95, cv: 8, uniformity10: 80, uniformity15: 90 }),
-            standardRecord(280, { bodyWeight: 1700, dailyFeed: 110, dailyWater: 220, fcr: 1.95, cv: 8, uniformity10: 80, uniformity15: 90 }),
-            standardRecord(350, { bodyWeight: 1750, dailyFeed: 112, dailyWater: 224, fcr: 2.00, cv: 8, uniformity10: 80, uniformity15: 90 }),
-            standardRecord(420, { bodyWeight: 1800, dailyFeed: 113, dailyWater: 226, fcr: 2.00, cv: 8, uniformity10: 80, uniformity15: 90 }),
-            standardRecord(490, { bodyWeight: 1850, dailyFeed: 114, dailyWater: 228, fcr: 2.00, cv: 8, uniformity10: 80, uniformity15: 90 }),
-            standardRecord(700, { bodyWeight: 1900, dailyFeed: 115, dailyWater: 230, fcr: 2.05, cv: 8, uniformity10: 80, uniformity15: 90 })
+            standardRecord(1,  { cv: 10, uniformity10: 80, uniformity15: 90 }),
+            standardRecord(7,  { cv: 10, uniformity10: 80, uniformity15: 90 }),
+            standardRecord(14, { cv: 10, uniformity10: 80, uniformity15: 90 }),
+            standardRecord(21, { cv: 10, uniformity10: 80, uniformity15: 90 }),
+            standardRecord(28, { cv: 10, uniformity10: 80, uniformity15: 90 }),
+            standardRecord(35, { cv: 10, uniformity10: 80, uniformity15: 90 }),
+            standardRecord(42, { cv: 10, uniformity10: 80, uniformity15: 90 }),
+            standardRecord(49, { cv: 10, uniformity10: 80, uniformity15: 90 }),
+            standardRecord(56, { cv: 10, uniformity10: 80, uniformity15: 90 })
         ]
     },
     pullet: {
-        sourceLabel: "استاندارد مدیریتی پولت — مرکز تخصصی سلامت طیور آدینه",
+        sourceLabel: "استاندارد مدیریتی پایش پولت — نسخه 2026.1",
         sourceType: "management-standard",
         version: MANAGEMENT_STANDARD_VERSION,
-        waterFeedRatioBase: 2.0,
-        notes: "آب به‌عنوان هدف مدیریتی پایه بر مبنای حدود 2 برابر دان روزانه تنظیم شده و باید با دما، رطوبت، کیفیت آب، الکترولیت و شرایط فارم تفسیر شود.",
+        notes: "هدف یکنواختی ±10% بر پایه توصیه‌های Hy-Line برای پایش پولت؛ وزن هدف فقط در صورت نبود سند رسمی سویه، به‌صورت مدیریتی نمایش داده نمی‌شود.",
         records: [
-            standardRecord(1, { bodyWeight: 42, dailyFeed: 12, dailyWater: 24, fcr: 1.70, cv: 8, uniformity10: 80, uniformity15: 90 }),
-            standardRecord(28, { bodyWeight: 270, dailyFeed: 28, dailyWater: 56, fcr: 1.80, cv: 8, uniformity10: 80, uniformity15: 90 }),
-            standardRecord(56, { bodyWeight: 590, dailyFeed: 48, dailyWater: 96, fcr: 1.90, cv: 8, uniformity10: 80, uniformity15: 90 }),
-            standardRecord(84, { bodyWeight: 910, dailyFeed: 62, dailyWater: 124, fcr: 2.00, cv: 8, uniformity10: 80, uniformity15: 90 }),
-            standardRecord(112, { bodyWeight: 1160, dailyFeed: 72, dailyWater: 144, fcr: 2.10, cv: 8, uniformity10: 80, uniformity15: 90 }),
-            standardRecord(119, { bodyWeight: 1240, dailyFeed: 78, dailyWater: 156, fcr: 2.15, cv: 8, uniformity10: 80, uniformity15: 90 }),
-            standardRecord(126, { bodyWeight: 1320, dailyFeed: 82, dailyWater: 164, fcr: 2.20, cv: 8, uniformity10: 80, uniformity15: 90 })
+            standardRecord(28, { cv: 10, uniformity10: 80, uniformity15: 90 }),
+            standardRecord(56, { cv: 10, uniformity10: 80, uniformity15: 90 }),
+            standardRecord(84, { cv: 10, uniformity10: 80, uniformity15: 90 }),
+            standardRecord(112, { cv: 10, uniformity10: 80, uniformity15: 90 }),
+            standardRecord(126, { cv: 10, uniformity10: 80, uniformity15: 90 })
+        ]
+    },
+    layer: {
+        sourceLabel: "استاندارد مدیریتی پایش تخم‌گذار — نسخه 2026.1",
+        sourceType: "management-standard",
+        version: MANAGEMENT_STANDARD_VERSION,
+        notes: "اهداف یکنواختی و CV برای پایش مدیریتی هستند؛ شاخص‌های تولید/وزن تخم در صورت وجود سند رسمی سویه از همان سند خوانده می‌شوند.",
+        records: [
+            standardRecord(119, { cv: 10, uniformity10: 80, uniformity15: 90 }),
+            standardRecord(140, { cv: 10, uniformity10: 80, uniformity15: 90 }),
+            standardRecord(182, { cv: 10, uniformity10: 80, uniformity15: 90 }),
+            standardRecord(280, { cv: 10, uniformity10: 80, uniformity15: 90 }),
+            standardRecord(420, { cv: 10, uniformity10: 80, uniformity15: 90 }),
+            standardRecord(700, { cv: 10, uniformity10: 80, uniformity15: 90 })
         ]
     },
     breeder: {
-        sourceLabel: "استاندارد مدیریتی مرغ مادر — مرکز تخصصی سلامت طیور آدینه",
+        sourceLabel: "استاندارد مدیریتی پایش مرغ مادر — نسخه 2026.1",
         sourceType: "management-standard",
         version: MANAGEMENT_STANDARD_VERSION,
-        waterFeedRatioBase: 2.0,
-        notes: "آب به‌عنوان هدف مدیریتی پایه بر مبنای حدود 2 برابر دان روزانه تنظیم شده و باید با دما، رطوبت، کیفیت آب، الکترولیت و شرایط فارم تفسیر شود.",
+        notes: "اهداف یکنواختی و CV برای پایش مدیریتی هستند؛ منحنی عملکرد و تولید فقط در صورت وجود سند رسمی سویه استفاده می‌شود.",
         records: [
-            standardRecord(1, { bodyWeight: 42, dailyFeed: 13, dailyWater: 26, fcr: 1.70, cv: 8, uniformity10: 80, uniformity15: 90 }),
-            standardRecord(28, { bodyWeight: 380, dailyFeed: 40, dailyWater: 80, fcr: 1.80, cv: 8, uniformity10: 80, uniformity15: 90 }),
-            standardRecord(56, { bodyWeight: 780, dailyFeed: 62, dailyWater: 124, fcr: 1.90, cv: 8, uniformity10: 80, uniformity15: 90 }),
-            standardRecord(84, { bodyWeight: 1180, dailyFeed: 78, dailyWater: 156, fcr: 2.00, cv: 8, uniformity10: 80, uniformity15: 90 }),
-            standardRecord(112, { bodyWeight: 1580, dailyFeed: 92, dailyWater: 184, fcr: 2.10, cv: 8, uniformity10: 80, uniformity15: 90 }),
-            standardRecord(140, { bodyWeight: 1850, dailyFeed: 105, dailyWater: 210, fcr: 2.15, cv: 8, uniformity10: 80, uniformity15: 90 }),
-            standardRecord(168, { bodyWeight: 2050, dailyFeed: 110, dailyWater: 220, fcr: 2.15, cv: 8, uniformity10: 80, uniformity15: 90 }),
-            standardRecord(182, { bodyWeight: 2150, dailyFeed: 112, dailyWater: 224, fcr: 2.15, cv: 8, uniformity10: 80, uniformity15: 90 }),
-            standardRecord(224, { bodyWeight: 2450, dailyFeed: 115, dailyWater: 230, fcr: 2.20, cv: 8, uniformity10: 80, uniformity15: 90 }),
-            standardRecord(280, { bodyWeight: 2850, dailyFeed: 118, dailyWater: 236, fcr: 2.20, cv: 8, uniformity10: 80, uniformity15: 90 }),
-            standardRecord(350, { bodyWeight: 3200, dailyFeed: 120, dailyWater: 240, fcr: 2.20, cv: 8, uniformity10: 80, uniformity15: 90 }),
-            standardRecord(420, { bodyWeight: 3400, dailyFeed: 122, dailyWater: 244, fcr: 2.20, cv: 8, uniformity10: 80, uniformity15: 90 }),
-            standardRecord(490, { bodyWeight: 3500, dailyFeed: 123, dailyWater: 246, fcr: 2.20, cv: 8, uniformity10: 80, uniformity15: 90 }),
-            standardRecord(560, { bodyWeight: 3550, dailyFeed: 124, dailyWater: 248, fcr: 2.20, cv: 8, uniformity10: 80, uniformity15: 90 })
+            standardRecord(84, { cv: 10, uniformity10: 80, uniformity15: 90 }),
+            standardRecord(140, { cv: 10, uniformity10: 80, uniformity15: 90 }),
+            standardRecord(175, { cv: 10, uniformity10: 80, uniformity15: 90 }),
+            standardRecord(280, { cv: 10, uniformity10: 80, uniformity15: 90 }),
+            standardRecord(420, { cv: 10, uniformity10: 80, uniformity15: 90 }),
+            standardRecord(560, { cv: 10, uniformity10: 80, uniformity15: 90 })
         ]
     }
 };
@@ -525,6 +594,7 @@ function getStandardMeta(standard, metric, ageDays) {
 }
 
 if (typeof window !== "undefined") {
+    window.POULTRY_CATALOG = POULTRY_CATALOG;
     window.PERFORMANCE_METRICS = PERFORMANCE_METRICS;
     window.VERIFIED_STANDARDS = VERIFIED_STANDARDS;
     window.MANAGEMENT_STANDARDS = MANAGEMENT_STANDARDS;

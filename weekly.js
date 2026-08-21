@@ -518,6 +518,35 @@ function normalizeNumberString(
 }
 
 
+
+
+/* =========================================================
+   OPEN CURRENT REPORT
+   ========================================================= */
+function openCurrentReport() {
+    if (currentFlock && currentFlock.id) {
+        window.location.href =
+            "reports.html?flockId=" +
+            encodeURIComponent(currentFlock.id);
+        return;
+    }
+
+    const selection =
+        typeof getCurrentSelection === "function"
+            ? getCurrentSelection()
+            : readCurrentSelectionFallback();
+
+    if (selection?.flockId) {
+        window.location.href =
+            "reports.html?flockId=" +
+            encodeURIComponent(selection.flockId);
+        return;
+    }
+
+    window.location.href = "reports.html";
+}
+
+
 /* =========================================================
    CURRENT FLOCK
 ========================================================= */

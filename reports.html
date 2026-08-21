@@ -7,721 +7,450 @@
 
     <meta
         name="viewport"
-        content="width=device-width, initial-scale=1, viewport-fit=cover"
-    >
-
-    <meta
-        name="theme-color"
-        content="#173f35"
+        content="width=device-width, initial-scale=1.0"
     >
 
     <title>
         گزارش‌ها | مرکز تخصصی سلامت طیور آدینه
     </title>
 
-    <link
-        rel="stylesheet"
-        href="app.css"
-    >
+    <link rel="stylesheet" href="style.css">
 
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+    <script src="supabase-config.js"></script>
+    <script src="auth.js"></script>
+    <script src="app-core.js"></script>
+    <script src="standard-data.js"></script>
+    <script src="standards.js"></script>
+    <script src="poultry-utils.js"></script>
+    <script src="weekly-storage.js"></script>
+    <script src="comparison-engine.js"></script>
+    <script src="genetics-ui.js"></script>
+    <script src="weekly-engine.js"></script>
+    <script src="weekly-specialized.js"></script>
+    <script src="reports-data.js"></script>
 
 </head>
 
 
 <body>
 
-<div class="app-shell">
+<div class="app-container">
 
 
-    <header class="topbar">
+    <header class="page-header">
 
-        <div class="brand">
+        <div>
 
-            <img
-                src="IMG_4309.png"
-                alt="آدینه"
-            >
+            <h1>
+                گزارش و ارزیابی گله
+            </h1>
 
-            <span>
+            <p>
                 مرکز تخصصی سلامت طیور آدینه
-            </span>
+            </p>
 
         </div>
 
 
-        <button
-            type="button"
-            class="logout-btn"
-            onclick="AdineAuth.signOut()"
-        >
-            خروج
-        </button>
+        <div class="header-actions">
+
+            <button
+                type="button"
+                class="btn btn-secondary"
+                onclick="location.href='weekly.html'"
+            >
+                بازگشت به هفتگی
+            </button>
+
+
+            <button
+                type="button"
+                class="btn btn-primary"
+                onclick="window.print()"
+            >
+                🖨 چاپ گزارش
+            </button>
+
+        </div>
 
     </header>
 
 
-
-    <main class="page">
-
-        <div class="container">
+    <main>
 
 
-            <h1 class="page-title">
-                گزارش‌ها و نمودارها
-            </h1>
+        <section class="card">
+
+            <div class="section-title">
+                انتخاب گله
+            </div>
 
 
-            <p class="page-description">
-                تحلیل عملکرد هفتگی و مقایسه روند گله
-            </p>
+            <div class="form-group">
 
-
-
-            <section class="card">
-
-                <h2>
-                    انتخاب گله
-                </h2>
-
-
-                <label
-                    for="flockSelect"
-                >
+                <label for="flockSelect">
                     گله
                 </label>
 
 
-                <select
-                    id="flockSelect"
-                >
+                <select id="flockSelect">
 
                     <option value="">
-                        انتخاب گله
+                        در حال دریافت گله‌ها...
                     </option>
 
                 </select>
 
-
-                <div
-                    id="flockInfo"
-                    class="info-box"
-                    style="margin-top:15px;"
-                >
-                    ابتدا یک گله را انتخاب کنید.
-                </div>
-
-
-                <div
-                    class="report-actions"
-                    style="
-                        margin-top:15px;
-                        display:flex;
-                        gap:10px;
-                        flex-wrap:wrap;
-                    "
-                >
-
-                    <button
-                        type="button"
-                        class="btn btn-primary"
-                        onclick="printCurrentReport()"
-                    >
-                        🖨 چاپ گزارش
-                    </button>
-
-
-                    <button
-                        type="button"
-                        class="btn btn-secondary"
-                        onclick="closeReportFlockPeriod()"
-                    >
-                        🔒 بستن دوره
-                    </button>
-
-
-                    <button
-                        type="button"
-                        class="btn btn-secondary"
-                        onclick="archiveReportFlock()"
-                    >
-                        🗄 بایگانی دوره
-                    </button>
-
-                </div>
-
-            </section>
-
-
-
-            <div
-                id="loading"
-                style="
-                    display:none;
-                    text-align:center;
-                    padding:25px;
-                "
-            >
-                در حال دریافت اطلاعات...
             </div>
 
 
-
-            <section
-                id="summaryCard"
-                class="card"
-                style="display:none;"
+            <div
+                id="flockInfo"
+                class="info-box"
             >
+                در حال دریافت اطلاعات گله...
+            </div>
 
-                <h2>
-                    خلاصه آخرین ارزیابی
-                </h2>
+        </section>
 
 
-                <div
-                    class="dashboard-grid"
-                    style="margin-top:15px;"
-                >
-
-
-                    <div class="menu-card">
-
-                        <span class="menu-icon">
-                            ⚖️
-                        </span>
-
-                        <span class="menu-title">
-                            میانگین وزن
-                        </span>
-
-                        <span
-                            id="summaryWeight"
-                            class="menu-description"
-                        >
-                            -
-                        </span>
-
-                    </div>
-
-
-
-                    <div class="menu-card">
-
-                        <span class="menu-icon">
-                            📈
-                        </span>
-
-                        <span class="menu-title">
-                            CV
-                        </span>
-
-                        <span
-                            id="summaryCV"
-                            class="menu-description"
-                        >
-                            -
-                        </span>
-
-                    </div>
-
-
-
-                    <div class="menu-card">
-
-                        <span class="menu-icon">
-                            🎯
-                        </span>
-
-                        <span class="menu-title">
-                            یکنواختی ±10%
-                        </span>
-
-                        <span
-                            id="summaryUniformity"
-                            class="menu-description"
-                        >
-                            -
-                        </span>
-
-                    </div>
-
-
-
-                    <div class="menu-card">
-
-                        <span class="menu-icon">
-                            🌾
-                        </span>
-
-                        <span class="menu-title">
-                            دان روزانه
-                        </span>
-
-                        <span
-                            id="summaryFeed"
-                            class="menu-description"
-                        >
-                            -
-                        </span>
-
-                    </div>
-
-
-
-                    <div class="menu-card">
-
-                        <span class="menu-icon">
-                            📊
-                        </span>
-
-                        <span class="menu-title">
-                            FCR هفتگی
-                        </span>
-
-                        <span
-                            id="summaryFCR"
-                            class="menu-description"
-                        >
-                            -
-                        </span>
-
-                    </div>
-
-
-
-                    <div class="menu-card">
-
-                        <span class="menu-icon">
-                            💧
-                        </span>
-
-                        <span class="menu-title">
-                            آب روزانه
-                        </span>
-
-                        <span
-                            id="summaryWater"
-                            class="menu-description"
-                        >
-                            -
-                        </span>
-
-                    </div>
-
-
-                </div>
-
-            </section>
-
-
-
-            <section
-                id="specializedReportCard"
-                class="card"
-                style="display:none;"
-            >
-
-                <h2
-                    id="specializedReportTitle"
-                >
-                    شاخص‌های تخصصی تولید
-                </h2>
-
-
-                <div
-                    class="chart-wrapper"
-                >
-                    <canvas
-                        id="specializedProductionChart"
-                    ></canvas>
-                </div>
-
-
-                <div
-                    class="chart-wrapper"
-                >
-                    <canvas
-                        id="specializedEfficiencyChart"
-                    ></canvas>
-                </div>
-
-
-                <div
-                    class="chart-wrapper"
-                >
-                    <canvas
-                        id="specializedQualityChart"
-                    ></canvas>
-                </div>
-
-            </section>
-
-
-
-            <section
-                id="tableCard"
-                class="card"
-                style="display:none;"
-            >
-
-                <h2>
-                    سابقه ارزیابی هفتگی
-                </h2>
-
-
-                <div
-                    style="
-                        overflow-x:auto;
-                        margin-top:15px;
-                    "
-                >
-
-                    <table
-                        style="
-                            width:100%;
-                            border-collapse:collapse;
-                        "
-                    >
-
-                        <thead>
-
-                            <tr>
-
-                                <th>
-                                    هفته
-                                </th>
-
-                                <th>
-                                    تاریخ
-                                </th>
-
-                                <th>
-                                    وزن
-                                </th>
-
-                                <th>
-                                    استاندارد وزن
-                                </th>
-
-                                <th>
-                                    CV
-                                </th>
-
-                                <th>
-                                    FCR
-                                </th>
-
-                                <th>
-                                    یکنواختی ±10%
-                                </th>
-
-                                <th>
-                                    دان/پرنده
-                                </th>
-
-                                <th>
-                                    آب/پرنده
-                                </th>
-
-                            </tr>
-
-                        </thead>
-
-
-                        <tbody
-                            id="weeklyTableBody"
-                        ></tbody>
-
-                    </table>
-
-                </div>
-
-            </section>
-
-
-
-            <section
-                id="weightCard"
-                class="card"
-                style="display:none;"
-            >
-
-                <h2>
-                    روند میانگین وزن و استاندارد
-                </h2>
-
-
-                <div class="chart-wrapper">
-
-                    <canvas
-                        id="weightChart"
-                    ></canvas>
-
-                </div>
-
-            </section>
-
-
-
-            <section
-                id="cvCard"
-                class="card"
-                style="display:none;"
-            >
-
-                <h2>
-                    روند CV
-                </h2>
-
-
-                <div class="chart-wrapper">
-
-                    <canvas
-                        id="cvChart"
-                    ></canvas>
-
-                </div>
-
-            </section>
-
-
-
-            <section
-                id="uniformityCard"
-                class="card"
-                style="display:none;"
-            >
-
-                <h2>
-                    روند یکنواختی
-                </h2>
-
-
-                <div class="chart-wrapper">
-
-                    <canvas
-                        id="uniformityChart"
-                    ></canvas>
-
-                </div>
-
-            </section>
-
-
-
-            <section
-                id="consumptionCard"
-                class="card"
-                style="display:none;"
-            >
-
-                <h2>
-                    مصرف هفتگی دان و آب
-                </h2>
-
-
-                <div class="chart-wrapper">
-
-                    <canvas
-                        id="consumptionChart"
-                    ></canvas>
-
-                </div>
-
-            </section>
-
-
-
-            <section
-                id="fcrCard"
-                class="card"
-                style="display:none;"
-            >
-
-                <h2>
-                    ضریب تبدیل تجمعی
-                </h2>
-
-
-                <div class="info-box">
-
-                    <span
-                        id="fcrDescription"
-                    >
-                        FCR بر اساس نوع گله محاسبه می‌شود.
-                    </span>
-
-                </div>
-
-
-                <div class="chart-wrapper">
-
-                    <canvas
-                        id="fcrChart"
-                    ></canvas>
-
-                </div>
-
-            </section>
-
-
-
-            <section
-                id="emptyState"
-                class="card"
-            >
-
-                <div class="info-box">
-
-                    برای نمایش گزارش،
-                    ابتدا یک گله را انتخاب کنید.
-
-                </div>
-
-            </section>
-
+        <div
+            id="loading"
+            class="info-box"
+            style="display:none;"
+        >
+            در حال دریافت اطلاعات...
         </div>
+
+
+        <section
+            id="summaryCard"
+            class="card"
+            style="display:none;"
+        >
+
+            <div class="section-title">
+                خلاصه عملکرد
+            </div>
+
+
+            <div
+                id="summary"
+                class="metrics-grid"
+            ></div>
+
+        </section>
+
+
+        <section
+            id="specializedReportCard"
+            class="card"
+            style="display:none;"
+        >
+
+            <div class="section-title">
+                <span id="specializedReportTitle">
+                    گزارش تخصصی
+                </span>
+            </div>
+
+
+            <div
+                id="specializedReportInfo"
+                class="info-box"
+            ></div>
+
+
+            <div class="chart-wrapper">
+
+                <canvas
+                    id="specializedProductionChart"
+                ></canvas>
+
+            </div>
+
+
+            <div class="chart-wrapper">
+
+                <canvas
+                    id="specializedEfficiencyChart"
+                ></canvas>
+
+            </div>
+
+
+            <div class="chart-wrapper">
+
+                <canvas
+                    id="specializedQualityChart"
+                ></canvas>
+
+            </div>
+
+        </section>
+
+
+        <section
+            id="weightCard"
+            class="card"
+            style="display:none;"
+        >
+
+            <div class="section-title">
+                روند وزن
+            </div>
+
+
+            <div class="chart-wrapper">
+
+                <canvas
+                    id="weightChart"
+                ></canvas>
+
+            </div>
+
+        </section>
+
+
+        <section
+            id="cvCard"
+            class="card"
+            style="display:none;"
+        >
+
+            <div class="section-title">
+                روند CV
+            </div>
+
+
+            <div class="chart-wrapper">
+
+                <canvas
+                    id="cvChart"
+                ></canvas>
+
+            </div>
+
+        </section>
+
+
+        <section
+            id="uniformityCard"
+            class="card"
+            style="display:none;"
+        >
+
+            <div class="section-title">
+                روند یکنواختی
+            </div>
+
+
+            <div class="chart-wrapper">
+
+                <canvas
+                    id="uniformityChart"
+                ></canvas>
+
+            </div>
+
+        </section>
+
+
+        <section
+            id="consumptionCard"
+            class="card"
+            style="display:none;"
+        >
+
+            <div class="section-title">
+                مصرف هفتگی دان و آب
+            </div>
+
+
+            <div class="chart-wrapper">
+
+                <canvas
+                    id="consumptionChart"
+                ></canvas>
+
+            </div>
+
+        </section>
+
+
+        <section
+            id="fcrCard"
+            class="card"
+            style="display:none;"
+        >
+
+            <div class="section-title">
+                ضریب تبدیل تجمعی
+            </div>
+
+
+            <div
+                id="fcrDescription"
+                class="info-box"
+            >
+                FCR تجمعی
+            </div>
+
+
+            <div class="chart-wrapper">
+
+                <canvas
+                    id="fcrChart"
+                ></canvas>
+
+            </div>
+
+        </section>
+
+
+        <section
+            id="tableCard"
+            class="card"
+            style="display:none;"
+        >
+
+            <div class="section-title">
+                جدول پایش هفتگی
+            </div>
+
+
+            <div class="table-container">
+
+                <table>
+
+                    <thead>
+
+                        <tr>
+
+                            <th>
+                                هفته
+                            </th>
+
+                            <th>
+                                تاریخ
+                            </th>
+
+                            <th>
+                                میانگین وزن
+                            </th>
+
+                            <th>
+                                استاندارد
+                            </th>
+
+                            <th>
+                                CV%
+                            </th>
+
+                            <th>
+                                یکنواختی ±10%
+                            </th>
+
+                            <th>
+                                دان
+                            </th>
+
+                            <th>
+                                آب
+                            </th>
+
+                            <th>
+                                FCR تجمعی
+                            </th>
+
+                        </tr>
+
+                    </thead>
+
+
+                    <tbody
+                        id="weeklyTableBody"
+                    ></tbody>
+
+                </table>
+
+            </div>
+
+        </section>
+
+
+        <section
+            id="emptyState"
+            class="card"
+        >
+
+            <div class="info-box">
+
+                برای نمایش گزارش، یک گله را انتخاب کنید.
+
+            </div>
+
+        </section>
+
 
     </main>
 
 </div>
 
 
-
 <style>
 
 .chart-wrapper {
-    position:
-        relative;
-
-    width:
-        100%;
-
-    height:
-        320px;
-
-    margin-top:
-        20px;
+    position: relative;
+    width: 100%;
+    height: 350px;
+    margin-top: 20px;
 }
 
 
-.report-actions {
-    display:
-        flex;
-
-    flex-wrap:
-        wrap;
-
-    gap:
-        10px;
-}
-
-
-.report-actions button {
-    border:
-        0;
-
-    border-radius:
-        10px;
-
-    padding:
-        11px 17px;
-
-    font-family:
-        inherit;
-
-    font-weight:
-        700;
-
-    cursor:
-        pointer;
-}
-
-
-.info-box {
-    padding:
-        13px 15px;
-
-    border-radius:
-        10px;
-
-    background:
-        #f5f8fb;
-
-    line-height:
-        2;
+.table-container {
+    width: 100%;
+    overflow-x: auto;
 }
 
 
 table {
-    width:
-        100%;
-
-    border-collapse:
-        collapse;
+    width: 100%;
+    border-collapse: collapse;
+    min-width: 1000px;
 }
 
 
 th,
 td {
-    padding:
-        10px;
-
-    border-bottom:
-        1px solid #ddd;
-
-    text-align:
-        center;
-
-    white-space:
-        nowrap;
+    padding: 10px;
+    border-bottom: 1px solid #ddd;
+    text-align: center;
+    white-space: nowrap;
 }
 
 
 th {
-    background:
-        #f3f6f9;
+    background: #f2f5f7;
 }
 
 
 @media print {
 
-    body {
-        background:
-            #fff !important;
-    }
-
-
-    .topbar,
-    .report-actions,
+    .header-actions,
     #flockSelect,
-    #loading {
-        display:
-            none !important;
-    }
-
-
-    .page {
-        padding:
-            0 !important;
+    .report-actions {
+        display: none !important;
     }
 
 
     .card {
-        box-shadow:
-            none !important;
-
-        border:
-            1px solid #ddd;
-
-        break-inside:
-            avoid;
-    }
-
-
-    .chart-wrapper {
-        height:
-            260px;
+        box-shadow: none !important;
+        break-inside: avoid;
     }
 
 }
@@ -729,41 +458,1673 @@ th {
 </style>
 
 
-
-<script
-    src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"
-></script>
-
-<script src="supabase-config.js"></script>
-<script src="auth.js"></script>
-<script src="app-core.js"></script>
-<script src="standard-data.js"></script>
-<script src="standards.js"></script>
-<script src="poultry-utils.js"></script>
-<script src="weekly-storage.js"></script>
-<script src="comparison-engine.js"></script>
-<script src="genetics-ui.js"></script>
-<script src="weekly-engine.js"></script>
-<script src="reports-data.js"></script>
-
-
 <script>
 
-document.addEventListener(
-    "DOMContentLoaded",
-    function () {
+(function () {
+
+    "use strict";
+
+
+    let reportFlock = null;
+
+    let reportRecords = [];
+
+
+    let weightChart = null;
+
+    let cvChart = null;
+
+    let uniformityChart = null;
+
+    let consumptionChart = null;
+
+    let fcrChart = null;
+
+
+    let specializedCharts = [];
+
+
+    function client() {
 
         if (
-            typeof initializeReports ===
-            "function"
+            typeof supabaseClient !==
+            "undefined"
         ) {
 
-            initializeReports();
+            return supabaseClient;
+
+        }
+
+
+        if (
+            window.supabaseClient
+        ) {
+
+            return window.supabaseClient;
+
+        }
+
+
+        if (
+            window.supabase &&
+            typeof SUPABASE_URL !==
+            "undefined" &&
+            typeof SUPABASE_ANON_KEY !==
+            "undefined"
+        ) {
+
+            return window.supabase.createClient(
+                SUPABASE_URL,
+                SUPABASE_ANON_KEY
+            );
+
+        }
+
+
+        throw new Error(
+            "اتصال Supabase پیدا نشد."
+        );
+
+    }
+
+
+    function num(value) {
+
+        if (
+            value === null ||
+            value === undefined ||
+            value === ""
+        ) {
+
+            return null;
+
+        }
+
+
+        const n =
+            Number(
+                String(value)
+                    .replace(
+                        /,/g,
+                        ""
+                    )
+            );
+
+
+        return Number.isFinite(n)
+            ? n
+            : null;
+
+    }
+
+
+    function first(obj, keys) {
+
+        for (
+            const key of keys
+        ) {
+
+            const value =
+                num(
+                    obj?.[key]
+                );
+
+
+            if (
+                value !== null
+            ) {
+
+                return value;
+
+            }
+
+        }
+
+
+        return null;
+
+    }
+
+
+    function week(record) {
+
+        return first(
+            record,
+            [
+                "week_number",
+                "week",
+                "weekNumber",
+                "age_week",
+                "age"
+            ]
+        );
+
+    }
+
+
+    function weight(record) {
+
+        return first(
+            record,
+            [
+                "average_weight",
+                "avg_weight",
+                "mean_weight",
+                "averageWeight",
+                "meanWeight",
+                "weight_average"
+            ]
+        );
+
+    }
+
+
+    function cv(record) {
+
+        return first(
+            record,
+            [
+                "cv",
+                "cv_percent",
+                "cv_percentage"
+            ]
+        );
+
+    }
+
+
+    function uniformity(record) {
+
+        return first(
+            record,
+            [
+                "uniformity_10",
+                "uniformity10",
+                "uniformity_plus_minus_10",
+                "uniformity"
+            ]
+        );
+
+    }
+
+
+    function feed(record) {
+
+        return first(
+            record,
+            [
+                "feed_total",
+                "feedTotal",
+                "weekly_feed",
+                "total_feed",
+                "feed"
+            ]
+        );
+
+    }
+
+
+    function water(record) {
+
+        return first(
+            record,
+            [
+                "water_total",
+                "waterTotal",
+                "weekly_water",
+                "total_water",
+                "water"
+            ]
+        );
+
+    }
+
+
+    function fcr(record) {
+
+        return first(
+            record,
+            [
+                "cumulative_fcr",
+                "fcr_cumulative",
+                "fcr"
+            ]
+        );
+
+    }
+
+
+    function date(record) {
+
+        return (
+            record?.evaluation_date ||
+            record?.evaluationDate ||
+            record?.date ||
+            "-"
+        );
+
+    }
+
+
+    function flockName(flock) {
+
+        return (
+            flock?.flock_name ||
+            flock?.name ||
+            flock?.title ||
+            "گله"
+        );
+
+    }
+
+
+    function productionType(flock) {
+
+        return (
+            flock?.production_type ||
+            flock?.productionType ||
+            flock?.type ||
+            flock?.flock_type ||
+            ""
+        );
+
+    }
+
+
+    function genetics(flock) {
+
+        return (
+            flock?.genetics ||
+            flock?.strain ||
+            flock?.breed ||
+            flock?.genetic_line ||
+            ""
+        );
+
+    }
+
+
+    async function loadFlocks() {
+
+        const db =
+            client();
+
+
+        const result =
+            await db
+                .from("flocks")
+                .select("*")
+                .order(
+                    "created_at",
+                    {
+                        ascending: false
+                    }
+                );
+
+
+        if (
+            result.error
+        ) {
+
+            throw result.error;
+
+        }
+
+
+        const flocks =
+            result.data || [];
+
+
+        const select =
+            document.getElementById(
+                "flockSelect"
+            );
+
+
+        select.innerHTML =
+            "";
+
+
+        const option =
+            document.createElement(
+                "option"
+            );
+
+
+        option.value =
+            "";
+
+
+        option.textContent =
+            "انتخاب گله";
+
+
+        select.appendChild(
+            option
+        );
+
+
+        flocks.forEach(
+            flock => {
+
+                const item =
+                    document.createElement(
+                        "option"
+                    );
+
+
+                item.value =
+                    flock.id;
+
+
+                item.textContent =
+                    flockName(
+                        flock
+                    ) +
+                    (
+                        genetics(flock)
+                            ? " — " +
+                              genetics(flock)
+                            : ""
+                    );
+
+
+                select.appendChild(
+                    item
+                );
+
+            }
+        );
+
+
+        select.onchange =
+            function () {
+
+                if (
+                    this.value
+                ) {
+
+                    loadReport(
+                        this.value
+                    );
+
+                }
+
+            };
+
+
+        const params =
+            new URLSearchParams(
+                location.search
+            );
+
+
+        const id =
+            params.get(
+                "flock"
+            ) ||
+            params.get(
+                "flock_id"
+            );
+
+
+        if (id) {
+
+            select.value =
+                id;
+
+
+            await loadReport(
+                id
+            );
 
         }
 
     }
-);
+
+
+    async function loadFlock(id) {
+
+        const db =
+            client();
+
+
+        const result =
+            await db
+                .from("flocks")
+                .select("*")
+                .eq(
+                    "id",
+                    id
+                )
+                .maybeSingle();
+
+
+        if (
+            result.error
+        ) {
+
+            throw result.error;
+
+        }
+
+
+        return result.data;
+
+    }
+
+
+    async function loadRecords(id) {
+
+        const db =
+            client();
+
+
+        const tables = [
+            "weekly_records",
+            "weekly",
+            "flock_weekly",
+            "weekly_data"
+        ];
+
+
+        for (
+            const table of tables
+        ) {
+
+            const result =
+                await db
+                    .from(table)
+                    .select("*")
+                    .eq(
+                        "flock_id",
+                        id
+                    )
+                    .order(
+                        "week_number",
+                        {
+                            ascending: true
+                        }
+                    );
+
+
+            if (
+                !result.error
+            ) {
+
+                return result.data || [];
+
+            }
+
+        }
+
+
+        return [];
+
+    }
+
+
+    async function loadReport(id) {
+
+        showLoading(true);
+
+
+        try {
+
+            reportFlock =
+                await loadFlock(id);
+
+
+            reportRecords =
+                await loadRecords(id);
+
+
+            renderInfo();
+
+            renderSummary();
+
+            renderTable();
+
+            renderCharts();
+
+            renderSpecialized();
+
+
+        } catch (error) {
+
+            console.error(error);
+
+
+            document.getElementById(
+                "flockInfo"
+            ).innerHTML =
+                "خطا در دریافت اطلاعات گله: " +
+                (
+                    error.message ||
+                    "خطای نامشخص"
+                );
+
+        }
+
+
+        showLoading(false);
+
+    }
+
+
+    function renderInfo() {
+
+        const info =
+            document.getElementById(
+                "flockInfo"
+            );
+
+
+        info.innerHTML = `
+
+            <strong>
+                ${flockName(
+                    reportFlock
+                )}
+            </strong>
+
+            <br>
+
+            نوع پرورش:
+            ${productionType(
+                reportFlock
+            ) || "-"}
+
+            <br>
+
+            سویه:
+            ${genetics(
+                reportFlock
+            ) || "-"}
+
+            <br>
+
+            تعداد پایش:
+            ${reportRecords.length}
+
+        `;
+
+    }
+
+
+    function renderSummary() {
+
+        const card =
+            document.getElementById(
+                "summaryCard"
+            );
+
+
+        const container =
+            document.getElementById(
+                "summary"
+            );
+
+
+        if (
+            !reportRecords.length
+        ) {
+
+            card.style.display =
+                "none";
+
+            return;
+
+        }
+
+
+        card.style.display =
+            "block";
+
+
+        const latest =
+            reportRecords[
+                reportRecords.length - 1
+            ];
+
+
+        container.innerHTML = `
+
+            <div class="metric-card">
+
+                <div class="metric-title">
+                    میانگین وزن
+                </div>
+
+                <div class="metric-value">
+                    ${format(
+                        weight(latest),
+                        0,
+                        " گرم"
+                    )}
+                </div>
+
+            </div>
+
+
+            <div class="metric-card">
+
+                <div class="metric-title">
+                    CV
+                </div>
+
+                <div class="metric-value">
+                    ${format(
+                        cv(latest),
+                        1,
+                        "%"
+                    )}
+                </div>
+
+            </div>
+
+
+            <div class="metric-card">
+
+                <div class="metric-title">
+                    یکنواختی ±10%
+                </div>
+
+                <div class="metric-value">
+                    ${format(
+                        uniformity(latest),
+                        1,
+                        "%"
+                    )}
+                </div>
+
+            </div>
+
+
+            <div class="metric-card">
+
+                <div class="metric-title">
+                    دان هفتگی
+                </div>
+
+                <div class="metric-value">
+                    ${format(
+                        feed(latest),
+                        1,
+                        " kg"
+                    )}
+                </div>
+
+            </div>
+
+
+            <div class="metric-card">
+
+                <div class="metric-title">
+                    آب هفتگی
+                </div>
+
+                <div class="metric-value">
+                    ${format(
+                        water(latest),
+                        1,
+                        " L"
+                    )}
+                </div>
+
+            </div>
+
+
+            <div class="metric-card">
+
+                <div class="metric-title">
+                    FCR تجمعی
+                </div>
+
+                <div class="metric-value">
+                    ${format(
+                        fcr(latest),
+                        3,
+                        ""
+                    )}
+                </div>
+
+            </div>
+
+        `;
+
+    }
+
+
+    function renderTable() {
+
+        const card =
+            document.getElementById(
+                "tableCard"
+            );
+
+
+        const body =
+            document.getElementById(
+                "weeklyTableBody"
+            );
+
+
+        if (
+            !reportRecords.length
+        ) {
+
+            card.style.display =
+                "none";
+
+            return;
+
+        }
+
+
+        card.style.display =
+            "block";
+
+
+        body.innerHTML =
+            "";
+
+
+        reportRecords.forEach(
+            record => {
+
+                const tr =
+                    document.createElement(
+                        "tr"
+                    );
+
+
+                const values = [
+
+                    week(record) ?? "-",
+
+                    date(record),
+
+                    format(
+                        weight(record),
+                        0,
+                        ""
+                    ),
+
+                    standardWeight(
+                        week(record)
+                    ),
+
+                    format(
+                        cv(record),
+                        1,
+                        "%"
+                    ),
+
+                    format(
+                        uniformity(record),
+                        1,
+                        "%"
+                    ),
+
+                    format(
+                        feed(record),
+                        1,
+                        " kg"
+                    ),
+
+                    format(
+                        water(record),
+                        1,
+                        " L"
+                    ),
+
+                    format(
+                        fcr(record),
+                        3,
+                        ""
+                    )
+
+                ];
+
+
+                values.forEach(
+                    value => {
+
+                        const td =
+                            document.createElement(
+                                "td"
+                            );
+
+
+                        td.textContent =
+                            value;
+
+
+                        tr.appendChild(
+                            td
+                        );
+
+                    }
+                );
+
+
+                body.appendChild(
+                    tr
+                );
+
+            }
+        );
+
+    }
+
+
+    function standardWeight(w) {
+
+        if (
+            w === null ||
+            w === undefined
+        ) {
+
+            return "-";
+
+        }
+
+
+        try {
+
+            if (
+                typeof getStandard ===
+                "function"
+            ) {
+
+                const standard =
+                    getStandard(
+                        productionType(
+                            reportFlock
+                        ),
+                        genetics(
+                            reportFlock
+                        )
+                    );
+
+
+                if (
+                    standard &&
+                    Array.isArray(
+                        standard.weights
+                    )
+                ) {
+
+                    const item =
+                        standard.weights.find(
+                            row =>
+                                Number(
+                                    row.week
+                                ) ===
+                                Number(w)
+                        );
+
+
+                    if (
+                        item &&
+                        num(item.weight) !== null
+                    ) {
+
+                        return (
+                            num(item.weight) +
+                            " g"
+                        );
+
+                    }
+
+                }
+
+            }
+
+        } catch(error) {}
+
+
+        return "-";
+
+    }
+
+
+    function labels() {
+
+        return reportRecords.map(
+            record =>
+                "هفته " +
+                (
+                    week(record) ??
+                    "-"
+                )
+        );
+
+    }
+
+
+    function destroy(chart) {
+
+        if (
+            chart
+        ) {
+
+            try {
+                chart.destroy();
+            } catch(error) {}
+
+        }
+
+
+        return null;
+
+    }
+
+
+    function options(title) {
+
+        return {
+
+            responsive: true,
+
+            maintainAspectRatio: false,
+
+            interaction: {
+                mode: "index",
+                intersect: false
+            },
+
+            plugins: {
+
+                legend: {
+                    position: "top"
+                },
+
+                title: {
+                    display: true,
+                    text: title
+                }
+
+            }
+
+        };
+
+    }
+
+
+    function renderCharts() {
+
+        const show =
+            reportRecords.length > 0;
+
+
+        [
+            "weightCard",
+            "cvCard",
+            "uniformityCard",
+            "consumptionCard",
+            "fcrCard"
+        ].forEach(
+            id => {
+
+                document.getElementById(
+                    id
+                ).style.display =
+                    show
+                        ? "block"
+                        : "none";
+
+            }
+        );
+
+
+        if (!show) {
+            return;
+        }
+
+
+        weightChart =
+            destroy(
+                weightChart
+            );
+
+
+        cvChart =
+            destroy(
+                cvChart
+            );
+
+
+        uniformityChart =
+            destroy(
+                uniformityChart
+            );
+
+
+        consumptionChart =
+            destroy(
+                consumptionChart
+            );
+
+
+        fcrChart =
+            destroy(
+                fcrChart
+            );
+
+
+        weightChart =
+            new Chart(
+                document.getElementById(
+                    "weightChart"
+                ),
+                {
+
+                    type: "line",
+
+                    data: {
+
+                        labels:
+                            labels(),
+
+                        datasets: [
+
+                            {
+                                label:
+                                    "میانگین وزن",
+
+                                data:
+                                    reportRecords.map(
+                                        weight
+                                    ),
+
+                                borderWidth: 3,
+
+                                tension: .3
+                            },
+
+
+                            {
+                                label:
+                                    "استاندارد",
+
+                                data:
+                                    reportRecords.map(
+                                        record =>
+                                            num(
+                                                standardWeight(
+                                                    week(
+                                                        record
+                                                    )
+                                                )
+                                            )
+                                    ),
+
+                                borderDash: [
+                                    6,
+                                    5
+                                ],
+
+                                borderWidth: 2,
+
+                                tension: .3
+                            }
+
+                        ]
+
+                    },
+
+                    options:
+                        options(
+                            "روند میانگین وزن و استاندارد"
+                        )
+
+                }
+            );
+
+
+        cvChart =
+            new Chart(
+                document.getElementById(
+                    "cvChart"
+                ),
+                {
+
+                    type: "line",
+
+                    data: {
+
+                        labels:
+                            labels(),
+
+                        datasets: [
+
+                            {
+                                label:
+                                    "CV%",
+
+                                data:
+                                    reportRecords.map(
+                                        cv
+                                    ),
+
+                                borderWidth: 3,
+
+                                tension: .3
+                            }
+
+                        ]
+
+                    },
+
+                    options:
+                        options(
+                            "روند CV"
+                        )
+
+                }
+            );
+
+
+        uniformityChart =
+            new Chart(
+                document.getElementById(
+                    "uniformityChart"
+                ),
+                {
+
+                    type: "line",
+
+                    data: {
+
+                        labels:
+                            labels(),
+
+                        datasets: [
+
+                            {
+                                label:
+                                    "یکنواختی ±10%",
+
+                                data:
+                                    reportRecords.map(
+                                        uniformity
+                                    ),
+
+                                borderWidth: 3,
+
+                                tension: .3
+                            },
+
+
+                            {
+                                label:
+                                    "استاندارد مدیریتی 80%",
+
+                                data:
+                                    reportRecords.map(
+                                        () => 80
+                                    ),
+
+                                borderDash: [
+                                    6,
+                                    5
+                                ],
+
+                                borderWidth: 2
+                            }
+
+                        ]
+
+                    },
+
+                    options:
+                        options(
+                            "روند یکنواختی"
+                        )
+
+                }
+            );
+
+
+        consumptionChart =
+            new Chart(
+                document.getElementById(
+                    "consumptionChart"
+                ),
+                {
+
+                    type: "bar",
+
+                    data: {
+
+                        labels:
+                            labels(),
+
+                        datasets: [
+
+                            {
+                                label:
+                                    "دان هفتگی (kg)",
+
+                                data:
+                                    reportRecords.map(
+                                        feed
+                                    )
+                            },
+
+
+                            {
+                                label:
+                                    "آب هفتگی (L)",
+
+                                data:
+                                    reportRecords.map(
+                                        water
+                                    )
+                            }
+
+                        ]
+
+                    },
+
+                    options:
+                        options(
+                            "مصرف هفتگی دان و آب"
+                        )
+
+                }
+            );
+
+
+        fcrChart =
+            new Chart(
+                document.getElementById(
+                    "fcrChart"
+                ),
+                {
+
+                    type: "line",
+
+                    data: {
+
+                        labels:
+                            labels(),
+
+                        datasets: [
+
+                            {
+                                label:
+                                    "FCR تجمعی",
+
+                                data:
+                                    reportRecords.map(
+                                        fcr
+                                    ),
+
+                                borderWidth: 3,
+
+                                tension: .3
+                            }
+
+                        ]
+
+                    },
+
+                    options:
+                        options(
+                            "ضریب تبدیل تجمعی"
+                        )
+
+                }
+            );
+
+    }
+
+
+    function renderSpecialized() {
+
+        const card =
+            document.getElementById(
+                "specializedReportCard"
+            );
+
+
+        if (
+            !reportRecords.length
+        ) {
+
+            card.style.display =
+                "none";
+
+            return;
+
+        }
+
+
+        specializedCharts.forEach(
+            chart => {
+
+                try {
+                    chart.destroy();
+                } catch(error) {}
+
+            }
+        );
+
+
+        specializedCharts =
+            [];
+
+
+        card.style.display =
+            "block";
+
+
+        const type =
+            String(
+                productionType(
+                    reportFlock
+                )
+            ).toLowerCase();
+
+
+        let title =
+            "گزارش تخصصی";
+
+
+        if (
+            type.includes("layer") ||
+            type.includes("تخم")
+        ) {
+
+            title =
+                "گزارش تخصصی تخم‌گذار";
+
+        }
+        else if (
+            type.includes("breeder") ||
+            type.includes("مادر")
+        ) {
+
+            title =
+                "گزارش تخصصی مرغ مادر";
+
+        }
+        else if (
+            type.includes("pullet") ||
+            type.includes("پولت")
+        ) {
+
+            title =
+                "گزارش تخصصی پولت";
+
+        }
+        else {
+
+            title =
+                "گزارش تخصصی گوشتی";
+
+        }
+
+
+        document.getElementById(
+            "specializedReportTitle"
+        ).textContent =
+            title;
+
+
+        document.getElementById(
+            "specializedReportInfo"
+        ).textContent =
+            "شاخص‌های تخصصی بر اساس نوع پرورش و اطلاعات ثبت‌شده نمایش داده می‌شوند.";
+
+
+        const groups = {
+
+            production: [
+                "hen_day",
+                "hen_housed",
+                "egg_production",
+                "egg_rate",
+                "egg_mass",
+                "hatchability",
+                "fertility",
+                "hatch_rate",
+                "daily_gain",
+                "growth_rate"
+            ],
+
+            efficiency: [
+                "feed_per_bird",
+                "water_per_bird",
+                "water_feed_ratio",
+                "fcr",
+                "cumulative_fcr",
+                "feed_conversion"
+            ],
+
+            quality: [
+                "egg_weight",
+                "egg_weight_avg",
+                "egg_shell",
+                "shell_strength",
+                "broken_egg",
+                "dirty_egg",
+                "uniformity",
+                "uniformity_10"
+            ]
+
+        };
+
+
+        createSpecialized(
+            "specializedProductionChart",
+            groups.production,
+            "شاخص تولید"
+        );
+
+
+        createSpecialized(
+            "specializedEfficiencyChart",
+            groups.efficiency,
+            "شاخص بهره‌وری"
+        );
+
+
+        createSpecialized(
+            "specializedQualityChart",
+            groups.quality,
+            "شاخص کیفیت"
+        );
+
+    }
+
+
+    function createSpecialized(
+        canvasId,
+        keys,
+        title
+    ) {
+
+        const canvas =
+            document.getElementById(
+                canvasId
+            );
+
+
+        let found =
+            null;
+
+
+        for (
+            const key of keys
+        ) {
+
+            const values =
+                reportRecords.map(
+                    record =>
+                        num(
+                            record?.[key]
+                        )
+                );
+
+
+            if (
+                values.some(
+                    value =>
+                        value !== null
+                )
+            ) {
+
+                found = {
+                    key,
+                    values
+                };
+
+                break;
+
+            }
+
+        }
+
+
+        if (
+            !found
+        ) {
+
+            return;
+
+        }
+
+
+        const chart =
+            new Chart(
+                canvas,
+                {
+
+                    type: "line",
+
+                    data: {
+
+                        labels:
+                            labels(),
+
+                        datasets: [
+
+                            {
+                                label:
+                                    found.key,
+
+                                data:
+                                    found.values,
+
+                                borderWidth: 3,
+
+                                tension: .3
+                            }
+
+                        ]
+
+                    },
+
+                    options:
+                        options(
+                            title
+                        )
+
+                }
+            );
+
+
+        specializedCharts.push(
+            chart
+        );
+
+    }
+
+
+    function format(
+        value,
+        decimals,
+        suffix
+    ) {
+
+        if (
+            value === null ||
+            value === undefined
+        ) {
+
+            return "-";
+
+        }
+
+
+        return Number(
+            value
+        ).toLocaleString(
+            "fa-IR",
+            {
+                minimumFractionDigits:
+                    decimals,
+
+                maximumFractionDigits:
+                    decimals
+            }
+        ) +
+        (
+            suffix || ""
+        );
+
+    }
+
+
+    function showLoading(
+        show
+    ) {
+
+        document.getElementById(
+            "loading"
+        ).style.display =
+            show
+                ? "block"
+                : "none";
+
+    }
+
+
+    document.addEventListener(
+        "DOMContentLoaded",
+        async function () {
+
+            try {
+
+                await loadFlocks();
+
+            } catch(error) {
+
+                console.error(
+                    error
+                );
+
+
+                document.getElementById(
+                    "flockInfo"
+                ).textContent =
+                    "خطا در دریافت گله‌ها: " +
+                    (
+                        error.message ||
+                        "خطای نامشخص"
+                    );
+
+            }
+
+        }
+    );
+
+
+})();
 
 </script>
 

@@ -1,6 +1,5 @@
 <!DOCTYPE html>
 <html lang="fa" dir="rtl">
-
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -8,259 +7,40 @@
     <title>پایش هفتگی | مرکز تخصصی سلامت طیور آدینه</title>
 
     <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/persian-datepicker@1.2.0/dist/css/persian-datepicker.min.css">
+
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <!-- Persian calendar -->
+    <script src="https://cdn.jsdelivr.net/npm/jquery@3.7.1/dist/jquery.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/persian-date@1.1.0/dist/persian-date.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/persian-datepicker@1.2.0/dist/js/persian-datepicker.min.js"></script>
+
+    <!-- Supabase -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+    <script src="supabase-config.js"></script>
+    <script src="auth.js"></script>
+    <script src="app-core.js"></script>
+    <script src="standard-data.js"></script>
+    <script src="standards.js"></script>
+    <script src="poultry-utils.js"></script>
+    <script src="weekly-storage.js"></script>
+    <script src="genetics-ui.js"></script>
+    <script src="weekly-engine.js"></script>
+    <script src="weekly-specialized.js"></script>
+    <script src="health-date.js"></script>
+    <script src="weekly.js"></script>
+</head>
 
-    
-<link
-    rel="stylesheet"
-    href="https://cdn.jsdelivr.net/npm/persian-datepicker@1.2.0/dist/css/persian-datepicker.min.css"
->
-
-<script src="https://cdn.jsdelivr.net/npm/jquery@3.7.1/dist/jquery.min.js"></script>
-
-<script src="https://cdn.jsdelivr.net/npm/persian-date@1.1.0/dist/persian-date.min.js"></script>
-
-<script src="https://cdn.jsdelivr.net/npm/persian-datepicker@1.2.0/dist/js/persian-datepicker.min.js"></script>
-
-<script src="health-date.js"></script>
-
-
-
-
-
-
-<script src="supabase-config.js"></script>
-<script src="auth.js"></script>
-<script src="app-core.js"></script>
-<script src="standard-data.js"></script>
-<script src="standards.js"></script>
-<script src="poultry-utils.js"></script>
-<script src="weekly-storage.js"></script>
-<script src="genetics-ui.js"></script>
-<script src="weekly-engine.js"></script>
-<script src="weekly-specialized.js"></script>
-<script src="weekly.js"></script>
-
-<script>
-
-(function () {
-
-    "use strict";
-
-    function initializeAdineWeeklyCalendar() {
-
-        if (
-            typeof window.jQuery === "undefined" ||
-            typeof window.jQuery.fn.persianDatepicker !== "function"
-        ) {
-            return;
-        }
-
-        const $ = window.jQuery;
-
-        $(".jalali-input").each(function () {
-
-            const input = this;
-
-            if (
-                input.dataset.calendarInitialized === "true"
-            ) {
-                return;
-            }
-
-            input.dataset.calendarInitialized = "true";
-
-            $(input).persianDatepicker({
-
-                format: "YYYY/MM/DD",
-
-                autoClose: true,
-
-                initialValue: false,
-
-                observer: true,
-
-                calendarType: "persian",
-
-                calendar: {
-
-                    persian: {
-
-                        locale: "fa",
-
-                        leapYearMode: "algorithmic"
-
-                    }
-
-                },
-
-                toolbox: {
-
-                    calendarSwitch: false,
-
-                    todayButton: {
-
-                        enabled: true,
-
-                        text: {
-
-                            fa: "امروز"
-
-                        }
-
-                    }
-
-                },
-
-                navigator: {
-
-                    enabled: true,
-
-                    scroll: {
-
-                        enabled: false
-
-                    }
-
-                },
-
-                responsive: true,
-
-                timePicker: {
-
-                    enabled: false
-
-                }
-
-            });
-
-        });
-
-    }
-
-
-    function waitForAdineCalendar() {
-
-        if (
-            typeof window.jQuery !== "undefined" &&
-            typeof window.jQuery.fn.persianDatepicker === "function"
-        ) {
-
-            initializeAdineWeeklyCalendar();
-
-        } else {
-
-            setTimeout(
-                waitForAdineCalendar,
-                150
-            );
-
-        }
-
-    }
-
-
-    window.goToWeeklyReport = function () {
-
-        let flockId = "";
-
-        try {
-
-            const selection =
-                typeof getCurrentSelection === "function"
-                    ? getCurrentSelection()
-                    : null;
-
-            if (
-                selection &&
-                selection.flockId
-            ) {
-
-                flockId =
-                    selection.flockId;
-
-            }
-
-        } catch (error) {
-
-            console.warn(
-                "Weekly selection:",
-                error
-            );
-
-        }
-
-
-        if (!flockId) {
-
-            try {
-
-                const raw =
-                    localStorage.getItem(
-                        "adine_poultry_current_selection"
-                    );
-
-                if (raw) {
-
-                    const parsed =
-                        JSON.parse(raw);
-
-                    flockId =
-                        parsed?.flockId || "";
-
-                }
-
-            } catch (error) {
-
-                console.warn(
-                    "Weekly local selection:",
-                    error
-                );
-
-            }
-
-        }
-
-
-        if (flockId) {
-
-            location.href =
-                "reports.html?flock=" +
-                encodeURIComponent(
-                    flockId
-                );
-
-        } else {
-
-            location.href =
-                "reports.html";
-
-        }
-
-    };
-
-
-    if (
-        document.readyState === "loading"
-    ) {
-
-        document.addEventListener(
-            "DOMContentLoaded",
-            waitForAdineCalendar
-        );
-
-    } else {
-
-        waitForAdineCalendar();
-
-    }
-
-})();
-
-</script>
 <body>
 
 <div class="app-container">
 
+    <!-- =====================================================
+         HEADER
+    ====================================================== -->
     <header class="page-header">
 
         <div>
@@ -276,48 +56,48 @@
             </small>
         </div>
 
-        
+        <div class="header-actions">
 
-<div class="header-actions">
+            <button
+                type="button"
+                class="btn btn-secondary"
+                onclick="location.href='Dashboard.html'"
+            >
+                داشبورد
+            </button>
 
-    <button
-        type="button"
-        class="btn btn-secondary"
-        onclick="location.href='Dashboard.html'"
-    >
-        داشبورد
-    </button>
+            <button
+                type="button"
+                class="btn btn-secondary"
+                onclick="location.href='flocks.html'"
+            >
+                انتخاب گله
+            </button>
 
-    <button
-        type="button"
-        class="btn btn-secondary"
-        onclick="location.href='flocks.html'"
-    >
-        انتخاب گله
-    </button>
+            <button
+                type="button"
+                class="btn btn-primary"
+                onclick="openCurrentReport()"
+            >
+                گزارش
+            </button>
 
-    <button
-        type="button"
-        class="btn btn-primary"
-        onclick="goToWeeklyReport()"
-    >
-        📊 گزارش
-    </button>
+            <button
+                type="button"
+                class="btn btn-secondary"
+                onclick="closeCurrentFlockPeriod()"
+            >
+                بستن دوره
+            </button>
 
-    <button
-        type="button"
-        class="btn btn-secondary"
-        onclick="closeCurrentFlockPeriod()"
-    >
-        بستن دوره
-    </button>
-
-</div>
-
+        </div>
 
     </header>
 
 
+    <!-- =====================================================
+         CURRENT FLOCK
+    ====================================================== -->
     <section class="card">
 
         <div class="section-title">
@@ -335,6 +115,9 @@
     </section>
 
 
+    <!-- =====================================================
+         WEEKLY FORM
+    ====================================================== -->
     <section class="card">
 
         <div class="section-title">
@@ -342,29 +125,28 @@
         </div>
 
 
+        <!-- -----------------------------------------------
+             BASIC INFORMATION
+        ------------------------------------------------ -->
+
         <div class="form-grid">
 
-            
-<div class="form-group">
+            <div class="form-group">
 
-    <label for="evaluationDate">
-        تاریخ ارزیابی
-    </label>
+                <label for="evaluationDate">
+                    تاریخ ارزیابی
+                </label>
 
-    <input
-        id="evaluationDate"
-        class="jalali-input"
-        type="text"
-        inputmode="numeric"
-        placeholder="۱۴۰۵/۰۵/۲۹"
-        autocomplete="off"
-        readonly
-    >
+                <input
+                    id="evaluationDate"
+                    class="jalali-input"
+                    type="text"
+                    inputmode="numeric"
+                    placeholder="۱۴۰۵/۰۵/۲۹"
+                    autocomplete="off"
+                >
 
-</div>
-
-
-
+            </div>
 
 
             <div class="form-group">
@@ -420,6 +202,10 @@
         </div>
 
 
+        <!-- =================================================
+             FEED / WATER
+        ================================================== -->
+
         <div class="subsection-title">
             مصرف دان و آب
         </div>
@@ -464,16 +250,16 @@
 
             <div class="form-group">
 
-                <label for="feedPerBird">
-                    دان به ازای هر پرنده
+                <label for="averageWeight">
+                    میانگین وزن
                     <span>(گرم)</span>
                 </label>
 
                 <input
-                    id="feedPerBird"
+                    id="averageWeight"
                     type="text"
                     inputmode="decimal"
-                    placeholder="g/bird"
+                    placeholder="گرم"
                     autocomplete="off"
                 >
 
@@ -482,16 +268,16 @@
 
             <div class="form-group">
 
-                <label for="waterPerBird">
-                    آب به ازای هر پرنده
-                    <span>(میلی‌لیتر)</span>
+                <label for="uniformity">
+                    یکنواختی
+                    <span>(٪)</span>
                 </label>
 
                 <input
-                    id="waterPerBird"
+                    id="uniformity"
                     type="text"
                     inputmode="decimal"
-                    placeholder="ml/bird"
+                    placeholder="%"
                     autocomplete="off"
                 >
 
@@ -500,159 +286,461 @@
         </div>
 
 
-        <section
-            id="specializedMetricsCard"
-            class="card"
-            style="display:none;"
-        >
-
-            <div class="section-title">
-                شاخص‌های تخصصی هفتگی
-            </div>
-
-            <div
-                id="specializedMetricsIntro"
-                class="info-box"
-            ></div>
-
-            <div id="specializedMetrics"></div>
-
-        </section>
-
+        <!-- =================================================
+             ENVIRONMENT
+        ================================================== -->
 
         <div class="subsection-title">
-            وزن‌کشی نمونه‌ای
+            شرایط محیطی
         </div>
 
+        <div class="form-grid">
 
-        <div class="info-box">
+            <div class="form-group">
 
-            <strong>
-                روش پایش:
-            </strong>
+                <label for="temperature">
+                    دما
+                    <span>(°C)</span>
+                </label>
 
-            وزن تعدادی از پرندگان به‌صورت نمونه‌ای وارد شود.
-            برای پایش هفتگی دقیق، نمونه مناسب و توزیع‌شده در سالن توصیه می‌شود.
+                <input
+                    id="temperature"
+                    type="text"
+                    inputmode="decimal"
+                    placeholder="°C"
+                    autocomplete="off"
+                >
 
-        </div>
-
-
-        <div class="weight-toolbar">
-
-            <button
-                type="button"
-                class="btn btn-secondary"
-                onclick="addWeightInput()"
-            >
-                + افزودن وزن
-            </button>
-
-
-            <button
-                type="button"
-                class="btn btn-secondary"
-                onclick="addTwentyWeights()"
-            >
-                +۲۰ وزن
-            </button>
-
-
-            <button
-                type="button"
-                class="btn btn-secondary"
-                onclick="addHundredWeights()"
-            >
-                +۱۰۰ وزن
-            </button>
-
-
-            <button
-                type="button"
-                class="btn btn-danger"
-                onclick="clearWeights()"
-            >
-                پاک کردن وزن‌ها
-            </button>
-
-        </div>
-
-
-        <div
-            id="weightsContainer"
-            class="weights-container"
-        ></div>
-
-
-        <div class="form-actions">
-
-            <button
-                type="button"
-                class="btn btn-primary"
-                onclick="calculateWeekly()"
-            >
-                محاسبه پایش
-            </button>
-
-        </div>
-
-
-        <div
-            id="resultsCard"
-            class="results-card"
-            style="display:none;"
-        >
-
-            <div class="subsection-title">
-                نتایج پایش
             </div>
 
 
-            <div
-                id="results"
-                class="metrics-grid"
-            ></div>
+            <div class="form-group">
+
+                <label for="humidity">
+                    رطوبت
+                    <span>(٪)</span>
+                </label>
+
+                <input
+                    id="humidity"
+                    type="text"
+                    inputmode="decimal"
+                    placeholder="%"
+                    autocomplete="off"
+                >
+
+            </div>
 
 
-            <div class="chart-wrapper">
+            <div class="form-group">
 
-                <canvas id="weightChart"></canvas>
+                <label for="ammonia">
+                    آمونیاک
+                    <span>(ppm)</span>
+                </label>
+
+                <input
+                    id="ammonia"
+                    type="text"
+                    inputmode="decimal"
+                    placeholder="ppm"
+                    autocomplete="off"
+                >
+
+            </div>
+
+
+            <div class="form-group">
+
+                <label for="co2">
+                    CO₂
+                    <span>(ppm)</span>
+                </label>
+
+                <input
+                    id="co2"
+                    type="text"
+                    inputmode="decimal"
+                    placeholder="ppm"
+                    autocomplete="off"
+                >
 
             </div>
 
         </div>
 
+
+        <!-- =================================================
+             WATER QUALITY
+        ================================================== -->
 
         <div class="subsection-title">
-            توضیحات و ملاحظات
+            کیفیت آب
         </div>
 
+        <div class="form-grid">
+
+            <div class="form-group">
+
+                <label for="waterPh">
+                    pH آب
+                </label>
+
+                <input
+                    id="waterPh"
+                    type="text"
+                    inputmode="decimal"
+                    placeholder="pH"
+                    autocomplete="off"
+                >
+
+            </div>
+
+
+            <div class="form-group">
+
+                <label for="tds">
+                    TDS
+                    <span>(ppm)</span>
+                </label>
+
+                <input
+                    id="tds"
+                    type="text"
+                    inputmode="decimal"
+                    placeholder="ppm"
+                    autocomplete="off"
+                >
+
+            </div>
+
+
+            <div class="form-group">
+
+                <label for="waterTemp">
+                    دمای آب
+                    <span>(°C)</span>
+                </label>
+
+                <input
+                    id="waterTemp"
+                    type="text"
+                    inputmode="decimal"
+                    placeholder="°C"
+                    autocomplete="off"
+                >
+
+            </div>
+
+        </div>
+
+
+        <!-- =================================================
+             CLINICAL / HEALTH
+        ================================================== -->
+
+        <div class="subsection-title">
+            وضعیت سلامت گله
+        </div>
+
+        <div class="form-grid">
+
+            <div class="form-group">
+
+                <label for="clinicalSigns">
+                    علائم بالینی
+                </label>
+
+                <select id="clinicalSigns">
+
+                    <option value="">
+                        انتخاب کنید
+                    </option>
+
+                    <option value="normal">
+                        طبیعی
+                    </option>
+
+                    <option value="respiratory">
+                        تنفسی
+                    </option>
+
+                    <option value="digestive">
+                        گوارشی
+                    </option>
+
+                    <option value="nervous">
+                        عصبی
+                    </option>
+
+                    <option value="locomotor">
+                        حرکتی
+                    </option>
+
+                    <option value="mixed">
+                        مختلط
+                    </option>
+
+                </select>
+
+            </div>
+
+
+            <div class="form-group">
+
+                <label for="fecesStatus">
+                    وضعیت مدفوع
+                </label>
+
+                <select id="fecesStatus">
+
+                    <option value="">
+                        انتخاب کنید
+                    </option>
+
+                    <option value="normal">
+                        طبیعی
+                    </option>
+
+                    <option value="watery">
+                        آبکی
+                    </option>
+
+                    <option value="green">
+                        سبز
+                    </option>
+
+                    <option value="bloody">
+                        خونی
+                    </option>
+
+                    <option value="mucous">
+                        موکوسی
+                    </option>
+
+                </select>
+
+            </div>
+
+
+            <div class="form-group">
+
+                <label for="respiratorySigns">
+                    علائم تنفسی
+                </label>
+
+                <select id="respiratorySigns">
+
+                    <option value="">
+                        انتخاب کنید
+                    </option>
+
+                    <option value="none">
+                        ندارد
+                    </option>
+
+                    <option value="mild">
+                        خفیف
+                    </option>
+
+                    <option value="moderate">
+                        متوسط
+                    </option>
+
+                    <option value="severe">
+                        شدید
+                    </option>
+
+                </select>
+
+            </div>
+
+
+            <div class="form-group">
+
+                <label for="activity">
+                    سطح فعالیت
+                </label>
+
+                <select id="activity">
+
+                    <option value="">
+                        انتخاب کنید
+                    </option>
+
+                    <option value="normal">
+                        طبیعی
+                    </option>
+
+                    <option value="low">
+                        کاهش یافته
+                    </option>
+
+                    <option value="high">
+                        افزایش یافته
+                    </option>
+
+                </select>
+
+            </div>
+
+        </div>
+
+
+        <!-- =================================================
+             NECROPSY
+        ================================================== -->
+
+        <div class="subsection-title">
+            یافته‌های کالبدگشایی
+        </div>
+
+        <div class="form-grid">
+
+            <div class="form-group">
+
+                <label for="necropsy">
+                    وضعیت کالبدگشایی
+                </label>
+
+                <select id="necropsy">
+
+                    <option value="">
+                        انتخاب کنید
+                    </option>
+
+                    <option value="normal">
+                        طبیعی
+                    </option>
+
+                    <option value="respiratory">
+                        تنفسی
+                    </option>
+
+                    <option value="digestive">
+                        گوارشی
+                    </option>
+
+                    <option value="renal">
+                        کلیوی
+                    </option>
+
+                    <option value="liver">
+                        کبدی
+                    </option>
+
+                    <option value="mixed">
+                        مختلط
+                    </option>
+
+                </select>
+
+            </div>
+
+
+            <div class="form-group">
+
+                <label for="lesions">
+                    ضایعات مشاهده‌شده
+                </label>
+
+                <input
+                    id="lesions"
+                    type="text"
+                    placeholder="شرح ضایعات"
+                    autocomplete="off"
+                >
+
+            </div>
+
+        </div>
+
+
+        <!-- =================================================
+             VACCINATION / MEDICATION
+        ================================================== -->
+
+        <div class="subsection-title">
+            واکسیناسیون و دارو
+        </div>
+
+        <div class="form-grid">
+
+            <div class="form-group">
+
+                <label for="vaccination">
+                    واکسیناسیون این هفته
+                </label>
+
+                <input
+                    id="vaccination"
+                    type="text"
+                    placeholder="نام واکسن"
+                    autocomplete="off"
+                >
+
+            </div>
+
+
+            <div class="form-group">
+
+                <label for="medication">
+                    دارو / درمان
+                </label>
+
+                <input
+                    id="medication"
+                    type="text"
+                    placeholder="نام دارو یا درمان"
+                    autocomplete="off"
+                >
+
+            </div>
+
+        </div>
+
+
+        <!-- =================================================
+             NOTES
+        ================================================== -->
+
+        <div class="subsection-title">
+            توضیحات
+        </div>
 
         <div class="form-group">
 
+            <label for="notes">
+                یادداشت و توصیه‌های دامپزشکی
+            </label>
+
             <textarea
-                id="weeklyNotes"
-                rows="4"
-                placeholder="توضیحات مربوط به وضعیت گله، مدیریت، علائم، کیفیت دان، آب، تهویه و سایر موارد..."
+                id="notes"
+                rows="5"
+                placeholder="توضیحات، تشخیص، توصیه و برنامه اقدام..."
             ></textarea>
 
         </div>
 
 
+        <!-- =================================================
+             ACTIONS
+        ================================================== -->
+
         <div class="form-actions">
 
             <button
                 type="button"
+                id="saveWeeklyBtn"
                 class="btn btn-primary"
-                onclick="saveWeeklyRecord()"
             >
-                ذخیره گزارش هفتگی
+                ذخیره پایش هفتگی
             </button>
-
 
             <button
                 type="button"
                 class="btn btn-secondary"
-                onclick="clearWeeklyForm()"
+                onclick="resetWeeklyForm()"
             >
                 پاک کردن فرم
             </button>
@@ -662,17 +750,97 @@
     </section>
 
 
+    <!-- =====================================================
+         CALCULATED INDICATORS
+    ====================================================== -->
+
+    <section class="card">
+
+        <div class="section-title">
+            شاخص‌های محاسبه‌شده
+        </div>
+
+        <div class="stats-grid">
+
+            <div class="stat-card">
+
+                <div class="stat-title">
+                    FCR
+                </div>
+
+                <div
+                    id="fcrResult"
+                    class="stat-value"
+                >
+                    -
+                </div>
+
+            </div>
+
+
+            <div class="stat-card">
+
+                <div class="stat-title">
+                    افزایش وزن
+                </div>
+
+                <div
+                    id="weightGainResult"
+                    class="stat-value"
+                >
+                    -
+                </div>
+
+            </div>
+
+
+            <div class="stat-card">
+
+                <div class="stat-title">
+                    تلفات تجمعی
+                </div>
+
+                <div
+                    id="cumulativeMortalityResult"
+                    class="stat-value"
+                >
+                    -
+                </div>
+
+            </div>
+
+
+            <div class="stat-card">
+
+                <div class="stat-title">
+                    مصرف دان / پرنده
+                </div>
+
+                <div
+                    id="feedPerBirdResult"
+                    class="stat-value"
+                >
+                    -
+                </div>
+
+            </div>
+
+        </div>
+
+    </section>
+
+
+    <!-- =====================================================
+         HISTORY
+    ====================================================== -->
+
     <section class="card">
 
         <div class="section-title">
             سوابق پایش هفتگی
         </div>
 
-
-        <div
-            id="weeklyHistory"
-            class="history-container"
-        >
+        <div id="weeklyHistory">
 
             <p>
                 در حال دریافت سوابق...
@@ -683,642 +851,68 @@
     </section>
 
 
+    <!-- =====================================================
+         WEEKLY CHART
+    ====================================================== -->
+
+    <section class="card">
+
+        <div class="section-title">
+            نمودار روند هفتگی
+        </div>
+
+        <div class="chart-container">
+
+            <canvas id="weeklyChart"></canvas>
+
+        </div>
+
+    </section>
+
+
 </div>
 
 
-<style>
+<!-- =========================================================
+     DATEPICKER INITIALIZATION FALLBACK
+========================================================== -->
 
-* {
-    box-sizing: border-box;
-}
+<script>
+document.addEventListener('DOMContentLoaded', function () {
 
+    try {
 
-body {
-    margin: 0;
+        if (
+            typeof jQuery !== 'undefined' &&
+            typeof jQuery.fn.persianDatepicker === 'function'
+        ) {
 
-    font-family:
-        Tahoma,
-        Arial,
-        sans-serif;
+            jQuery('#evaluationDate').persianDatepicker({
+                format: 'YYYY/MM/DD',
+                autoClose: true,
+                initialValue: false,
+                observer: true,
+                calendar: {
+                    persian: {
+                        locale: 'fa'
+                    }
+                }
+            });
 
-    background:
-        #f5f7fa;
+        }
 
-    color:
-        #172033;
-}
+    } catch (error) {
 
-
-.app-container {
-    width:
-        min(
-            1400px,
-            94%
+        console.error(
+            'خطا در راه‌اندازی تقویم:',
+            error
         );
 
-    margin:
-        30px auto 60px;
-}
-
-
-.page-header {
-    display:
-        flex;
-
-    justify-content:
-        space-between;
-
-    align-items:
-        center;
-
-    gap:
-        20px;
-
-    background:
-        #fff;
-
-    padding:
-        22px;
-
-    border-radius:
-        16px;
-
-    margin-bottom:
-        20px;
-
-    box-shadow:
-        0 4px 18px
-        rgba(0,0,0,.06);
-}
-
-
-.page-header h1 {
-    margin:
-        0 0 8px;
-
-    font-size:
-        27px;
-}
-
-
-.page-header p {
-    margin:
-        0 0 5px;
-
-    font-weight:
-        700;
-}
-
-
-.page-header small {
-    color:
-        #6b7280;
-}
-
-
-.header-actions {
-    display:
-        flex;
-
-    gap:
-        10px;
-
-    flex-wrap:
-        wrap;
-}
-
-
-.card {
-    background:
-        #fff;
-
-    border-radius:
-        16px;
-
-    padding:
-        22px;
-
-    margin-bottom:
-        20px;
-
-    box-shadow:
-        0 4px 18px
-        rgba(0,0,0,.06);
-}
-
-
-.section-title {
-    font-size:
-        20px;
-
-    font-weight:
-        800;
-
-    margin-bottom:
-        20px;
-
-    padding-bottom:
-        12px;
-
-    border-bottom:
-        2px solid #e8edf3;
-}
-
-
-.subsection-title {
-    font-size:
-        17px;
-
-    font-weight:
-        800;
-
-    margin:
-        28px 0 16px;
-}
-
-
-.form-grid {
-    display:
-        grid;
-
-    grid-template-columns:
-        repeat(
-            auto-fit,
-            minmax(
-                220px,
-                1fr
-            )
-        );
-
-    gap:
-        16px;
-}
-
-
-.form-group {
-    display:
-        flex;
-
-    flex-direction:
-        column;
-
-    gap:
-        7px;
-
-    margin-bottom:
-        14px;
-}
-
-
-.form-group label {
-    font-weight:
-        700;
-
-    font-size:
-        14px;
-}
-
-
-.form-group label span {
-    color:
-        #777;
-
-    font-weight:
-        400;
-}
-
-
-input,
-textarea {
-    width:
-        100%;
-
-    border:
-        1px solid #d7dde5;
-
-    border-radius:
-        10px;
-
-    padding:
-        12px 13px;
-
-    font-family:
-        inherit;
-
-    font-size:
-        15px;
-
-    background:
-        #fff;
-
-    outline:
-        none;
-
-    transition:
-        .2s;
-}
-
-
-input:focus,
-textarea:focus {
-    border-color:
-        #1d3557;
-
-    box-shadow:
-        0 0 0 3px
-        rgba(
-            29,
-            53,
-            87,
-            .08
-        );
-}
-
-
-textarea {
-    resize:
-        vertical;
-}
-
-
-.btn {
-    border:
-        0;
-
-    border-radius:
-        10px;
-
-    padding:
-        11px 17px;
-
-    cursor:
-        pointer;
-
-    font-family:
-        inherit;
-
-    font-weight:
-        700;
-
-    font-size:
-        14px;
-
-    transition:
-        .2s;
-}
-
-
-.btn:hover {
-    transform:
-        translateY(-1px);
-}
-
-
-.btn-primary {
-    background:
-        #17365d;
-
-    color:
-        #fff;
-}
-
-
-.btn-secondary {
-    background:
-        #eef2f6;
-
-    color:
-        #243447;
-}
-
-
-.btn-danger {
-    background:
-        #b42318;
-
-    color:
-        #fff;
-}
-
-
-.form-actions,
-.weight-toolbar {
-    display:
-        flex;
-
-    flex-wrap:
-        wrap;
-
-    gap:
-        10px;
-
-    margin-top:
-        18px;
-}
-
-
-.weight-toolbar {
-    margin-bottom:
-        18px;
-}
-
-
-.weights-container {
-    display:
-        grid;
-
-    grid-template-columns:
-        repeat(
-            auto-fill,
-            minmax(
-                120px,
-                1fr
-            )
-        );
-
-    gap:
-        10px;
-}
-
-
-.weight-input {
-    display:
-        flex;
-
-    align-items:
-        center;
-
-    gap:
-        6px;
-
-    background:
-        #f7f9fb;
-
-    padding:
-        7px;
-
-    border-radius:
-        9px;
-
-    border:
-        1px solid #e4e8ee;
-}
-
-
-.weight-input label {
-    min-width:
-        24px;
-
-    text-align:
-        center;
-
-    font-weight:
-        700;
-
-    color:
-        #536273;
-}
-
-
-.weight-input input {
-    padding:
-        9px;
-
-    min-width:
-        0;
-}
-
-
-.info-box {
-    background:
-        #f5f8fb;
-
-    border-right:
-        4px solid #17365d;
-
-    padding:
-        13px 15px;
-
-    border-radius:
-        9px;
-
-    line-height:
-        2;
-
-    font-size:
-        13px;
-
-    color:
-        #4b5563;
-}
-
-
-.metrics-grid {
-    display:
-        grid;
-
-    grid-template-columns:
-        repeat(
-            auto-fit,
-            minmax(
-                170px,
-                1fr
-            )
-        );
-
-    gap:
-        12px;
-}
-
-
-.metric-card {
-    background:
-        #f7f9fb;
-
-    border:
-        1px solid #e5e9ef;
-
-    border-radius:
-        12px;
-
-    padding:
-        15px;
-
-    text-align:
-        center;
-}
-
-
-.metric-title {
-    font-size:
-        13px;
-
-    color:
-        #687386;
-
-    margin-bottom:
-        8px;
-}
-
-
-.metric-value {
-    font-size:
-        19px;
-
-    font-weight:
-        800;
-
-    color:
-        #17365d;
-}
-
-
-.chart-wrapper {
-    position:
-        relative;
-
-    width:
-        100%;
-
-    height:
-        390px;
-
-    margin-top:
-        25px;
-}
-
-
-.history-container {
-    width:
-        100%;
-
-    overflow-x:
-        auto;
-}
-
-
-table {
-    width:
-        100%;
-
-    border-collapse:
-        collapse;
-
-    min-width:
-        1000px;
-}
-
-
-th,
-td {
-    padding:
-        11px 10px;
-
-    border-bottom:
-        1px solid #e5e7eb;
-
-    text-align:
-        center;
-
-    white-space:
-        nowrap;
-}
-
-
-th {
-    background:
-        #f3f6f9;
-
-    font-weight:
-        800;
-}
-
-
-tr:hover td {
-    background:
-        #fafbfd;
-}
-
-
-.farm-summary {
-    background:
-        linear-gradient(
-            135deg,
-            #f7f9fb,
-            #eef3f7
-        );
-
-    border-radius:
-        12px;
-
-    padding:
-        18px;
-
-    line-height:
-        2;
-
-    color:
-        #465466;
-}
-
-
-.farm-summary strong {
-    color:
-        #17365d;
-
-    font-size:
-        18px;
-}
-
-
-@media (
-    max-width: 700px
-) {
-
-    .app-container {
-        width:
-            96%;
-
-        margin-top:
-            15px;
     }
 
+});
+</script>
 
-    .page-header {
-        flex-direction:
-            column;
-
-        align-items:
-            stretch;
-    }
-
-
-    .header-actions {
-        width:
-            100%;
-    }
-
-
-    .header-actions .btn {
-        flex:
-            1;
-    }
-
-
-    .card {
-        padding:
-            15px;
-    }
-
-
-    .chart-wrapper {
-        height:
-            300px;
-    }
-
-}
-
-</style>
 
 </body>
 </html>

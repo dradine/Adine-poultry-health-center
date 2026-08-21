@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="fa" dir="rtl">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -8,20 +9,25 @@
 
     <link rel="stylesheet" href="style.css">
 
-    <!-- Chart.js -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-
-    <!-- Supabase -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+    <script src="supabase-config.js"></script>
+    <script src="auth.js"></script>
+    <script src="app-core.js"></script>
+    <script src="standard-data.js"></script>
+    <script src="standards.js"></script>
+    <script src="poultry-utils.js"></script>
+    <script src="weekly-storage.js"></script>
+    <script src="genetics-ui.js"></script>
+    <script src="weekly-engine.js"></script>
+    <script src="weekly-specialized.js"></script>
 </head>
 
 <body>
 
 <div class="app-container">
 
-    <!-- =====================================================
-         HEADER
-    ====================================================== -->
     <header class="page-header">
 
         <div>
@@ -42,7 +48,7 @@
             <button
                 type="button"
                 class="btn btn-secondary"
-                onclick="location.href='dashboard.html'"
+                onclick="location.href='Dashboard.html'"
             >
                 داشبورد
             </button>
@@ -55,14 +61,19 @@
                 انتخاب گله
             </button>
 
+            <button
+                type="button"
+                class="btn btn-secondary"
+                onclick="closeCurrentFlockPeriod()"
+            >
+                بستن دوره
+            </button>
+
         </div>
 
     </header>
 
 
-    <!-- =====================================================
-         CURRENT FLOCK
-    ====================================================== -->
     <section class="card">
 
         <div class="section-title">
@@ -80,19 +91,12 @@
     </section>
 
 
-    <!-- =====================================================
-         WEEKLY FORM
-    ====================================================== -->
     <section class="card">
 
         <div class="section-title">
             ثبت پایش هفتگی
         </div>
 
-
-        <!-- -----------------------------------------------
-             BASIC INFORMATION
-        ------------------------------------------------ -->
 
         <div class="form-grid">
 
@@ -165,10 +169,6 @@
 
         </div>
 
-
-        <!-- =================================================
-             FEED / WATER
-        ================================================== -->
 
         <div class="subsection-title">
             مصرف دان و آب
@@ -250,14 +250,28 @@
         </div>
 
 
-        <!-- =================================================
-             WEIGHTS
-        ================================================== -->
+        <section
+            id="specializedMetricsCard"
+            class="card"
+            style="display:none;"
+        >
+
+            <div class="section-title">
+                شاخص‌های تخصصی هفتگی
+            </div>
+
+            <div
+                id="specializedMetricsIntro"
+                class="info-box"
+            ></div>
+
+            <div id="specializedMetrics"></div>
+
+        </section>
+
 
         <div class="subsection-title">
-
             وزن‌کشی نمونه‌ای
-
         </div>
 
 
@@ -319,10 +333,6 @@
         ></div>
 
 
-        <!-- =================================================
-             CALCULATE
-        ================================================== -->
-
         <div class="form-actions">
 
             <button
@@ -335,10 +345,6 @@
 
         </div>
 
-
-        <!-- =================================================
-             RESULTS
-        ================================================== -->
 
         <div
             id="resultsCard"
@@ -359,18 +365,12 @@
 
             <div class="chart-wrapper">
 
-                <canvas
-                    id="weightChart"
-                ></canvas>
+                <canvas id="weightChart"></canvas>
 
             </div>
 
         </div>
 
-
-        <!-- =================================================
-             NOTES
-        ================================================== -->
 
         <div class="subsection-title">
             توضیحات و ملاحظات
@@ -387,10 +387,6 @@
 
         </div>
 
-
-        <!-- =================================================
-             SAVE
-        ================================================== -->
 
         <div class="form-actions">
 
@@ -416,10 +412,6 @@
     </section>
 
 
-    <!-- =====================================================
-         HISTORY
-    ====================================================== -->
-
     <section class="card">
 
         <div class="section-title">
@@ -444,571 +436,637 @@
 </div>
 
 
-<!-- =========================================================
-     SUPABASE CONFIG
-========================================================= -->
-
-<script src="supabase.js"></script>
-
-
-<!-- =========================================================
-     COMMON FUNCTIONS
-========================================================= -->
-
-<script src="app.js"></script>
-
-
-<!-- =========================================================
-     STANDARD / PERFORMANCE ENGINE
-========================================================= -->
-
-<script src="standards.js"></script>
-
-<script src="weekly-performance.js"></script>
-
-
-<!-- =========================================================
-     WEEKLY PAGE
-========================================================= -->
-
-<script src="weekly.js"></script>
-
-
-<!-- =========================================================
-     BASIC PAGE STYLES
-     فقط در صورت نبودن استایل معادل در style.css
-========================================================= -->
-
 <style>
 
-    * {
-        box-sizing: border-box;
-    }
+* {
+    box-sizing: border-box;
+}
 
 
-    body {
-        margin: 0;
-        font-family:
-            Tahoma,
-            Arial,
-            sans-serif;
+body {
+    margin: 0;
 
-        background:
-            #f5f7fa;
+    font-family:
+        Tahoma,
+        Arial,
+        sans-serif;
 
-        color:
-            #172033;
-    }
+    background:
+        #f5f7fa;
+
+    color:
+        #172033;
+}
 
 
-    .app-container {
-        width: min(
+.app-container {
+    width:
+        min(
             1400px,
             94%
         );
 
-        margin:
-            30px auto 60px;
+    margin:
+        30px auto 60px;
+}
+
+
+.page-header {
+    display:
+        flex;
+
+    justify-content:
+        space-between;
+
+    align-items:
+        center;
+
+    gap:
+        20px;
+
+    background:
+        #fff;
+
+    padding:
+        22px;
+
+    border-radius:
+        16px;
+
+    margin-bottom:
+        20px;
+
+    box-shadow:
+        0 4px 18px
+        rgba(0,0,0,.06);
+}
+
+
+.page-header h1 {
+    margin:
+        0 0 8px;
+
+    font-size:
+        27px;
+}
+
+
+.page-header p {
+    margin:
+        0 0 5px;
+
+    font-weight:
+        700;
+}
+
+
+.page-header small {
+    color:
+        #6b7280;
+}
+
+
+.header-actions {
+    display:
+        flex;
+
+    gap:
+        10px;
+
+    flex-wrap:
+        wrap;
+}
+
+
+.card {
+    background:
+        #fff;
+
+    border-radius:
+        16px;
+
+    padding:
+        22px;
+
+    margin-bottom:
+        20px;
+
+    box-shadow:
+        0 4px 18px
+        rgba(0,0,0,.06);
+}
+
+
+.section-title {
+    font-size:
+        20px;
+
+    font-weight:
+        800;
+
+    margin-bottom:
+        20px;
+
+    padding-bottom:
+        12px;
+
+    border-bottom:
+        2px solid #e8edf3;
+}
+
+
+.subsection-title {
+    font-size:
+        17px;
+
+    font-weight:
+        800;
+
+    margin:
+        28px 0 16px;
+}
+
+
+.form-grid {
+    display:
+        grid;
+
+    grid-template-columns:
+        repeat(
+            auto-fit,
+            minmax(
+                220px,
+                1fr
+            )
+        );
+
+    gap:
+        16px;
+}
+
+
+.form-group {
+    display:
+        flex;
+
+    flex-direction:
+        column;
+
+    gap:
+        7px;
+
+    margin-bottom:
+        14px;
+}
+
+
+.form-group label {
+    font-weight:
+        700;
+
+    font-size:
+        14px;
+}
+
+
+.form-group label span {
+    color:
+        #777;
+
+    font-weight:
+        400;
+}
+
+
+input,
+textarea {
+    width:
+        100%;
+
+    border:
+        1px solid #d7dde5;
+
+    border-radius:
+        10px;
+
+    padding:
+        12px 13px;
+
+    font-family:
+        inherit;
+
+    font-size:
+        15px;
+
+    background:
+        #fff;
+
+    outline:
+        none;
+
+    transition:
+        .2s;
+}
+
+
+input:focus,
+textarea:focus {
+    border-color:
+        #1d3557;
+
+    box-shadow:
+        0 0 0 3px
+        rgba(
+            29,
+            53,
+            87,
+            .08
+        );
+}
+
+
+textarea {
+    resize:
+        vertical;
+}
+
+
+.btn {
+    border:
+        0;
+
+    border-radius:
+        10px;
+
+    padding:
+        11px 17px;
+
+    cursor:
+        pointer;
+
+    font-family:
+        inherit;
+
+    font-weight:
+        700;
+
+    font-size:
+        14px;
+
+    transition:
+        .2s;
+}
+
+
+.btn:hover {
+    transform:
+        translateY(-1px);
+}
+
+
+.btn-primary {
+    background:
+        #17365d;
+
+    color:
+        #fff;
+}
+
+
+.btn-secondary {
+    background:
+        #eef2f6;
+
+    color:
+        #243447;
+}
+
+
+.btn-danger {
+    background:
+        #b42318;
+
+    color:
+        #fff;
+}
+
+
+.form-actions,
+.weight-toolbar {
+    display:
+        flex;
+
+    flex-wrap:
+        wrap;
+
+    gap:
+        10px;
+
+    margin-top:
+        18px;
+}
+
+
+.weight-toolbar {
+    margin-bottom:
+        18px;
+}
+
+
+.weights-container {
+    display:
+        grid;
+
+    grid-template-columns:
+        repeat(
+            auto-fill,
+            minmax(
+                120px,
+                1fr
+            )
+        );
+
+    gap:
+        10px;
+}
+
+
+.weight-input {
+    display:
+        flex;
+
+    align-items:
+        center;
+
+    gap:
+        6px;
+
+    background:
+        #f7f9fb;
+
+    padding:
+        7px;
+
+    border-radius:
+        9px;
+
+    border:
+        1px solid #e4e8ee;
+}
+
+
+.weight-input label {
+    min-width:
+        24px;
+
+    text-align:
+        center;
+
+    font-weight:
+        700;
+
+    color:
+        #536273;
+}
+
+
+.weight-input input {
+    padding:
+        9px;
+
+    min-width:
+        0;
+}
+
+
+.info-box {
+    background:
+        #f5f8fb;
+
+    border-right:
+        4px solid #17365d;
+
+    padding:
+        13px 15px;
+
+    border-radius:
+        9px;
+
+    line-height:
+        2;
+
+    font-size:
+        13px;
+
+    color:
+        #4b5563;
+}
+
+
+.metrics-grid {
+    display:
+        grid;
+
+    grid-template-columns:
+        repeat(
+            auto-fit,
+            minmax(
+                170px,
+                1fr
+            )
+        );
+
+    gap:
+        12px;
+}
+
+
+.metric-card {
+    background:
+        #f7f9fb;
+
+    border:
+        1px solid #e5e9ef;
+
+    border-radius:
+        12px;
+
+    padding:
+        15px;
+
+    text-align:
+        center;
+}
+
+
+.metric-title {
+    font-size:
+        13px;
+
+    color:
+        #687386;
+
+    margin-bottom:
+        8px;
+}
+
+
+.metric-value {
+    font-size:
+        19px;
+
+    font-weight:
+        800;
+
+    color:
+        #17365d;
+}
+
+
+.chart-wrapper {
+    position:
+        relative;
+
+    width:
+        100%;
+
+    height:
+        390px;
+
+    margin-top:
+        25px;
+}
+
+
+.history-container {
+    width:
+        100%;
+
+    overflow-x:
+        auto;
+}
+
+
+table {
+    width:
+        100%;
+
+    border-collapse:
+        collapse;
+
+    min-width:
+        1000px;
+}
+
+
+th,
+td {
+    padding:
+        11px 10px;
+
+    border-bottom:
+        1px solid #e5e7eb;
+
+    text-align:
+        center;
+
+    white-space:
+        nowrap;
+}
+
+
+th {
+    background:
+        #f3f6f9;
+
+    font-weight:
+        800;
+}
+
+
+tr:hover td {
+    background:
+        #fafbfd;
+}
+
+
+.farm-summary {
+    background:
+        linear-gradient(
+            135deg,
+            #f7f9fb,
+            #eef3f7
+        );
+
+    border-radius:
+        12px;
+
+    padding:
+        18px;
+
+    line-height:
+        2;
+
+    color:
+        #465466;
+}
+
+
+.farm-summary strong {
+    color:
+        #17365d;
+
+    font-size:
+        18px;
+}
+
+
+@media (
+    max-width: 700px
+) {
+
+    .app-container {
+        width:
+            96%;
+
+        margin-top:
+            15px;
     }
 
 
     .page-header {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        gap: 20px;
+        flex-direction:
+            column;
 
-        background: #fff;
-
-        padding: 22px;
-
-        border-radius: 16px;
-
-        margin-bottom: 20px;
-
-        box-shadow:
-            0 4px 18px
-            rgba(0,0,0,.06);
-    }
-
-
-    .page-header h1 {
-        margin: 0 0 8px;
-
-        font-size: 27px;
-    }
-
-
-    .page-header p {
-        margin: 0 0 5px;
-
-        font-weight: 700;
-    }
-
-
-    .page-header small {
-        color:
-            #6b7280;
+        align-items:
+            stretch;
     }
 
 
     .header-actions {
-        display: flex;
+        width:
+            100%;
+    }
 
-        gap: 10px;
 
-        flex-wrap: wrap;
+    .header-actions .btn {
+        flex:
+            1;
     }
 
 
     .card {
-        background: #fff;
-
-        border-radius: 16px;
-
-        padding: 22px;
-
-        margin-bottom: 20px;
-
-        box-shadow:
-            0 4px 18px
-            rgba(0,0,0,.06);
-    }
-
-
-    .section-title {
-        font-size: 20px;
-
-        font-weight: 800;
-
-        margin-bottom: 20px;
-
-        padding-bottom: 12px;
-
-        border-bottom:
-            2px solid #e8edf3;
-    }
-
-
-    .subsection-title {
-        font-size: 17px;
-
-        font-weight: 800;
-
-        margin:
-            28px 0 16px;
-    }
-
-
-    .form-grid {
-        display: grid;
-
-        grid-template-columns:
-            repeat(
-                auto-fit,
-                minmax(
-                    220px,
-                    1fr
-                )
-            );
-
-        gap: 16px;
-    }
-
-
-    .form-group {
-        display: flex;
-
-        flex-direction: column;
-
-        gap: 7px;
-
-        margin-bottom: 14px;
-    }
-
-
-    .form-group label {
-        font-weight: 700;
-
-        font-size: 14px;
-    }
-
-
-    .form-group label span {
-        color: #777;
-
-        font-weight: 400;
-    }
-
-
-    input,
-    textarea {
-        width: 100%;
-
-        border:
-            1px solid #d7dde5;
-
-        border-radius: 10px;
-
         padding:
-            12px 13px;
-
-        font-family:
-            inherit;
-
-        font-size: 15px;
-
-        background: #fff;
-
-        outline: none;
-
-        transition:
-            .2s;
-    }
-
-
-    input:focus,
-    textarea:focus {
-        border-color:
-            #1d3557;
-
-        box-shadow:
-            0 0 0 3px
-            rgba(
-                29,
-                53,
-                87,
-                .08
-            );
-    }
-
-
-    textarea {
-        resize: vertical;
-    }
-
-
-    .btn {
-        border: 0;
-
-        border-radius: 10px;
-
-        padding:
-            11px 17px;
-
-        cursor: pointer;
-
-        font-family:
-            inherit;
-
-        font-weight: 700;
-
-        font-size: 14px;
-
-        transition:
-            .2s;
-    }
-
-
-    .btn:hover {
-        transform:
-            translateY(-1px);
-    }
-
-
-    .btn-primary {
-        background:
-            #17365d;
-
-        color:
-            #fff;
-    }
-
-
-    .btn-secondary {
-        background:
-            #eef2f6;
-
-        color:
-            #243447;
-    }
-
-
-    .btn-danger {
-        background:
-            #b42318;
-
-        color:
-            #fff;
-    }
-
-
-    .form-actions,
-    .weight-toolbar {
-        display: flex;
-
-        flex-wrap: wrap;
-
-        gap: 10px;
-
-        margin-top: 18px;
-    }
-
-
-    .weight-toolbar {
-        margin-bottom: 18px;
-    }
-
-
-    .weights-container {
-        display: grid;
-
-        grid-template-columns:
-            repeat(
-                auto-fill,
-                minmax(
-                    120px,
-                    1fr
-                )
-            );
-
-        gap: 10px;
-    }
-
-
-    .weight-input {
-        display: flex;
-
-        align-items: center;
-
-        gap: 6px;
-
-        background:
-            #f7f9fb;
-
-        padding: 7px;
-
-        border-radius: 9px;
-
-        border:
-            1px solid #e4e8ee;
-    }
-
-
-    .weight-input label {
-        min-width: 24px;
-
-        text-align: center;
-
-        font-weight: 700;
-
-        color:
-            #536273;
-    }
-
-
-    .weight-input input {
-        padding: 9px;
-
-        min-width: 0;
-    }
-
-
-    .info-box {
-        background:
-            #f5f8fb;
-
-        border-right:
-            4px solid #17365d;
-
-        padding: 13px 15px;
-
-        border-radius: 9px;
-
-        line-height: 2;
-
-        font-size: 13px;
-
-        color:
-            #4b5563;
-    }
-
-
-    .metrics-grid {
-        display: grid;
-
-        grid-template-columns:
-            repeat(
-                auto-fit,
-                minmax(
-                    170px,
-                    1fr
-                )
-            );
-
-        gap: 12px;
-    }
-
-
-    .metric-card {
-        background:
-            #f7f9fb;
-
-        border:
-            1px solid #e5e9ef;
-
-        border-radius: 12px;
-
-        padding: 15px;
-
-        text-align: center;
-    }
-
-
-    .metric-title {
-        font-size: 13px;
-
-        color:
-            #687386;
-
-        margin-bottom: 8px;
-    }
-
-
-    .metric-value {
-        font-size: 19px;
-
-        font-weight: 800;
-
-        color:
-            #17365d;
+            15px;
     }
 
 
     .chart-wrapper {
-        position: relative;
-
-        width: 100%;
-
-        height: 390px;
-
-        margin-top: 25px;
+        height:
+            300px;
     }
 
-
-    .history-container {
-        width: 100%;
-
-        overflow-x: auto;
-    }
-
-
-    table {
-        width: 100%;
-
-        border-collapse:
-            collapse;
-
-        min-width:
-            1000px;
-    }
-
-
-    th,
-    td {
-        padding:
-            11px 10px;
-
-        border-bottom:
-            1px solid #e5e7eb;
-
-        text-align: center;
-
-        white-space: nowrap;
-    }
-
-
-    th {
-        background:
-            #f3f6f9;
-
-        font-weight: 800;
-    }
-
-
-    tr:hover td {
-        background:
-            #fafbfd;
-    }
-
-
-    .farm-summary {
-        background:
-            linear-gradient(
-                135deg,
-                #f7f9fb,
-                #eef3f7
-            );
-
-        border-radius: 12px;
-
-        padding: 18px;
-
-        line-height: 2;
-
-        color:
-            #465466;
-    }
-
-
-    .farm-summary strong {
-        color:
-            #17365d;
-
-        font-size: 18px;
-    }
-
-
-    @media (
-        max-width: 700px
-    ) {
-
-        .app-container {
-            width: 96%;
-
-            margin-top: 15px;
-        }
-
-
-        .page-header {
-            flex-direction:
-                column;
-
-            align-items:
-                stretch;
-        }
-
-
-        .header-actions {
-            width: 100%;
-        }
-
-
-        .header-actions .btn {
-            flex: 1;
-        }
-
-
-        .card {
-            padding: 15px;
-        }
-
-
-        .chart-wrapper {
-            height: 300px;
-        }
-
-    }
+}
 
 </style>
 

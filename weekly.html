@@ -1,6 +1,5 @@
 <!DOCTYPE html>
 <html lang="fa" dir="rtl">
-
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -8,22 +7,16 @@
     <title>پایش هفتگی | مرکز تخصصی سلامت طیور آدینه</title>
 
     <link rel="stylesheet" href="style.css">
-    فقط بر    <link
+    <link
         rel="stylesheet"
         href="https://cdn.jsdelivr.net/npm/persian-datepicker@1.2.0/dist/css/persian-datepicker.min.css"
     >
 
-    <script
-        src="https://cdn.jsdelivr.net/npm/jquery@3.7.1/dist/jquery.min.js">
-    </script>
+    <script src="https://cdn.jsdelivr.net/npm/jquery@3.7.1/dist/jquery.min.js"></script>
 
-    <script
-        src="https://cdn.jsdelivr.net/npm/persian-date@1.1.0/dist/persian-date.min.js">
-    </script>
+    <script src="https://cdn.jsdelivr.net/npm/persian-date@1.1.0/dist/persian-date.min.js"></script>
 
-    <script
-        src="https://cdn.jsdelivr.net/npm/persian-datepicker@1.2.0/dist/js/persian-datepicker.min.js">
-    </script>
+    <script src="https://cdn.jsdelivr.net/npm/persian-datepicker@1.2.0/dist/js/persian-datepicker.min.js"></script>
 
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
@@ -425,7 +418,6 @@
             </button>
 
 
-            <!-- فقط دکمه جدید -->
             <button
                 type="button"
                 class="btn btn-secondary"
@@ -460,119 +452,667 @@
             class="history-container"
         >
 
-            در حال دریافت سوابق...
+            <p>
+                در حال دریافت سوابق...
+            </p>
 
         </div>
 
     </section>
 
+
 </div>
 
 
-<script>
+<style>
 
-document.addEventListener(
-    "DOMContentLoaded",
-    function () {
-
-        if (
-            typeof $ !== "undefined" &&
-            typeof $.fn.persianDatepicker === "function"
-        ) {
-
-            $("#evaluationDate").persianDatepicker({
-
-                format: "YYYY/MM/DD",
-
-                autoClose: true,
-
-                initialValue: false,
-
-                observer: true,
-
-                calendarType: "persian",
-
-                toolbox: {
-
-                    calendarSwitch: false,
-
-                    todayButton: {
-                        enabled: true
-                    },
-
-                    submitButton: {
-                        enabled: true
-                    }
-
-                },
-
-                timePicker: {
-                    enabled: false
-                }
-
-            });
-
-        }
-
-    }
-);
+* {
+    box-sizing: border-box;
+}
 
 
-function openCurrentReport() {
+body {
+    margin: 0;
 
-    let flockId =
-        localStorage.getItem(
-            "currentFlockId"
-        ) ||
-        localStorage.getItem(
-            "selectedFlockId"
-        ) ||
-        localStorage.getItem(
-            "activeFlockId"
+    font-family:
+        Tahoma,
+        Arial,
+        sans-serif;
+
+    background:
+        #f5f7fa;
+
+    color:
+        #172033;
+}
+
+
+.app-container {
+    width:
+        min(
+            1400px,
+            94%
         );
 
-
-    if (!flockId) {
-
-        try {
-
-            const flock =
-                JSON.parse(
-                    localStorage.getItem(
-                        "currentFlock"
-                    ) || "null"
-                );
+    margin:
+        30px auto 60px;
+}
 
 
-            flockId =
-                flock?.id ||
-                flock?.flock_id ||
-                "";
+.page-header {
+    display:
+        flex;
 
-        } catch (error) {}
+    justify-content:
+        space-between;
 
+    align-items:
+        center;
+
+    gap:
+        20px;
+
+    background:
+        #fff;
+
+    padding:
+        22px;
+
+    border-radius:
+        16px;
+
+    margin-bottom:
+        20px;
+
+    box-shadow:
+        0 4px 18px
+        rgba(0,0,0,.06);
+}
+
+
+.page-header h1 {
+    margin:
+        0 0 8px;
+
+    font-size:
+        27px;
+}
+
+
+.page-header p {
+    margin:
+        0 0 5px;
+
+    font-weight:
+        700;
+}
+
+
+.page-header small {
+    color:
+        #6b7280;
+}
+
+
+.header-actions {
+    display:
+        flex;
+
+    gap:
+        10px;
+
+    flex-wrap:
+        wrap;
+}
+
+
+.card {
+    background:
+        #fff;
+
+    border-radius:
+        16px;
+
+    padding:
+        22px;
+
+    margin-bottom:
+        20px;
+
+    box-shadow:
+        0 4px 18px
+        rgba(0,0,0,.06);
+}
+
+
+.section-title {
+    font-size:
+        20px;
+
+    font-weight:
+        800;
+
+    margin-bottom:
+        20px;
+
+    padding-bottom:
+        12px;
+
+    border-bottom:
+        2px solid #e8edf3;
+}
+
+
+.subsection-title {
+    font-size:
+        17px;
+
+    font-weight:
+        800;
+
+    margin:
+        28px 0 16px;
+}
+
+
+.form-grid {
+    display:
+        grid;
+
+    grid-template-columns:
+        repeat(
+            auto-fit,
+            minmax(
+                220px,
+                1fr
+            )
+        );
+
+    gap:
+        16px;
+}
+
+
+.form-group {
+    display:
+        flex;
+
+    flex-direction:
+        column;
+
+    gap:
+        7px;
+
+    margin-bottom:
+        14px;
+}
+
+
+.form-group label {
+    font-weight:
+        700;
+
+    font-size:
+        14px;
+}
+
+
+.form-group label span {
+    color:
+        #777;
+
+    font-weight:
+        400;
+}
+
+
+input,
+textarea {
+    width:
+        100%;
+
+    border:
+        1px solid #d7dde5;
+
+    border-radius:
+        10px;
+
+    padding:
+        12px 13px;
+
+    font-family:
+        inherit;
+
+    font-size:
+        15px;
+
+    background:
+        #fff;
+
+    outline:
+        none;
+
+    transition:
+        .2s;
+}
+
+
+input:focus,
+textarea:focus {
+    border-color:
+        #1d3557;
+
+    box-shadow:
+        0 0 0 3px
+        rgba(
+            29,
+            53,
+            87,
+            .08
+        );
+}
+
+
+textarea {
+    resize:
+        vertical;
+}
+
+
+.btn {
+    border:
+        0;
+
+    border-radius:
+        10px;
+
+    padding:
+        11px 17px;
+
+    cursor:
+        pointer;
+
+    font-family:
+        inherit;
+
+    font-weight:
+        700;
+
+    font-size:
+        14px;
+
+    transition:
+        .2s;
+}
+
+
+.btn:hover {
+    transform:
+        translateY(-1px);
+}
+
+
+.btn-primary {
+    background:
+        #1d3557;
+
+    color:
+        #fff;
+}
+
+
+.btn-secondary {
+    background:
+        #eef2f6;
+
+    color:
+        #243447;
+}
+
+
+.btn-danger {
+    background:
+        #b42318;
+
+    color:
+        #fff;
+}
+
+
+.form-actions {
+    display:
+        flex;
+
+    gap:
+        10px;
+
+    flex-wrap:
+        wrap;
+
+    margin-top:
+        20px;
+}
+
+
+.weight-toolbar {
+    display:
+        flex;
+
+    gap:
+        10px;
+
+    flex-wrap:
+        wrap;
+
+    margin:
+        15px 0;
+}
+
+
+.weights-container {
+    display:
+        grid;
+
+    grid-template-columns:
+        repeat(
+            auto-fill,
+            minmax(
+                130px,
+                1fr
+            )
+        );
+
+    gap:
+        10px;
+
+    margin-top:
+        15px;
+}
+
+
+.weight-input {
+    display:
+        flex;
+
+    flex-direction:
+        column;
+
+    gap:
+        5px;
+}
+
+
+.weight-input label {
+    font-size:
+        12px;
+
+    font-weight:
+        700;
+
+    color:
+        #555;
+}
+
+
+.metrics-grid {
+    display:
+        grid;
+
+    grid-template-columns:
+        repeat(
+            auto-fit,
+            minmax(
+                170px,
+                1fr
+            )
+        );
+
+    gap:
+        12px;
+}
+
+
+.metric-card {
+    padding:
+        16px;
+
+    background:
+        #f7f9fb;
+
+    border:
+        1px solid #e5eaf0;
+
+    border-radius:
+        12px;
+}
+
+
+.metric-card .metric-label {
+    font-size:
+        13px;
+
+    color:
+        #667085;
+
+    margin-bottom:
+        6px;
+}
+
+
+.metric-card .metric-value {
+    font-size:
+        21px;
+
+    font-weight:
+        800;
+
+    color:
+        #172033;
+}
+
+
+.chart-wrapper {
+    position:
+        relative;
+
+    width:
+        100%;
+
+    height:
+        380px;
+
+    margin-top:
+        25px;
+}
+
+
+.chart-wrapper canvas {
+    max-width:
+        100%;
+}
+
+
+.history-container {
+    overflow-x:
+        auto;
+}
+
+
+.history-table {
+    width:
+        100%;
+
+    border-collapse:
+        collapse;
+}
+
+
+.history-table th,
+.history-table td {
+    padding:
+        10px;
+
+    border-bottom:
+        1px solid #e5e7eb;
+
+    text-align:
+        right;
+
+    white-space:
+        nowrap;
+}
+
+
+.history-table th {
+    background:
+        #f8fafc;
+
+    font-weight:
+        800;
+}
+
+
+.history-actions {
+    display:
+        flex;
+
+    gap:
+        6px;
+
+    flex-wrap:
+        wrap;
+}
+
+
+.info-box {
+    padding:
+        13px 15px;
+
+    border-radius:
+        10px;
+
+    background:
+        #f5f8fb;
+
+    border:
+        1px solid #e1e8ef;
+
+    color:
+        #4b5563;
+
+    line-height:
+        1.9;
+
+    margin-bottom:
+        15px;
+}
+
+
+.farm-summary {
+    line-height:
+        2;
+
+    padding:
+        15px;
+
+    background:
+        #f7fafc;
+
+    border-radius:
+        12px;
+
+    border:
+        1px solid #e4e9ef;
+}
+
+
+@media (
+    max-width:
+    700px
+) {
+
+    .app-container {
+        width:
+            96%;
+
+        margin-top:
+            12px;
     }
 
 
-    if (flockId) {
+    .page-header {
+        flex-direction:
+            column;
 
-        location.href =
-            "reports.html?flock=" +
-            encodeURIComponent(
-                flockId
-            );
+        align-items:
+            stretch;
+    }
 
-    } else {
 
-        location.href =
-            "reports.html";
+    .header-actions {
+        justify-content:
+            stretch;
+    }
 
+
+    .header-actions .btn {
+        flex:
+            1;
+        min-width:
+            120px;
+    }
+
+
+    .card {
+        padding:
+            15px;
+    }
+
+
+    .chart-wrapper {
+        height:
+            300px;
     }
 
 }
 
-</script>
+</style>
 
+
+<script>
+
+function goToWeeklyReport(){
+
+    try{
+
+        const flock =
+            window.currentFlockForSpecialized ||
+            window.currentFlock;
+
+        if(
+            flock?.id
+        ){
+
+            window.location.href =
+                "reports.html?flock=" +
+                encodeURIComponent(
+                    flock.id
+                );
+
+            return;
+
+        }
+
+    }
+
+    catch(e){}
+
+    window.location.href =
+        "reports.html";
+
+}
+
+</script>
 
 </body>
 

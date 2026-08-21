@@ -2110,10 +2110,12 @@ th {
                                     "استاندارد",
 
                                 data:
-                                    reportRecords.map(
-                                        standardWeight
-                                    ),
-
+    reportRecords.map(
+        record =>
+            standardWeight(
+                record
+            )
+    ),
                                 borderWidth:
                                     3,
 

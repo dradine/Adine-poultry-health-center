@@ -310,7 +310,7 @@ function calculateWeeklyFCR(flockId, currentWeight, currentFeed, currentLiveBird
     const ow=Number(previousRecord.averageWeight);
     const ob=Number(previousRecord.live_birds ?? previousRecord.liveBirds);
     const type=String(productionType||'').toLowerCase();
-    if (type && type!=='broiler' && type!=='Ú¯ÙØ´ØªÛ') return null;
+    if (type && type!=='broiler' && type!=='ÃÂ¯ÃÂÃÂ´ÃÂªÃÂ') return null;
     if (![ow,ob,cb].every(Number.isFinite)||ow<0||ob<=0||cb<=0) return null;
     if (typeof calculateBroilerFCR==='function') return calculateBroilerFCR({feedKg,openingBirds:ob,closingBirds:cb,openingAverageWeightG:ow,closingAverageWeightG:cw});
     const gainKg=(cb*cw-ob*ow)/1000;

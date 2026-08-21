@@ -1,6 +1,11 @@
 /* =========================================================
    ADINE POULTRY HEALTH CENTER
    REPORTS DATA - SUPABASE
+   STABLE PROFESSIONAL VERSION
+   ---------------------------------------------------------
+   Weight / FCR / Management fallback
+   Genetic standard -> Management standard
+   Age based interpolation
    ========================================================= */
 
 "use strict";
@@ -11,7 +16,7 @@ let reportsCurrentUser = null;
 
 /* =========================================================
    INITIALIZE
-   ========================================================= */
+========================================================= */
 
 async function initializeReportsData() {
 
@@ -24,7 +29,11 @@ async function initializeReportsData() {
             .getUser();
 
 
-    if (error || !data?.user) {
+    if (
+        error ||
+        !data ||
+        !data.user
+    ) {
 
         throw new Error(
             "کاربر وارد نشده است."
@@ -44,7 +53,7 @@ async function initializeReportsData() {
 
 /* =========================================================
    GET FLOCK
-   ========================================================= */
+========================================================= */
 
 async function getReportFlock(
     flockId
@@ -104,7 +113,7 @@ async function getReportFlock(
 
 /* =========================================================
    GET WEEKLY RECORDS
-   ========================================================= */
+========================================================= */
 
 async function getReportWeeklyRecords(
     flockId
@@ -131,7 +140,8 @@ async function getReportWeeklyRecords(
             .order(
                 "week_number",
                 {
-                    ascending: true
+                    ascending:
+                        true
                 }
             );
 
@@ -148,18 +158,138 @@ async function getReportWeeklyRecords(
     }
 
 
-    return data || [];
+    return Array.isArray(data)
+        ? data
+        : [];
+
+}
+
+
+/* =========================================================
+   SAFE NUMBER
+========================================================= */
+
+function reportNumber(
+    value
+) {
+
+    if (
+        value === null ||
+        value === undefined ||
+        value === ""
+    ) {
+
+        return null;
+
+    }
+
+
+    const n =
+        Number(
+            String(value)
+                .replace(
+                    /,/g,
+                    ""
+                )
+                .trim()
+        );
+
+
+    return Number.isFinite(n)
+        ? n
+        : null;
+
+}
+
+
+/* =========================================================
+   NORMALIZE PRODUCTION TYPE
+========================================================= */
+
+function normalizeReportProductionType(
+    value
+) {
+
+    const raw =
+        String(
+            value || ""
+        )
+            .trim()
+            .toLowerCase();
+
+
+    if (
+        raw === "broiler" ||
+        raw === "گوشتی" ||
+        raw === "گوشتی مرغ"
+    ) {
+
+        return "broiler";
+
+    }
+
+
+    if (
+        raw === "layer" ||
+        raw === "تخمگذار" ||
+        raw === "تخم‌گذار" ||
+        raw === "تخم گذار"
+    ) {
+
+        return "layer";
+
+    }
+
+
+    if (
+        raw === "pullet" ||
+        raw === "پولت"
+    ) {
+
+        return "pullet";
+
+    }
+
+
+    if (
+        raw === "breeder" ||
+        raw === "مادر" ||
+        raw === "مرغ مادر"
+    ) {
+
+        return "breeder";
+
+    }
+
+
+    return raw;
 
 }
 
 
 /* =========================================================
    NORMALIZE WEEKLY RECORD
-   ========================================================= */
+========================================================= */
 
 function normalizeReportRecord(
     record
 ) {
+
+    const weekNumber =
+        reportNumber(
+            record.week_number
+        ) ??
+        0;
+
+
+    const ageDays =
+        reportNumber(
+            record.age_days
+        ) ??
+        (
+            weekNumber * 7
+        );
+
 
     return {
 
@@ -169,22 +299,9 @@ function normalizeReportRecord(
         flockId:
             record.flock_id,
 
-        weekNumber:
-            Number(
-                record.week_number ||
-                0
-            ),
+        weekNumber,
 
-        ageDays:
-            Number(
-                record.age_days ||
-                (
-                    Number(
-                        record.week_number ||
-                        0
-                    ) * 7
-                )
-            ),
+        ageDays,
 
         evaluationDate:
             record.evaluation_date ||
@@ -192,138 +309,133 @@ function normalizeReportRecord(
             null,
 
         liveBirds:
-            record.live_birds === null ||
-            record.live_birds === undefined
-                ? null
-                : Number(
-                    record.live_birds
-                ),
+            reportNumber(
+                record.live_birds
+            ),
 
         mortality:
-            record.mortality_count === null ||
-            record.mortality_count === undefined
-                ? null
-                : Number(
-                    record.mortality_count
-                ),
+            reportNumber(
+                record.mortality_count
+            ),
 
         sampleCount:
-            record.sample_count === null ||
-            record.sample_count === undefined
-                ? null
-                : Number(
-                    record.sample_count
-                ),
+            reportNumber(
+                record.sample_count
+            ),
 
         averageWeight:
-            record.average_weight_g === null ||
-            record.average_weight_g === undefined
-                ? null
-                : Number(
-                    record.average_weight_g
-                ),
+            reportNumber(
+                record.average_weight_g
+            ),
 
         sd:
-            record.sd_weight_g === null ||
-            record.sd_weight_g === undefined
-                ? null
-                : Number(
-                    record.sd_weight_g
-                ),
+            reportNumber(
+                record.sd_weight_g
+            ),
 
         cv:
-            record.cv_percent === null ||
-            record.cv_percent === undefined
-                ? null
-                : Number(
-                    record.cv_percent
-                ),
+            reportNumber(
+                record.cv_percent
+            ),
 
         uniformity10:
-            record.uniformity_10_percent === null ||
-            record.uniformity_10_percent === undefined
-                ? null
-                : Number(
-                    record.uniformity_10_percent
-                ),
+            reportNumber(
+                record.uniformity_10_percent
+            ),
 
         uniformity15:
-            record.uniformity_15_percent === null ||
-            record.uniformity_15_percent === undefined
-                ? null
-                : Number(
-                    record.uniformity_15_percent
-                ),
+            reportNumber(
+                record.uniformity_15_percent
+            ),
 
         minWeight:
-            record.min_weight_g === null ||
-            record.min_weight_g === undefined
-                ? null
-                : Number(
-                    record.min_weight_g
-                ),
+            reportNumber(
+                record.min_weight_g
+            ),
 
         maxWeight:
-            record.max_weight_g === null ||
-            record.max_weight_g === undefined
-                ? null
-                : Number(
-                    record.max_weight_g
-                ),
+            reportNumber(
+                record.max_weight_g
+            ),
 
         feedTotalKg:
-            record.feed_total_kg === null ||
-            record.feed_total_kg === undefined
-                ? null
-                : Number(
-                    record.feed_total_kg
-                ),
+            reportNumber(
+                record.feed_total_kg
+            ),
 
         feedPerBirdG:
-            record.feed_per_bird_g === null ||
-            record.feed_per_bird_g === undefined
-                ? null
-                : Number(
-                    record.feed_per_bird_g
-                ),
+            reportNumber(
+                record.feed_per_bird_g
+            ),
 
         waterTotalLiter:
-            record.water_total_liter === null ||
-            record.water_total_liter === undefined
-                ? null
-                : Number(
-                    record.water_total_liter
-                ),
+            reportNumber(
+                record.water_total_liter
+            ),
 
         waterPerBirdMl:
-            record.water_per_bird_ml === null ||
-            record.water_per_bird_ml === undefined
-                ? null
-                : Number(
-                    record.water_per_bird_ml
-                ),
+            reportNumber(
+                record.water_per_bird_ml
+            ),
 
         waterFeedRatio:
-            record.water_feed_ratio === null ||
-            record.water_feed_ratio === undefined
-                ? null
-                : Number(record.water_feed_ratio),
+            reportNumber(
+                record.water_feed_ratio
+            ),
 
         productionMetrics:
-            record.production_metrics && typeof record.production_metrics === "object"
+            record.production_metrics &&
+            typeof record.production_metrics ===
+            "object"
                 ? record.production_metrics
                 : {},
 
         cumulativeFCR:
-            record.cumulative_fcr === null ||
-            record.cumulative_fcr === undefined
-                ? null
-                : Number(record.cumulative_fcr),
+            reportNumber(
+                record.cumulative_fcr
+            ),
 
         fcr:
             null,
 
+        /* استانداردها */
         standardWeight:
+            null,
+
+        standardWeightSourceType:
+            null,
+
+        standardWeightSourceLabel:
+            null,
+
+        standardWeightIsManagement:
+            false,
+
+        standardFCR:
+            null,
+
+        standardFCRSourceType:
+            null,
+
+        standardFCRSourceLabel:
+            null,
+
+        standardFCRIsManagement:
+            false,
+
+        standardCV:
+            null,
+
+        standardUniformity10:
+            null,
+
+        standardUniformity15:
+            null,
+
+        standardFeedPerBirdG:
+            null,
+
+        standardWaterPerBirdMl:
             null,
 
         weightDifference:
@@ -342,8 +454,1064 @@ function normalizeReportRecord(
 
 
 /* =========================================================
+   GET STANDARD SAFELY
+========================================================= */
+
+function getReportStandardSafely(
+    flock
+) {
+
+    if (
+        typeof getStandard !==
+        "function"
+    ) {
+
+        console.warn(
+            "getStandard() در دسترس نیست."
+        );
+
+        return null;
+
+    }
+
+
+    const type =
+        normalizeReportProductionType(
+            flock?.production_type
+        );
+
+
+    const genetics =
+        flock?.genetics ||
+        flock?.genetic ||
+        flock?.breed ||
+        "";
+
+
+    const strain =
+        flock?.strain ||
+        flock?.flock_strain ||
+        "";
+
+
+    try {
+
+        const standard =
+            getStandard(
+                type,
+                genetics,
+                strain
+            );
+
+
+        if (standard) {
+
+            return standard;
+
+        }
+
+    }
+
+    catch (error) {
+
+        console.error(
+            "getStandard error:",
+            error
+        );
+
+    }
+
+
+    return null;
+
+}
+
+
+/* =========================================================
+   GET STANDARD META SAFELY
+========================================================= */
+
+function getReportStandardMeta(
+    standard,
+    metric,
+    ageDays
+) {
+
+    const age =
+        reportNumber(
+            ageDays
+        );
+
+
+    if (
+        !standard ||
+        age === null
+    ) {
+
+        return {
+
+            value:
+                null,
+
+            sourceType:
+                null,
+
+            sourceLabel:
+                null,
+
+            isFallback:
+                false
+
+        };
+
+    }
+
+
+    try {
+
+        if (
+            typeof getStandardMeta ===
+            "function"
+        ) {
+
+            const result =
+                getStandardMeta(
+                    standard,
+                    metric,
+                    age
+                );
+
+
+            if (
+                result &&
+                result.value !== null &&
+                result.value !== undefined &&
+                Number.isFinite(
+                    Number(
+                        result.value
+                    )
+                )
+            ) {
+
+                return {
+
+                    value:
+                        Number(
+                            result.value
+                        ),
+
+                    sourceType:
+                        result.sourceType ||
+                        null,
+
+                    sourceLabel:
+                        result.sourceLabel ||
+                        null,
+
+                    isFallback:
+                        Boolean(
+                            result.isFallback
+                        )
+
+                };
+
+            }
+
+        }
+
+    }
+
+    catch (error) {
+
+        console.warn(
+            "getStandardMeta error:",
+            metric,
+            age,
+            error
+        );
+
+    }
+
+
+    /*
+     * FALLBACK DIRECT
+     * اگر getStandardMeta در دسترس نبود
+     */
+
+    try {
+
+        if (
+            typeof getStandardValueAtAge ===
+            "function"
+        ) {
+
+            const value =
+                getStandardValueAtAge(
+                    standard,
+                    metric,
+                    age
+                );
+
+
+            if (
+                value !== null &&
+                value !== undefined &&
+                Number.isFinite(
+                    Number(value)
+                )
+            ) {
+
+                const isManagement =
+                    !standard.official;
+
+
+                return {
+
+                    value:
+                        Number(value),
+
+                    sourceType:
+                        isManagement
+                            ? "management-standard"
+                            : "official",
+
+                    sourceLabel:
+                        isManagement
+                            ? (
+                                standard.management?.sourceLabel ||
+                                "استاندارد مدیریتی"
+                            )
+                            : (
+                                standard.official?.sourceLabel ||
+                                "استاندارد ژنتیکی رسمی"
+                            ),
+
+                    isFallback:
+                        isManagement
+
+                };
+
+            }
+
+        }
+
+    }
+
+    catch (error) {
+
+        console.warn(
+            "getStandardValueAtAge error:",
+            metric,
+            age,
+            error
+        );
+
+    }
+
+
+    return {
+
+        value:
+            null,
+
+        sourceType:
+            null,
+
+        sourceLabel:
+            null,
+
+        isFallback:
+            false
+
+    };
+
+}
+
+
+/* =========================================================
+   STANDARD SOURCE LABEL
+========================================================= */
+
+function getReportSourceLabel(
+    meta
+) {
+
+    if (!meta) {
+
+        return "بدون استاندارد";
+
+    }
+
+
+    if (
+        meta.sourceType ===
+        "management-standard"
+    ) {
+
+        return "استاندارد مدیریتی";
+
+    }
+
+
+    if (
+        meta.isFallback
+    ) {
+
+        return "استاندارد مدیریتی";
+
+    }
+
+
+    if (
+        meta.sourceType
+    ) {
+
+        return "استاندارد ژنتیکی رسمی";
+
+    }
+
+
+    if (
+        meta.value !== null &&
+        meta.value !== undefined
+    ) {
+
+        return (
+            meta.sourceLabel ||
+            "استاندارد"
+
+        );
+
+    }
+
+
+    return "بدون استاندارد";
+
+}
+
+
+/* =========================================================
+   FCR
+========================================================= */
+
+function calculateReportFCR(
+    previous,
+    current,
+    productionType = "broiler"
+) {
+
+    const type =
+        normalizeReportProductionType(
+            productionType
+        );
+
+
+    if (
+        !previous ||
+        !current
+    ) {
+
+        return null;
+
+    }
+
+
+    /*
+     * FCR کلاسیک در این گزارش
+     * برای مرغ گوشتی محاسبه می‌شود.
+     */
+
+    if (
+        type !== "broiler"
+    ) {
+
+        return null;
+
+    }
+
+
+    const feed =
+        reportNumber(
+            current.feedTotalKg
+        );
+
+
+    const openingWeight =
+        reportNumber(
+            previous.averageWeight
+        );
+
+
+    const closingWeight =
+        reportNumber(
+            current.averageWeight
+        );
+
+
+    const openingBirds =
+        reportNumber(
+            previous.liveBirds
+        );
+
+
+    const closingBirds =
+        reportNumber(
+            current.liveBirds
+        );
+
+
+    if (
+        ![
+            feed,
+            openingWeight,
+            closingWeight,
+            openingBirds,
+            closingBirds
+        ]
+        .every(
+            Number.isFinite
+        )
+    ) {
+
+        return null;
+
+    }
+
+
+    if (
+        feed <= 0 ||
+        openingWeight < 0 ||
+        closingWeight <= 0 ||
+        openingBirds <= 0 ||
+        closingBirds <= 0
+    ) {
+
+        return null;
+
+    }
+
+
+    if (
+        typeof calculateBroilerFCR ===
+        "function"
+    ) {
+
+        try {
+
+            const result =
+                calculateBroilerFCR({
+
+                    feedKg:
+                        feed,
+
+                    openingBirds:
+                        openingBirds,
+
+                    closingBirds:
+                        closingBirds,
+
+                    openingAverageWeightG:
+                        openingWeight,
+
+                    closingAverageWeightG:
+                        closingWeight
+
+                });
+
+
+            if (
+                Number.isFinite(
+                    Number(result)
+                )
+            ) {
+
+                return Number(
+                    result
+                );
+
+            }
+
+        }
+
+        catch (error) {
+
+            console.warn(
+                "calculateBroilerFCR error:",
+                error
+            );
+
+        }
+
+    }
+
+
+    const gainKg =
+        (
+            closingBirds *
+            closingWeight
+            -
+            openingBirds *
+            openingWeight
+        ) /
+        1000;
+
+
+    if (
+        gainKg <= 0
+    ) {
+
+        return null;
+
+    }
+
+
+    return Number(
+        (
+            feed /
+            gainKg
+        )
+        .toFixed(3)
+    );
+
+}
+
+
+/* =========================================================
+   CUMULATIVE FCR
+========================================================= */
+
+function calculateReportCumulativeFCR(
+    records,
+    current,
+    productionType = "broiler"
+) {
+
+    const rows =
+        (
+            Array.isArray(records)
+                ? records
+                : []
+        )
+        .filter(
+            row =>
+                Number(
+                    row.weekNumber
+                ) <=
+                Number(
+                    current.weekNumber
+                )
+        )
+        .sort(
+            (a,b) =>
+                Number(
+                    a.weekNumber
+                ) -
+                Number(
+                    b.weekNumber
+                )
+        );
+
+
+    if (
+        !rows.length
+    ) {
+
+        return null;
+
+    }
+
+
+    const feed =
+        rows.reduce(
+            (
+                sum,
+                row
+            ) =>
+                sum +
+                Number(
+                    row.feedTotalKg || 0
+                ),
+            0
+        );
+
+
+    if (
+        feed <= 0
+    ) {
+
+        return null;
+
+    }
+
+
+    const type =
+        normalizeReportProductionType(
+            productionType
+        );
+
+
+    /*
+     * تخم‌گذار / مادر
+     */
+
+    if (
+        type === "layer" ||
+        type === "breeder"
+    ) {
+
+        const eggMass =
+            rows.reduce(
+                (
+                    sum,
+                    row
+                ) =>
+                    sum +
+                    Number(
+                        row.productionMetrics
+                            ?.egg_mass_kg ||
+                        0
+                    ),
+                0
+            );
+
+
+        return eggMass > 0
+            ? Number(
+                (
+                    feed /
+                    eggMass
+                )
+                .toFixed(3)
+            )
+            : null;
+
+    }
+
+
+    /*
+     * گوشتی
+     */
+
+    const first =
+        rows.find(
+            row =>
+                Number(
+                    row.averageWeight
+                ) > 0 &&
+                Number(
+                    row.liveBirds
+                ) > 0
+        );
+
+
+    const last =
+        rows[
+            rows.length - 1
+        ];
+
+
+    if (
+        !first ||
+        !last
+    ) {
+
+        return null;
+
+    }
+
+
+    const lastWeight =
+        Number(
+            last.averageWeight
+        );
+
+
+    const lastBirds =
+        Number(
+            last.liveBirds
+        );
+
+
+    if (
+        lastWeight <= 0 ||
+        lastBirds <= 0
+    ) {
+
+        return null;
+
+    }
+
+
+    const gainKg =
+        (
+            lastBirds *
+            lastWeight
+            -
+            Number(
+                first.liveBirds
+            ) *
+            Number(
+                first.averageWeight
+            )
+        ) /
+        1000;
+
+
+    if (
+        gainKg <= 0
+    ) {
+
+        return null;
+
+    }
+
+
+    return Number(
+        (
+            feed /
+            gainKg
+        )
+        .toFixed(3)
+    );
+
+}
+
+
+/* =========================================================
+   APPLY STANDARDS
+   ---------------------------------------------------------
+   IMPORTANT:
+   Genetic official standard is preferred.
+   Management standard is automatic fallback.
+========================================================= */
+
+function applyReportStandards(
+    records,
+    standard,
+    flock
+) {
+
+    if (
+        !Array.isArray(records)
+    ) {
+
+        return [];
+
+    }
+
+
+    const productionType =
+        normalizeReportProductionType(
+            flock?.production_type
+        );
+
+
+    let previous =
+        null;
+
+
+    records
+        .sort(
+            (a,b) =>
+                Number(
+                    a.ageDays
+                ) -
+                Number(
+                    b.ageDays
+                )
+        );
+
+
+    records.forEach(
+        record => {
+
+            const ageDays =
+                reportNumber(
+                    record.ageDays
+                );
+
+
+            /* =============================================
+               WEIGHT STANDARD
+            ============================================== */
+
+            const weightMeta =
+                getReportStandardMeta(
+                    standard,
+                    "bodyWeight",
+                    ageDays
+                );
+
+
+            record.standardWeight =
+                weightMeta.value;
+
+
+            record.standardWeightSourceType =
+                weightMeta.sourceType;
+
+
+            record.standardWeightSourceLabel =
+                getReportSourceLabel(
+                    weightMeta
+                );
+
+
+            record.standardWeightIsManagement =
+                (
+                    weightMeta.sourceType ===
+                    "management-standard"
+                ) ||
+                Boolean(
+                    weightMeta.isFallback
+                );
+
+
+            /* =============================================
+               WEIGHT DIFFERENCE
+            ============================================== */
+
+            const actualWeight =
+                reportNumber(
+                    record.averageWeight
+                );
+
+
+            const standardWeightValue =
+                reportNumber(
+                    record.standardWeight
+                );
+
+
+            if (
+                actualWeight !== null &&
+                standardWeightValue !== null &&
+                standardWeightValue !== 0
+            ) {
+
+                record.weightDifference =
+                    actualWeight -
+                    standardWeightValue;
+
+
+                record.weightDifferencePercent =
+                    (
+                        record.weightDifference /
+                        Math.abs(
+                            standardWeightValue
+                        )
+                    ) *
+                    100;
+
+            }
+
+            else {
+
+                record.weightDifference =
+                    null;
+
+                record.weightDifferencePercent =
+                    null;
+
+            }
+
+
+            /* =============================================
+               FCR ACTUAL
+            ============================================== */
+
+            record.fcr =
+                calculateReportFCR(
+                    previous,
+                    record,
+                    productionType
+                );
+
+
+            /*
+             * اگر FCR هفتگی قابل محاسبه نبود،
+             * FCR ذخیره‌شده دیتابیس را نگه می‌داریم.
+             */
+
+            if (
+                record.fcr === null
+            ) {
+
+                const storedFCR =
+                    reportNumber(
+                        record.cumulativeFCR
+                    );
+
+
+                if (
+                    storedFCR !== null
+                ) {
+
+                    record.fcr =
+                        storedFCR;
+
+                }
+
+            }
+
+
+            /* =============================================
+               CUMULATIVE FCR
+            ============================================== */
+
+            if (
+                !Number.isFinite(
+                    Number(
+                        record.cumulativeFCR
+                    )
+                )
+            ) {
+
+                record.cumulativeFCR =
+                    calculateReportCumulativeFCR(
+                        records,
+                        record,
+                        productionType
+                    );
+
+            }
+
+
+            /* =============================================
+               FCR STANDARD
+            ============================================== */
+
+            const fcrMeta =
+                getReportStandardMeta(
+                    standard,
+                    "fcr",
+                    ageDays
+                );
+
+
+            record.standardFCR =
+                fcrMeta.value;
+
+
+            record.standardFCRSourceType =
+                fcrMeta.sourceType;
+
+
+            record.standardFCRSourceLabel =
+                getReportSourceLabel(
+                    fcrMeta
+                );
+
+
+            record.standardFCRIsManagement =
+                (
+                    fcrMeta.sourceType ===
+                    "management-standard"
+                ) ||
+                Boolean(
+                    fcrMeta.isFallback
+                );
+
+
+            /* =============================================
+               OTHER STANDARD METRICS
+            ============================================== */
+
+            const feedMeta =
+                getReportStandardMeta(
+                    standard,
+                    "dailyFeed",
+                    ageDays
+                );
+
+
+            record.standardFeedPerBirdG =
+                feedMeta.value;
+
+
+            record.standardFeedSourceType =
+                feedMeta.sourceType;
+
+
+            const waterMeta =
+                getReportStandardMeta(
+                    standard,
+                    "dailyWater",
+                    ageDays
+                );
+
+
+            record.standardWaterPerBirdMl =
+                waterMeta.value;
+
+
+            record.standardWaterSourceType =
+                waterMeta.sourceType;
+
+
+            const cvMeta =
+                getReportStandardMeta(
+                    standard,
+                    "cv",
+                    ageDays
+                );
+
+
+            record.standardCV =
+                cvMeta.value;
+
+
+            record.standardCVSourceType =
+                cvMeta.sourceType;
+
+
+            const u10Meta =
+                getReportStandardMeta(
+                    standard,
+                    "uniformity10",
+                    ageDays
+                );
+
+
+            record.standardUniformity10 =
+                u10Meta.value;
+
+
+            record.standardUniformity10SourceType =
+                u10Meta.sourceType;
+
+
+            const u15Meta =
+                getReportStandardMeta(
+                    standard,
+                    "uniformity15",
+                    ageDays
+                );
+
+
+            record.standardUniformity15 =
+                u15Meta.value;
+
+
+            record.standardUniformity15SourceType =
+                u15Meta.sourceType;
+
+
+            previous =
+                record;
+
+        }
+    );
+
+
+    return records;
+
+}
+
+
+/* =========================================================
    GET COMPLETE REPORT DATA
-   ========================================================= */
+========================================================= */
 
 async function getCompleteReportData(
     flockId
@@ -374,128 +1542,43 @@ async function getCompleteReportData(
         rawRecords
             .map(
                 normalizeReportRecord
-            )
-            .sort(
-                (
-                    a,
-                    b
-                ) =>
-                    a.weekNumber -
-                    b.weekNumber
             );
 
+
     /*
-     * Calculate standard weight and weekly FCR on the report
-     * side so old database rows also receive the new metrics
-     * without requiring a database migration.
+     * استاندارد کامل گله
      */
+
     const standard =
-        typeof getStandard === "function"
-            ? getStandard(
-                flock.production_type,
-                flock.genetics,
-                flock.strain || flock.genetics
+        getReportStandardSafely(
+            flock
+        );
+
+
+    /*
+     * اعمال استاندارد به تمام رکوردها
+     */
+
+    applyReportStandards(
+        records,
+        standard,
+        flock
+    );
+
+
+    /*
+     * مرتب‌سازی نهایی
+     * بر اساس سن واقعی
+     */
+
+    records.sort(
+        (a,b) =>
+            Number(
+                a.ageDays || 0
+            ) -
+            Number(
+                b.ageDays || 0
             )
-            : null;
-
-    let previous = null;
-
-    records.forEach(
-        record => {
-
-            const weightMeta =
-                typeof getStandardMeta === "function"
-                    ? getStandardMeta(standard, "bodyWeight", record.ageDays)
-                    : { value: null, sourceType: null, sourceLabel: null, isFallback: false };
-
-            record.standardWeight = weightMeta.value;
-            record.standardWeightSourceType = weightMeta.sourceType;
-            record.standardWeightSourceLabel = weightMeta.sourceLabel;
-            record.standardWeightIsManagement =
-                weightMeta.sourceType === "management-standard";
-
-            if (
-                record.standardWeight !== null &&
-                record.averageWeight !== null
-            ) {
-                record.weightDifference =
-                    record.averageWeight - record.standardWeight;
-
-                record.weightDifferencePercent =
-                    record.standardWeight !== 0
-                        ? (record.weightDifference / record.standardWeight) * 100
-                        : null;
-            } else {
-                record.weightDifference = null;
-                record.weightDifferencePercent = null;
-            }
-
-            record.fcr =
-                calculateReportFCR(
-                    previous,
-                    record,
-                    flock.production_type
-                );
-
-            if (!Number.isFinite(Number(record.cumulativeFCR))) {
-                record.cumulativeFCR =
-                    calculateReportCumulativeFCR(
-                        records,
-                        record,
-                        flock.production_type
-                    );
-            }
-
-            const fcrMeta =
-                typeof getStandardMeta === "function"
-                    ? getStandardMeta(standard, "fcr", record.ageDays)
-                    : { value: null, sourceType: null, sourceLabel: null, isFallback: false };
-
-            record.standardFCR = fcrMeta.value;
-            record.standardFCRSourceType = fcrMeta.sourceType;
-            record.standardFCRSourceLabel = fcrMeta.sourceLabel;
-            record.standardFCRIsManagement =
-                fcrMeta.sourceType === "management-standard";
-
-            const feedMeta =
-                typeof getStandardMeta === "function"
-                    ? getStandardMeta(standard, "dailyFeed", record.ageDays)
-                    : { value: null, sourceType: null, sourceLabel: null };
-
-            record.standardFeedPerBirdG = feedMeta.value;
-            record.standardFeedSourceType = feedMeta.sourceType;
-
-            const waterMeta =
-                typeof getStandardMeta === "function"
-                    ? getStandardMeta(standard, "dailyWater", record.ageDays)
-                    : { value: null, sourceType: null, sourceLabel: null };
-
-            record.standardWaterPerBirdMl = waterMeta.value;
-            record.standardWaterSourceType = waterMeta.sourceType;
-
-            const cvMeta =
-                typeof getStandardMeta === "function"
-                    ? getStandardMeta(standard, "cv", record.ageDays)
-                    : { value: null, sourceType: null, sourceLabel: null };
-            record.standardCV = cvMeta.value;
-            record.standardCVSourceType = cvMeta.sourceType;
-
-            const u10Meta =
-                typeof getStandardMeta === "function"
-                    ? getStandardMeta(standard, "uniformity10", record.ageDays)
-                    : { value: null, sourceType: null, sourceLabel: null };
-            record.standardUniformity10 = u10Meta.value;
-            record.standardUniformity10SourceType = u10Meta.sourceType;
-
-            const u15Meta =
-                typeof getStandardMeta === "function"
-                    ? getStandardMeta(standard, "uniformity15", record.ageDays)
-                    : { value: null, sourceType: null, sourceLabel: null };
-            record.standardUniformity15 = u15Meta.value;
-            record.standardUniformity15SourceType = u15Meta.sourceType;
-
-            previous = record;
-        }
     );
 
 
@@ -514,64 +1597,6 @@ async function getCompleteReportData(
 
 /* =========================================================
    LAST RECORD
-   ========================================================= */
-
-/* =========================================================
-   FCR
-========================================================= */
-
-function calculateReportFCR(previous, current, productionType = "broiler") {
-    const type = String(productionType || "").toLowerCase();
-    if (!previous || !current) return null;
-    if (type !== "broiler" && type !== "گوشتی") return null;
-
-    const feed = Number(current.feedTotalKg);
-    const ow = Number(previous.averageWeight);
-    const cw = Number(current.averageWeight);
-    const ob = Number(previous.liveBirds);
-    const cb = Number(current.liveBirds);
-
-    if (![feed, ow, cw, ob, cb].every(Number.isFinite) ||
-        feed <= 0 || ow < 0 || cw <= 0 || ob <= 0 || cb <= 0) {
-        return null;
-    }
-
-    if (typeof calculateBroilerFCR === "function") {
-        return calculateBroilerFCR({
-            feedKg: feed,
-            openingBirds: ob,
-            closingBirds: cb,
-            openingAverageWeightG: ow,
-            closingAverageWeightG: cw
-        });
-    }
-
-    const gainKg = (cb * cw - ob * ow) / 1000;
-    return gainKg > 0 ? Number((feed / gainKg).toFixed(3)) : null;
-}
-
-
-function calculateReportCumulativeFCR(records, current, productionType = "broiler") {
-    const rows = (Array.isArray(records) ? records : [])
-        .filter(r => Number(r.weekNumber) <= Number(current.weekNumber))
-        .sort((a,b)=>Number(a.weekNumber)-Number(b.weekNumber));
-    if (!rows.length) return null;
-    const feed = rows.reduce((sum,r)=>sum+Number(r.feedTotalKg||0),0);
-    if (!(feed>0)) return null;
-    const type = String(productionType||"").toLowerCase();
-    if (type==="layer" || type==="تخمگذار" || type==="تخم‌گذار" || type==="breeder" || type==="مادر") {
-        const eggMass = rows.reduce((sum,r)=>sum+Number(r.productionMetrics?.egg_mass_kg||0),0);
-        return eggMass>0 ? Number((feed/eggMass).toFixed(3)) : null;
-    }
-    const first=rows.find(r=>Number(r.averageWeight)>0 && Number(r.liveBirds)>0);
-    const last=rows[rows.length-1];
-    if(!first || !(Number(last.averageWeight)>0) || !(Number(last.liveBirds)>0)) return null;
-    const gainKg=(Number(last.liveBirds)*Number(last.averageWeight)-Number(first.liveBirds)*Number(first.averageWeight))/1000;
-    return gainKg>0 ? Number((feed/gainKg).toFixed(3)) : null;
-}
-
-/* =========================================================
-   LAST RECORD
 ========================================================= */
 
 function getLastReportRecord(
@@ -580,7 +1605,7 @@ function getLastReportRecord(
 
     if (
         !Array.isArray(records) ||
-        records.length === 0
+        !records.length
     ) {
 
         return null;
@@ -588,72 +1613,54 @@ function getLastReportRecord(
     }
 
 
-    return records[
-        records.length - 1
-    ];
+    return [
+        ...records
+    ]
+    .sort(
+        (a,b) =>
+            Number(
+                a.ageDays || 0
+            ) -
+            Number(
+                b.ageDays || 0
+            )
+    )
+    .at(-1) || null;
 
 }
 
 
 /* =========================================================
-   NUMBER FORMAT
-   ========================================================= */
+   EXPORT GLOBALS
+========================================================= */
 
-function reportNumber(
-    value,
-    decimals = 1
+if (
+    typeof window !==
+    "undefined"
 ) {
 
-    if (
-        value === null ||
-        value === undefined ||
-        !Number.isFinite(
-            Number(value)
-        )
-    ) {
+    window.initializeReportsData =
+        initializeReportsData;
 
-        return "-";
+    window.getReportFlock =
+        getReportFlock;
 
-    }
+    window.getReportWeeklyRecords =
+        getReportWeeklyRecords;
 
+    window.normalizeReportRecord =
+        normalizeReportRecord;
 
-    return Number(
-        value
-    ).toLocaleString(
-        "fa-IR",
-        {
-            minimumFractionDigits:
-                decimals,
+    window.getCompleteReportData =
+        getCompleteReportData;
 
-            maximumFractionDigits:
-                decimals
-        }
-    );
+    window.calculateReportFCR =
+        calculateReportFCR;
 
-}
+    window.calculateReportCumulativeFCR =
+        calculateReportCumulativeFCR;
 
-
-/* =========================================================
-   SAFE TEXT
-   ========================================================= */
-
-function reportText(
-    value
-) {
-
-    if (
-        value === null ||
-        value === undefined ||
-        value === ""
-    ) {
-
-        return "-";
-
-    }
-
-
-    return String(
-        value
-    );
+    window.applyReportStandards =
+        applyReportStandards;
 
 }

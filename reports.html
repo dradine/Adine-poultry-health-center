@@ -1,1345 +1,773 @@
 <!DOCTYPE html>
 <html lang="fa" dir="rtl">
+
 <head>
 
     <meta charset="UTF-8">
 
     <meta
         name="viewport"
-        content="width=device-width, initial-scale=1.0"
+        content="width=device-width, initial-scale=1, viewport-fit=cover"
+    >
+
+    <meta
+        name="theme-color"
+        content="#173f35"
     >
 
     <title>
-        گزارش پایش | مرکز تخصصی سلامت طیور آدینه
+        گزارش‌ها | مرکز تخصصی سلامت طیور آدینه
     </title>
 
     <link
         rel="stylesheet"
-        href="style.css"
+        href="app.css"
     >
 
-    <link
-        rel="stylesheet"
-        href="https://cdn.jsdelivr.net/npm/persian-datepicker@1.2.0/dist/css/persian-datepicker.min.css"
-    >
-
-    <!-- jQuery -->
-    <script
-        src="https://cdn.jsdelivr.net/npm/jquery@3.7.1/dist/jquery.min.js"
-    ></script>
-
-    <!-- Persian Date -->
-    <script
-        src="https://cdn.jsdelivr.net/npm/persian-date@1.1.0/dist/persian-date.min.js"
-    ></script>
-
-    <!-- Persian Datepicker -->
-    <script
-        src="https://cdn.jsdelivr.net/npm/persian-datepicker@1.2.0/dist/js/persian-datepicker.min.js"
-    ></script>
-
-    <!-- Chart.js -->
-    <script
-        src="https://cdn.jsdelivr.net/npm/chart.js"
-    ></script>
-
-    <!-- Supabase -->
-    <script
-        src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"
-    ></script>
-
-    <script src="supabase-config.js"></script>
-    <script src="auth.js"></script>
-    <script src="app-core.js"></script>
-    <script src="standard-data.js"></script>
-    <script src="standards.js"></script>
-    <script src="poultry-utils.js"></script>
-    <script src="reports-data.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
 </head>
 
+
 <body>
 
-<div class="app-container">
+<div class="app-shell">
 
 
-    <!-- =====================================================
-         HEADER
-    ====================================================== -->
+    <header class="topbar">
 
-    <header class="page-header">
+        <div class="brand">
 
-        <div>
+            <img
+                src="IMG_4309.png"
+                alt="آدینه"
+            >
 
-            <h1>
-                گزارش پایش گله
-            </h1>
-
-            <p>
+            <span>
                 مرکز تخصصی سلامت طیور آدینه
-            </p>
-
-            <small>
-                متخصص بهداشت و بیماری‌های طیور
-                | دکتر سعید آدینه‌وند
-            </small>
+            </span>
 
         </div>
 
 
-        <div class="header-actions">
-
-            <button
-                type="button"
-                class="btn btn-secondary"
-                onclick="location.href='Dashboard.html'"
-            >
-                داشبورد
-            </button>
-
-
-            <button
-                type="button"
-                class="btn btn-secondary"
-                onclick="location.href='weekly.html'"
-            >
-                پایش هفتگی
-            </button>
-
-        </div>
+        <button
+            type="button"
+            class="logout-btn"
+            onclick="AdineAuth.signOut()"
+        >
+            خروج
+        </button>
 
     </header>
 
 
-    <!-- =====================================================
-         FLOCK SELECTOR
-    ====================================================== -->
 
-    <section class="card">
+    <main class="page">
 
-        <div class="section-title">
-            انتخاب گله
-        </div>
+        <div class="container">
 
 
-        <div class="form-grid">
+            <h1 class="page-title">
+                گزارش‌ها و نمودارها
+            </h1>
 
-            <div class="form-group">
 
-                <label for="flockSelect">
+            <p class="page-description">
+                تحلیل عملکرد هفتگی و مقایسه روند گله
+            </p>
+
+
+
+            <section class="card">
+
+                <h2>
+                    انتخاب گله
+                </h2>
+
+
+                <label
+                    for="flockSelect"
+                >
                     گله
                 </label>
 
-                <select id="flockSelect">
+
+                <select
+                    id="flockSelect"
+                >
 
                     <option value="">
-                        در حال دریافت گله‌ها...
+                        انتخاب گله
                     </option>
 
                 </select>
 
-            </div>
-
-
-            <div class="form-group">
-
-                <label for="reportDate">
-                    تاریخ گزارش
-                </label>
-
-                <input
-                    id="reportDate"
-                    class="jalali-input"
-                    type="text"
-                    inputmode="numeric"
-                    placeholder="۱۴۰۵/۰۵/۲۹"
-                    autocomplete="off"
-                >
-
-            </div>
-
-
-            <div class="form-group">
-
-                <label for="reportWeek">
-                    هفته
-                </label>
-
-                <select id="reportWeek">
-
-                    <option value="">
-                        همه هفته‌ها
-                    </option>
-
-                </select>
-
-            </div>
-
-        </div>
-
-
-        <div
-            id="flockLoading"
-            class="status-message"
-        >
-            در حال دریافت اطلاعات گله‌ها...
-        </div>
-
-
-        <div
-            id="flockError"
-            class="status-message error"
-            style="display:none;"
-        ></div>
-
-    </section>
-
-
-    <!-- =====================================================
-         REPORT SUMMARY
-    ====================================================== -->
-
-    <section class="card">
-
-        <div class="section-title">
-            خلاصه وضعیت گله
-        </div>
-
-
-        <div
-            id="reportSummary"
-            class="stats-grid"
-        >
-
-            <div class="stat-card">
-
-                <div class="stat-title">
-                    گله
-                </div>
 
                 <div
-                    id="summaryFlock"
-                    class="stat-value"
+                    id="flockInfo"
+                    class="info-box"
+                    style="margin-top:15px;"
                 >
-                    -
+                    ابتدا یک گله را انتخاب کنید.
                 </div>
 
-            </div>
-
-
-            <div class="stat-card">
-
-                <div class="stat-title">
-                    هفته
-                </div>
 
                 <div
-                    id="summaryWeek"
-                    class="stat-value"
+                    class="report-actions"
+                    style="
+                        margin-top:15px;
+                        display:flex;
+                        gap:10px;
+                        flex-wrap:wrap;
+                    "
                 >
-                    -
+
+                    <button
+                        type="button"
+                        class="btn btn-primary"
+                        onclick="printCurrentReport()"
+                    >
+                        🖨 چاپ گزارش
+                    </button>
+
+
+                    <button
+                        type="button"
+                        class="btn btn-secondary"
+                        onclick="closeReportFlockPeriod()"
+                    >
+                        🔒 بستن دوره
+                    </button>
+
+
+                    <button
+                        type="button"
+                        class="btn btn-secondary"
+                        onclick="archiveReportFlock()"
+                    >
+                        🗄 بایگانی دوره
+                    </button>
+
                 </div>
 
-            </div>
+            </section>
 
 
-            <div class="stat-card">
 
-                <div class="stat-title">
-                    میانگین وزن
-                </div>
-
-                <div
-                    id="summaryWeight"
-                    class="stat-value"
-                >
-                    -
-                </div>
-
-            </div>
-
-
-            <div class="stat-card">
-
-                <div class="stat-title">
-                    FCR
-                </div>
-
-                <div
-                    id="summaryFcr"
-                    class="stat-value"
-                >
-                    -
-                </div>
-
-            </div>
-
-
-            <div class="stat-card">
-
-                <div class="stat-title">
-                    تلفات
-                </div>
-
-                <div
-                    id="summaryMortality"
-                    class="stat-value"
-                >
-                    -
-                </div>
-
-            </div>
-
-
-            <div class="stat-card">
-
-                <div class="stat-title">
-                    یکنواختی
-                </div>
-
-                <div
-                    id="summaryUniformity"
-                    class="stat-value"
-                >
-                    -
-                </div>
-
-            </div>
-
-        </div>
-
-    </section>
-
-
-    <!-- =====================================================
-         PERFORMANCE CHART
-    ====================================================== -->
-
-    <section class="card">
-
-        <div class="section-title">
-            نمودار عملکرد گله
-        </div>
-
-        <div class="chart-container">
-
-            <canvas id="performanceChart"></canvas>
-
-        </div>
-
-    </section>
-
-
-    <!-- =====================================================
-         STANDARD COMPARISON
-    ====================================================== -->
-
-    <section class="card">
-
-        <div class="section-title">
-            مقایسه با استاندارد
-        </div>
-
-
-        <div
-            id="standardComparison"
-        >
-
-            <p>
-                گله را انتخاب کنید تا مقایسه با استاندارد نمایش داده شود.
-            </p>
-
-        </div>
-
-    </section>
-
-
-    <!-- =====================================================
-         WEEKLY REPORT TABLE
-    ====================================================== -->
-
-    <section class="card">
-
-        <div class="section-title">
-            گزارش هفتگی
-        </div>
-
-
-        <div
-            id="weeklyReportTable"
-            class="table-responsive"
-        >
-
-            <p>
-                برای نمایش گزارش، یک گله انتخاب کنید.
-            </p>
-
-        </div>
-
-    </section>
-
-
-    <!-- =====================================================
-         HEALTH REPORT
-    ====================================================== -->
-
-    <section class="card">
-
-        <div class="section-title">
-            وضعیت سلامت
-        </div>
-
-
-        <div
-            id="healthReport"
-        >
-
-            <p>
-                -
-            </p>
-
-        </div>
-
-    </section>
-
-
-    <!-- =====================================================
-         RECOMMENDATIONS
-    ====================================================== -->
-
-    <section class="card">
-
-        <div class="section-title">
-            توصیه‌های مدیریتی و دامپزشکی
-        </div>
-
-
-        <div
-            id="recommendations"
-        >
-
-            <p>
-                -
-            </p>
-
-        </div>
-
-    </section>
-
-
-    <!-- =====================================================
-         REPORT ACTIONS
-    ====================================================== -->
-
-    <section class="card">
-
-        <div class="form-actions">
-
-            <button
-                type="button"
-                id="refreshReportBtn"
-                class="btn btn-primary"
+            <div
+                id="loading"
+                style="
+                    display:none;
+                    text-align:center;
+                    padding:25px;
+                "
             >
-                بروزرسانی گزارش
-            </button>
+                در حال دریافت اطلاعات...
+            </div>
 
 
-            <button
-                type="button"
-                class="btn btn-secondary"
-                onclick="window.print()"
+
+            <section
+                id="summaryCard"
+                class="card"
+                style="display:none;"
             >
-                چاپ گزارش
-            </button>
+
+                <h2>
+                    خلاصه آخرین ارزیابی
+                </h2>
+
+
+                <div
+                    class="dashboard-grid"
+                    style="margin-top:15px;"
+                >
+
+
+                    <div class="menu-card">
+
+                        <span class="menu-icon">
+                            ⚖️
+                        </span>
+
+                        <span class="menu-title">
+                            میانگین وزن
+                        </span>
+
+                        <span
+                            id="summaryWeight"
+                            class="menu-description"
+                        >
+                            -
+                        </span>
+
+                    </div>
+
+
+
+                    <div class="menu-card">
+
+                        <span class="menu-icon">
+                            📈
+                        </span>
+
+                        <span class="menu-title">
+                            CV
+                        </span>
+
+                        <span
+                            id="summaryCV"
+                            class="menu-description"
+                        >
+                            -
+                        </span>
+
+                    </div>
+
+
+
+                    <div class="menu-card">
+
+                        <span class="menu-icon">
+                            🎯
+                        </span>
+
+                        <span class="menu-title">
+                            یکنواختی ±10%
+                        </span>
+
+                        <span
+                            id="summaryUniformity"
+                            class="menu-description"
+                        >
+                            -
+                        </span>
+
+                    </div>
+
+
+
+                    <div class="menu-card">
+
+                        <span class="menu-icon">
+                            🌾
+                        </span>
+
+                        <span class="menu-title">
+                            دان روزانه
+                        </span>
+
+                        <span
+                            id="summaryFeed"
+                            class="menu-description"
+                        >
+                            -
+                        </span>
+
+                    </div>
+
+
+
+                    <div class="menu-card">
+
+                        <span class="menu-icon">
+                            📊
+                        </span>
+
+                        <span class="menu-title">
+                            FCR هفتگی
+                        </span>
+
+                        <span
+                            id="summaryFCR"
+                            class="menu-description"
+                        >
+                            -
+                        </span>
+
+                    </div>
+
+
+
+                    <div class="menu-card">
+
+                        <span class="menu-icon">
+                            💧
+                        </span>
+
+                        <span class="menu-title">
+                            آب روزانه
+                        </span>
+
+                        <span
+                            id="summaryWater"
+                            class="menu-description"
+                        >
+                            -
+                        </span>
+
+                    </div>
+
+
+                </div>
+
+            </section>
+
+
+
+            <section
+                id="specializedReportCard"
+                class="card"
+                style="display:none;"
+            >
+
+                <h2
+                    id="specializedReportTitle"
+                >
+                    شاخص‌های تخصصی تولید
+                </h2>
+
+
+                <div
+                    class="chart-wrapper"
+                >
+                    <canvas
+                        id="specializedProductionChart"
+                    ></canvas>
+                </div>
+
+
+                <div
+                    class="chart-wrapper"
+                >
+                    <canvas
+                        id="specializedEfficiencyChart"
+                    ></canvas>
+                </div>
+
+
+                <div
+                    class="chart-wrapper"
+                >
+                    <canvas
+                        id="specializedQualityChart"
+                    ></canvas>
+                </div>
+
+            </section>
+
+
+
+            <section
+                id="tableCard"
+                class="card"
+                style="display:none;"
+            >
+
+                <h2>
+                    سابقه ارزیابی هفتگی
+                </h2>
+
+
+                <div
+                    style="
+                        overflow-x:auto;
+                        margin-top:15px;
+                    "
+                >
+
+                    <table
+                        style="
+                            width:100%;
+                            border-collapse:collapse;
+                        "
+                    >
+
+                        <thead>
+
+                            <tr>
+
+                                <th>
+                                    هفته
+                                </th>
+
+                                <th>
+                                    تاریخ
+                                </th>
+
+                                <th>
+                                    وزن
+                                </th>
+
+                                <th>
+                                    استاندارد وزن
+                                </th>
+
+                                <th>
+                                    CV
+                                </th>
+
+                                <th>
+                                    FCR
+                                </th>
+
+                                <th>
+                                    یکنواختی ±10%
+                                </th>
+
+                                <th>
+                                    دان/پرنده
+                                </th>
+
+                                <th>
+                                    آب/پرنده
+                                </th>
+
+                            </tr>
+
+                        </thead>
+
+
+                        <tbody
+                            id="weeklyTableBody"
+                        ></tbody>
+
+                    </table>
+
+                </div>
+
+            </section>
+
+
+
+            <section
+                id="weightCard"
+                class="card"
+                style="display:none;"
+            >
+
+                <h2>
+                    روند میانگین وزن و استاندارد
+                </h2>
+
+
+                <div class="chart-wrapper">
+
+                    <canvas
+                        id="weightChart"
+                    ></canvas>
+
+                </div>
+
+            </section>
+
+
+
+            <section
+                id="cvCard"
+                class="card"
+                style="display:none;"
+            >
+
+                <h2>
+                    روند CV
+                </h2>
+
+
+                <div class="chart-wrapper">
+
+                    <canvas
+                        id="cvChart"
+                    ></canvas>
+
+                </div>
+
+            </section>
+
+
+
+            <section
+                id="uniformityCard"
+                class="card"
+                style="display:none;"
+            >
+
+                <h2>
+                    روند یکنواختی
+                </h2>
+
+
+                <div class="chart-wrapper">
+
+                    <canvas
+                        id="uniformityChart"
+                    ></canvas>
+
+                </div>
+
+            </section>
+
+
+
+            <section
+                id="consumptionCard"
+                class="card"
+                style="display:none;"
+            >
+
+                <h2>
+                    مصرف هفتگی دان و آب
+                </h2>
+
+
+                <div class="chart-wrapper">
+
+                    <canvas
+                        id="consumptionChart"
+                    ></canvas>
+
+                </div>
+
+            </section>
+
+
+
+            <section
+                id="fcrCard"
+                class="card"
+                style="display:none;"
+            >
+
+                <h2>
+                    ضریب تبدیل تجمعی
+                </h2>
+
+
+                <div class="info-box">
+
+                    <span
+                        id="fcrDescription"
+                    >
+                        FCR بر اساس نوع گله محاسبه می‌شود.
+                    </span>
+
+                </div>
+
+
+                <div class="chart-wrapper">
+
+                    <canvas
+                        id="fcrChart"
+                    ></canvas>
+
+                </div>
+
+            </section>
+
+
+
+            <section
+                id="emptyState"
+                class="card"
+            >
+
+                <div class="info-box">
+
+                    برای نمایش گزارش،
+                    ابتدا یک گله را انتخاب کنید.
+
+                </div>
+
+            </section>
 
         </div>
 
-    </section>
-
+    </main>
 
 </div>
 
 
-<!-- =========================================================
-     REPORT LOADING / FLOCK LOGIC
-========================================================== -->
+
+<style>
+
+.chart-wrapper {
+    position:
+        relative;
+
+    width:
+        100%;
+
+    height:
+        320px;
+
+    margin-top:
+        20px;
+}
+
+
+.report-actions {
+    display:
+        flex;
+
+    flex-wrap:
+        wrap;
+
+    gap:
+        10px;
+}
+
+
+.report-actions button {
+    border:
+        0;
+
+    border-radius:
+        10px;
+
+    padding:
+        11px 17px;
+
+    font-family:
+        inherit;
+
+    font-weight:
+        700;
+
+    cursor:
+        pointer;
+}
+
+
+.info-box {
+    padding:
+        13px 15px;
+
+    border-radius:
+        10px;
+
+    background:
+        #f5f8fb;
+
+    line-height:
+        2;
+}
+
+
+table {
+    width:
+        100%;
+
+    border-collapse:
+        collapse;
+}
+
+
+th,
+td {
+    padding:
+        10px;
+
+    border-bottom:
+        1px solid #ddd;
+
+    text-align:
+        center;
+
+    white-space:
+        nowrap;
+}
+
+
+th {
+    background:
+        #f3f6f9;
+}
+
+
+@media print {
+
+    body {
+        background:
+            #fff !important;
+    }
+
+
+    .topbar,
+    .report-actions,
+    #flockSelect,
+    #loading {
+        display:
+            none !important;
+    }
+
+
+    .page {
+        padding:
+            0 !important;
+    }
+
+
+    .card {
+        box-shadow:
+            none !important;
+
+        border:
+            1px solid #ddd;
+
+        break-inside:
+            avoid;
+    }
+
+
+    .chart-wrapper {
+        height:
+            260px;
+    }
+
+}
+
+</style>
+
+
+
+<script
+    src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"
+></script>
+
+<script src="supabase-config.js"></script>
+<script src="auth.js"></script>
+<script src="app-core.js"></script>
+<script src="standard-data.js"></script>
+<script src="standards.js"></script>
+<script src="poultry-utils.js"></script>
+<script src="weekly-storage.js"></script>
+<script src="comparison-engine.js"></script>
+<script src="genetics-ui.js"></script>
+<script src="weekly-engine.js"></script>
+<script src="reports-data.js"></script>
+
 
 <script>
 
-(function () {
-
-    'use strict';
-
-
-    /*
-     * -------------------------------------------------------
-     * Helpers
-     * -------------------------------------------------------
-     */
-
-    function getQueryParam(name) {
-
-        try {
-
-            const params =
-                new URLSearchParams(
-                    window.location.search
-                );
-
-            return params.get(name);
-
-        } catch (error) {
-
-            console.error(
-                'خطا در دریافت پارامتر URL:',
-                error
-            );
-
-            return null;
-        }
-    }
-
-
-    function getStoredFlockId() {
-
-        const keys = [
-            'currentFlockId',
-            'selectedFlockId',
-            'activeFlockId',
-            'flockId'
-        ];
-
-        for (const key of keys) {
-
-            try {
-
-                const value =
-                    localStorage.getItem(key);
-
-                if (value) {
-                    return value;
-                }
-
-            } catch (error) {
-
-                console.warn(
-                    'خطا در localStorage:',
-                    error
-                );
-
-            }
-
-        }
-
-        return null;
-    }
-
-
-    function showFlockError(message) {
-
-        const errorBox =
-            document.getElementById(
-                'flockError'
-            );
-
-        if (!errorBox) {
-            return;
-        }
-
-        errorBox.textContent = message || '';
-
-        errorBox.style.display =
-            message ? 'block' : 'none';
-    }
-
-
-    function setLoading(show, message) {
-
-        const loading =
-            document.getElementById(
-                'flockLoading'
-            );
-
-        if (!loading) {
-            return;
-        }
-
-        loading.style.display =
-            show ? 'block' : 'none';
-
-        if (message) {
-            loading.textContent = message;
-        }
-
-    }
-
-
-    /*
-     * -------------------------------------------------------
-     * Supabase client
-     * -------------------------------------------------------
-     */
-
-    function getSupabaseClient() {
+document.addEventListener(
+    "DOMContentLoaded",
+    function () {
 
         if (
-            typeof window.supabaseClient !==
-            'undefined' &&
-            window.supabaseClient
+            typeof initializeReports ===
+            "function"
         ) {
 
-            return window.supabaseClient;
-
-        }
-
-
-        if (
-            typeof window.supabase !==
-            'undefined' &&
-            window.supabase &&
-            typeof window.supabase.from ===
-            'function'
-        ) {
-
-            return window.supabase;
-
-        }
-
-
-        if (
-            typeof window.supabase !==
-            'undefined' &&
-            window.supabase &&
-            typeof window.supabase.createClient ===
-            'function'
-        ) {
-
-            if (
-                typeof window.SUPABASE_URL !==
-                'undefined' &&
-                typeof window.SUPABASE_ANON_KEY !==
-                'undefined'
-            ) {
-
-                return window.supabase.createClient(
-                    window.SUPABASE_URL,
-                    window.SUPABASE_ANON_KEY
-                );
-
-            }
-
-        }
-
-        return null;
-    }
-
-
-    /*
-     * -------------------------------------------------------
-     * Current user
-     * -------------------------------------------------------
-     */
-
-    async function getCurrentUser() {
-
-        const client =
-            getSupabaseClient();
-
-        if (!client) {
-            throw new Error(
-                'اتصال Supabase پیدا نشد.'
-            );
-        }
-
-
-        const result =
-            await client.auth.getUser();
-
-
-        if (
-            result.error
-        ) {
-
-            throw result.error;
-
-        }
-
-
-        if (
-            !result.data ||
-            !result.data.user
-        ) {
-
-            throw new Error(
-                'کاربر وارد نشده است.'
-            );
-
-        }
-
-
-        return result.data.user;
-
-    }
-
-
-    /*
-     * -------------------------------------------------------
-     * Load flocks
-     * -------------------------------------------------------
-     */
-
-    async function loadFlocks() {
-
-        const select =
-            document.getElementById(
-                'flockSelect'
-            );
-
-        if (!select) {
-            return;
-        }
-
-
-        setLoading(
-            true,
-            'در حال دریافت گله‌ها...'
-        );
-
-        showFlockError('');
-
-
-        try {
-
-            const client =
-                getSupabaseClient();
-
-            if (!client) {
-
-                throw new Error(
-                    'Supabase client در دسترس نیست.'
-                );
-
-            }
-
-
-            const user =
-                await getCurrentUser();
-
-
-            /*
-             * تلاش اول:
-             * owner_id
-             */
-
-            let response =
-                await client
-                    .from('flocks')
-                    .select('*')
-                    .eq(
-                        'owner_id',
-                        user.id
-                    )
-                    .order(
-                        'created_at',
-                        {
-                            ascending: false
-                        }
-                    );
-
-
-            /*
-             * اگر created_at در جدول وجود نداشت،
-             * دوباره بدون order اجرا می‌کنیم.
-             */
-
-            if (
-                response.error &&
-                String(response.error.message || '')
-                    .toLowerCase()
-                    .includes('created_at')
-            ) {
-
-                response =
-                    await client
-                        .from('flocks')
-                        .select('*')
-                        .eq(
-                            'owner_id',
-                            user.id
-                        );
-
-            }
-
-
-            /*
-             * بعضی نسخه‌های دیتابیس ممکن است
-             * user_id داشته باشند.
-             */
-
-            if (
-                response.error
-            ) {
-
-                const message =
-                    String(
-                        response.error.message || ''
-                    ).toLowerCase();
-
-
-                if (
-                    message.includes('owner_id') ||
-                    message.includes('column')
-                ) {
-
-                    response =
-                        await client
-                            .from('flocks')
-                            .select('*')
-                            .eq(
-                                'user_id',
-                                user.id
-                            );
-
-                }
-
-            }
-
-
-            if (
-                response.error
-            ) {
-
-                throw response.error;
-
-            }
-
-
-            const flocks =
-                Array.isArray(response.data)
-                    ? response.data
-                    : [];
-
-
-            /*
-             * پاک کردن گزینه‌های قبلی
-             */
-
-            select.innerHTML = '';
-
-
-            if (
-                flocks.length === 0
-            ) {
-
-                const option =
-                    document.createElement(
-                        'option'
-                    );
-
-                option.value = '';
-
-                option.textContent =
-                    'هیچ گله‌ای برای این کاربر ثبت نشده است';
-
-                select.appendChild(
-                    option
-                );
-
-                setLoading(
-                    false,
-                    ''
-                );
-
-                return;
-
-            }
-
-
-            /*
-             * گزینه پیش‌فرض
-             */
-
-            const defaultOption =
-                document.createElement(
-                    'option'
-                );
-
-            defaultOption.value = '';
-
-            defaultOption.textContent =
-                'انتخاب گله...';
-
-            select.appendChild(
-                defaultOption
-            );
-
-
-            /*
-             * اضافه کردن تمام گله‌ها
-             */
-
-            flocks.forEach(
-                function (flock) {
-
-                    const option =
-                        document.createElement(
-                            'option'
-                        );
-
-
-                    const id =
-                        flock.id ||
-                        flock.flock_id;
-
-
-                    option.value =
-                        id || '';
-
-
-                    const name =
-                        flock.name ||
-                        flock.flock_name ||
-                        flock.title ||
-                        (
-                            id
-                                ? `گله ${id}`
-                                : 'گله بدون نام'
-                        );
-
-
-                    option.textContent =
-                        name;
-
-
-                    /*
-                     * نگهداری اطلاعات کامل گله
-                     */
-
-                    option.dataset.flock =
-                        JSON.stringify(
-                            flock
-                        );
-
-
-                    select.appendChild(
-                        option
-                    );
-
-                }
-            );
-
-
-            /*
-             * تعیین گله انتخاب‌شده:
-             *
-             * 1. flockId از URL
-             * 2. currentFlockId از URL
-             * 3. localStorage
-             */
-
-            const requestedFlockId =
-                getQueryParam(
-                    'flockId'
-                ) ||
-                getQueryParam(
-                    'currentFlockId'
-                ) ||
-                getStoredFlockId();
-
-
-            if (
-                requestedFlockId
-            ) {
-
-                const matchingOption =
-                    Array.from(
-                        select.options
-                    ).find(
-                        function (option) {
-
-                            return String(
-                                option.value
-                            ) === String(
-                                requestedFlockId
-                            );
-
-                        }
-                    );
-
-
-                if (
-                    matchingOption
-                ) {
-
-                    select.value =
-                        matchingOption.value;
-
-                }
-
-            }
-
-
-            setLoading(
-                false,
-                ''
-            );
-
-
-            /*
-             * اگر گله‌ای انتخاب شده،
-             * گزارش را همان لحظه بساز.
-             */
-
-            if (
-                select.value
-            ) {
-
-                await loadReportForSelectedFlock();
-
-            }
-
-
-        } catch (error) {
-
-            console.error(
-                'خطا در دریافت گله‌ها:',
-                error
-            );
-
-
-            select.innerHTML = '';
-
-
-            const option =
-                document.createElement(
-                    'option'
-                );
-
-            option.value = '';
-
-            option.textContent =
-                'خطا در دریافت گله‌ها';
-
-            select.appendChild(
-                option
-            );
-
-
-            showFlockError(
-                'خطا در دریافت گله‌ها: ' +
-                (
-                    error.message ||
-                    error
-                )
-            );
-
-
-            setLoading(
-                false,
-                ''
-            );
+            initializeReports();
 
         }
 
     }
-
-
-    /*
-     * -------------------------------------------------------
-     * Load selected flock report
-     * -------------------------------------------------------
-     */
-
-    async function loadReportForSelectedFlock() {
-
-        const select =
-            document.getElementById(
-                'flockSelect'
-            );
-
-        if (!select) {
-            return;
-        }
-
-
-        const flockId =
-            select.value;
-
-
-        if (!flockId) {
-            return;
-        }
-
-
-        try {
-
-            /*
-             * ذخیره گله انتخاب‌شده
-             */
-
-            localStorage.setItem(
-                'currentFlockId',
-                flockId
-            );
-
-            localStorage.setItem(
-                'selectedFlockId',
-                flockId
-            );
-
-
-            /*
-             * اگر reports-data.js
-             * تابع مربوط به گزارش را داشته باشد،
-             * از همان استفاده می‌کنیم.
-             */
-
-            const possibleFunctions = [
-                'loadReport',
-                'generateReport',
-                'loadFlockReport',
-                'renderReport',
-                'loadReports'
-            ];
-
-
-            for (
-                const functionName
-                of possibleFunctions
-            ) {
-
-                if (
-                    typeof window[
-                        functionName
-                    ] === 'function'
-                ) {
-
-                    try {
-
-                        await window[
-                            functionName
-                        ](
-                            flockId
-                        );
-
-                        return;
-
-                    } catch (functionError) {
-
-                        console.warn(
-                            `تابع ${functionName} اجرا نشد:`,
-                            functionError
-                        );
-
-                    }
-
-                }
-
-            }
-
-
-            /*
-             * اگر تابع اختصاصی پیدا نشد،
-             * حداقل اطلاعات گله را روی خلاصه
-             * نمایش می‌دهیم.
-             */
-
-            const option =
-                select.options[
-                    select.selectedIndex
-                ];
-
-
-            let flock = null;
-
-
-            if (
-                option &&
-                option.dataset &&
-                option.dataset.flock
-            ) {
-
-                try {
-
-                    flock =
-                        JSON.parse(
-                            option.dataset.flock
-                        );
-
-                } catch (error) {
-
-                    flock = null;
-
-                }
-
-            }
-
-
-            const summaryFlock =
-                document.getElementById(
-                    'summaryFlock'
-                );
-
-
-            if (
-                summaryFlock
-            ) {
-
-                summaryFlock.textContent =
-                    flock
-                        ? (
-                            flock.name ||
-                            flock.flock_name ||
-                            flock.title ||
-                            flockId
-                        )
-                        : flockId;
-
-            }
-
-        } catch (error) {
-
-            console.error(
-                'خطا در ساخت گزارش:',
-                error
-            );
-
-        }
-
-    }
-
-
-    /*
-     * -------------------------------------------------------
-     * Event listeners
-     * -------------------------------------------------------
-     */
-
-    document.addEventListener(
-        'DOMContentLoaded',
-        async function () {
-
-            /*
-             * راه‌اندازی تقویم
-             */
-
-            try {
-
-                if (
-                    typeof jQuery !==
-                        'undefined' &&
-                    typeof jQuery.fn
-                        .persianDatepicker ===
-                        'function'
-                ) {
-
-                    jQuery(
-                        '#reportDate'
-                    ).persianDatepicker({
-
-                        format:
-                            'YYYY/MM/DD',
-
-                        autoClose:
-                            true,
-
-                        initialValue:
-                            false,
-
-                        observer:
-                            true,
-
-                        calendar: {
-
-                            persian: {
-
-                                locale:
-                                    'fa'
-
-                            }
-
-                        }
-
-                    });
-
-                }
-
-            } catch (error) {
-
-                console.error(
-                    'خطا در راه‌اندازی تقویم گزارش:',
-                    error
-                );
-
-            }
-
-
-            /*
-             * دریافت گله‌ها
-             */
-
-            await loadFlocks();
-
-
-            /*
-             * تغییر گله
-             */
-
-            const flockSelect =
-                document.getElementById(
-                    'flockSelect'
-                );
-
-
-            if (
-                flockSelect
-            ) {
-
-                flockSelect.addEventListener(
-                    'change',
-                    async function () {
-
-                        await loadReportForSelectedFlock();
-
-                    }
-                );
-
-            }
-
-
-            /*
-             * بروزرسانی گزارش
-             */
-
-            const refreshButton =
-                document.getElementById(
-                    'refreshReportBtn'
-                );
-
-
-            if (
-                refreshButton
-            ) {
-
-                refreshButton.addEventListener(
-                    'click',
-                    async function () {
-
-                        await loadReportForSelectedFlock();
-
-                    }
-                );
-
-            }
-
-        }
-    );
-
-
-})();
+);
 
 </script>
 
 
 </body>
+
 </html>

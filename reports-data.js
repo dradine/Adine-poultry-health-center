@@ -303,6 +303,23 @@ function normalizeReportRecord(
                     record.water_per_bird_ml
                 ),
 
+        waterFeedRatio:
+            record.water_feed_ratio === null ||
+            record.water_feed_ratio === undefined
+                ? null
+                : Number(record.water_feed_ratio),
+
+        productionMetrics:
+            record.production_metrics && typeof record.production_metrics === "object"
+                ? record.production_metrics
+                : {},
+
+        cumulativeFCR:
+            record.cumulative_fcr === null ||
+            record.cumulative_fcr === undefined
+                ? null
+                : Number(record.cumulative_fcr),
+
         fcr:
             null,
 
@@ -420,6 +437,15 @@ async function getCompleteReportData(
                     flock.production_type
                 );
 
+            if (!Number.isFinite(Number(record.cumulativeFCR))) {
+                record.cumulativeFCR =
+                    calculateReportCumulativeFCR(
+                        records,
+                        record,
+                        flock.production_type
+                    );
+            }
+
             const fcrMeta =
                 typeof getStandardMeta === "function"
                     ? getStandardMeta(standard, "fcr", record.ageDays)
@@ -524,6 +550,25 @@ function calculateReportFCR(previous, current, productionType = "broiler") {
     return gainKg > 0 ? Number((feed / gainKg).toFixed(3)) : null;
 }
 
+
+function calculateReportCumulativeFCR(records, current, productionType = "broiler") {
+    const rows = (Array.isArray(records) ? records : [])
+        .filter(r => Number(r.weekNumber) <= Number(current.weekNumber))
+        .sort((a,b)=>Number(a.weekNumber)-Number(b.weekNumber));
+    if (!rows.length) return null;
+    const feed = rows.reduce((sum,r)=>sum+Number(r.feedTotalKg||0),0);
+    if (!(feed>0)) return null;
+    const type = String(productionType||"").toLowerCase();
+    if (type==="layer" || type==="تخمگذار" || type==="تخم‌گذار" || type==="breeder" || type==="مادر") {
+        const eggMass = rows.reduce((sum,r)=>sum+Number(r.productionMetrics?.egg_mass_kg||0),0);
+        return eggMass>0 ? Number((feed/eggMass).toFixed(3)) : null;
+    }
+    const first=rows.find(r=>Number(r.averageWeight)>0 && Number(r.liveBirds)>0);
+    const last=rows[rows.length-1];
+    if(!first || !(Number(last.averageWeight)>0) || !(Number(last.liveBirds)>0)) return null;
+    const gainKg=(Number(last.liveBirds)*Number(last.averageWeight)-Number(first.liveBirds)*Number(first.averageWeight))/1000;
+    return gainKg>0 ? Number((feed/gainKg).toFixed(3)) : null;
+}
 
 /* =========================================================
    LAST RECORD

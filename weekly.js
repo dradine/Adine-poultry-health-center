@@ -38,6 +38,7 @@ async function initializeWeekly() {
     try {
 
         prepareNumericInputs();
+initializeEvaluationDatePicker();
 
         const access =
             await getWeeklyUserAccess();

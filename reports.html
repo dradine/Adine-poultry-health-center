@@ -34,10 +34,6 @@
 <div class="app-shell">
 
 
-    <!-- =====================================================
-         HEADER
-         ===================================================== -->
-
     <header class="topbar">
 
         <div class="brand">
@@ -66,10 +62,6 @@
 
 
 
-    <!-- =====================================================
-         MAIN
-         ===================================================== -->
-
     <main class="page">
 
         <div class="container">
@@ -85,10 +77,6 @@
             </p>
 
 
-
-            <!-- =================================================
-                 SELECT FLOCK
-                 ================================================= -->
 
             <section class="card">
 
@@ -123,13 +111,48 @@
                     ابتدا یک گله را انتخاب کنید.
                 </div>
 
+
+                <div
+                    class="report-actions"
+                    style="
+                        margin-top:15px;
+                        display:flex;
+                        gap:10px;
+                        flex-wrap:wrap;
+                    "
+                >
+
+                    <button
+                        type="button"
+                        class="btn btn-primary"
+                        onclick="printCurrentReport()"
+                    >
+                        🖨 چاپ گزارش
+                    </button>
+
+
+                    <button
+                        type="button"
+                        class="btn btn-secondary"
+                        onclick="closeReportFlockPeriod()"
+                    >
+                        🔒 بستن دوره
+                    </button>
+
+
+                    <button
+                        type="button"
+                        class="btn btn-secondary"
+                        onclick="archiveReportFlock()"
+                    >
+                        🗄 بایگانی دوره
+                    </button>
+
+                </div>
+
             </section>
 
 
-
-            <!-- =================================================
-                 LOADING
-                 ================================================= -->
 
             <div
                 id="loading"
@@ -139,16 +162,10 @@
                     padding:25px;
                 "
             >
-
                 در حال دریافت اطلاعات...
-
             </div>
 
 
-
-            <!-- =================================================
-                 SUMMARY
-                 ================================================= -->
 
             <section
                 id="summaryCard"
@@ -249,6 +266,8 @@
 
                     </div>
 
+
+
                     <div class="menu-card">
 
                         <span class="menu-icon">
@@ -296,9 +315,48 @@
 
 
 
-            <!-- =================================================
-                 WEEKLY TABLE
-                 ================================================= -->
+            <section
+                id="specializedReportCard"
+                class="card"
+                style="display:none;"
+            >
+
+                <h2
+                    id="specializedReportTitle"
+                >
+                    شاخص‌های تخصصی تولید
+                </h2>
+
+
+                <div
+                    class="chart-wrapper"
+                >
+                    <canvas
+                        id="specializedProductionChart"
+                    ></canvas>
+                </div>
+
+
+                <div
+                    class="chart-wrapper"
+                >
+                    <canvas
+                        id="specializedEfficiencyChart"
+                    ></canvas>
+                </div>
+
+
+                <div
+                    class="chart-wrapper"
+                >
+                    <canvas
+                        id="specializedQualityChart"
+                    ></canvas>
+                </div>
+
+            </section>
+
+
 
             <section
                 id="tableCard"
@@ -382,10 +440,6 @@
 
 
 
-            <!-- =================================================
-                 WEIGHT CHART
-                 ================================================= -->
-
             <section
                 id="weightCard"
                 class="card"
@@ -393,16 +447,11 @@
             >
 
                 <h2>
-                    روند میانگین وزن
+                    روند میانگین وزن و استاندارد
                 </h2>
 
 
-                <div
-                    style="
-                        position:relative;
-                        height:300px;
-                    "
-                >
+                <div class="chart-wrapper">
 
                     <canvas
                         id="weightChart"
@@ -413,10 +462,6 @@
             </section>
 
 
-
-            <!-- =================================================
-                 CV CHART
-                 ================================================= -->
 
             <section
                 id="cvCard"
@@ -429,12 +474,7 @@
                 </h2>
 
 
-                <div
-                    style="
-                        position:relative;
-                        height:300px;
-                    "
-                >
+                <div class="chart-wrapper">
 
                     <canvas
                         id="cvChart"
@@ -445,10 +485,6 @@
             </section>
 
 
-
-            <!-- =================================================
-                 UNIFORMITY CHART
-                 ================================================= -->
 
             <section
                 id="uniformityCard"
@@ -461,12 +497,7 @@
                 </h2>
 
 
-                <div
-                    style="
-                        position:relative;
-                        height:300px;
-                    "
-                >
+                <div class="chart-wrapper">
 
                     <canvas
                         id="uniformityChart"
@@ -478,10 +509,6 @@
 
 
 
-            <!-- =================================================
-                 FEED / WATER
-                 ================================================= -->
-
             <section
                 id="consumptionCard"
                 class="card"
@@ -489,16 +516,11 @@
             >
 
                 <h2>
-                    روند مصرف دان و آب
+                    مصرف هفتگی دان و آب
                 </h2>
 
 
-                <div
-                    style="
-                        position:relative;
-                        height:300px;
-                    "
-                >
+                <div class="chart-wrapper">
 
                     <canvas
                         id="consumptionChart"
@@ -510,10 +532,6 @@
 
 
 
-            <!-- =================================================
-                 FCR CHART
-                 ================================================= -->
-
             <section
                 id="fcrCard"
                 class="card"
@@ -521,1021 +539,234 @@
             >
 
                 <h2>
-                    روند FCR هفتگی
+                    ضریب تبدیل تجمعی
                 </h2>
 
-                <p
-                    id="fcrDescription"
-                    style="margin-top:5px;"
-                >
-                    FCR تجمعی برای مقایسه با FCR تجمعی استاندارد سویه نمایش داده می‌شود؛ FCR هفتگی نیز در داده گزارش حفظ می‌شود.
-                </p>
 
-                <div
-                    style="
-                        position:relative;
-                        height:300px;
-                    "
-                >
+                <div class="info-box">
+
+                    <span
+                        id="fcrDescription"
+                    >
+                        FCR بر اساس نوع گله محاسبه می‌شود.
+                    </span>
+
+                </div>
+
+
+                <div class="chart-wrapper">
+
                     <canvas
                         id="fcrChart"
                     ></canvas>
+
                 </div>
 
             </section>
 
 
-            <!-- =================================================
-                 EMPTY
-                 ================================================= -->
 
-            <div
+            <section
                 id="emptyState"
                 class="card"
-                style="
-                    text-align:center;
-                    margin-top:20px;
-                "
             >
 
-                هنوز گزارش هفتگی برای این گله ثبت نشده است.
+                <div class="info-box">
 
-            </div>
+                    برای نمایش گزارش،
+                    ابتدا یک گله را انتخاب کنید.
 
+                </div>
+
+            </section>
 
         </div>
 
     </main>
 
-
-
-    <!-- =====================================================
-         BOTTOM NAV
-         ===================================================== -->
-
-    <nav class="bottom-nav">
-
-        <button
-            type="button"
-            onclick="location.href='Dashboard.html'"
-        >
-            🏠
-            <br>
-            خانه
-        </button>
-
-
-        <button
-            type="button"
-            onclick="location.href='Farms.html'"
-        >
-            🏭
-            <br>
-            فارم‌ها
-        </button>
-
-
-        <button
-            type="button"
-            onclick="location.href='weekly.html'"
-        >
-            ⚖️
-            <br>
-            هفتگی
-        </button>
-
-
-        <button
-            class="active"
-            type="button"
-            onclick="location.href='reports.html'"
-        >
-            📊
-            <br>
-            گزارش
-        </button>
-
-    </nav>
-
-
 </div>
 
 
 
-<!-- =========================================================
-     CORE
-     ========================================================= -->
+<style>
 
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+.chart-wrapper {
+    position:
+        relative;
+
+    width:
+        100%;
+
+    height:
+        320px;
+
+    margin-top:
+        20px;
+}
+
+
+.report-actions {
+    display:
+        flex;
+
+    flex-wrap:
+        wrap;
+
+    gap:
+        10px;
+}
+
+
+.report-actions button {
+    border:
+        0;
+
+    border-radius:
+        10px;
+
+    padding:
+        11px 17px;
+
+    font-family:
+        inherit;
+
+    font-weight:
+        700;
+
+    cursor:
+        pointer;
+}
+
+
+.info-box {
+    padding:
+        13px 15px;
+
+    border-radius:
+        10px;
+
+    background:
+        #f5f8fb;
+
+    line-height:
+        2;
+}
+
+
+table {
+    width:
+        100%;
+
+    border-collapse:
+        collapse;
+}
+
+
+th,
+td {
+    padding:
+        10px;
+
+    border-bottom:
+        1px solid #ddd;
+
+    text-align:
+        center;
+
+    white-space:
+        nowrap;
+}
+
+
+th {
+    background:
+        #f3f6f9;
+}
+
+
+@media print {
+
+    body {
+        background:
+            #fff !important;
+    }
+
+
+    .topbar,
+    .report-actions,
+    #flockSelect,
+    #loading {
+        display:
+            none !important;
+    }
+
+
+    .page {
+        padding:
+            0 !important;
+    }
+
+
+    .card {
+        box-shadow:
+            none !important;
+
+        border:
+            1px solid #ddd;
+
+        break-inside:
+            avoid;
+    }
+
+
+    .chart-wrapper {
+        height:
+            260px;
+    }
+
+}
+
+</style>
+
+
+
+<script
+    src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"
+></script>
 
 <script src="supabase-config.js"></script>
-
 <script src="auth.js"></script>
-
 <script src="app-core.js"></script>
-
 <script src="standard-data.js"></script>
-
 <script src="standards.js"></script>
-
 <script src="poultry-utils.js"></script>
-
 <script src="weekly-storage.js"></script>
-
 <script src="comparison-engine.js"></script>
-
 <script src="genetics-ui.js"></script>
-
 <script src="weekly-engine.js"></script>
-
 <script src="reports-data.js"></script>
 
 
-
-<!-- =========================================================
-     REPORT ENGINE
-     ========================================================= -->
-
 <script>
-
-"use strict";
-
-
-let reportWeightChart = null;
-let reportCVChart = null;
-let reportUniformityChart = null;
-let reportConsumptionChart = null;
-let reportFCRChart = null;
-let reportStandard = null;
-
-let reportRecords = [];
-
-let reportFlock = null;
-
-
-/* =========================================================
-   INIT
-   ========================================================= */
 
 document.addEventListener(
     "DOMContentLoaded",
-    initializeReports
+    function () {
+
+        if (
+            typeof initializeReports ===
+            "function"
+        ) {
+
+            initializeReports();
+
+        }
+
+    }
 );
 
-
-async function initializeReports() {
-
-    try {
-
-        const access =
-            await AdineAuth.requireAuth();
-
-
-        if (!access) {
-
-            return;
-
-        }
-
-
-        await initializeReportsData();
-
-
-        await loadUserFlocks();
-
-
-    }
-
-    catch (error) {
-
-        console.error(
-            "Reports initialization:",
-            error
-        );
-
-        alert(
-            "خطا در راه‌اندازی گزارش‌ها."
-        );
-
-    }
-
-}
-
-
-/* =========================================================
-   LOAD FLOCKS
-   ========================================================= */
-
-async function loadUserFlocks() {
-
-    const select =
-        document.getElementById(
-            "flockSelect"
-        );
-
-
-    const {
-        data,
-        error
-    } =
-        await supabaseClient
-            .from("flocks")
-            .select(`
-                id,
-                flock_name,
-                production_type,
-                genetics,
-                status
-            `)
-            .eq(
-                "owner_id",
-                reportsCurrentUser.id
-            )
-            .order(
-                "created_at",
-                {
-                    ascending:false
-                }
-            );
-
-
-    if (error) {
-
-        console.error(
-            error
-        );
-
-        alert(
-            "دریافت فهرست گله‌ها انجام نشد."
-        );
-
-        return;
-
-    }
-
-
-    select.innerHTML = `
-        <option value="">
-            انتخاب گله
-        </option>
-    `;
-
-
-    (data || []).forEach(
-        flock => {
-
-            const option =
-                document.createElement(
-                    "option"
-                );
-
-
-            option.value =
-                flock.id;
-
-
-            option.textContent =
-                `${flock.flock_name || "گله بدون نام"} — ${
-                    flock.genetics || "-"
-                }`;
-
-
-            select.appendChild(
-                option
-            );
-
-        }
-    );
-
-
-    select.addEventListener(
-        "change",
-        async function () {
-
-            if (!this.value) {
-
-                clearReport();
-
-                return;
-
-            }
-
-
-            await loadReport(
-                this.value
-            );
-
-        }
-    );
-
-}
-
-
-/* =========================================================
-   LOAD REPORT
-   ========================================================= */
-
-async function loadReport(
-    flockId
-) {
-
-    showLoading(
-        true
-    );
-
-
-    try {
-
-        const result =
-            await getCompleteReportData(
-                flockId
-            );
-
-
-        reportFlock =
-            result.flock;
-
-
-        reportRecords =
-            result.records;
-
-
-        renderFlockInfo();
-
-
-        renderSummary();
-
-
-        renderTable();
-
-
-        renderCharts();
-
-
-    }
-
-    catch (error) {
-
-        console.error(
-            error
-        );
-
-        alert(
-            "دریافت گزارش انجام نشد."
-        );
-
-    }
-
-    finally {
-
-        showLoading(
-            false
-        );
-
-    }
-
-}
-
-
-/* =========================================================
-   FLOCK INFO
-   ========================================================= */
-
-function renderFlockInfo() {
-    const box=document.getElementById("flockInfo");
-    if(!box){return;}
-    if(!reportFlock){box.innerHTML="اطلاعات گله موجود نیست.";return;}
-
-    const type=reportFlock.production_type||reportFlock.productionType||null;
-    const genetics=reportFlock.genetics||reportFlock.genetics_id||null;
-    const strain=reportFlock.strain||reportFlock.strain_name||null;
-    reportStandard=typeof getStandard==="function" ? getStandard(type,genetics,strain) : null;
-
-    const standardLine=reportStandard
-        ? `<span style="color:green;font-weight:700;">استاندارد رسمی سویه متصل است</span>`
-        : `<span style="color:#b45309;font-weight:700;">برای این ترکیب، استاندارد رسمی واردشده در سامانه وجود ندارد؛ مقایسه ژنتیکی انجام نمی‌شود.</span>`;
-
-    box.innerHTML=`
-        <strong>${escapeHTML(reportFlock.flock_name||"-")}</strong><br>
-        فارم: ${escapeHTML(reportFlock.farms?.name||"-")}<br>
-        سالن: ${escapeHTML(reportFlock.houses?.name||"-")}<br>
-        نوع: ${escapeHTML(type||"-")}<br>
-        شرکت/برنامه ژنتیکی: ${escapeHTML(genetics||"-")}<br>
-        سویه: ${escapeHTML(strain||"-")}<br>
-        ${standardLine}
-    `;
-}
-function renderSummary() {
-
-    const card =
-        document.getElementById(
-            "summaryCard"
-        );
-
-
-    const last =
-        getLastReportRecord(
-            reportRecords
-        );
-
-
-    if (!last) {
-
-        card.style.display =
-            "none";
-
-        return;
-
-    }
-
-
-    card.style.display =
-        "block";
-
-
-    document.getElementById(
-        "summaryWeight"
-    ).textContent =
-        last.averageWeight !== null
-            ? reportNumber(
-                last.averageWeight,
-                1
-            ) + " گرم"
-            : "-";
-
-
-    document.getElementById(
-        "summaryCV"
-    ).textContent =
-        last.cv !== null
-            ? reportNumber(
-                last.cv,
-                2
-            ) + "%"
-            : "-";
-
-
-    document.getElementById(
-        "summaryUniformity"
-    ).textContent =
-        last.uniformity10 !== null
-            ? reportNumber(
-                last.uniformity10,
-                1
-            ) + "%"
-            : "-";
-
-
-    document.getElementById(
-        "summaryFeed"
-    ).textContent =
-        last.feedPerBirdG !== null
-            ? reportNumber(
-                last.feedPerBirdG,
-                1
-            ) + " گرم"
-            : "-";
-
-
-    document.getElementById(
-        "summaryWater"
-    ).textContent =
-        last.waterPerBirdMl !== null
-            ? reportNumber(
-                last.waterPerBirdMl,
-                1
-            ) + " میلی‌لیتر"
-            : "-";
-
-    document.getElementById(
-        "summaryFCR"
-    ).textContent =
-        last.fcr !== null
-            ? reportNumber(
-                last.fcr,
-                3
-            )
-            : "-";
-
-}
-
-
-/* =========================================================
-   TABLE
-   ========================================================= */
-
-function renderTable() {
-
-    const card =
-        document.getElementById(
-            "tableCard"
-        );
-
-
-    const body =
-        document.getElementById(
-            "weeklyTableBody"
-        );
-
-
-    body.innerHTML =
-        "";
-
-
-    if (
-        !reportRecords.length
-    ) {
-
-        card.style.display =
-            "none";
-
-        return;
-
-    }
-
-
-    card.style.display =
-        "block";
-
-
-    reportRecords.forEach(
-        record => {
-
-            const tr =
-                document.createElement(
-                    "tr"
-                );
-
-
-            tr.innerHTML = `
-
-                <td>
-                    هفته ${reportNumber(
-                        record.weekNumber,
-                        0
-                    )}
-                </td>
-
-                <td>
-                    ${formatReportDate(
-                        record.evaluationDate
-                    )}
-                </td>
-
-                <td>
-                    ${
-                        record.averageWeight !== null
-                            ? reportNumber(
-                                record.averageWeight,
-                                1
-                            ) + " g"
-                            : "-"
-                    }
-                </td>
-
-                <td>
-                    ${
-                        record.standardWeight !== null
-                            ? reportNumber(
-                                record.standardWeight,
-                                1
-                            ) + " g"
-                            : "-"
-                    }
-                </td>
-
-                <td>
-                    ${
-                        record.cv !== null
-                            ? reportNumber(
-                                record.cv,
-                                2
-                            ) + "%"
-                            : "-"
-                    }
-                </td>
-
-                <td>
-                    ${
-                        record.fcr !== null
-                            ? reportNumber(
-                                record.fcr,
-                                3
-                            )
-                            : "-"
-                    }
-                </td>
-
-                <td>
-                    ${
-                        record.uniformity10 !== null
-                            ? reportNumber(
-                                record.uniformity10,
-                                1
-                            ) + "%"
-                            : "-"
-                    }
-                </td>
-
-                <td>
-                    ${
-                        record.feedPerBirdG !== null
-                            ? reportNumber(
-                                record.feedPerBirdG,
-                                1
-                            )
-                            : "-"
-                    }
-                </td>
-
-                <td>
-                    ${
-                        record.waterPerBirdMl !== null
-                            ? reportNumber(
-                                record.waterPerBirdMl,
-                                1
-                            )
-                            : "-"
-                    }
-                </td>
-
-            `;
-
-
-            body.appendChild(
-                tr
-            );
-
-        }
-    );
-
-}
-
-
-/* =========================================================
-   CHARTS
-   ========================================================= */
-
-function renderCharts() {
-
-    const hasData =
-        reportRecords.length >
-        0;
-
-
-    document.getElementById(
-        "emptyState"
-    ).style.display =
-        hasData
-            ? "none"
-            : "block";
-
-
-    if (!hasData) {
-
-        hideChartCards();
-
-        return;
-
-    }
-
-
-    renderWeightChart();
-
-    renderCVChart();
-
-    renderUniformityChart();
-
-    renderConsumptionChart();
-
-    renderFCRChart();
-
-}
-
-
-/* =========================================================
-   WEIGHT
-   ========================================================= */
-
-function renderWeightChart() {
-    const card=document.getElementById("weightCard");
-    const ctx=document.getElementById("weightChart");
-    if(!card || !ctx) return;
-    card.style.display="block";
-    if(reportWeightChart) reportWeightChart.destroy();
-
-    const labels=reportRecords.map(r=>"هفته "+r.weekNumber);
-    const hasStandard=reportRecords.some(r=>Number.isFinite(Number(r.standardWeight)));
-    const hasRange=reportRecords.some(r=>r.standardWeightRange && Number.isFinite(Number(r.standardWeightRange.low)) && Number.isFinite(Number(r.standardWeightRange.high)));
-
-    const datasets=[{
-        label:"میانگین وزن واقعی (گرم)",
-        data:reportRecords.map(r=>Number.isFinite(Number(r.averageWeight))?Number(r.averageWeight):null),
-        tension:0.25,spanGaps:false,pointRadius:3
-    }];
-
-    if(hasRange){
-        datasets.push({label:"حد پایین استاندارد",data:reportRecords.map(r=>r.standardWeightRange?.low??null),tension:0.25,spanGaps:true,borderDash:[4,4],pointRadius:0});
-        datasets.push({label:"حد بالای استاندارد",data:reportRecords.map(r=>r.standardWeightRange?.high??null),tension:0.25,spanGaps:true,borderDash:[4,4],pointRadius:0,fill:"-1"});
-    }
-    if(hasStandard){
-        datasets.push({label:"هدف/میانگین استاندارد سویه",data:reportRecords.map(r=>r.standardWeight??null),tension:0.25,spanGaps:true,borderDash:[8,5],pointRadius:2});
-    }
-
-    reportWeightChart=new Chart(ctx,{type:"line",data:{labels,datasets},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:true}},scales:{y:{beginAtZero:false,title:{display:true,text:"گرم"}}}}});
-}
-function renderCVChart() {
-    const card=document.getElementById("cvCard");
-    const ctx=document.getElementById("cvChart");
-    if(!card || !ctx) return;
-    const hasActual=reportRecords.some(r=>Number.isFinite(Number(r.cv)));
-    const hasStandard=reportRecords.some(r=>Number.isFinite(Number(r.standardCV)));
-    const hasTarget=reportRecords.some(r=>Number.isFinite(Number(r.managementCVTarget)));
-    card.style.display=(hasActual||hasStandard||hasTarget)?"block":"none";
-    if(!hasActual&&!hasStandard&&!hasTarget) return;
-    if(reportCVChart) reportCVChart.destroy();
-    const datasets=[{label:"CV واقعی (%)",data:reportRecords.map(r=>r.cv??null),tension:0.25,spanGaps:false,pointRadius:3}];
-    if(hasStandard) datasets.push({label:"CV استاندارد سویه (%)",data:reportRecords.map(r=>r.standardCV??null),tension:0.25,spanGaps:true,borderDash:[8,5],pointRadius:2});
-    if(hasTarget) datasets.push({label:"حد هدف مدیریتی CV (%)",data:reportRecords.map(r=>r.managementCVTarget??null),tension:0,spanGaps:true,borderDash:[3,3],pointRadius:0});
-    reportCVChart=new Chart(ctx,{type:"line",data:{labels:reportRecords.map(r=>"هفته "+r.weekNumber),datasets},options:{responsive:true,maintainAspectRatio:false,scales:{y:{beginAtZero:true,title:{display:true,text:"درصد"}}}}});
-}
-function renderUniformityChart() {
-    const card=document.getElementById("uniformityCard");
-    const ctx=document.getElementById("uniformityChart");
-    if(!card || !ctx) return;
-    const hasActual=reportRecords.some(r=>Number.isFinite(Number(r.uniformity10))||Number.isFinite(Number(r.uniformity15)));
-    const hasStandard=reportRecords.some(r=>Number.isFinite(Number(r.standardUniformity10)));
-    const hasTarget=reportRecords.some(r=>Number.isFinite(Number(r.managementUniformity10Target)));
-    card.style.display=(hasActual||hasStandard||hasTarget)?"block":"none";
-    if(!hasActual&&!hasStandard&&!hasTarget) return;
-    if(reportUniformityChart) reportUniformityChart.destroy();
-    const datasets=[
-        {label:"یکنواختی واقعی ±10%",data:reportRecords.map(r=>r.uniformity10??null),tension:0.25,spanGaps:false,pointRadius:3},
-        {label:"یکنواختی واقعی ±15%",data:reportRecords.map(r=>r.uniformity15??null),tension:0.25,spanGaps:false,pointRadius:3}
-    ];
-    if(hasStandard) datasets.push({label:"یکنواختی استاندارد سویه ±10%",data:reportRecords.map(r=>r.standardUniformity10??null),tension:0.25,spanGaps:true,borderDash:[8,5],pointRadius:2});
-    if(hasTarget) datasets.push({label:"حد هدف مدیریتی ±10%",data:reportRecords.map(r=>r.managementUniformity10Target??null),tension:0,spanGaps:true,borderDash:[3,3],pointRadius:0});
-    reportUniformityChart=new Chart(ctx,{type:"line",data:{labels:reportRecords.map(r=>"هفته "+r.weekNumber),datasets},options:{responsive:true,maintainAspectRatio:false,scales:{y:{beginAtZero:true,suggestedMax:100,title:{display:true,text:"درصد"}}}}});
-}
-function renderConsumptionChart() {
-
-    document.getElementById(
-        "consumptionCard"
-    ).style.display =
-        "block";
-
-
-    const ctx =
-        document.getElementById(
-            "consumptionChart"
-        );
-
-
-    if (reportConsumptionChart) {
-
-        reportConsumptionChart.destroy();
-
-    }
-
-
-    reportConsumptionChart =
-        new Chart(
-            ctx,
-            {
-
-                type:
-                    "line",
-
-                data: {
-
-                    labels:
-                        reportRecords.map(
-                            r =>
-                                "هفته " +
-                                r.weekNumber
-                        ),
-
-                    datasets: [
-
-                        {
-
-                            label:
-                                "دان روزانه هر پرنده (گرم)",
-
-                            data:
-                                reportRecords.map(
-                                    r =>
-                                        r.feedPerBirdG
-                                ),
-
-                            tension:
-                                0.3,
-
-                            spanGaps:
-                                true
-
-                        },
-
-                        {
-
-                            label:
-                                "آب روزانه هر پرنده (میلی‌لیتر)",
-
-                            data:
-                                reportRecords.map(
-                                    r =>
-                                        r.waterPerBirdMl
-                                ),
-
-                            tension:
-                                0.3,
-
-                            spanGaps:
-                                true
-
-                        }
-
-                    ]
-
-                },
-
-                options: {
-
-                    responsive:
-                        true,
-
-                    maintainAspectRatio:
-                        false
-
-                }
-
-            }
-
-        );
-
-}
-
-
-/* =========================================================
-   FCR
-   ========================================================= */
-
-function renderFCRChart() {
-    const card=document.getElementById("fcrCard");
-    const ctx=document.getElementById("fcrChart");
-    if(!card || !ctx) return;
-    const hasActual=reportRecords.some(r=>Number.isFinite(Number(r.cumulativeFCR))||Number.isFinite(Number(r.fcr)));
-    const hasStandard=reportRecords.some(r=>Number.isFinite(Number(r.standardFCR)));
-    card.style.display=(hasActual||hasStandard)?"block":"none";
-    if(!hasActual&&!hasStandard) return;
-    if(reportFCRChart) reportFCRChart.destroy();
-    const datasets=[{label:"FCR تجمعی واقعی",data:reportRecords.map(r=>r.cumulativeFCR??r.fcr??null),tension:0.25,spanGaps:false,pointRadius:3}];
-    if(hasStandard) datasets.push({label:"FCR تجمعی استاندارد سویه",data:reportRecords.map(r=>r.standardFCR??null),tension:0.25,spanGaps:true,borderDash:[8,5],pointRadius:2});
-    reportFCRChart=new Chart(ctx,{type:"line",data:{labels:reportRecords.map(r=>"هفته "+r.weekNumber),datasets},options:{responsive:true,maintainAspectRatio:false,scales:{y:{beginAtZero:false,title:{display:true,text:"kg feed / kg gain"}}}}});
-}
-function showLoading(
-    visible
-) {
-
-    document.getElementById(
-        "loading"
-    ).style.display =
-        visible
-            ? "block"
-            : "none";
-
-}
-
-
-function hideChartCards() {
-
-    [
-        "weightCard",
-        "cvCard",
-        "uniformityCard",
-        "consumptionCard",
-        "fcrCard"
-    ]
-    .forEach(
-        id => {
-
-            document.getElementById(
-                id
-            ).style.display =
-                "none";
-
-        }
-    );
-
-}
-
-
-function clearReport() {
-
-    reportFlock =
-        null;
-
-    reportStandard =
-        null;
-
-    reportRecords =
-        [];
-
-    document.getElementById(
-        "flockInfo"
-    ).textContent =
-        "ابتدا یک گله را انتخاب کنید.";
-
-
-    document.getElementById(
-        "summaryCard"
-    ).style.display =
-        "none";
-
-
-    document.getElementById(
-        "tableCard"
-    ).style.display =
-        "none";
-
-
-    document.getElementById(
-        "emptyState"
-    ).style.display =
-        "block";
-
-
-    hideChartCards();
-
-}
-
-
-function formatReportDate(
-    date
-) {
-
-    if (!date) {
-
-        return "-";
-
-    }
-
-
-    const d =
-        new Date(
-            date
-        );
-
-
-    if (
-        Number.isNaN(
-            d.getTime()
-        )
-    ) {
-
-        return "-";
-
-    }
-
-
-    return d.toLocaleDateString(
-        "fa-IR"
-    );
-
-}
-
-
-function escapeHTML(
-    value
-) {
-
-    return String(
-        value ?? ""
-    )
-    .replace(
-        /&/g,
-        "&amp;"
-    )
-    .replace(
-        /</g,
-        "&lt;"
-    )
-    .replace(
-        />/g,
-        "&gt;"
-    )
-    .replace(
-        /"/g,
-        "&quot;"
-    )
-    .replace(
-        /'/g,
-        "&#039;"
-    );
-
-}
-
 </script>
+
 
 </body>
 

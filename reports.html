@@ -14,10 +14,12 @@
         گزارش و ارزیابی گله | مرکز تخصصی سلامت طیور آدینه
     </title>
 
+
     <link
         rel="stylesheet"
         href="style.css"
     >
+
 
     <!-- =====================================================
          LIBRARIES
@@ -26,6 +28,11 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+
+    <!-- =====================================================
+         PROJECT FILES
+    ====================================================== -->
 
     <script src="supabase-config.js"></script>
 
@@ -47,13 +54,18 @@
 
     <script src="weekly-engine.js"></script>
 
-    <!-- مهم: این فایل منطق اصلی گزارشات را دارد -->
+    <!--
+        مهم:
+        این فایل باید نسخه اصلاح‌شده reports-data.js باشد
+    -->
+
     <script src="reports-data.js"></script>
 
 </head>
 
 
 <body>
+
 
 <div class="reports-page">
 
@@ -64,7 +76,7 @@
 
     <header class="page-header">
 
-        <div>
+        <div class="header-title">
 
             <h1>
                 گزارش و ارزیابی گله
@@ -73,6 +85,10 @@
             <p>
                 مرکز تخصصی سلامت طیور آدینه
             </p>
+
+            <small>
+                متخصص بهداشت و بیماری‌های طیور
+            </small>
 
         </div>
 
@@ -84,7 +100,7 @@
                 class="btn btn-secondary"
                 onclick="location.href='weekly.html'"
             >
-                بازگشت به هفتگی
+                بازگشت به پایش هفتگی
             </button>
 
 
@@ -102,522 +118,453 @@
 
 
 
-    <main>
+    <!-- =====================================================
+         FLOCK SELECT
+    ====================================================== -->
 
+    <section class="card">
 
-        <!-- =================================================
-             FLOCK SELECT
-        ================================================== -->
+        <div class="section-title">
 
-        <section class="card">
+            انتخاب گله
 
-            <div class="section-title">
-                انتخاب گله
-            </div>
-
-
-            <div class="form-group">
-
-                <label for="flockSelect">
-                    گله
-                </label>
-
-
-                <select id="flockSelect">
-
-                    <option value="">
-                        در حال دریافت گله‌ها...
-                    </option>
-
-                </select>
-
-            </div>
-
-
-            <div
-                id="flockInfo"
-                class="info-box"
-            >
-                لطفاً یک گله را انتخاب کنید.
-            </div>
-
-        </section>
-
-
-
-        <!-- =================================================
-             LOADING
-        ================================================== -->
-
-        <div
-            id="loading"
-            class="info-box loading-box"
-            style="display:none;"
-        >
-            در حال دریافت اطلاعات گزارش...
         </div>
 
 
+        <div class="form-group">
 
-        <!-- =================================================
-             SUMMARY
-        ================================================== -->
+            <label for="flockSelect">
 
-        <section
-            id="summaryCard"
-            class="card"
-            style="display:none;"
+                گله
+
+            </label>
+
+
+            <select id="flockSelect">
+
+                <option value="">
+
+                    در حال دریافت گله‌ها...
+
+                </option>
+
+            </select>
+
+        </div>
+
+
+        <div
+            id="flockInfo"
+            class="info-box"
         >
 
-            <div class="section-title">
-                خلاصه عملکرد
-            </div>
+            لطفاً یک گله را انتخاب کنید.
 
+        </div>
 
-            <div
-                id="summary"
-                class="metrics-grid"
-            ></div>
+    </section>
 
 
-            <div
-                id="summaryComparison"
-                class="comparison-box"
-            ></div>
 
-        </section>
+    <!-- =====================================================
+         LOADING
+    ====================================================== -->
 
+    <div
+        id="loading"
+        class="info-box loading-box"
+        style="display:none;"
+    >
 
+        در حال دریافت اطلاعات گزارش...
 
-        <!-- =================================================
-             SPECIALIZED REPORT
-        ================================================== -->
+    </div>
 
-        <section
-            id="specializedReportCard"
-            class="card"
-            style="display:none;"
-        >
 
-            <div class="section-title">
 
-                <span id="specializedReportTitle">
-                    گزارش تخصصی
-                </span>
+    <!-- =====================================================
+         SUMMARY
+    ====================================================== -->
 
-            </div>
+    <section
+        id="summaryCard"
+        class="card"
+        style="display:none;"
+    >
 
+        <div class="section-title">
 
-            <div
-                id="specializedReportInfo"
-                class="info-box"
-            ></div>
+            خلاصه عملکرد
 
+        </div>
 
-            <div class="chart-wrapper">
 
-                <canvas
-                    id="specializedProductionChart"
-                ></canvas>
+        <div
+            id="summary"
+            class="metrics-grid"
+        ></div>
 
-            </div>
 
+        <div
+            id="summaryComparison"
+            class="comparison-box"
+        ></div>
 
-            <div class="chart-wrapper">
+    </section>
 
-                <canvas
-                    id="specializedEfficiencyChart"
-                ></canvas>
 
-            </div>
 
+    <!-- =====================================================
+         WEIGHT
+    ====================================================== -->
 
-            <div class="chart-wrapper">
+    <section
+        id="weightCard"
+        class="card"
+        style="display:none;"
+    >
 
-                <canvas
-                    id="specializedQualityChart"
-                ></canvas>
+        <div class="section-title">
 
-            </div>
+            مقایسه میانگین وزن با استاندارد
 
-        </section>
+        </div>
 
 
+        <div
+            id="weightComparison"
+            class="chart-info"
+        ></div>
 
-        <!-- =================================================
-             WEIGHT
-        ================================================== -->
 
-        function standardWeight(recordOrWeek) {
+        <div
+            id="weightStandardSource"
+            class="standard-source-box"
+        ></div>
 
-    let w = recordOrWeek;
 
-    /*
-     * اگر رکورد کامل به تابع داده شده باشد،
-     * هفته را از آن استخراج می‌کنیم.
-     */
-    if (
-        recordOrWeek &&
-        typeof recordOrWeek === "object"
-    ) {
+        <div class="chart-wrapper">
 
-        w =
-            recordOrWeek.weekNumber ??
-            recordOrWeek.week_number ??
-            recordOrWeek.week ??
-            recordOrWeek.age_week ??
-            recordOrWeek.age;
+            <canvas
+                id="weightChart"
+            ></canvas>
 
-    }
+        </div>
 
+    </section>
 
-    w = num(w);
 
 
-    if (w === null) {
+    <!-- =====================================================
+         CV
+    ====================================================== -->
 
-        return null;
+    <section
+        id="cvCard"
+        class="card"
+        style="display:none;"
+    >
 
-    }
+        <div class="section-title">
 
+            روند CV و ارزیابی مدیریتی
 
-    try {
+        </div>
 
-        /*
-         * استاندارد واقعی پروژه
-         */
-        if (
-            typeof getStandard !==
-            "function"
-        ) {
 
-            console.warn(
-                "getStandard در دسترس نیست."
-            );
+        <div
+            id="cvComparison"
+            class="chart-info"
+        ></div>
 
-            return null;
 
-        }
+        <div class="chart-wrapper">
 
+            <canvas
+                id="cvChart"
+            ></canvas>
 
-        /*
-         * استاندارد بر اساس نوع پرورش
-         * و سویه گله
-         */
-        const standard =
-            getStandard(
-                productionType(
-                    reportFlock
-                ),
-                genetics(
-                    reportFlock
-                )
-            );
+        </div>
 
+    </section>
 
-        if (
-            !standard ||
-            !Array.isArray(
-                standard.weights
-            )
-        ) {
 
-            console.warn(
-                "جدول استاندارد وزن برای این گله پیدا نشد.",
-                {
-                    productionType:
-                        productionType(
-                            reportFlock
-                        ),
 
-                    genetics:
-                        genetics(
-                            reportFlock
-                        )
-                }
-            );
+    <!-- =====================================================
+         UNIFORMITY
+    ====================================================== -->
 
-            return null;
+    <section
+        id="uniformityCard"
+        class="card"
+        style="display:none;"
+    >
 
-        }
+        <div class="section-title">
 
+            روند یکنواختی
 
-        /*
-         * پیدا کردن استاندارد دقیق همان هفته
-         */
-        const item =
-            standard.weights.find(
-                row =>
-                    Number(
-                        row.week
-                    ) ===
-                    Number(w)
-            );
+        </div>
 
 
-        if (
-            !item
-        ) {
+        <div
+            id="uniformityComparison"
+            class="chart-info"
+        ></div>
 
-            return null;
 
-        }
+        <div class="chart-wrapper">
 
+            <canvas
+                id="uniformityChart"
+            ></canvas>
 
-        const value =
-            num(
-                item.weight
-            );
+        </div>
 
+    </section>
 
-        return value;
 
-    }
 
-    catch (error) {
+    <!-- =====================================================
+         FEED / WATER
+    ====================================================== -->
 
-        console.error(
-            "STANDARD WEIGHT ERROR:",
-            error
-        );
+    <section
+        id="consumptionCard"
+        class="card"
+        style="display:none;"
+    >
 
-        return null;
+        <div class="section-title">
 
-    }
+            روند مصرف دان و آب
 
-}
-        <!-- =================================================
-             CV
-        ================================================== -->
+        </div>
 
-        <section
-            id="cvCard"
-            class="card"
-            style="display:none;"
-        >
 
-            <div class="section-title">
-                روند CV و ارزیابی مدیریتی
-            </div>
+        <div class="chart-wrapper">
 
+            <canvas
+                id="consumptionChart"
+            ></canvas>
 
-            <div
-                id="cvComparison"
-                class="chart-info"
-            ></div>
+        </div>
 
+    </section>
 
-            <div class="chart-wrapper">
 
-                <canvas
-                    id="cvChart"
-                ></canvas>
 
-            </div>
+    <!-- =====================================================
+         FCR
+    ====================================================== -->
 
-        </section>
+    <section
+        id="fcrCard"
+        class="card"
+        style="display:none;"
+    >
 
+        <div class="section-title">
 
+            مقایسه FCR واقعی با استاندارد
 
-        <!-- =================================================
-             UNIFORMITY
-        ================================================== -->
+        </div>
 
-        <section
-            id="uniformityCard"
-            class="card"
-            style="display:none;"
-        >
 
-            <div class="section-title">
-                روند یکنواختی و ارزیابی مدیریتی
-            </div>
+        <div
+            id="fcrDescription"
+            class="chart-info"
+        ></div>
 
 
-            <div
-                id="uniformityComparison"
-                class="chart-info"
-            ></div>
+        <div
+            id="fcrStandardSource"
+            class="standard-source-box"
+        ></div>
 
 
-            <div class="chart-wrapper">
+        <div class="chart-wrapper">
 
-                <canvas
-                    id="uniformityChart"
-                ></canvas>
+            <canvas
+                id="fcrChart"
+            ></canvas>
 
-            </div>
+        </div>
 
-        </section>
+    </section>
 
 
 
-        <!-- =================================================
-             FEED / WATER
-        ================================================== -->
+    <!-- =====================================================
+         SPECIALIZED REPORT
+    ====================================================== -->
 
-        <section
-            id="consumptionCard"
-            class="card"
-            style="display:none;"
-        >
+    <section
+        id="specializedReportCard"
+        class="card"
+        style="display:none;"
+    >
 
-            <div class="section-title">
-                روند مصرف دان و آب
-            </div>
+        <div class="section-title">
 
+            <span id="specializedReportTitle">
+                گزارش تخصصی
+            </span>
 
-            <div class="chart-wrapper">
+        </div>
 
-                <canvas
-                    id="consumptionChart"
-                ></canvas>
 
-            </div>
+        <div
+            id="specializedReportInfo"
+            class="info-box"
+        ></div>
 
-        </section>
 
+        <div class="chart-wrapper">
 
+            <canvas
+                id="specializedProductionChart"
+            ></canvas>
 
-        <!-- =================================================
-             FCR
-        ================================================== -->
+        </div>
 
-        <section
-            id="fcrCard"
-            class="card"
-            style="display:none;"
-        >
 
-            <div class="section-title">
-                FCR تجمعی و مقایسه با استاندارد
-            </div>
+        <div class="chart-wrapper">
 
+            <canvas
+                id="specializedEfficiencyChart"
+            ></canvas>
 
-            <div
-                id="fcrDescription"
-                class="info-box"
-            >
-                FCR واقعی و در صورت وجود استاندارد مربوط به سن گله
-                نمایش داده می‌شود.
-            </div>
+        </div>
 
 
-            <div class="chart-wrapper">
+        <div class="chart-wrapper">
 
-                <canvas
-                    id="fcrChart"
-                ></canvas>
+            <canvas
+                id="specializedQualityChart"
+            ></canvas>
 
-            </div>
+        </div>
 
-        </section>
+    </section>
 
 
 
-        <!-- =================================================
-             WEEKLY TABLE
-        ================================================== -->
+    <!-- =====================================================
+         WEEKLY TABLE
+    ====================================================== -->
 
-        <section
-            id="tableCard"
-            class="card"
-            style="display:none;"
-        >
+    <section
+        id="tableCard"
+        class="card"
+        style="display:none;"
+    >
 
-            <div class="section-title">
-                جدول پایش هفتگی
-            </div>
+        <div class="section-title">
 
+            جدول پایش هفتگی
 
-            <div class="table-container">
+        </div>
 
-                <table>
 
-                    <thead>
+        <div class="table-container">
 
-                        <tr>
+            <table>
 
-                            <th>
-                                هفته
-                            </th>
+                <thead>
 
-                            <th>
-                                تاریخ
-                            </th>
+                    <tr>
 
-                            <th>
-                                وزن واقعی
-                            </th>
+                        <th>
+                            هفته
+                        </th>
 
-                            <th>
-                                استاندارد
-                            </th>
+                        <th>
+                            سن
+                        </th>
 
-                            <th>
-                                اختلاف وزن
-                            </th>
+                        <th>
+                            تاریخ
+                        </th>
 
-                            <th>
-                                اختلاف %
-                            </th>
+                        <th>
+                            وزن واقعی
+                        </th>
 
-                            <th>
-                                CV%
-                            </th>
+                        <th>
+                            استاندارد وزن
+                        </th>
 
-                            <th>
-                                یکنواختی ±10%
-                            </th>
+                        <th>
+                            منبع استاندارد
+                        </th>
 
-                            <th>
-                                دان
-                            </th>
+                        <th>
+                            اختلاف وزن
+                        </th>
 
-                            <th>
-                                آب
-                            </th>
+                        <th>
+                            اختلاف %
+                        </th>
 
-                            <th>
-                                FCR
-                            </th>
+                        <th>
+                            CV%
+                        </th>
 
-                        </tr>
+                        <th>
+                            یکنواختی ±10%
+                        </th>
 
-                    </thead>
+                        <th>
+                            دان
+                        </th>
 
+                        <th>
+                            آب
+                        </th>
 
-                    <tbody
-                        id="weeklyTableBody"
-                    ></tbody>
+                        <th>
+                            FCR واقعی
+                        </th>
 
-                </table>
+                        <th>
+                            FCR استاندارد
+                        </th>
 
-            </div>
+                    </tr>
 
-        </section>
+                </thead>
 
 
+                <tbody
+                    id="weeklyTableBody"
+                ></tbody>
 
-        <!-- =================================================
-             EMPTY
-        ================================================== -->
+            </table>
 
-        <section
-            id="emptyState"
-            class="card"
-        >
+        </div>
 
-            <div class="info-box">
+    </section>
 
-                برای نمایش گزارش، یک گله را انتخاب کنید.
 
-            </div>
 
-        </section>
+    <!-- =====================================================
+         EMPTY
+    ====================================================== -->
 
+    <section
+        id="emptyState"
+        class="card"
+    >
 
-    </main>
+        <div class="info-box">
+
+            برای نمایش گزارش، یک گله را انتخاب کنید.
+
+        </div>
+
+    </section>
+
 
 </div>
 
@@ -638,11 +585,9 @@ body {
 
     min-height: 100%;
 
-    background:
-        #f5f7fa;
+    background: #f5f7fa;
 
-    color:
-        #172033;
+    color: #172033;
 
 }
 
@@ -650,8 +595,8 @@ body {
 body {
 
     font-family:
-        Arial,
         Tahoma,
+        Arial,
         sans-serif;
 
 }
@@ -660,10 +605,10 @@ body {
 .reports-page {
 
     width:
-        min(1400px, 94%);
+        min(1450px, 95%);
 
     margin:
-        25px auto 60px;
+        24px auto 60px;
 
 }
 
@@ -695,30 +640,40 @@ body {
         20px;
 
     box-shadow:
-        0 4px 18px
-        rgba(0,0,0,.06);
+        0 4px 18px rgba(0,0,0,.06);
 
 }
 
 
-.page-header h1 {
+.header-title h1 {
 
     margin:
-        0 0 8px;
+        0 0 7px;
 
     font-size:
-        27px;
+        28px;
 
 }
 
 
-.page-header p {
+.header-title p {
 
     margin:
-        0;
+        0 0 4px;
 
     font-weight:
-        700;
+        800;
+
+}
+
+
+.header-title small {
+
+    color:
+        #667085;
+
+    font-weight:
+        600;
 
 }
 
@@ -755,7 +710,7 @@ body {
         inherit;
 
     font-weight:
-        700;
+        800;
 
 }
 
@@ -766,7 +721,7 @@ body {
         #1d3557;
 
     color:
-        white;
+        #ffffff;
 
 }
 
@@ -797,8 +752,7 @@ body {
         20px;
 
     box-shadow:
-        0 4px 18px
-        rgba(0,0,0,.06);
+        0 4px 18px rgba(0,0,0,.06);
 
 }
 
@@ -809,7 +763,7 @@ body {
         20px;
 
     font-weight:
-        800;
+        900;
 
     margin-bottom:
         18px;
@@ -840,7 +794,7 @@ body {
 .form-group label {
 
     font-weight:
-        700;
+        800;
 
 }
 
@@ -872,7 +826,7 @@ body {
         15px;
 
     background:
-        white;
+        #ffffff;
 
 }
 
@@ -909,7 +863,7 @@ body {
         center;
 
     font-weight:
-        700;
+        800;
 
 }
 
@@ -922,7 +876,7 @@ body {
     grid-template-columns:
         repeat(
             auto-fit,
-            minmax(170px,1fr)
+            minmax(170px, 1fr)
         );
 
     gap:
@@ -968,7 +922,7 @@ body {
         21px;
 
     font-weight:
-        800;
+        900;
 
 }
 
@@ -984,7 +938,7 @@ body {
     grid-template-columns:
         repeat(
             auto-fit,
-            minmax(190px,1fr)
+            minmax(210px,1fr)
         );
 
     gap:
@@ -996,7 +950,7 @@ body {
 .comparison-item {
 
     padding:
-        12px;
+        13px;
 
     border-radius:
         10px;
@@ -1008,7 +962,7 @@ body {
         1px solid #e4e8ee;
 
     line-height:
-        1.8;
+        1.9;
 
 }
 
@@ -1043,7 +997,7 @@ body {
         12px;
 
     padding:
-        10px 13px;
+        11px 14px;
 
     border-radius:
         9px;
@@ -1055,7 +1009,36 @@ body {
         1px solid #e7ebf0;
 
     line-height:
-        1.8;
+        1.9;
+
+}
+
+
+.standard-source-box {
+
+    padding:
+        10px 14px;
+
+    margin:
+        10px 0 14px;
+
+    border-radius:
+        9px;
+
+    background:
+        #eef3f8;
+
+    border:
+        1px solid #dce4ec;
+
+    font-size:
+        13px;
+
+    font-weight:
+        800;
+
+    line-height:
+        1.9;
 
 }
 
@@ -1069,7 +1052,7 @@ body {
         100%;
 
     height:
-        360px;
+        370px;
 
     margin-top:
         18px;
@@ -1105,7 +1088,7 @@ table {
         100%;
 
     min-width:
-        1100px;
+        1500px;
 
     border-collapse:
         collapse;
@@ -1134,10 +1117,59 @@ td {
 th {
 
     background:
-        #f1f4f7;
+        #1d3557;
+
+    color:
+        #ffffff;
+
+    font-weight:
+        900;
+
+}
+
+
+tbody tr:hover {
+
+    background:
+        #f7f9fb;
+
+}
+
+
+.standard-official {
 
     font-weight:
         800;
+
+}
+
+
+.standard-management {
+
+    font-weight:
+        800;
+
+}
+
+
+.bad-value {
+
+    color:
+        #c62828;
+
+    font-weight:
+        900;
+
+}
+
+
+.good-value {
+
+    color:
+        #198754;
+
+    font-weight:
+        900;
 
 }
 
@@ -1185,7 +1217,7 @@ th {
     .chart-wrapper {
 
         height:
-            300px;
+            310px;
 
     }
 
@@ -1193,6 +1225,14 @@ th {
 
 
 @media print {
+
+    body {
+
+        background:
+            #ffffff;
+
+    }
+
 
     .header-actions,
     #flockSelect,
@@ -1211,6 +1251,14 @@ th {
 
         break-inside:
             avoid;
+
+    }
+
+
+    .chart-wrapper {
+
+        height:
+            320px;
 
     }
 
@@ -1235,33 +1283,43 @@ th {
        STATE
     ====================================================== */
 
-    let reportFlock = null;
+    let reportFlock =
+        null;
 
-    let reportRecords = [];
+    let reportRecords =
+        [];
 
-    let reportStandard = null;
-
-
-    let weightChart = null;
-
-    let cvChart = null;
-
-    let uniformityChart = null;
-
-    let consumptionChart = null;
-
-    let fcrChart = null;
+    let reportStandard =
+        null;
 
 
-    let specializedCharts = [];
+    let weightChart =
+        null;
+
+    let cvChart =
+        null;
+
+    let uniformityChart =
+        null;
+
+    let consumptionChart =
+        null;
+
+    let fcrChart =
+        null;
 
 
-    let requestToken = 0;
+    let specializedCharts =
+        [];
+
+
+    let requestToken =
+        0;
 
 
 
     /* =====================================================
-       HELPERS
+       BASIC HELPERS
     ====================================================== */
 
     function num(value) {
@@ -1280,7 +1338,7 @@ th {
         const n =
             Number(
                 String(value)
-                    .replace(/,/g,"")
+                    .replace(/,/g, "")
                     .trim()
             );
 
@@ -1383,7 +1441,7 @@ th {
             catch (error) {
 
                 console.warn(
-                    "Chart destroy:",
+                    "Chart destroy error:",
                     error
                 );
 
@@ -1393,6 +1451,56 @@ th {
 
 
         return null;
+
+    }
+
+
+
+    function clearCharts() {
+
+        weightChart =
+            destroyChart(
+                weightChart
+            );
+
+        cvChart =
+            destroyChart(
+                cvChart
+            );
+
+        uniformityChart =
+            destroyChart(
+                uniformityChart
+            );
+
+        consumptionChart =
+            destroyChart(
+                consumptionChart
+            );
+
+        fcrChart =
+            destroyChart(
+                fcrChart
+            );
+
+
+        specializedCharts.forEach(
+            chart => {
+
+                try {
+
+                    chart.destroy();
+
+                }
+
+                catch (error) {}
+
+            }
+        );
+
+
+        specializedCharts =
+            [];
 
     }
 
@@ -1444,65 +1552,16 @@ th {
 
 
 
-    function clearCharts() {
-
-        weightChart =
-            destroyChart(
-                weightChart
-            );
-
-        cvChart =
-            destroyChart(
-                cvChart
-            );
-
-        uniformityChart =
-            destroyChart(
-                uniformityChart
-            );
-
-        consumptionChart =
-            destroyChart(
-                consumptionChart
-            );
-
-        fcrChart =
-            destroyChart(
-                fcrChart
-            );
-
-
-        specializedCharts.forEach(
-            chart => {
-
-                try {
-
-                    chart.destroy();
-
-                }
-
-                catch (error) {}
-
-            }
-        );
-
-
-        specializedCharts = [];
-
-    }
-
-
-
     function hideReports() {
 
         [
             "summaryCard",
-            "specializedReportCard",
             "weightCard",
             "cvCard",
             "uniformityCard",
             "consumptionCard",
             "fcrCard",
+            "specializedReportCard",
             "tableCard"
         ]
         .forEach(
@@ -1559,6 +1618,10 @@ th {
 
 
 
+    /* =====================================================
+       FLOCK HELPERS
+    ====================================================== */
+
     function flockName(
         flock
     ) {
@@ -1598,12 +1661,15 @@ th {
             flock?.strain ||
             flock?.breed ||
             ""
-
         );
 
     }
 
 
+
+    /* =====================================================
+       RECORD HELPERS
+    ====================================================== */
 
     function week(
         record
@@ -1617,12 +1683,60 @@ th {
 
 
 
+    function ageDays(
+        record
+    ) {
+
+        return num(
+            record?.ageDays
+        );
+
+    }
+
+
+
     function weight(
         record
     ) {
 
         return num(
             record?.averageWeight
+        );
+
+    }
+
+
+
+    function standardWeight(
+        record
+    ) {
+
+        return num(
+            record?.standardWeight
+        );
+
+    }
+
+
+
+    function fcr(
+        record
+    ) {
+
+        return num(
+            record?.fcr
+        );
+
+    }
+
+
+
+    function standardFCR(
+        record
+    ) {
+
+        return num(
+            record?.standardFCR
         );
 
     }
@@ -1713,42 +1827,6 @@ th {
 
 
 
-    function fcr(
-        record
-    ) {
-
-        return num(
-            record?.fcr
-        );
-
-    }
-
-
-
-    function standardWeight(
-        record
-    ) {
-
-        return num(
-            record?.standardWeight
-        );
-
-    }
-
-
-
-    function standardFCR(
-        record
-    ) {
-
-        return num(
-            record?.standardFCR
-        );
-
-    }
-
-
-
     function labels() {
 
         return reportRecords.map(
@@ -1759,6 +1837,61 @@ th {
                     "-"
                 )
         );
+
+    }
+
+
+
+    /* =====================================================
+       STANDARD SOURCE
+    ====================================================== */
+
+    function standardSourceLabel(
+        record,
+        type = "weight"
+    ) {
+
+        if (!record) {
+
+            return "بدون استاندارد";
+
+        }
+
+
+        if (
+            type === "fcr"
+        ) {
+
+            if (
+                standardFCR(record) ===
+                null
+            ) {
+
+                return "بدون استاندارد";
+
+            }
+
+
+            return record.standardFCRIsManagement
+                ? "استاندارد مدیریتی"
+                : "استاندارد ژنتیکی رسمی";
+
+        }
+
+
+        if (
+            standardWeight(record) ===
+            null
+        ) {
+
+            return "بدون استاندارد";
+
+        }
+
+
+        return record.standardWeightIsManagement
+            ? "استاندارد مدیریتی"
+            : "استاندارد ژنتیکی رسمی";
 
     }
 
@@ -1798,9 +1931,6 @@ th {
             card.style.display =
                 "none";
 
-            container.innerHTML =
-                "";
-
             return;
 
         }
@@ -1821,12 +1951,46 @@ th {
             <div class="metric-card">
 
                 <div class="metric-title">
+                    سن گله
+                </div>
+
+                <div class="metric-value">
+                    ${formatNumber(
+                        ageDays(latest),
+                        0,
+                        " روز"
+                    )}
+                </div>
+
+            </div>
+
+
+            <div class="metric-card">
+
+                <div class="metric-title">
                     میانگین وزن
                 </div>
 
                 <div class="metric-value">
                     ${formatNumber(
                         weight(latest),
+                        1,
+                        " گرم"
+                    )}
+                </div>
+
+            </div>
+
+
+            <div class="metric-card">
+
+                <div class="metric-title">
+                    استاندارد وزن
+                </div>
+
+                <div class="metric-value">
+                    ${formatNumber(
+                        standardWeight(latest),
                         1,
                         " گرم"
                     )}
@@ -1872,6 +2036,38 @@ th {
             <div class="metric-card">
 
                 <div class="metric-title">
+                    FCR واقعی
+                </div>
+
+                <div class="metric-value">
+                    ${formatNumber(
+                        fcr(latest),
+                        3
+                    )}
+                </div>
+
+            </div>
+
+
+            <div class="metric-card">
+
+                <div class="metric-title">
+                    FCR استاندارد
+                </div>
+
+                <div class="metric-value">
+                    ${formatNumber(
+                        standardFCR(latest),
+                        3
+                    )}
+                </div>
+
+            </div>
+
+
+            <div class="metric-card">
+
+                <div class="metric-title">
                     دان هفتگی
                 </div>
 
@@ -1880,73 +2076,6 @@ th {
                         feed(latest),
                         1,
                         " kg"
-                    )}
-                </div>
-
-            </div>
-
-
-            <div class="metric-card">
-
-                <div class="metric-title">
-                    آب هفتگی
-                </div>
-
-                <div class="metric-value">
-                    ${formatNumber(
-                        water(latest),
-                        1,
-                        " L"
-                    )}
-                </div>
-
-            </div>
-
-
-            <div class="metric-card">
-
-                <div class="metric-title">
-                    دان هر پرنده
-                </div>
-
-                <div class="metric-value">
-                    ${formatNumber(
-                        feedPerBird(latest),
-                        1,
-                        " گرم"
-                    )}
-                </div>
-
-            </div>
-
-
-            <div class="metric-card">
-
-                <div class="metric-title">
-                    آب هر پرنده
-                </div>
-
-                <div class="metric-value">
-                    ${formatNumber(
-                        waterPerBird(latest),
-                        1,
-                        " ml"
-                    )}
-                </div>
-
-            </div>
-
-
-            <div class="metric-card">
-
-                <div class="metric-title">
-                    FCR تجمعی
-                </div>
-
-                <div class="metric-value">
-                    ${formatNumber(
-                        fcr(latest),
-                        3
                     )}
                 </div>
 
@@ -1984,7 +2113,7 @@ th {
         }
 
 
-        const actualWeight =
+        const actual =
             weight(record);
 
         const standard =
@@ -1995,81 +2124,93 @@ th {
                 record?.weightDifference
             );
 
+        const percent =
+            num(
+                record?.weightDifferencePercent
+            );
 
-        let weightStatus =
+
+        let status =
             "no-standard";
 
+
         if (
-            actualWeight !== null &&
-            standard !== null
+            percent !== null
         ) {
 
-            const percent =
-                standard !== 0
-                    ? (
-                        (
-                            actualWeight -
-                            standard
-                        ) /
-                        standard
-                    ) * 100
-                    : null;
-
-
             if (
-                percent !== null
+                Math.abs(percent) <= 5
             ) {
 
-                weightStatus =
-                    Math.abs(percent) <= 5
-                        ? "within"
-                        : percent > 5
-                            ? "above"
-                            : "below";
+                status =
+                    "within";
+
+            }
+
+            else if (
+                percent > 5
+            ) {
+
+                status =
+                    "above";
+
+            }
+
+            else {
+
+                status =
+                    "below";
 
             }
 
         }
 
 
-        let weightClass =
+        let cssClass =
             "comparison-item";
 
 
         if (
-            weightStatus ===
+            status ===
             "within"
         ) {
 
-            weightClass +=
+            cssClass +=
                 " comparison-good";
 
         }
 
         else if (
-            weightStatus ===
+            status ===
             "above"
         ) {
 
-            weightClass +=
+            cssClass +=
                 " comparison-warning";
 
         }
 
         else if (
-            weightStatus ===
+            status ===
             "below"
         ) {
 
-            weightClass +=
+            cssClass +=
                 " comparison-bad";
 
         }
 
 
+        const source =
+            standardSourceLabel(
+                record,
+                "weight"
+            );
+
+
         box.innerHTML = `
 
-            <div class="${weightClass}">
+            <div class="${cssClass}">
 
                 <strong>
                     مقایسه وزن با استاندارد
@@ -2077,29 +2218,79 @@ th {
 
                 <br>
 
-                واقعی:
-                ${formatNumber(
-                    actualWeight,
-                    1,
-                    " گرم"
-                )}
+                وزن واقعی:
+                <strong>
+                    ${formatNumber(
+                        actual,
+                        1,
+                        " گرم"
+                    )}
+                </strong>
 
                 <br>
 
-                استاندارد:
-                ${formatNumber(
-                    standard,
-                    1,
-                    " گرم"
-                )}
+                ${source}:
+                <strong>
+                    ${formatNumber(
+                        standard,
+                        1,
+                        " گرم"
+                    )}
+                </strong>
 
                 <br>
 
                 اختلاف:
+                <strong>
+                    ${formatNumber(
+                        difference,
+                        1,
+                        " گرم"
+                    )}
+                </strong>
+
+                <br>
+
+                اختلاف:
+                <strong>
+                    ${formatNumber(
+                        percent,
+                        1,
+                        "%"
+                    )}
+                </strong>
+
+            </div>
+
+
+            <div class="comparison-item">
+
+                <strong>
+                    وضعیت FCR
+                </strong>
+
+                <br>
+
+                FCR واقعی:
                 ${formatNumber(
-                    difference,
-                    1,
-                    " گرم"
+                    fcr(record),
+                    3
+                )}
+
+                <br>
+
+                FCR استاندارد:
+                ${formatNumber(
+                    standardFCR(record),
+                    3
+                )}
+
+                <br>
+
+                منبع:
+                ${standardSourceLabel(
+                    record,
+                    "fcr"
                 )}
 
             </div>
@@ -2108,7 +2299,7 @@ th {
             <div class="comparison-item">
 
                 <strong>
-                    ارزیابی مدیریتی
+                    ارزیابی یکنواختی
                 </strong>
 
                 <br>
@@ -2122,9 +2313,18 @@ th {
 
                 <br>
 
-                یکنواختی:
+                یکنواختی ±10%:
                 ${formatNumber(
                     uniformity(record),
+                    1,
+                    "%"
+                )}
+
+                <br>
+
+                یکنواختی ±15%:
+                ${formatNumber(
+                    uniformity15(record),
                     1,
                     "%"
                 )}
@@ -2139,6 +2339,11 @@ th {
 
     /* =====================================================
        WEIGHT CHART
+       -----------------------------------------------------
+       ACTUAL WEIGHT
+       +
+       GENETIC OFFICIAL STANDARD
+       OR MANAGEMENT FALLBACK
     ====================================================== */
 
     function renderWeightChart() {
@@ -2164,6 +2369,52 @@ th {
         }
 
 
+        const actualData =
+            reportRecords.map(
+                record =>
+                    weight(record)
+            );
+
+
+        const standardData =
+            reportRecords.map(
+                record =>
+                    standardWeight(record)
+            );
+
+
+        const hasActual =
+            actualData.some(
+                value =>
+                    value !== null
+            );
+
+
+        const hasStandard =
+            standardData.some(
+                value =>
+                    value !== null
+            );
+
+
+        if (
+            !hasActual &&
+            !hasStandard
+        ) {
+
+            card.style.display =
+                "none";
+
+            weightChart =
+                destroyChart(
+                    weightChart
+                );
+
+            return;
+
+        }
+
+
         card.style.display =
             "block";
 
@@ -2172,6 +2423,107 @@ th {
             destroyChart(
                 weightChart
             );
+
+
+        const datasets =
+            [];
+
+
+        if (hasActual) {
+
+            datasets.push({
+
+                label:
+                    "میانگین وزن واقعی",
+
+                data:
+                    actualData,
+
+                borderWidth:
+                    3,
+
+                pointRadius:
+                    4,
+
+                pointHoverRadius:
+                    6,
+
+                tension:
+                    0.25,
+
+                spanGaps:
+                    true
+
+            });
+
+        }
+
+
+        if (hasStandard) {
+
+            /*
+             * اگر در طول سری،
+             * بعضی نقاط مدیریتی و بعضی رسمی باشند،
+             * یک خط استاندارد داریم و منبع آخرین رکورد
+             * در توضیحات اعلام می‌شود.
+             */
+
+            let sourceLabel =
+                "استاندارد";
+
+
+            const latest =
+                reportRecords[
+                    reportRecords.length - 1
+                ];
+
+
+            if (
+                latest &&
+                standardWeight(latest) !== null
+            ) {
+
+                sourceLabel =
+                    standardSourceLabel(
+                        latest,
+                        "weight"
+                    );
+
+            }
+
+
+            datasets.push({
+
+                label:
+                    sourceLabel,
+
+                data:
+                    standardData,
+
+                borderWidth:
+                    3,
+
+                borderDash:
+                    [
+                        9,
+                        5
+                    ],
+
+                pointRadius:
+                    2,
+
+                pointHoverRadius:
+                    5,
+
+                tension:
+                    0.25,
+
+                spanGaps:
+                    true
+
+            });
+
+        }
 
 
         weightChart =
@@ -2188,61 +2540,8 @@ th {
                         labels:
                             labels(),
 
-
-                        datasets: [
-
-                            {
-
-                                label:
-                                    "وزن واقعی",
-
-                                data:
-                                    reportRecords.map(
-                                        weight
-                                    ),
-
-                                borderWidth:
-                                    3,
-
-                                tension:
-                                    .3,
-
-                                spanGaps:
-                                    true
-
-                            },
-
-
-                            {
-
-                                label:
-                                    "استاندارد",
-
-                                data:
-    reportRecords.map(
-        record =>
-            standardWeight(
-                record
-            )
-    ),
-                                borderWidth:
-                                    3,
-
-                                borderDash:
-                                    [
-                                        8,
-                                        5
-                                    ],
-
-                                tension:
-                                    .3,
-
-                                spanGaps:
-                                    true
-
-                            }
-
-                        ]
+                        datasets:
+                            datasets
 
                     },
 
@@ -2254,6 +2553,7 @@ th {
 
                         maintainAspectRatio:
                             false,
+
 
                         interaction: {
 
@@ -2271,7 +2571,59 @@ th {
                             legend: {
 
                                 position:
-                                    "top"
+                                    "top",
+
+                                labels: {
+
+                                    usePointStyle:
+                                        true,
+
+                                    padding:
+                                        16
+
+                                }
+
+                            },
+
+
+                            tooltip: {
+
+                                callbacks: {
+
+                                    label:
+                                        function (
+                                            context
+                                        ) {
+
+                                            const value =
+                                                context.parsed.y;
+
+
+                                            return (
+                                                context.dataset.label +
+                                                ": " +
+                                                (
+                                                    value === null ||
+                                                    value === undefined
+                                                        ? "-"
+                                                        :
+                                                        Number(
+                                                            value
+                                                        )
+                                                        .toLocaleString(
+                                                            "fa-IR",
+                                                            {
+                                                                maximumFractionDigits:
+                                                                    1
+                                                            }
+                                                        ) +
+                                                        " گرم"
+                                                )
+                                            );
+
+                                        }
+
+                                }
 
                             }
 
@@ -2280,7 +2632,25 @@ th {
 
                         scales: {
 
+                            x: {
+
+                                title: {
+
+                                    display:
+                                        true,
+
+                                    text:
+                                        "هفته پایش"
+
+                                }
+
+                            },
+
+
                             y: {
+
+                                beginAtZero:
+                                    false,
 
                                 title: {
 
@@ -2302,6 +2672,12 @@ th {
             );
 
 
+        const latest =
+            reportRecords[
+                reportRecords.length - 1
+            ];
+
+
         const info =
             document.getElementById(
                 "weightComparison"
@@ -2310,15 +2686,20 @@ th {
 
         if (info) {
 
-            const latest =
-                reportRecords[
-                    reportRecords.length - 1
-                ];
-
-
             info.innerHTML = `
 
-                آخرین وزن:
+                سن گله:
+                <strong>
+                    ${formatNumber(
+                        ageDays(latest),
+                        0,
+                        " روز"
+                    )}
+                </strong>
+
+                &nbsp; | &nbsp;
+
+                میانگین وزن واقعی:
                 <strong>
                     ${formatNumber(
                         weight(latest),
@@ -2351,7 +2732,7 @@ th {
 
                 &nbsp; | &nbsp;
 
-                اختلاف درصد:
+                اختلاف:
                 <strong>
                     ${formatNumber(
                         latest.weightDifferencePercent,
@@ -2359,6 +2740,46 @@ th {
                         "%"
                     )}
                 </strong>
+
+            `;
+
+        }
+
+
+        const sourceBox =
+            document.getElementById(
+                "weightStandardSource"
+            );
+
+
+        if (sourceBox) {
+
+            sourceBox.innerHTML = `
+
+                <strong>
+                    منبع خط استاندارد:
+                </strong>
+
+                ${standardSourceLabel(
+                    latest,
+                    "weight"
+                )}
+
+                <br>
+
+                خط ممتد:
+                میانگین وزن واقعی
+
+                &nbsp;&nbsp; | &nbsp;&nbsp;
+
+                خط چین:
+                استاندارد
+
+                <br>
+
+                در صورت نبود استاندارد ژنتیکی معتبر
+                برای سن موردنظر، استاندارد مدیریتی
+                به صورت خودکار جایگزین می‌شود.
 
             `;
 
@@ -2395,6 +2816,35 @@ th {
         }
 
 
+        const values =
+            reportRecords.map(
+                record =>
+                    cv(record)
+            );
+
+
+        const hasValue =
+            values.some(
+                value =>
+                    value !== null
+            );
+
+
+        if (!hasValue) {
+
+            card.style.display =
+                "none";
+
+            cvChart =
+                destroyChart(
+                    cvChart
+                );
+
+            return;
+
+        }
+
+
         card.style.display =
             "block";
 
@@ -2402,12 +2852,6 @@ th {
         cvChart =
             destroyChart(
                 cvChart
-            );
-
-
-        const management =
-            reportRecords.map(
-                () => 10
             );
 
 
@@ -2434,15 +2878,16 @@ th {
                                     "CV واقعی",
 
                                 data:
-                                    reportRecords.map(
-                                        cv
-                                    ),
+                                    values,
 
                                 borderWidth:
                                     3,
 
+                                pointRadius:
+                                    4,
+
                                 tension:
-                                    .3,
+                                    0.25,
 
                                 spanGaps:
                                     true
@@ -2456,14 +2901,16 @@ th {
                                     "حد مدیریتی 10%",
 
                                 data:
-                                    management,
+                                    reportRecords.map(
+                                        () => 10
+                                    ),
 
                                 borderWidth:
                                     2,
 
                                 borderDash:
                                     [
-                                        7,
+                                        8,
                                         5
                                     ],
 
@@ -2556,41 +3003,56 @@ th {
                 cv(latest);
 
 
-            info.innerHTML =
-
+            if (
                 value === null
+            ) {
 
-                    ? "CV برای آخرین پایش ثبت نشده است."
+                info.textContent =
+                    "CV برای آخرین پایش ثبت نشده است.";
 
-                    :
+            }
 
-                    value <= 10
+            else if (
+                value <= 10
+            ) {
 
-                        ? `
-                            <strong>
-                                وضعیت CV: مناسب
-                            </strong>
-                            — مقدار:
-                            ${formatNumber(
-                                value,
-                                2,
-                                "%"
-                            )}
-                          `
+                info.innerHTML = `
 
-                        :
+                    <strong>
+                        وضعیت CV: مناسب
+                    </strong>
 
-                          `
-                            <strong>
-                                وضعیت CV: نیازمند بررسی مدیریتی
-                            </strong>
-                            — مقدار:
-                            ${formatNumber(
-                                value,
-                                2,
-                                "%"
-                            )}
-                          `;
+                    — مقدار:
+
+                    ${formatNumber(
+                        value,
+                        2,
+                        "%"
+                    )}
+
+                `;
+
+            }
+
+            else {
+
+                info.innerHTML = `
+
+                    <strong>
+                        وضعیت CV: نیازمند بررسی مدیریتی
+                    </strong>
+
+                    — مقدار:
+
+                    ${formatNumber(
+                        value,
+                        2,
+                        "%"
+                    )}
+
+                `;
+
+            }
 
         }
 
@@ -2619,6 +3081,46 @@ th {
             !card ||
             !canvas
         ) {
+
+            return;
+
+        }
+
+
+        const u10 =
+            reportRecords.map(
+                record =>
+                    uniformity(record)
+            );
+
+
+        const u15 =
+            reportRecords.map(
+                record =>
+                    uniformity15(record)
+            );
+
+
+        const hasValue =
+            u10.some(
+                value =>
+                    value !== null
+            ) ||
+            u15.some(
+                value =>
+                    value !== null
+            );
+
+
+        if (!hasValue) {
+
+            card.style.display =
+                "none";
+
+            uniformityChart =
+                destroyChart(
+                    uniformityChart
+                );
 
             return;
 
@@ -2658,15 +3160,13 @@ th {
                                     "یکنواختی ±10%",
 
                                 data:
-                                    reportRecords.map(
-                                        uniformity
-                                    ),
+                                    u10,
 
                                 borderWidth:
                                     3,
 
                                 tension:
-                                    .3,
+                                    0.25,
 
                                 spanGaps:
                                     true
@@ -2680,15 +3180,13 @@ th {
                                     "یکنواختی ±15%",
 
                                 data:
-                                    reportRecords.map(
-                                        uniformity15
-                                    ),
+                                    u15,
 
                                 borderWidth:
                                     3,
 
                                 tension:
-                                    .3,
+                                    0.25,
 
                                 spanGaps:
                                     true
@@ -2711,7 +3209,7 @@ th {
 
                                 borderDash:
                                     [
-                                        7,
+                                        8,
                                         5
                                     ],
 
@@ -2783,6 +3281,7 @@ th {
                     }
 
                 }
+
             );
 
 
@@ -2804,41 +3303,57 @@ th {
                 uniformity(latest);
 
 
-            info.innerHTML =
-
+            if (
                 value === null
+            ) {
 
-                    ? "یکنواختی برای آخرین پایش ثبت نشده است."
+                info.textContent =
+                    "یکنواختی برای آخرین پایش ثبت نشده است.";
 
-                    :
+            }
 
+            else {
+
+                info.innerHTML =
                     value >= 80
 
-                        ? `
-                            <strong>
-                                وضعیت یکنواختی: مناسب
-                            </strong>
-                            — مقدار:
-                            ${formatNumber(
-                                value,
-                                1,
-                                "%"
-                            )}
-                          `
+                        ?
+
+                        `
+
+                        <strong>
+                            وضعیت یکنواختی: مناسب
+                        </strong>
+
+                        — مقدار:
+
+                        ${formatNumber(
+                            value,
+                            1,
+                            "%"
+                        )}
+
+                        `
 
                         :
 
-                          `
-                            <strong>
-                                وضعیت یکنواختی: نیازمند مدیریت
-                            </strong>
-                            — مقدار:
-                            ${formatNumber(
-                                value,
-                                1,
-                                "%"
-                            )}
-                          `;
+                        `
+
+                        <strong>
+                            وضعیت یکنواختی: نیازمند مدیریت
+                        </strong>
+
+                        — مقدار:
+
+                        ${formatNumber(
+                            value,
+                            1,
+                            "%"
+                        )}
+
+                        `;
+
+            }
 
         }
 
@@ -2847,7 +3362,7 @@ th {
 
 
     /* =====================================================
-       CONSUMPTION
+       FEED / WATER CHART
     ====================================================== */
 
     function renderConsumptionChart() {
@@ -2873,166 +3388,45 @@ th {
         }
 
 
-        card.style.display =
-            "block";
-
-
-        consumptionChart =
-            destroyChart(
-                consumptionChart
-            );
-
-
-        consumptionChart =
-            new Chart(
-                canvas,
-                {
-
-                    type:
-                        "bar",
-
-
-                    data: {
-
-                        labels:
-                            labels(),
-
-
-                        datasets: [
-
-                            {
-
-                                label:
-                                    "دان هفتگی (kg)",
-
-                                data:
-                                    reportRecords.map(
-                                        feed
-                                    )
-
-                            },
-
-
-                            {
-
-                                label:
-                                    "آب هفتگی (L)",
-
-                                data:
-                                    reportRecords.map(
-                                        water
-                                    )
-
-                            }
-
-                        ]
-
-                    },
-
-
-                    options: {
-
-                        responsive:
-                            true,
-
-                        maintainAspectRatio:
-                            false,
-
-                        interaction: {
-
-                            mode:
-                                "index",
-
-                            intersect:
-                                false
-
-                        },
-
-
-                        plugins: {
-
-                            legend: {
-
-                                position:
-                                    "top"
-
-                            }
-
-                        }
-
-                    }
-
-                }
-            );
-
-    }
-
-
-
-    /* =====================================================
-       FCR
-    ====================================================== */
-
-    function renderFCRChart() {
-
-        const card =
-            document.getElementById(
-                "fcrCard"
-            );
-
-        const canvas =
-            document.getElementById(
-                "fcrChart"
-            );
-
-
-        if (
-            !card ||
-            !canvas
-        ) {
-
-            return;
-
-        }
-
-
-        const actual =
+        const feedData =
             reportRecords.map(
-                fcr
+                record =>
+                    feed(record)
             );
 
 
-        const standard =
+        const waterData =
             reportRecords.map(
-                standardFCR
+                record =>
+                    water(record)
             );
 
 
-        const hasActual =
-            actual.some(
+        const hasFeed =
+            feedData.some(
                 value =>
                     value !== null
             );
 
 
-        const hasStandard =
-            standard.some(
+        const hasWater =
+            waterData.some(
                 value =>
                     value !== null
             );
 
 
         if (
-            !hasActual &&
-            !hasStandard
+            !hasFeed &&
+            !hasWater
         ) {
 
             card.style.display =
                 "none";
 
-            fcrChart =
+            consumptionChart =
                 destroyChart(
-                    fcrChart
+                    consumptionChart
                 );
 
             return;
@@ -3044,30 +3438,31 @@ th {
             "block";
 
 
-        fcrChart =
+        consumptionChart =
             destroyChart(
-                fcrChart
+                consumptionChart
             );
 
 
-        const datasets = [];
+        const datasets =
+            [];
 
 
-        if (hasActual) {
+        if (hasFeed) {
 
             datasets.push({
 
                 label:
-                    "FCR واقعی",
+                    "دان (kg)",
 
                 data:
-                    actual,
+                    feedData,
 
                 borderWidth:
                     3,
 
                 tension:
-                    .3,
+                    0.25,
 
                 spanGaps:
                     true
@@ -3077,27 +3472,21 @@ th {
         }
 
 
-        if (hasStandard) {
+        if (hasWater) {
 
             datasets.push({
 
                 label:
-                    "FCR استاندارد",
+                    "آب (L)",
 
                 data:
-                    standard,
+                    waterData,
 
                 borderWidth:
                     3,
 
-                borderDash:
-                    [
-                        8,
-                        5
-                    ],
-
                 tension:
-                    .3,
+                    0.25,
 
                 spanGaps:
                     true
@@ -3107,7 +3496,7 @@ th {
         }
 
 
-        fcrChart =
+        consumptionChart =
             new Chart(
                 canvas,
                 {
@@ -3121,7 +3510,8 @@ th {
                         labels:
                             labels(),
 
-                        datasets
+                        datasets:
+                            datasets
 
                     },
 
@@ -3162,6 +3552,339 @@ th {
                             y: {
 
                                 beginAtZero:
+                                    true,
+
+                                title: {
+
+                                    display:
+                                        true,
+
+                                    text:
+                                        "مقدار مصرف"
+
+                                }
+
+                            }
+
+                        }
+
+                    }
+
+                }
+
+            );
+
+    }
+
+
+
+    /* =====================================================
+       FCR CHART
+       -----------------------------------------------------
+       ACTUAL FCR
+       +
+       STANDARD FCR
+    ====================================================== */
+
+    function renderFCRChart() {
+
+        const card =
+            document.getElementById(
+                "fcrCard"
+            );
+
+        const canvas =
+            document.getElementById(
+                "fcrChart"
+            );
+
+
+        if (
+            !card ||
+            !canvas
+        ) {
+
+            return;
+
+        }
+
+
+        const actualData =
+            reportRecords.map(
+                record =>
+                    fcr(record)
+            );
+
+
+        const standardData =
+            reportRecords.map(
+                record =>
+                    standardFCR(record)
+            );
+
+
+        const hasActual =
+            actualData.some(
+                value =>
+                    value !== null
+            );
+
+
+        const hasStandard =
+            standardData.some(
+                value =>
+                    value !== null
+            );
+
+
+        if (
+            !hasActual &&
+            !hasStandard
+        ) {
+
+            card.style.display =
+                "none";
+
+            fcrChart =
+                destroyChart(
+                    fcrChart
+                );
+
+            return;
+
+        }
+
+
+        card.style.display =
+            "block";
+
+
+        fcrChart =
+            destroyChart(
+                fcrChart
+            );
+
+
+        const latest =
+            reportRecords[
+                reportRecords.length - 1
+            ];
+
+
+        let sourceLabel =
+            "FCR استاندارد";
+
+
+        if (
+            latest &&
+            standardFCR(latest) !== null
+        ) {
+
+            sourceLabel =
+                standardSourceLabel(
+                    latest,
+                    "fcr"
+                );
+
+        }
+
+
+        const datasets =
+            [];
+
+
+        if (hasActual) {
+
+            datasets.push({
+
+                label:
+                    "FCR واقعی",
+
+                data:
+                    actualData,
+
+                borderWidth:
+                    3,
+
+                pointRadius:
+                    4,
+
+                pointHoverRadius:
+                    6,
+
+                tension:
+                    0.25,
+
+                spanGaps:
+                    true
+
+            });
+
+        }
+
+
+        if (hasStandard) {
+
+            datasets.push({
+
+                label:
+                    sourceLabel,
+
+                data:
+                    standardData,
+
+                borderWidth:
+                    3,
+
+                borderDash:
+                    [
+                        9,
+                        5
+                    ],
+
+                pointRadius:
+                    2,
+
+                pointHoverRadius:
+                    5,
+
+                tension:
+                    0.25,
+
+                spanGaps:
+                    true
+
+            });
+
+        }
+
+
+        fcrChart =
+            new Chart(
+                canvas,
+                {
+
+                    type:
+                        "line",
+
+
+                    data: {
+
+                        labels:
+                            labels(),
+
+                        datasets:
+                            datasets
+
+                    },
+
+
+                    options: {
+
+                        responsive:
+                            true,
+
+                        maintainAspectRatio:
+                            false,
+
+
+                        interaction: {
+
+                            mode:
+                                "index",
+
+                            intersect:
+                                false
+
+                        },
+
+
+                        plugins: {
+
+                            legend: {
+
+                                position:
+                                    "top",
+
+                                labels: {
+
+                                    usePointStyle:
+                                        true,
+
+                                    padding:
+                                        16
+
+                                }
+
+                            },
+
+
+                            tooltip: {
+
+                                callbacks: {
+
+                                    label:
+                                        function (
+                                            context
+                                        ) {
+
+                                            const value =
+                                                context.parsed.y;
+
+
+                                            return (
+                                                context.dataset.label +
+                                                ": " +
+                                                (
+                                                    value === null ||
+                                                    value === undefined
+                                                        ? "-"
+                                                        :
+                                                        Number(
+                                                            value
+                                                        )
+                                                        .toLocaleString(
+                                                            "fa-IR",
+                                                            {
+                                                                minimumFractionDigits:
+                                                                    3,
+
+                                                                maximumFractionDigits:
+                                                                    3
+                                                            }
+                                                        )
+                                                )
+                                            );
+
+                                        }
+
+                                }
+
+                            }
+
+                        },
+
+
+                        scales: {
+
+                            x: {
+
+                                title: {
+
+                                    display:
+                                        true,
+
+                                    text:
+                                        "هفته پایش"
+
+                                }
+
+                            },
+
+
+                            y: {
+
+                                beginAtZero:
                                     false,
 
                                 title: {
@@ -3181,6 +3904,7 @@ th {
                     }
 
                 }
+
             );
 
 
@@ -3192,43 +3916,120 @@ th {
 
         if (description) {
 
-            const latest =
-                reportRecords[
-                    reportRecords.length - 1
-                ];
+            const actual =
+                fcr(latest);
+
+            const standard =
+                standardFCR(latest);
+
+
+            let difference =
+                null;
+
+            let differencePercent =
+                null;
+
+
+            if (
+                actual !== null &&
+                standard !== null &&
+                standard !== 0
+            ) {
+
+                difference =
+                    actual -
+                    standard;
+
+
+                differencePercent =
+                    (
+                        difference /
+                        Math.abs(
+                            standard
+                        )
+                    ) *
+                    100;
+
+            }
 
 
             description.innerHTML = `
 
-                FCR واقعی آخرین پایش:
+                FCR واقعی:
                 <strong>
                     ${formatNumber(
-                        fcr(latest),
+                        actual,
                         3
                     )}
                 </strong>
 
-                ${
-                    standardFCR(latest) !== null
+                &nbsp; | &nbsp;
 
-                        ?
+                ${sourceLabel}:
+                <strong>
+                    ${formatNumber(
+                        standard,
+                        3
+                    )}
+                </strong>
 
-                        `
-                        &nbsp; | &nbsp;
+                &nbsp; | &nbsp;
 
-                        FCR استاندارد:
-                        <strong>
-                            ${formatNumber(
-                                standardFCR(latest),
-                                3
-                            )}
-                        </strong>
-                        `
+                اختلاف:
+                <strong>
+                    ${formatNumber(
+                        difference,
+                        3
+                    )}
+                </strong>
 
-                        :
+                &nbsp; | &nbsp;
 
-                        ""
-                }
+                اختلاف:
+                <strong>
+                    ${formatNumber(
+                        differencePercent,
+                        1,
+                        "%"
+                    )}
+                </strong>
+
+            `;
+
+        }
+
+
+        const sourceBox =
+            document.getElementById(
+                "fcrStandardSource"
+            );
+
+
+        if (sourceBox) {
+
+            sourceBox.innerHTML = `
+
+                <strong>
+                    منبع استاندارد FCR:
+                </strong>
+
+                ${sourceLabel}
+
+                <br>
+
+                خط ممتد:
+                FCR واقعی
+
+                &nbsp;&nbsp; | &nbsp;&nbsp;
+
+                خط چین:
+                FCR استاندارد
+
+                <br>
+
+                در صورت نبود استاندارد ژنتیکی برای
+                سن موردنظر، استاندارد مدیریتی
+                به صورت خودکار استفاده می‌شود.
 
             `;
 
@@ -3288,27 +4089,26 @@ th {
         reportRecords.forEach(
             record => {
 
-                const actual =
-                    weight(record);
-
-                const standard =
-                    standardWeight(record);
-
-                const difference =
-                    num(
-                        record.weightDifference
-                    );
-
-                const differencePercent =
-                    num(
-                        record.weightDifferencePercent
-                    );
-
-
                 const tr =
                     document.createElement(
                         "tr"
                     );
+
+
+                const source =
+                    standardSourceLabel(
+                        record,
+                        "weight"
+                    );
+
+
+                const sourceClass =
+                    source ===
+                    "استاندارد مدیریتی"
+
+                        ? "standard-management"
+
+                        : "standard-official";
 
 
                 const values = [
@@ -3316,30 +4116,38 @@ th {
                     week(record) ??
                         "-",
 
+                    formatNumber(
+                        ageDays(record),
+                        0,
+                        " روز"
+                    ),
+
                     safeDate(
                         record.evaluationDate
                     ),
 
                     formatNumber(
-                        actual,
+                        weight(record),
                         1,
                         " g"
                     ),
 
                     formatNumber(
-                        standard,
+                        standardWeight(record),
+                        1,
+                        " g"
+                    ),
+
+                    source,
+
+                    formatNumber(
+                        record.weightDifference,
                         1,
                         " g"
                     ),
 
                     formatNumber(
-                        difference,
-                        1,
-                        " g"
-                    ),
-
-                    formatNumber(
-                        differencePercent,
+                        record.weightDifferencePercent,
                         1,
                         "%"
                     ),
@@ -3371,13 +4179,21 @@ th {
                     formatNumber(
                         fcr(record),
                         3
+                    ),
+
+                    formatNumber(
+                        standardFCR(record),
+                        3
                     )
 
                 ];
 
 
                 values.forEach(
-                    value => {
+                    (
+                        value,
+                        index
+                    ) => {
 
                         const td =
                             document.createElement(
@@ -3387,6 +4203,16 @@ th {
 
                         td.textContent =
                             value;
+
+
+                        if (
+                            index === 5
+                        ) {
+
+                            td.className =
+                                sourceClass;
+
+                        }
 
 
                         tr.appendChild(
@@ -3427,6 +4253,39 @@ th {
         }
 
 
+        if (!reportFlock) {
+
+            element.textContent =
+                "لطفاً یک گله را انتخاب کنید.";
+
+            return;
+
+        }
+
+
+        let standardSource =
+            "بدون استاندارد";
+
+
+        if (
+            reportRecords.length
+        ) {
+
+            const latest =
+                reportRecords[
+                    reportRecords.length - 1
+                ];
+
+
+            standardSource =
+                standardSourceLabel(
+                    latest,
+                    "weight"
+                );
+
+        }
+
+
         element.innerHTML = `
 
             <strong>
@@ -3438,27 +4297,38 @@ th {
             <br>
 
             نوع پرورش:
-            ${
-                productionType(
-                    reportFlock
-                ) || "-"
-            }
+            <strong>
+                ${
+                    productionType(
+                        reportFlock
+                    ) || "-"
+                }
+            </strong>
 
             <br>
 
             سویه:
-            ${
-                genetics(
-                    reportFlock
-                ) || "-"
-            }
+            <strong>
+                ${
+                    genetics(
+                        reportFlock
+                    ) || "-"
+                }
+            </strong>
 
             <br>
 
             تعداد پایش:
-            ${
-                reportRecords.length
-            }
+            <strong>
+                ${reportRecords.length}
+            </strong>
+
+            <br>
+
+            منبع استاندارد وزن:
+            <strong>
+                ${standardSource}
+            </strong>
 
         `;
 
@@ -3485,28 +4355,10 @@ th {
         }
 
 
-        card.style.display =
-            "block";
-
-
-        specializedCharts.forEach(
-            chart => {
-
-                try {
-
-                    chart.destroy();
-
-                }
-
-                catch (error) {}
-
-            }
-        );
-
-
-        specializedCharts =
-            [];
-
+        /*
+         * فقط وقتی داده تخصصی وجود داشته باشد
+         * این قسمت نمایش داده می‌شود.
+         */
 
         const type =
             String(
@@ -3573,6 +4425,58 @@ th {
         }
 
 
+        /*
+         * در این نسخه اگر داده تخصصی در رکوردها
+         * وجود نداشته باشد کارت مخفی می‌ماند.
+         */
+
+        const possibleKeys = [
+
+            "egg_production",
+
+            "egg_rate",
+
+            "hen_day",
+
+            "hen_housed",
+
+            "egg_mass",
+
+            "daily_gain",
+
+            "growth_rate"
+
+        ];
+
+
+        const hasSpecializedData =
+            reportRecords.some(
+                record =>
+                    possibleKeys.some(
+                        key =>
+                            num(
+                                record?.[
+                                    key
+                                ]
+                            ) !== null
+                    )
+            );
+
+
+        if (!hasSpecializedData) {
+
+            card.style.display =
+                "none";
+
+            return;
+
+        }
+
+
+        card.style.display =
+            "block";
+
+
         const info =
             document.getElementById(
                 "specializedReportInfo"
@@ -3582,7 +4486,7 @@ th {
         if (info) {
 
             info.textContent =
-                "شاخص‌های تخصصی بر اساس نوع پرورش و داده‌های ثبت‌شده نمایش داده می‌شوند.";
+                "شاخص‌های تخصصی بر اساس داده‌های ثبت‌شده نمایش داده می‌شوند.";
 
         }
 
@@ -3593,10 +4497,7 @@ th {
                 "egg_production",
                 "egg_rate",
                 "hen_day",
-                "hen_housed",
-                "egg_mass",
-                "daily_gain",
-                "growth_rate"
+                "hen_housed"
             ],
             "شاخص تولید"
         );
@@ -3605,13 +4506,9 @@ th {
         createSpecializedChart(
             "specializedEfficiencyChart",
             [
-                "feed_per_bird",
-                "feedPerBird",
-                "water_per_bird",
-                "waterPerBird",
-                "fcr",
-                "cumulative_fcr",
-                "feed_conversion"
+                "egg_mass",
+                "daily_gain",
+                "growth_rate"
             ],
             "شاخص بهره‌وری"
         );
@@ -3620,13 +4517,9 @@ th {
         createSpecializedChart(
             "specializedQualityChart",
             [
-                "egg_weight",
-                "egg_weight_avg",
-                "shell_strength",
-                "broken_egg",
-                "dirty_egg",
-                "uniformity",
-                "uniformity_10"
+                "egg_quality",
+                "shell_quality",
+                "broken_egg_percent"
             ],
             "شاخص کیفیت"
         );
@@ -3634,6 +4527,10 @@ th {
     }
 
 
+
+    /* =====================================================
+       SPECIALIZED CHART
+    ====================================================== */
 
     function createSpecializedChart(
         canvasId,
@@ -3686,6 +4583,7 @@ th {
 
                 };
 
+
                 break;
 
             }
@@ -3694,6 +4592,9 @@ th {
 
 
         if (!found) {
+
+            canvas.parentElement.style.display =
+                "none";
 
             return;
 
@@ -3720,6 +4621,8 @@ th {
                             {
 
                                 label:
+                                    title +
+                                    " — " +
                                     found.key,
 
                                 data:
@@ -3729,7 +4632,7 @@ th {
                                     3,
 
                                 tension:
-                                    .3,
+                                    0.25,
 
                                 spanGaps:
                                     true
@@ -3767,16 +4670,6 @@ th {
                                 position:
                                     "top"
 
-                            },
-
-                            title: {
-
-                                display:
-                                    true,
-
-                                text:
-                                    title
-
                             }
 
                         }
@@ -3796,7 +4689,7 @@ th {
 
 
     /* =====================================================
-       RENDER EVERYTHING
+       RENDER ALL
     ====================================================== */
 
     function renderAll() {
@@ -3829,9 +4722,6 @@ th {
 
     /* =====================================================
        LOAD REPORT
-       -----------------------------------------------------
-       این قسمت مهم‌ترین اصلاح نسخه جدید است.
-       مستقیماً از getCompleteReportData استفاده می‌کنیم.
     ====================================================== */
 
     async function loadReport(
@@ -3870,16 +4760,7 @@ th {
         try {
 
             /*
-             * منطق اصلی پروژه:
-             *
-             * getCompleteReportData()
-             *
-             * گله،
-             * رکوردهای هفتگی،
-             * استاندارد وزن،
-             * اختلاف با استاندارد،
-             * FCR
-             * و FCR استاندارد را آماده می‌کند.
+             * اطلاعات کامل از reports-data.js
              */
 
             const result =
@@ -3927,16 +4808,16 @@ th {
 
 
             /*
-             * مرتب‌سازی مجدد برای اطمینان
+             * مرتب‌سازی بر اساس سن واقعی
              */
 
             reportRecords.sort(
                 (a,b) =>
                     Number(
-                        a.weekNumber || 0
+                        a.ageDays || 0
                     ) -
                     Number(
-                        b.weekNumber || 0
+                        b.ageDays || 0
                     )
             );
 
@@ -4005,10 +4886,12 @@ th {
 
                     <br>
 
-                    ${String(
-                        error?.message ||
-                        "خطای نامشخص"
-                    )}
+                    ${
+                        String(
+                            error?.message ||
+                            "خطای نامشخص"
+                        )
+                    }
 
                 `;
 
@@ -4041,8 +4924,7 @@ th {
     async function loadFlocks() {
 
         /*
-         * بسیار مهم:
-         * ابتدا reports-data را initialize می‌کنیم.
+         * ابتدا کاربر گزارشات را initialize می‌کنیم.
          */
 
         if (
@@ -4156,7 +5038,7 @@ th {
 
 
         /*
-         * فقط یک Event Handler
+         * فقط یک onchange
          */
 
         select.onchange =
@@ -4181,7 +5063,6 @@ th {
 
 
                     hideReports();
-
 
                     setEmptyState(
                         true
@@ -4215,8 +5096,9 @@ th {
 
 
         /*
-         * اگر URL دارای flock باشد،
-         * همان گله به صورت خودکار باز شود.
+         * امکان باز شدن مستقیم گزارش با URL:
+         *
+         * reports.html?flock=ID
          */
 
         const params =
@@ -4307,15 +5189,17 @@ th {
                     info.innerHTML = `
 
                         <strong>
-                            خطا در آماده‌سازی گزارشات
+                            خطا در راه‌اندازی گزارشات
                         </strong>
 
                         <br>
 
-                        ${String(
-                            error?.message ||
-                            "خطای نامشخص"
-                        )}
+                        ${
+                            String(
+                                error?.message ||
+                                "خطای نامشخص"
+                            )
+                        }
 
                     `;
 

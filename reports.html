@@ -36,7 +36,1893 @@
     <script src="reports-data.js"></script>
 
 </head>
+<script>
+/* =========================================================
+   ADINE REPORTS - SAFE REPORT FIX
+   ---------------------------------------------------------
+   این بخش فقط منطق نمایش گزارش را اصلاح می‌کند.
+   به Supabase / reports-data.js / standard-data.js
+   دست نمی‌زند.
+========================================================= */
 
+(function () {
+
+    "use strict";
+
+
+    /* =====================================================
+       HELPERS
+    ===================================================== */
+
+    function safeNumber(value) {
+
+        if (
+            value === null ||
+            value === undefined ||
+            value === ""
+        ) {
+            return null;
+        }
+
+        const number =
+            Number(
+                String(value)
+                    .replace(/,/g, "")
+                    .trim()
+            );
+
+        return Number.isFinite(number)
+            ? number
+            : null;
+    }
+
+
+    function safeText(value) {
+
+        if (
+            value === null ||
+            value === undefined ||
+            value === ""
+        ) {
+            return "-";
+        }
+
+        return String(value);
+    }
+
+
+    function numberText(
+        value,
+        decimals = 1
+    ) {
+
+        const number =
+            safeNumber(value);
+
+        if (number === null) {
+            return "-";
+        }
+
+        return number.toLocaleString(
+            "fa-IR",
+            {
+                minimumFractionDigits:
+                    decimals,
+
+                maximumFractionDigits:
+                    decimals
+            }
+        );
+    }
+
+
+    function getWeekLabel(record) {
+
+        return (
+            "هفته " +
+            numberText(
+                record?.weekNumber,
+                0
+            )
+        );
+
+    }
+
+
+    /* =====================================================
+       CHART DESTROY
+    ===================================================== */
+
+    function destroyChart(chart) {
+
+        if (!chart) {
+            return null;
+        }
+
+        try {
+            chart.destroy();
+        }
+        catch (error) {
+            console.warn(
+                "Chart destroy error:",
+                error
+            );
+        }
+
+        return null;
+
+    }
+
+
+    /* =====================================================
+       SHOW / HIDE
+    ===================================================== */
+
+    function showElement(id) {
+
+        const element =
+            document.getElementById(id);
+
+        if (element) {
+            element.style.display =
+                "block";
+        }
+
+        return element;
+
+    }
+
+
+    function hideElement(id) {
+
+        const element =
+            document.getElementById(id);
+
+        if (element) {
+            element.style.display =
+                "none";
+        }
+
+        return element;
+
+    }
+
+
+    /* =====================================================
+       SUMMARY
+       -----------------------------------------------------
+       از فیلدهای normalize شده خود پروژه استفاده می‌کنیم:
+       averageWeight
+       cv
+       uniformity10
+       feedPerBirdG
+       waterPerBirdMl
+       fcr
+    ===================================================== */
+
+    function fixedRenderSummary() {
+
+        const card =
+            document.getElementById(
+                "summaryCard"
+            );
+
+        if (!card) {
+            return;
+        }
+
+
+        if (
+            !Array.isArray(reportRecords) ||
+            reportRecords.length === 0
+        ) {
+
+            card.style.display =
+                "none";
+
+            return;
+
+        }
+
+
+        const last =
+            reportRecords[
+                reportRecords.length - 1
+            ];
+
+
+        card.style.display =
+            "block";
+
+
+        const values = {
+
+            summaryWeight:
+                last.averageWeight,
+
+            summaryCV:
+                last.cv,
+
+            summaryUniformity:
+                last.uniformity10,
+
+            summaryFeed:
+                last.feedPerBirdG,
+
+            summaryWater:
+                last.waterPerBirdMl,
+
+            summaryFCR:
+                last.fcr
+
+        };
+
+
+        Object.entries(values)
+            .forEach(
+                (
+                    [
+                        id,
+                        value
+                    ]
+                ) => {
+
+                    const element =
+                        document.getElementById(
+                            id
+                        );
+
+                    if (!element) {
+                        return;
+                    }
+
+
+                    if (
+                        safeNumber(value) ===
+                        null
+                    ) {
+
+                        element.textContent =
+                            "-";
+
+                        return;
+
+                    }
+
+
+                    if (
+                        id ===
+                        "summaryWeight"
+                    ) {
+
+                        element.textContent =
+                            numberText(
+                                value,
+                                1
+                            ) +
+                            " گرم";
+
+                    }
+
+                    else if (
+                        id ===
+                        "summaryCV"
+                    ) {
+
+                        element.textContent =
+                            numberText(
+                                value,
+                                2
+                            ) +
+                            "%";
+
+                    }
+
+                    else if (
+                        id ===
+                        "summaryUniformity"
+                    ) {
+
+                        element.textContent =
+                            numberText(
+                                value,
+                                1
+                            ) +
+                            "%";
+
+                    }
+
+                    else if (
+                        id ===
+                        "summaryFeed"
+                    ) {
+
+                        element.textContent =
+                            numberText(
+                                value,
+                                1
+                            ) +
+                            " گرم";
+
+                    }
+
+                    else if (
+                        id ===
+                        "summaryWater"
+                    ) {
+
+                        element.textContent =
+                            numberText(
+                                value,
+                                1
+                            ) +
+                            " میلی‌لیتر";
+
+                    }
+
+                    else if (
+                        id ===
+                        "summaryFCR"
+                    ) {
+
+                        element.textContent =
+                            numberText(
+                                value,
+                                3
+                            );
+
+                    }
+
+                }
+            );
+
+    }
+
+
+    /* =====================================================
+       WEIGHT CHART
+       -----------------------------------------------------
+       واقعی + استاندارد
+    ===================================================== */
+
+    function fixedRenderWeightChart() {
+
+        const card =
+            document.getElementById(
+                "weightCard"
+            );
+
+        const canvas =
+            document.getElementById(
+                "weightChart"
+            );
+
+
+        if (
+            !card ||
+            !canvas
+        ) {
+            return;
+        }
+
+
+        if (
+            !reportRecords.length
+        ) {
+
+            card.style.display =
+                "none";
+
+            reportWeightChart =
+                destroyChart(
+                    reportWeightChart
+                );
+
+            return;
+
+        }
+
+
+        card.style.display =
+            "block";
+
+
+        reportWeightChart =
+            destroyChart(
+                reportWeightChart
+            );
+
+
+        const labels =
+            reportRecords.map(
+                getWeekLabel
+            );
+
+
+        const actual =
+            reportRecords.map(
+                record =>
+                    safeNumber(
+                        record.averageWeight
+                    )
+            );
+
+
+        const standard =
+            reportRecords.map(
+                record =>
+                    safeNumber(
+                        record.standardWeight
+                    )
+            );
+
+
+        reportWeightChart =
+            new Chart(
+                canvas,
+                {
+
+                    type: "line",
+
+
+                    data: {
+
+                        labels,
+
+
+                        datasets: [
+
+                            {
+
+                                label:
+                                    "وزن واقعی",
+
+                                data:
+                                    actual,
+
+                                borderWidth:
+                                    3,
+
+                                tension:
+                                    0.3,
+
+                                spanGaps:
+                                    true
+
+                            },
+
+
+                            {
+
+                                label:
+                                    "استاندارد",
+
+                                data:
+                                    standard,
+
+                                borderWidth:
+                                    3,
+
+                                borderDash:
+                                    [
+                                        8,
+                                        5
+                                    ],
+
+                                tension:
+                                    0.3,
+
+                                spanGaps:
+                                    true
+
+                            }
+
+                        ]
+
+                    },
+
+
+                    options: {
+
+                        responsive:
+                            true,
+
+                        maintainAspectRatio:
+                            false,
+
+                        interaction: {
+
+                            mode:
+                                "index",
+
+                            intersect:
+                                false
+
+                        },
+
+
+                        plugins: {
+
+                            legend: {
+
+                                display:
+                                    true,
+
+                                position:
+                                    "top"
+
+                            },
+
+
+                            tooltip: {
+
+                                callbacks: {
+
+                                    label:
+                                        function (
+                                            context
+                                        ) {
+
+                                            const value =
+                                                safeNumber(
+                                                    context.raw
+                                                );
+
+                                            return (
+                                                context.dataset.label +
+                                                ": " +
+                                                (
+                                                    value ===
+                                                    null
+                                                        ? "-"
+                                                        :
+                                                    numberText(
+                                                        value,
+                                                        1
+                                                    ) +
+                                                    " گرم"
+                                                )
+                                            );
+
+                                        }
+
+                                }
+
+                            }
+
+                        },
+
+
+                        scales: {
+
+                            y: {
+
+                                beginAtZero:
+                                    false,
+
+                                title: {
+
+                                    display:
+                                        true,
+
+                                    text:
+                                        "گرم"
+
+                                }
+
+                            }
+
+                        }
+
+                    }
+
+                }
+            );
+
+    }
+
+
+    /* =====================================================
+       CV CHART
+       -----------------------------------------------------
+       CV واقعی + حد مدیریتی پیشنهادی
+    ===================================================== */
+
+    function fixedRenderCVChart() {
+
+        const card =
+            document.getElementById(
+                "cvCard"
+            );
+
+        const canvas =
+            document.getElementById(
+                "cvChart"
+            );
+
+
+        if (
+            !card ||
+            !canvas
+        ) {
+            return;
+        }
+
+
+        if (
+            !reportRecords.length
+        ) {
+
+            card.style.display =
+                "none";
+
+            reportCVChart =
+                destroyChart(
+                    reportCVChart
+                );
+
+            return;
+
+        }
+
+
+        card.style.display =
+            "block";
+
+
+        reportCVChart =
+            destroyChart(
+                reportCVChart
+            );
+
+
+        const labels =
+            reportRecords.map(
+                getWeekLabel
+            );
+
+
+        const values =
+            reportRecords.map(
+                record =>
+                    safeNumber(
+                        record.cv
+                    )
+            );
+
+
+        /*
+           حد مدیریتی CV.
+           مقدار 10% به عنوان خط مرجع
+           نمایش داده می‌شود؛ این خط فقط
+           مرجع مدیریتی است و مقدار ثبت‌شده
+           گله را تغییر نمی‌دهد.
+        */
+
+        const management =
+            reportRecords.map(
+                () => 10
+            );
+
+
+        reportCVChart =
+            new Chart(
+                canvas,
+                {
+
+                    type: "line",
+
+
+                    data: {
+
+                        labels,
+
+
+                        datasets: [
+
+                            {
+
+                                label:
+                                    "CV واقعی",
+
+                                data:
+                                    values,
+
+                                borderWidth:
+                                    3,
+
+                                tension:
+                                    0.3,
+
+                                spanGaps:
+                                    true
+
+                            },
+
+
+                            {
+
+                                label:
+                                    "حد مدیریتی CV",
+
+                                data:
+                                    management,
+
+                                borderWidth:
+                                    2,
+
+                                borderDash:
+                                    [
+                                        7,
+                                        5
+                                    ],
+
+                                tension:
+                                    0,
+
+                                pointRadius:
+                                    0
+
+                            }
+
+                        ]
+
+                    },
+
+
+                    options: {
+
+                        responsive:
+                            true,
+
+                        maintainAspectRatio:
+                            false,
+
+                        interaction: {
+
+                            mode:
+                                "index",
+
+                            intersect:
+                                false
+
+                        },
+
+
+                        plugins: {
+
+                            legend: {
+
+                                display:
+                                    true
+
+                            }
+
+                        },
+
+
+                        scales: {
+
+                            y: {
+
+                                beginAtZero:
+                                    true,
+
+                                title: {
+
+                                    display:
+                                        true,
+
+                                    text:
+                                        "درصد"
+
+                                }
+
+                            }
+
+                        }
+
+                    }
+
+                }
+            );
+
+    }
+
+
+    /* =====================================================
+       UNIFORMITY
+       -----------------------------------------------------
+       ±10 واقعی + ±15 واقعی + حد مدیریتی
+    ===================================================== */
+
+    function fixedRenderUniformityChart() {
+
+        const card =
+            document.getElementById(
+                "uniformityCard"
+            );
+
+        const canvas =
+            document.getElementById(
+                "uniformityChart"
+            );
+
+
+        if (
+            !card ||
+            !canvas
+        ) {
+            return;
+        }
+
+
+        if (
+            !reportRecords.length
+        ) {
+
+            card.style.display =
+                "none";
+
+            reportUniformityChart =
+                destroyChart(
+                    reportUniformityChart
+                );
+
+            return;
+
+        }
+
+
+        card.style.display =
+            "block";
+
+
+        reportUniformityChart =
+            destroyChart(
+                reportUniformityChart
+            );
+
+
+        const labels =
+            reportRecords.map(
+                getWeekLabel
+            );
+
+
+        const uniformity10 =
+            reportRecords.map(
+                record =>
+                    safeNumber(
+                        record.uniformity10
+                    )
+            );
+
+
+        const uniformity15 =
+            reportRecords.map(
+                record =>
+                    safeNumber(
+                        record.uniformity15
+                    )
+            );
+
+
+        /*
+           حد مدیریتی یکنواختی.
+        */
+
+        const management =
+            reportRecords.map(
+                () => 80
+            );
+
+
+        reportUniformityChart =
+            new Chart(
+                canvas,
+                {
+
+                    type: "line",
+
+
+                    data: {
+
+                        labels,
+
+
+                        datasets: [
+
+                            {
+
+                                label:
+                                    "یکنواختی ±10%",
+
+                                data:
+                                    uniformity10,
+
+                                borderWidth:
+                                    3,
+
+                                tension:
+                                    0.3,
+
+                                spanGaps:
+                                    true
+
+                            },
+
+
+                            {
+
+                                label:
+                                    "یکنواختی ±15%",
+
+                                data:
+                                    uniformity15,
+
+                                borderWidth:
+                                    3,
+
+                                tension:
+                                    0.3,
+
+                                spanGaps:
+                                    true
+
+                            },
+
+
+                            {
+
+                                label:
+                                    "حد مدیریتی 80%",
+
+                                data:
+                                    management,
+
+                                borderWidth:
+                                    2,
+
+                                borderDash:
+                                    [
+                                        7,
+                                        5
+                                    ],
+
+                                pointRadius:
+                                    0
+
+                            }
+
+                        ]
+
+                    },
+
+
+                    options: {
+
+                        responsive:
+                            true,
+
+                        maintainAspectRatio:
+                            false,
+
+                        interaction: {
+
+                            mode:
+                                "index",
+
+                            intersect:
+                                false
+
+                        },
+
+
+                        plugins: {
+
+                            legend: {
+
+                                display:
+                                    true
+
+                            }
+
+                        },
+
+
+                        scales: {
+
+                            y: {
+
+                                beginAtZero:
+                                    true,
+
+                                suggestedMax:
+                                    100,
+
+                                title: {
+
+                                    display:
+                                        true,
+
+                                    text:
+                                        "درصد"
+
+                                }
+
+                            }
+
+                        }
+
+                    }
+
+                }
+            );
+
+    }
+
+
+    /* =====================================================
+       FEED / WATER
+    ===================================================== */
+
+    function fixedRenderConsumptionChart() {
+
+        const card =
+            document.getElementById(
+                "consumptionCard"
+            );
+
+        const canvas =
+            document.getElementById(
+                "consumptionChart"
+            );
+
+
+        if (
+            !card ||
+            !canvas
+        ) {
+            return;
+        }
+
+
+        if (
+            !reportRecords.length
+        ) {
+
+            card.style.display =
+                "none";
+
+            reportConsumptionChart =
+                destroyChart(
+                    reportConsumptionChart
+                );
+
+            return;
+
+        }
+
+
+        card.style.display =
+            "block";
+
+
+        reportConsumptionChart =
+            destroyChart(
+                reportConsumptionChart
+            );
+
+
+        const labels =
+            reportRecords.map(
+                getWeekLabel
+            );
+
+
+        reportConsumptionChart =
+            new Chart(
+                canvas,
+                {
+
+                    type: "line",
+
+
+                    data: {
+
+                        labels,
+
+
+                        datasets: [
+
+                            {
+
+                                label:
+                                    "دان روزانه هر پرنده (گرم)",
+
+                                data:
+                                    reportRecords.map(
+                                        record =>
+                                            safeNumber(
+                                                record.feedPerBirdG
+                                            )
+                                    ),
+
+                                borderWidth:
+                                    3,
+
+                                tension:
+                                    0.3,
+
+                                spanGaps:
+                                    true
+
+                            },
+
+
+                            {
+
+                                label:
+                                    "آب روزانه هر پرنده (میلی‌لیتر)",
+
+                                data:
+                                    reportRecords.map(
+                                        record =>
+                                            safeNumber(
+                                                record.waterPerBirdMl
+                                            )
+                                    ),
+
+                                borderWidth:
+                                    3,
+
+                                tension:
+                                    0.3,
+
+                                spanGaps:
+                                    true
+
+                            }
+
+                        ]
+
+                    },
+
+
+                    options: {
+
+                        responsive:
+                            true,
+
+                        maintainAspectRatio:
+                            false,
+
+                        interaction: {
+
+                            mode:
+                                "index",
+
+                            intersect:
+                                false
+
+                        },
+
+
+                        plugins: {
+
+                            legend: {
+
+                                display:
+                                    true
+
+                            }
+
+                        }
+
+                    }
+
+                }
+            );
+
+    }
+
+
+    /* =====================================================
+       FCR
+       -----------------------------------------------------
+       FCR واقعی + FCR استاندارد
+    ===================================================== */
+
+    function fixedRenderFCRChart() {
+
+        const card =
+            document.getElementById(
+                "fcrCard"
+            );
+
+        const canvas =
+            document.getElementById(
+                "fcrChart"
+            );
+
+
+        if (
+            !card ||
+            !canvas
+        ) {
+            return;
+        }
+
+
+        const actual =
+            reportRecords.map(
+                record =>
+                    safeNumber(
+                        record.fcr
+                    )
+            );
+
+
+        const standard =
+            reportRecords.map(
+                record =>
+                    safeNumber(
+                        record.standardFCR
+                    )
+            );
+
+
+        const hasActual =
+            actual.some(
+                value =>
+                    value !== null
+            );
+
+
+        const hasStandard =
+            standard.some(
+                value =>
+                    value !== null
+            );
+
+
+        if (
+            !hasActual &&
+            !hasStandard
+        ) {
+
+            card.style.display =
+                "none";
+
+            reportFCRChart =
+                destroyChart(
+                    reportFCRChart
+                );
+
+            return;
+
+        }
+
+
+        card.style.display =
+            "block";
+
+
+        reportFCRChart =
+            destroyChart(
+                reportFCRChart
+            );
+
+
+        reportFCRChart =
+            new Chart(
+                canvas,
+                {
+
+                    type: "line",
+
+
+                    data: {
+
+                        labels:
+                            reportRecords.map(
+                                getWeekLabel
+                            ),
+
+
+                        datasets: [
+
+                            {
+
+                                label:
+                                    "FCR واقعی",
+
+                                data:
+                                    actual,
+
+                                borderWidth:
+                                    3,
+
+                                tension:
+                                    0.3,
+
+                                spanGaps:
+                                    true
+
+                            },
+
+
+                            {
+
+                                label:
+                                    "FCR استاندارد",
+
+                                data:
+                                    standard,
+
+                                borderWidth:
+                                    3,
+
+                                borderDash:
+                                    [
+                                        8,
+                                        5
+                                    ],
+
+                                tension:
+                                    0.3,
+
+                                spanGaps:
+                                    true,
+
+                                pointRadius:
+                                    2
+
+                            }
+
+                        ]
+
+                    },
+
+
+                    options: {
+
+                        responsive:
+                            true,
+
+                        maintainAspectRatio:
+                            false,
+
+                        interaction: {
+
+                            mode:
+                                "index",
+
+                            intersect:
+                                false
+
+                        },
+
+
+                        plugins: {
+
+                            legend: {
+
+                                display:
+                                    true,
+
+                                position:
+                                    "top"
+
+                            }
+
+                        },
+
+
+                        scales: {
+
+                            y: {
+
+                                beginAtZero:
+                                    false,
+
+                                title: {
+
+                                    display:
+                                        true,
+
+                                    text:
+                                        "kg feed / kg gain"
+
+                                }
+
+                            }
+
+                        }
+
+                    }
+
+                }
+            );
+
+    }
+
+
+    /* =====================================================
+       TABLE
+       -----------------------------------------------------
+       استاندارد + اختلاف از استاندارد
+    ===================================================== */
+
+    function fixedRenderTable() {
+
+        const card =
+            document.getElementById(
+                "tableCard"
+            );
+
+        const body =
+            document.getElementById(
+                "weeklyTableBody"
+            );
+
+
+        if (
+            !card ||
+            !body
+        ) {
+            return;
+        }
+
+
+        body.innerHTML =
+            "";
+
+
+        if (
+            !reportRecords.length
+        ) {
+
+            card.style.display =
+                "none";
+
+            return;
+
+        }
+
+
+        card.style.display =
+            "block";
+
+
+        reportRecords.forEach(
+            record => {
+
+                const tr =
+                    document.createElement(
+                        "tr"
+                    );
+
+
+                const actualWeight =
+                    safeNumber(
+                        record.averageWeight
+                    );
+
+
+                const standardWeight =
+                    safeNumber(
+                        record.standardWeight
+                    );
+
+
+                let difference =
+                    null;
+
+
+                let differencePercent =
+                    null;
+
+
+                if (
+                    actualWeight !== null &&
+                    standardWeight !== null
+                ) {
+
+                    difference =
+                        actualWeight -
+                        standardWeight;
+
+
+                    if (
+                        standardWeight !== 0
+                    ) {
+
+                        differencePercent =
+                            (
+                                difference /
+                                standardWeight
+                            ) *
+                            100;
+
+                    }
+
+                }
+
+
+                tr.innerHTML = `
+
+                    <td>
+                        ${getWeekLabel(record)}
+                    </td>
+
+
+                    <td>
+                        ${
+                            typeof formatReportDate ===
+                            "function"
+                                ? formatReportDate(
+                                    record.evaluationDate
+                                )
+                                : safeText(
+                                    record.evaluationDate
+                                )
+                        }
+                    </td>
+
+
+                    <td>
+                        ${
+                            actualWeight !== null
+                                ? numberText(
+                                    actualWeight,
+                                    1
+                                ) +
+                                  " گرم"
+                                : "-"
+                        }
+                    </td>
+
+
+                    <td>
+                        ${
+                            standardWeight !== null
+                                ? numberText(
+                                    standardWeight,
+                                    1
+                                ) +
+                                  " گرم"
+                                : "-"
+                        }
+                    </td>
+
+
+                    <td>
+                        ${
+                            difference !== null
+                                ? (
+                                    difference >= 0
+                                        ? "+"
+                                        : ""
+                                  ) +
+                                  numberText(
+                                    difference,
+                                    1
+                                  ) +
+                                  " گرم"
+                                : "-"
+                        }
+                    </td>
+
+
+                    <td>
+                        ${
+                            differencePercent !== null
+                                ? (
+                                    differencePercent >= 0
+                                        ? "+"
+                                        : ""
+                                  ) +
+                                  numberText(
+                                    differencePercent,
+                                    1
+                                  ) +
+                                  "%"
+                                : "-"
+                        }
+                    </td>
+
+
+                    <td>
+                        ${
+                            safeNumber(
+                                record.cv
+                            ) !== null
+                                ? numberText(
+                                    record.cv,
+                                    2
+                                  ) +
+                                  "%"
+                                : "-"
+                        }
+                    </td>
+
+
+                    <td>
+                        ${
+                            safeNumber(
+                                record.uniformity10
+                            ) !== null
+                                ? numberText(
+                                    record.uniformity10,
+                                    1
+                                  ) +
+                                  "%"
+                                : "-"
+                        }
+                    </td>
+
+
+                    <td>
+                        ${
+                            safeNumber(
+                                record.fcr
+                            ) !== null
+                                ? numberText(
+                                    record.fcr,
+                                    3
+                                  )
+                                : "-"
+                        }
+                    </td>
+
+                `;
+
+
+                body.appendChild(
+                    tr
+                );
+
+            }
+        );
+
+    }
+
+
+    /* =====================================================
+       MASTER RENDER
+       -----------------------------------------------------
+       همه نمودارها را یکجا و با داده صحیح
+       دوباره رندر می‌کند.
+    ===================================================== */
+
+    function fixedRenderAllReports() {
+
+        if (
+            !Array.isArray(
+                reportRecords
+            ) ||
+            reportRecords.length === 0
+        ) {
+
+            return;
+
+        }
+
+
+        /*
+           اول خلاصه
+        */
+
+        fixedRenderSummary();
+
+
+        /*
+           سپس جدول
+        */
+
+        fixedRenderTable();
+
+
+        /*
+           سپس نمودارها
+        */
+
+        fixedRenderWeightChart();
+
+        fixedRenderCVChart();
+
+        fixedRenderUniformityChart();
+
+        fixedRenderConsumptionChart();
+
+        fixedRenderFCRChart();
+
+    }
+
+
+    /* =====================================================
+       OVERRIDE EXISTING renderCharts
+       -----------------------------------------------------
+       تابع اصلی پروژه حفظ می‌شود ولی بعد از آن
+       نسخه اصلاح‌شده اجرا می‌شود.
+    ===================================================== */
+
+    const originalRenderCharts =
+        window.renderCharts;
+
+
+    window.renderCharts =
+        function () {
+
+            try {
+
+                if (
+                    typeof originalRenderCharts ===
+                    "function"
+                ) {
+
+                    /*
+                       اجرای منطق اصلی پروژه
+                       برای حفظ سازگاری
+                    */
+
+                    originalRenderCharts();
+
+                }
+
+            }
+            catch (error) {
+
+                console.warn(
+                    "Original report charts error:",
+                    error
+                );
+
+            }
+
+
+            /*
+               رندر نهایی و صحیح
+            */
+
+            try {
+
+                fixedRenderAllReports();
+
+            }
+            catch (error) {
+
+                console.error(
+                    "Fixed report render error:",
+                    error
+                );
+
+            }
+
+        };
+
+
+    /* =====================================================
+       IMPORTANT:
+       چون توابع اصلی داخل همان script به صورت
+       global function تعریف شده‌اند، برای اطمینان
+       تابع loadReport را نیز کنترل می‌کنیم.
+    ===================================================== */
+
+    const originalLoadReport =
+        window.loadReport;
+
+
+    if (
+        typeof originalLoadReport ===
+        "function"
+    ) {
+
+        window.loadReport =
+            async function (
+                flockId
+            ) {
+
+                await originalLoadReport(
+                    flockId
+                );
+
+
+                /*
+                   بعد از دریافت داده‌های اصلی
+                   یک بار دیگر با داده‌های normalize شده
+                   رندر می‌کنیم.
+                */
+
+                if (
+                    Array.isArray(
+                        reportRecords
+                    ) &&
+                    reportRecords.length
+                ) {
+
+                    fixedRenderAllReports();
+
+                }
+
+            };
+
+    }
+
+
+    /* =====================================================
+       SAFETY REFRESH
+       -----------------------------------------------------
+       اگر loadReport در scope صفحه قابل override نبود،
+       بعد از تغییر select دوباره render می‌کنیم.
+    ===================================================== */
+
+    document.addEventListener(
+        "DOMContentLoaded",
+        function () {
+
+            const select =
+                document.getElementById(
+                    "flockSelect"
+                );
+
+
+            if (!select) {
+                return;
+            }
+
+
+            select.addEventListener(
+                "change",
+                function () {
+
+                    /*
+                       کمی تأخیر می‌دهیم تا
+                       getCompleteReportData
+                       اطلاعات را کامل کند.
+                    */
+
+                    setTimeout(
+                        function () {
+
+                            if (
+                                Array.isArray(
+                                    reportRecords
+                                ) &&
+                                reportRecords.length
+                            ) {
+
+                                try {
+
+                                    fixedRenderAllReports();
+
+                                }
+                                catch (error) {
+
+                                    console.error(
+                                        "Report refresh error:",
+                                        error
+                                    );
+
+                                }
+
+                            }
+
+                        },
+                        350
+                    );
+
+                }
+            );
+
+        }
+    );
+
+
+})();
+</script>
 
 <body>
 

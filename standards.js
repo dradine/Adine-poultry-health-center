@@ -51,14 +51,14 @@ const POULTRY_STANDARDS = {
     broiler: {
 
         label:
-            "ÙØ±Øº Ú¯ÙØ´ØªÛ",
+            "ÃÂÃÂ±ÃÂº ÃÂ¯ÃÂÃÂ´ÃÂªÃÂ",
 
         categories: {
 
             commercial: {
 
                 label:
-                    "Ú¯ÙØ´ØªÛ ØªØ¬Ø§Ø±Û",
+                    "ÃÂ¯ÃÂÃÂ´ÃÂªÃÂ ÃÂªÃÂ¬ÃÂ§ÃÂ±ÃÂ",
 
                 genetics: {
 
@@ -556,7 +556,7 @@ const POULTRY_STANDARDS = {
             other: {
 
                 label:
-                    "Ø³Ø§ÛØ± / ØªØ­ÙÛÙØ§ØªÛ",
+                    "ÃÂ³ÃÂ§ÃÂÃÂ± / ÃÂªÃÂ­ÃÂÃÂÃÂÃÂ§ÃÂªÃÂ",
 
                 genetics: {}
 
@@ -574,14 +574,14 @@ const POULTRY_STANDARDS = {
     layer: {
 
         label:
-            "ÙØ±Øº ØªØ®ÙâÚ¯Ø°Ø§Ø±",
+            "ÃÂÃÂ±ÃÂº ÃÂªÃÂ®ÃÂÃ¢ÂÂÃÂ¯ÃÂ°ÃÂ§ÃÂ±",
 
         categories: {
 
             commercial: {
 
                 label:
-                    "ØªØ®ÙâÚ¯Ø°Ø§Ø± ØªØ¬Ø§Ø±Û",
+                    "ÃÂªÃÂ®ÃÂÃ¢ÂÂÃÂ¯ÃÂ°ÃÂ§ÃÂ± ÃÂªÃÂ¬ÃÂ§ÃÂ±ÃÂ",
 
                 genetics: {
 
@@ -1435,7 +1435,7 @@ const POULTRY_STANDARDS = {
                     TETRA: {
 
                         company:
-                            "BÃ¡bolna TETRA",
+                            "BÃÂ¡bolna TETRA",
 
                         family:
                             "TETRA",
@@ -1483,7 +1483,7 @@ const POULTRY_STANDARDS = {
     pullet: {
 
         label:
-            "Ù¾ÙÙØª",
+            "ÃÂ¾ÃÂÃÂÃÂª",
 
         description:
             "Pullet standards are selected according to the commercial layer genetic line.",
@@ -1515,14 +1515,14 @@ const POULTRY_STANDARDS = {
     breeder: {
 
         label:
-            "ÙØ±Øº ÙØ§Ø¯Ø±",
+            "ÃÂÃÂ±ÃÂº ÃÂÃÂ§ÃÂ¯ÃÂ±",
 
         categories: {
 
             broilerBreeder: {
 
                 label:
-                    "ÙØ±Øº ÙØ§Ø¯Ø± Ú¯ÙØ´ØªÛ",
+                    "ÃÂÃÂ±ÃÂº ÃÂÃÂ§ÃÂ¯ÃÂ± ÃÂ¯ÃÂÃÂ´ÃÂªÃÂ",
 
                 genetics: {
 
@@ -1608,7 +1608,7 @@ const POULTRY_STANDARDS = {
             layerBreeder: {
 
                 label:
-                    "ÙØ±Øº ÙØ§Ø¯Ø± ØªØ®ÙâÚ¯Ø°Ø§Ø±",
+                    "ÃÂÃÂ±ÃÂº ÃÂÃÂ§ÃÂ¯ÃÂ± ÃÂªÃÂ®ÃÂÃ¢ÂÂÃÂ¯ÃÂ°ÃÂ§ÃÂ±",
 
                 rule:
                     "Layer parent-stock standard must be selected from the corresponding layer breeder documentation.",
@@ -1675,37 +1675,37 @@ const STANDARD_METRICS = {
     /* -------- Broiler -------- */
 
     age:
-        "Ø³Ù",
+        "ÃÂ³ÃÂ",
 
     bodyWeight:
-        "ÙØ²Ù Ø¨Ø¯Ù",
+        "ÃÂÃÂ²ÃÂ ÃÂ¨ÃÂ¯ÃÂ",
 
     dailyGain:
-        "Ø§ÙØ²Ø§ÛØ´ ÙØ²Ù Ø±ÙØ²Ø§ÙÙ",
+        "ÃÂ§ÃÂÃÂ²ÃÂ§ÃÂÃÂ´ ÃÂÃÂ²ÃÂ ÃÂ±ÃÂÃÂ²ÃÂ§ÃÂÃÂ",
 
     weeklyGain:
-        "Ø§ÙØ²Ø§ÛØ´ ÙØ²Ù ÙÙØªÚ¯Û",
+        "ÃÂ§ÃÂÃÂ²ÃÂ§ÃÂÃÂ´ ÃÂÃÂ²ÃÂ ÃÂÃÂÃÂªÃÂ¯ÃÂ",
 
     dailyFeed:
-        "ÙØµØ±Ù Ø±ÙØ²Ø§ÙÙ Ø¯Ø§Ù",
+        "ÃÂÃÂµÃÂ±ÃÂ ÃÂ±ÃÂÃÂ²ÃÂ§ÃÂÃÂ ÃÂ¯ÃÂ§ÃÂ",
 
     weeklyFeed:
-        "ÙØµØ±Ù ÙÙØªÚ¯Û Ø¯Ø§Ù",
+        "ÃÂÃÂµÃÂ±ÃÂ ÃÂÃÂÃÂªÃÂ¯ÃÂ ÃÂ¯ÃÂ§ÃÂ",
 
     cumulativeFeed:
-        "ÙØµØ±Ù ØªØ¬ÙØ¹Û Ø¯Ø§Ù",
+        "ÃÂÃÂµÃÂ±ÃÂ ÃÂªÃÂ¬ÃÂÃÂ¹ÃÂ ÃÂ¯ÃÂ§ÃÂ",
 
     fcr:
-        "Ø¶Ø±ÛØ¨ ØªØ¨Ø¯ÛÙ ØºØ°Ø§ÛÛ",
+        "ÃÂ¶ÃÂ±ÃÂÃÂ¨ ÃÂªÃÂ¨ÃÂ¯ÃÂÃÂ ÃÂºÃÂ°ÃÂ§ÃÂÃÂ",
 
     livability:
-        "Ø²ÙØ¯ÙâÙØ§ÙÛ",
+        "ÃÂ²ÃÂÃÂ¯ÃÂÃ¢ÂÂÃÂÃÂ§ÃÂÃÂ",
 
     mortality:
-        "ØªÙÙØ§Øª",
+        "ÃÂªÃÂÃÂÃÂ§ÃÂª",
 
     uniformity:
-        "ÛÚ©ÙÙØ§Ø®ØªÛ",
+        "ÃÂÃÂ©ÃÂÃÂÃÂ§ÃÂ®ÃÂªÃÂ",
 
     cv:
         "CV%",
@@ -1713,45 +1713,45 @@ const STANDARD_METRICS = {
     /* -------- Layer -------- */
 
     henDayProduction:
-        "ØªÙÙÛØ¯ Ø¨Ù Ø§Ø²Ø§Û ÙØ±Øº Ø±ÙØ²",
+        "ÃÂªÃÂÃÂÃÂÃÂ¯ ÃÂ¨ÃÂ ÃÂ§ÃÂ²ÃÂ§ÃÂ ÃÂÃÂ±ÃÂº ÃÂ±ÃÂÃÂ²",
 
     henHousedProduction:
-        "ØªÙÙÛØ¯ Ø¨Ù Ø§Ø²Ø§Û ÙØ±Øº Ø§ÙÙÛÙ",
+        "ÃÂªÃÂÃÂÃÂÃÂ¯ ÃÂ¨ÃÂ ÃÂ§ÃÂ²ÃÂ§ÃÂ ÃÂÃÂ±ÃÂº ÃÂ§ÃÂÃÂÃÂÃÂ",
 
     eggMass:
         "Egg Mass",
 
     eggWeight:
-        "ÙØ²Ù ØªØ®ÙâÙØ±Øº",
+        "ÃÂÃÂ²ÃÂ ÃÂªÃÂ®ÃÂÃ¢ÂÂÃÂÃÂ±ÃÂº",
 
     feedPerEggMass:
-        "Ø¯Ø§Ù Ø¨Ù Ø§Ø²Ø§Û Egg Mass",
+        "ÃÂ¯ÃÂ§ÃÂ ÃÂ¨ÃÂ ÃÂ§ÃÂ²ÃÂ§ÃÂ Egg Mass",
 
     peakProduction:
-        "Ù¾ÛÚ© ØªÙÙÛØ¯",
+        "ÃÂ¾ÃÂÃÂ© ÃÂªÃÂÃÂÃÂÃÂ¯",
 
     peakAge:
-        "Ø³Ù Ù¾ÛÚ©",
+        "ÃÂ³ÃÂ ÃÂ¾ÃÂÃÂ©",
 
     cumulativeEggs:
-        "ØªØ¹Ø¯Ø§Ø¯ ØªØ®Ù ØªØ¬ÙØ¹Û",
+        "ÃÂªÃÂ¹ÃÂ¯ÃÂ§ÃÂ¯ ÃÂªÃÂ®ÃÂ ÃÂªÃÂ¬ÃÂÃÂ¹ÃÂ",
 
     /* -------- Breeder -------- */
 
     fertility:
-        "ÙØ·ÙÙâØ¯Ø§Ø±Û",
+        "ÃÂÃÂ·ÃÂÃÂÃ¢ÂÂÃÂ¯ÃÂ§ÃÂ±ÃÂ",
 
     hatchability:
-        "ÙØ§Ø¨ÙÛØª Ø¬ÙØ¬ÙâØ¯Ø±Ø¢ÙØ±Û",
+        "ÃÂÃÂ§ÃÂ¨ÃÂÃÂÃÂª ÃÂ¬ÃÂÃÂ¬ÃÂÃ¢ÂÂÃÂ¯ÃÂ±ÃÂ¢ÃÂÃÂ±ÃÂ",
 
     hatchOfFertileEggs:
-        "ÙØ§Ø¨ÙÛØª Ø¬ÙØ¬ÙâØ¯Ø±Ø¢ÙØ±Û Ø§Ø² ØªØ®Ù ÙØ·ÙÙâØ¯Ø§Ø±",
+        "ÃÂÃÂ§ÃÂ¨ÃÂÃÂÃÂª ÃÂ¬ÃÂÃÂ¬ÃÂÃ¢ÂÂÃÂ¯ÃÂ±ÃÂ¢ÃÂÃÂ±ÃÂ ÃÂ§ÃÂ² ÃÂªÃÂ®ÃÂ ÃÂÃÂ·ÃÂÃÂÃ¢ÂÂÃÂ¯ÃÂ§ÃÂ±",
 
     settableEggs:
-        "ØªØ®Ù ÙØ§Ø¨Ù Ø¬ÙØ¬ÙâÚ©Ø´Û",
+        "ÃÂªÃÂ®ÃÂ ÃÂÃÂ§ÃÂ¨ÃÂ ÃÂ¬ÃÂÃÂ¬ÃÂÃ¢ÂÂÃÂ©ÃÂ´ÃÂ",
 
     maleFemaleRatio:
-        "ÙØ³Ø¨Øª ÙØ± Ø¨Ù ÙØ§Ø¯Ù"
+        "ÃÂÃÂ³ÃÂ¨ÃÂª ÃÂÃÂ± ÃÂ¨ÃÂ ÃÂÃÂ§ÃÂ¯ÃÂ"
 
 };
 
@@ -1793,25 +1793,25 @@ const STANDARD_SOURCE_TYPES = {
 const HOUSING_PROGRAMS = {
 
     conventional:
-        "Ø³ÛØ³ØªÙ ÙØªØ¹Ø§Ø±Ù",
+        "ÃÂ³ÃÂÃÂ³ÃÂªÃÂ ÃÂÃÂªÃÂ¹ÃÂ§ÃÂ±ÃÂ",
 
     alternative:
-        "Ø³ÛØ³ØªÙ Ø¬Ø§ÛÚ¯Ø²ÛÙ",
+        "ÃÂ³ÃÂÃÂ³ÃÂªÃÂ ÃÂ¬ÃÂ§ÃÂÃÂ¯ÃÂ²ÃÂÃÂ",
 
     cage:
-        "ÙÙØ³",
+        "ÃÂÃÂÃÂ³",
 
     aviary:
-        "Ø¢ÙÛØ§Ø±Û",
+        "ÃÂ¢ÃÂÃÂÃÂ§ÃÂ±ÃÂ",
 
     freeRange:
-        "Ø¢Ø²Ø§Ø¯ / Free Range",
+        "ÃÂ¢ÃÂ²ÃÂ§ÃÂ¯ / Free Range",
 
     floor:
-        "Ø¨Ø³ØªØ±",
+        "ÃÂ¨ÃÂ³ÃÂªÃÂ±",
 
     climateSpecific:
-        "Ø¨Ø±ÙØ§ÙÙ Ø§ÙÙÛÙ Ø®Ø§Øµ"
+        "ÃÂ¨ÃÂ±ÃÂÃÂ§ÃÂÃÂ ÃÂ§ÃÂÃÂÃÂÃÂ ÃÂ®ÃÂ§ÃÂµ"
 
 };
 
@@ -1872,7 +1872,7 @@ function createStandardRecord({
 
 
 /*
-  ÙÙØ¹âÙØ§Û Ø§ØµÙÛ Ø¨Ø±ÙØ§ÙÙ
+  ÃÂÃÂÃÂ¹Ã¢ÂÂÃÂÃÂ§ÃÂ ÃÂ§ÃÂµÃÂÃÂ ÃÂ¨ÃÂ±ÃÂÃÂ§ÃÂÃÂ
 */
 
 function getProductionTypes() {
@@ -1881,22 +1881,22 @@ function getProductionTypes() {
 
         {
             id: "broiler",
-            label: "Ú¯ÙØ´ØªÛ"
+            label: "ÃÂ¯ÃÂÃÂ´ÃÂªÃÂ"
         },
 
         {
             id: "layer",
-            label: "ØªØ®ÙâÚ¯Ø°Ø§Ø±"
+            label: "ÃÂªÃÂ®ÃÂÃ¢ÂÂÃÂ¯ÃÂ°ÃÂ§ÃÂ±"
         },
 
         {
             id: "pullet",
-            label: "Ù¾ÙÙØª"
+            label: "ÃÂ¾ÃÂÃÂÃÂª"
         },
 
         {
             id: "breeder",
-            label: "ÙØ±Øº ÙØ§Ø¯Ø±"
+            label: "ÃÂÃÂ±ÃÂº ÃÂÃÂ§ÃÂ¯ÃÂ±"
         }
 
     ];
@@ -1905,7 +1905,7 @@ function getProductionTypes() {
 
 
 /*
-  Ø´Ø±Ú©ØªâÙØ§Û ÚÙØªÛÚ©Û Ú¯ÙØ´ØªÛ
+  ÃÂ´ÃÂ±ÃÂ©ÃÂªÃ¢ÂÂÃÂÃÂ§ÃÂ ÃÂÃÂÃÂªÃÂÃÂ©ÃÂ ÃÂ¯ÃÂÃÂ´ÃÂªÃÂ
 */
 
 function getBroilerGenetics() {
@@ -1930,7 +1930,7 @@ function getBroilerGenetics() {
 
 
 /*
-  Ø¨Ø±ÙØ¯ÙØ§Û ØªØ®ÙâÚ¯Ø°Ø§Ø±
+  ÃÂ¨ÃÂ±ÃÂÃÂ¯ÃÂÃÂ§ÃÂ ÃÂªÃÂ®ÃÂÃ¢ÂÂÃÂ¯ÃÂ°ÃÂ§ÃÂ±
 */
 
 function getLayerGenetics() {
@@ -1955,7 +1955,7 @@ function getLayerGenetics() {
 
 
 /*
-  ÙØ­ØµÙÙØ§Øª ÛÚ© ÚÙØªÛÚ©
+  ÃÂÃÂ­ÃÂµÃÂÃÂÃÂ§ÃÂª ÃÂÃÂ© ÃÂÃÂÃÂªÃÂÃÂ©
 */
 
 function getProducts(
@@ -1993,7 +1993,7 @@ function getProducts(
 
 
 /*
-  Ø§Ø·ÙØ§Ø¹Ø§Øª ÙØ­ØµÙÙ
+  ÃÂ§ÃÂ·ÃÂÃÂ§ÃÂ¹ÃÂ§ÃÂª ÃÂÃÂ­ÃÂµÃÂÃÂ
 */
 
 function getProduct(
@@ -2023,7 +2023,7 @@ function getProduct(
 
 
 /*
-  ØªØ´Ø®ÛØµ Ø§ÛÙÚ©Ù ÙØ­ØµÙÙ Ø§Ø³ØªØ§ÙØ¯Ø§Ø±Ø¯ Ø±Ø³ÙÛ Ø¯Ø§Ø±Ø¯
+  ÃÂªÃÂ´ÃÂ®ÃÂÃÂµ ÃÂ§ÃÂÃÂÃÂ©ÃÂ ÃÂÃÂ­ÃÂµÃÂÃÂ ÃÂ§ÃÂ³ÃÂªÃÂ§ÃÂÃÂ¯ÃÂ§ÃÂ±ÃÂ¯ ÃÂ±ÃÂ³ÃÂÃÂ ÃÂ¯ÃÂ§ÃÂ±ÃÂ¯
 */
 
 function hasOfficialDocumentation(
@@ -2048,7 +2048,7 @@ function hasOfficialDocumentation(
 
 
 /*
-  ÙÙØ§ÛØ³Ù Ø¯Ù ÙÙØ¯Ø§Ø±
+  ÃÂÃÂÃÂ§ÃÂÃÂ³ÃÂ ÃÂ¯ÃÂ ÃÂÃÂÃÂ¯ÃÂ§ÃÂ±
 */
 
 function compareMetric(
@@ -2263,50 +2263,4 @@ const STANDARD_DATABASE_POLICY = {
 function calculateBroilerFCR({feedKg, openingBirds, closingBirds, openingAverageWeightG, closingAverageWeightG} = {}) {
     const feed=Number(feedKg), ob=Number(openingBirds), cb=Number(closingBirds), ow=Number(openingAverageWeightG), cw=Number(closingAverageWeightG);
     if (![feed,ob,cb,ow,cw].every(Number.isFinite) || feed<=0 || ob<=0 || cb<=0 || ow<0 || cw<=0) return null;
-    const gainKg=(cb*cw-ob*ow)/1000;
-    return gainKg>0 ? Number((feed/gainKg).toFixed(3)) : null;
-}
-
-function calculateLayerEggMass({eggsProduced, averageEggWeightG} = {}) {
-    const eggs=Number(eggsProduced), w=Number(averageEggWeightG);
-    if (!Number.isFinite(eggs)||!Number.isFinite(w)||eggs<0||w<=0) return null;
-    return Number((eggs*w/1000).toFixed(3));
-}
-
-function calculateLayerFCR({feedKg, eggsProduced, averageEggWeightG} = {}) {
-    const feed=Number(feedKg), mass=calculateLayerEggMass({eggsProduced,averageEggWeightG});
-    return Number.isFinite(feed)&&feed>0&&Number.isFinite(mass)&&mass>0 ? Number((feed/mass).toFixed(3)) : null;
-}
-
-function compareStandardMetric(actual, standard, metric=null, tolerancePercent=5) {
-    const a=Number(actual), s=Number(standard);
-    if (!Number.isFinite(a)||!Number.isFinite(s)||s===0) return {actual:Number.isFinite(a)?a:null,standard:Number.isFinite(s)?s:null,difference:null,percentage:null,status:'no-standard',metric};
-    const d=a-s, p=d/s*100;
-    return {actual:Number(a.toFixed(3)),standard:Number(s.toFixed(3)),difference:Number(d.toFixed(3)),percentage:Number(p.toFixed(2)),status:Math.abs(p)<=tolerancePercent?'within-range':p>0?'above':'below',metric};
-}
-
-function getStandardAtAge(type, geneticsId, strain, ageDays) {
-    const standard=getStandard(type,geneticsId,strain);
-    if (!standard) return null;
-    const out={ageDays:Number(ageDays)};
-    const metricNames=typeof PERFORMANCE_METRICS!=='undefined'?Object.keys(PERFORMANCE_METRICS):[];
-    metricNames.forEach(metric=>{ if(metric!=='ageDays') out[metric]=getStandardValueAtAge(standard,metric,ageDays); });
-    return out;
-}
-
-function getStandardComparison(type, geneticsId, strain, ageDays, actual={}) {
-    const target=getStandardAtAge(type,geneticsId,strain,ageDays);
-    if (!target) return {available:false,target:null,comparisons:{}};
-    const comparisons={};
-    Object.keys(actual||{}).forEach(metric=>comparisons[metric]=compareStandardMetric(actual[metric],target[metric],metric));
-    return {available:true,target,comparisons};
-}
-
-if (typeof window !== 'undefined') {
-    window.calculateBroilerFCR=calculateBroilerFCR;
-    window.calculateLayerEggMass=calculateLayerEggMass;
-    window.calculateLayerFCR=calculateLayerFCR;
-    window.compareStandardMetric=compareStandardMetric;
-    window.getStandardAtAge=getStandardAtAge;
-    window.getStandardComparison=getStandardComparison;
-}
+    const gainKg=(cb*c

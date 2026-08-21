@@ -10,19 +10,38 @@
     <link rel="stylesheet" href="style.css">
 
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <!-- فقط برای تقویم تاریخ ارزیابی -->
+    <link
+        rel="stylesheet"
+        href="https://cdn.jsdelivr.net/npm/persian-datepicker@1.2.0/dist/css/persian-datepicker.min.css"
+    >
+
+    <script
+        src="https://cdn.jsdelivr.net/npm/jquery@3.7.1/dist/jquery.min.js">
+    </script>
+
+    <script
+        src="https://cdn.jsdelivr.net/npm/persian-date@1.1.0/dist/persian-date.min.js">
+    </script>
+
+    <script
+        src="https://cdn.jsdelivr.net/npm/persian-datepicker@1.2.0/dist/js/persian-datepicker.min.js">
+    </script>
+
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
     <script src="supabase-config.js"></script>
-<script src="auth.js"></script>
-<script src="app-core.js"></script>
-<script src="standard-data.js"></script>
-<script src="standards.js"></script>
-<script src="poultry-utils.js"></script>
-<script src="weekly-storage.js"></script>
-<script src="genetics-ui.js"></script>
-<script src="weekly-engine.js"></script>
-<script src="weekly-specialized.js"></script>
-<script src="weekly.js"></script>
+    <script src="auth.js"></script>
+    <script src="app-core.js"></script>
+    <script src="standard-data.js"></script>
+    <script src="standards.js"></script>
+    <script src="poultry-utils.js"></script>
+    <script src="weekly-storage.js"></script>
+    <script src="genetics-ui.js"></script>
+    <script src="weekly-engine.js"></script>
+    <script src="weekly-specialized.js"></script>
+    <script src="weekly.js"></script>
 </head>
 
 <body>
@@ -113,6 +132,7 @@
                     inputmode="numeric"
                     placeholder="۱۴۰۵/۰۵/۲۹"
                     autocomplete="off"
+                    class="jalali-input"
                 >
 
             </div>
@@ -128,7 +148,7 @@
                     id="weekNumber"
                     type="text"
                     inputmode="decimal"
-                    placeholder="مثلاً ۵"
+                    placeholder="مثلاً ۱۲"
                     autocomplete="off"
                 >
 
@@ -174,6 +194,7 @@
         <div class="subsection-title">
             مصرف دان و آب
         </div>
+
 
         <div class="form-grid">
 
@@ -397,6 +418,16 @@
                 onclick="saveWeeklyRecord()"
             >
                 ذخیره گزارش هفتگی
+            </button>
+
+
+            <!-- فقط دکمه جدید -->
+            <button
+                type="button"
+                class="btn btn-secondary"
+                onclick="openCurrentReport()"
+            >
+                گزارش و ارزیابی هفته
             </button>
 
 
@@ -727,7 +758,7 @@ textarea {
 
 .btn-primary {
     background:
-        #17365d;
+        #1d3557;
 
     color:
         #fff;
@@ -752,25 +783,33 @@ textarea {
 }
 
 
-.form-actions,
-.weight-toolbar {
+.form-actions {
     display:
         flex;
-
-    flex-wrap:
-        wrap;
 
     gap:
         10px;
 
+    flex-wrap:
+        wrap;
+
     margin-top:
-        18px;
+        20px;
 }
 
 
 .weight-toolbar {
-    margin-bottom:
-        18px;
+    display:
+        flex;
+
+    gap:
+        10px;
+
+    flex-wrap:
+        wrap;
+
+    margin:
+        15px 0;
 }
 
 
@@ -782,13 +821,16 @@ textarea {
         repeat(
             auto-fill,
             minmax(
-                120px,
+                130px,
                 1fr
             )
         );
 
     gap:
         10px;
+
+    margin-top:
+        15px;
 }
 
 
@@ -796,71 +838,23 @@ textarea {
     display:
         flex;
 
-    align-items:
-        center;
+    flex-direction:
+        column;
 
     gap:
-        6px;
-
-    background:
-        #f7f9fb;
-
-    padding:
-        7px;
-
-    border-radius:
-        9px;
-
-    border:
-        1px solid #e4e8ee;
+        5px;
 }
 
 
 .weight-input label {
-    min-width:
-        24px;
-
-    text-align:
-        center;
+    font-size:
+        12px;
 
     font-weight:
         700;
 
     color:
-        #536273;
-}
-
-
-.weight-input input {
-    padding:
-        9px;
-
-    min-width:
-        0;
-}
-
-
-.info-box {
-    background:
-        #f5f8fb;
-
-    border-right:
-        4px solid #17365d;
-
-    padding:
-        13px 15px;
-
-    border-radius:
-        9px;
-
-    line-height:
-        2;
-
-    font-size:
-        13px;
-
-    color:
-        #4b5563;
+        #555;
 }
 
 
@@ -883,44 +877,41 @@ textarea {
 
 
 .metric-card {
+    padding:
+        16px;
+
     background:
         #f7f9fb;
 
     border:
-        1px solid #e5e9ef;
+        1px solid #e5eaf0;
 
     border-radius:
         12px;
-
-    padding:
-        15px;
-
-    text-align:
-        center;
 }
 
 
-.metric-title {
+.metric-card .metric-label {
     font-size:
         13px;
 
     color:
-        #687386;
+        #667085;
 
     margin-bottom:
-        8px;
+        6px;
 }
 
 
-.metric-value {
+.metric-card .metric-value {
     font-size:
-        19px;
+        21px;
 
     font-weight:
         800;
 
     color:
-        #17365d;
+        #172033;
 }
 
 
@@ -932,98 +923,116 @@ textarea {
         100%;
 
     height:
-        390px;
+        380px;
 
     margin-top:
         25px;
 }
 
 
-.history-container {
-    width:
+.chart-wrapper canvas {
+    max-width:
         100%;
+}
 
+
+.history-container {
     overflow-x:
         auto;
 }
 
 
-table {
+.history-table {
     width:
         100%;
 
     border-collapse:
         collapse;
-
-    min-width:
-        1000px;
 }
 
 
-th,
-td {
+.history-table th,
+.history-table td {
     padding:
-        11px 10px;
+        10px;
 
     border-bottom:
         1px solid #e5e7eb;
 
     text-align:
-        center;
+        right;
 
     white-space:
         nowrap;
 }
 
 
-th {
+.history-table th {
     background:
-        #f3f6f9;
+        #f8fafc;
 
     font-weight:
         800;
 }
 
 
-tr:hover td {
+.history-actions {
+    display:
+        flex;
+
+    gap:
+        6px;
+
+    flex-wrap:
+        wrap;
+}
+
+
+.info-box {
+    padding:
+        13px 15px;
+
+    border-radius:
+        10px;
+
     background:
-        #fafbfd;
+        #f5f8fb;
+
+    border:
+        1px solid #e1e8ef;
+
+    color:
+        #4b5563;
+
+    line-height:
+        1.9;
+
+    margin-bottom:
+        15px;
 }
 
 
 .farm-summary {
+    line-height:
+        2;
+
+    padding:
+        15px;
+
     background:
-        linear-gradient(
-            135deg,
-            #f7f9fb,
-            #eef3f7
-        );
+        #f7fafc;
 
     border-radius:
         12px;
 
-    padding:
-        18px;
-
-    line-height:
-        2;
-
-    color:
-        #465466;
-}
-
-
-.farm-summary strong {
-    color:
-        #17365d;
-
-    font-size:
-        18px;
+    border:
+        1px solid #e4e9ef;
 }
 
 
 @media (
-    max-width: 700px
+    max-width:
+    700px
 ) {
 
     .app-container {
@@ -1031,7 +1040,7 @@ tr:hover td {
             96%;
 
         margin-top:
-            15px;
+            12px;
     }
 
 
@@ -1045,14 +1054,16 @@ tr:hover td {
 
 
     .header-actions {
-        width:
-            100%;
+        justify-content:
+            stretch;
     }
 
 
     .header-actions .btn {
         flex:
             1;
+        min-width:
+            120px;
     }
 
 
@@ -1072,4 +1083,5 @@ tr:hover td {
 </style>
 
 </body>
+
 </html>

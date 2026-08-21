@@ -730,44 +730,889 @@ th {
 
 
 
-<script
-    src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"
-></script>
+<!-- 2 — reports.html -->
+
+<!-- بخش CORE فایل reports.html را دقیقاً با این جایگزین کن -->
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
 <script src="supabase-config.js"></script>
+
 <script src="auth.js"></script>
+
 <script src="app-core.js"></script>
+
 <script src="standard-data.js"></script>
+
 <script src="standards.js"></script>
+
 <script src="poultry-utils.js"></script>
+
 <script src="weekly-storage.js"></script>
+
 <script src="comparison-engine.js"></script>
+
 <script src="genetics-ui.js"></script>
+
 <script src="weekly-engine.js"></script>
+
 <script src="reports-data.js"></script>
 
 
 <script>
 
+"use strict";
+
+
+let reportWeightChart = null;
+let reportCVChart = null;
+let reportUniformityChart = null;
+let reportConsumptionChart = null;
+let reportFCRChart = null;
+
+let reportStandard = null;
+
+let reportRecords = [];
+
+let reportFlock = null;
+
+
+/* =========================================================
+   INIT
+========================================================= */
+
 document.addEventListener(
     "DOMContentLoaded",
-    function () {
+    initializeReports
+);
+
+
+async function initializeReports() {
+
+    try {
 
         if (
-            typeof initializeReports ===
+            typeof supabaseClient === "undefined" ||
+            !supabaseClient
+        ) {
+
+            throw new Error(
+                "Supabase client در دسترس نیست."
+            );
+
+        }
+
+
+        const {
+            data: sessionData,
+            error: sessionError
+        } =
+            await supabaseClient
+                .auth
+                .getSession();
+
+
+        if (
+            sessionError ||
+            !sessionData?.session?.user
+        ) {
+
+            location.href =
+                "login.html?message=" +
+                encodeURIComponent(
+                    "ابتدا وارد سامانه شوید."
+                );
+
+            return;
+
+        }
+
+
+        if (
+            typeof initializeReportsData ===
             "function"
         ) {
 
-            initializeReports();
+            await initializeReportsData();
+
+        } else {
+
+            reportsCurrentUser =
+                sessionData.session.user;
+
+        }
+
+
+        await loadUserFlocks();
+
+
+        const params =
+            new URLSearchParams(
+                window.location.search
+            );
+
+
+        const requestedFlock =
+            params.get(
+                "flock"
+            );
+
+
+        if (requestedFlock) {
+
+            const select =
+                document.getElementById(
+                    "flockSelect"
+                );
+
+            if (select) {
+
+                const exists =
+                    Array.from(
+                        select.options
+                    ).some(
+                        option =>
+                            option.value ===
+                            requestedFlock
+                    );
+
+                if (exists) {
+
+                    select.value =
+                        requestedFlock;
+
+                    await loadReport(
+                        requestedFlock
+                    );
+
+                }
+
+            }
 
         }
 
     }
-);
+
+    catch (error) {
+
+        console.error(
+            "Reports initialization error:",
+            error
+        );
+
+        const info =
+            document.getElementById(
+                "flockInfo"
+            );
+
+        if (info) {
+
+            info.innerHTML = `
+                <div style="
+                    color:#b42318;
+                    line-height:2;
+                    font-weight:700;
+                ">
+                    خطا در دریافت اطلاعات گله.
+                    <br>
+                    ${escapeHTML(
+                        error?.message ||
+                        "خطای نامشخص"
+                    )}
+                </div>
+            `;
+
+        }
+
+    }
+
+}
+
+
+/* =========================================================
+   LOAD USER FLOCKS
+========================================================= */
+
+async function loadUserFlocks() {
+
+    const select =
+        document.getElementById(
+            "flockSelect"
+        );
+
+
+    if (!select) {
+
+        return;
+
+    }
+
+
+    if (
+        !reportsCurrentUser
+    ) {
+
+        const {
+            data,
+            error
+        } =
+            await supabaseClient
+                .auth
+                .getUser();
+
+
+        if (
+            error ||
+            !data?.user
+        ) {
+
+            throw new Error(
+                "کاربر وارد نشده است."
+            );
+
+        }
+
+
+        reportsCurrentUser =
+            data.user;
+
+    }
+
+
+    let result =
+        await supabaseClient
+            .from("flocks")
+            .select(`
+                id,
+                flock_name,
+                production_type,
+                genetics,
+                strain,
+                status,
+                farm_id,
+                house_id,
+                created_at
+            `)
+            .eq(
+                "owner_id",
+                reportsCurrentUser.id
+            )
+            .order(
+                "created_at",
+                {
+                    ascending: false
+                }
+            );
+
+
+    /*
+       اگر RLS یا ساختار قدیمی جدول باعث خطا شد،
+       دوباره فقط ستون‌های اصلی را می‌خوانیم.
+    */
+
+    if (
+        result.error
+    ) {
+
+        console.warn(
+            "Primary flock query failed:",
+            result.error
+        );
+
+
+        result =
+            await supabaseClient
+                .from("flocks")
+                .select(`
+                    id,
+                    flock_name,
+                    production_type,
+                    genetics,
+                    status
+                `)
+                .eq(
+                    "owner_id",
+                    reportsCurrentUser.id
+                )
+                .order(
+                    "created_at",
+                    {
+                        ascending: false
+                    }
+                );
+
+    }
+
+
+    if (
+        result.error
+    ) {
+
+        throw result.error;
+
+    }
+
+
+    const data =
+        result.data || [];
+
+
+    select.innerHTML = `
+        <option value="">
+            انتخاب گله
+        </option>
+    `;
+
+
+    data.forEach(
+        flock => {
+
+            const option =
+                document.createElement(
+                    "option"
+                );
+
+
+            option.value =
+                flock.id;
+
+
+            option.textContent =
+                `${flock.flock_name || "گله بدون نام"} — ${
+                    flock.genetics ||
+                    flock.strain ||
+                    "-"
+                }`;
+
+
+            select.appendChild(
+                option
+            );
+
+        }
+    );
+
+
+    select.onchange =
+        async function () {
+
+            const flockId =
+                this.value;
+
+
+            if (!flockId) {
+
+                clearReport();
+
+                return;
+
+            }
+
+
+            await loadReport(
+                flockId
+            );
+
+        };
+
+
+    if (!data.length) {
+
+        const box =
+            document.getElementById(
+                "flockInfo"
+            );
+
+        if (box) {
+
+            box.innerHTML = `
+                <div style="
+                    color:#b45309;
+                    line-height:2;
+                ">
+                    هیچ گله‌ای برای این حساب پیدا نشد.
+                </div>
+            `;
+
+        }
+
+    }
+
+}
+
+
+/* =========================================================
+   LOAD REPORT
+========================================================= */
+
+async function loadReport(
+    flockId
+) {
+
+    if (!flockId) {
+
+        return;
+
+    }
+
+
+    showLoading(
+        true
+    );
+
+
+    try {
+
+        const result =
+            await getCompleteReportData(
+                flockId
+            );
+
+
+        if (
+            !result ||
+            !result.flock
+        ) {
+
+            throw new Error(
+                "اطلاعات گله پیدا نشد."
+            );
+
+        }
+
+
+        reportFlock =
+            result.flock;
+
+
+        reportRecords =
+            Array.isArray(
+                result.records
+            )
+                ? result.records
+                : [];
+
+
+        renderFlockInfo();
+
+        renderSummary();
+
+        renderTable();
+
+        renderCharts();
+
+        renderSpecializedReportCharts();
+
+        const empty =
+            document.getElementById(
+                "emptyState"
+            );
+
+        if (empty) {
+
+            empty.style.display =
+                reportRecords.length
+                    ? "none"
+                    : "block";
+
+        }
+
+    }
+
+    catch (error) {
+
+        console.error(
+            "Report loading error:",
+            error
+        );
+
+
+        const box =
+            document.getElementById(
+                "flockInfo"
+            );
+
+
+        if (box) {
+
+            box.innerHTML = `
+
+                <div style="
+                    color:#b42318;
+                    line-height:2;
+                ">
+
+                    <strong>
+                        دریافت گزارش انجام نشد.
+                    </strong>
+
+                    <br>
+
+                    ${escapeHTML(
+                        error?.message ||
+                        "خطای نامشخص"
+                    )}
+
+                </div>
+
+            `;
+
+        }
+
+    }
+
+    finally {
+
+        showLoading(
+            false
+        );
+
+    }
+
+}
+
+
+/* =========================================================
+   FLOCK INFO
+========================================================= */
+
+function renderFlockInfo() {
+
+    const box =
+        document.getElementById(
+            "flockInfo"
+        );
+
+
+    if (!box) {
+
+        return;
+
+    }
+
+
+    if (!reportFlock) {
+
+        box.innerHTML =
+            "اطلاعات گله موجود نیست.";
+
+        return;
+
+    }
+
+
+    const type =
+        reportFlock.production_type ||
+        reportFlock.productionType ||
+        "-";
+
+
+    const genetics =
+        reportFlock.genetics ||
+        reportFlock.genetics_id ||
+        "-";
+
+
+    const strain =
+        reportFlock.strain ||
+        reportFlock.strain_name ||
+        "-";
+
+
+    reportStandard =
+        typeof getStandard ===
+        "function"
+            ? getStandard(
+                type,
+                genetics,
+                strain
+            )
+            : null;
+
+
+    const standardLine =
+        reportStandard
+
+            ? `
+                <span style="
+                    color:#16803c;
+                    font-weight:700;
+                ">
+                    استاندارد رسمی سویه متصل است.
+                </span>
+            `
+
+            : `
+                <span style="
+                    color:#b45309;
+                    font-weight:700;
+                ">
+                    استاندارد رسمی برای این ترکیب
+                    در سامانه موجود نیست.
+                </span>
+            `;
+
+
+    box.innerHTML = `
+
+        <strong>
+            ${escapeHTML(
+                reportFlock.flock_name ||
+                "-"
+            )}
+        </strong>
+
+        <br>
+
+        فارم:
+        ${escapeHTML(
+            reportFlock.farms?.name ||
+            "-"
+        )}
+
+        <br>
+
+        سالن:
+        ${escapeHTML(
+            reportFlock.houses?.name ||
+            "-"
+        )}
+
+        <br>
+
+        نوع:
+        ${escapeHTML(
+            type
+        )}
+
+        <br>
+
+        شرکت/برنامه ژنتیکی:
+        ${escapeHTML(
+            genetics
+        )}
+
+        <br>
+
+        سویه:
+        ${escapeHTML(
+            strain
+        )}
+
+        <br>
+
+        ${standardLine}
+
+    `;
+
+}
+
+
+/* =========================================================
+   LOADING
+========================================================= */
+
+function showLoading(
+    visible
+) {
+
+    const element =
+        document.getElementById(
+            "loading"
+        );
+
+
+    if (!element) {
+
+        return;
+
+    }
+
+
+    element.style.display =
+        visible
+            ? "block"
+            : "none";
+
+}
+
+
+/* =========================================================
+   CLEAR REPORT
+========================================================= */
+
+function clearReport() {
+
+    reportFlock =
+        null;
+
+    reportRecords =
+        [];
+
+
+    [
+        "summaryCard",
+        "tableCard",
+        "weightCard",
+        "cvCard",
+        "uniformityCard",
+        "consumptionCard",
+        "fcrCard",
+        "specializedReportCard"
+    ].forEach(
+        id => {
+
+            const element =
+                document.getElementById(
+                    id
+                );
+
+            if (element) {
+
+                element.style.display =
+                    "none";
+
+            }
+
+        }
+    );
+
+
+    const info =
+        document.getElementById(
+            "flockInfo"
+        );
+
+
+    if (info) {
+
+        info.innerHTML =
+            "ابتدا یک گله را انتخاب کنید.";
+
+    }
+
+
+    [
+        reportWeightChart,
+        reportCVChart,
+        reportUniformityChart,
+        reportConsumptionChart,
+        reportFCRChart
+    ].forEach(
+        chart => {
+
+            if (chart) {
+
+                try {
+
+                    chart.destroy();
+
+                }
+
+                catch (error) {}
+
+            }
+
+        }
+    );
+
+
+    reportWeightChart = null;
+    reportCVChart = null;
+    reportUniformityChart = null;
+    reportConsumptionChart = null;
+    reportFCRChart = null;
+
+}
+
+
+/* =========================================================
+   PRINT
+========================================================= */
+
+function printCurrentReport() {
+
+    if (!reportFlock) {
+
+        alert(
+            "ابتدا یک گله را انتخاب کنید."
+        );
+
+        return;
+
+    }
+
+
+    window.print();
+
+}
+
+
+/* =========================================================
+   WEEKLY REPORT DIRECT ACCESS
+========================================================= */
+
+function openWeeklyReportFromSelection() {
+
+    const select =
+        document.getElementById(
+            "flockSelect"
+        );
+
+
+    if (
+        !select ||
+        !select.value
+    ) {
+
+        alert(
+            "ابتدا یک گله را انتخاب کنید."
+        );
+
+        return;
+
+    }
+
+
+    loadReport(
+        select.value
+    );
+
+}
+
+
+/* =========================================================
+   SAFE ESCAPE
+========================================================= */
+
+function escapeHTML(
+    value
+) {
+
+    return String(
+        value ?? ""
+    )
+    .replace(
+        /&/g,
+        "&amp;"
+    )
+    .replace(
+        /</g,
+        "&lt;"
+    )
+    .replace(
+        />/g,
+        "&gt;"
+    )
+    .replace(
+        /"/g,
+        "&quot;"
+    )
+    .replace(
+        /'/g,
+        "&#039;"
+    );
+
+}
 
 </script>
-
-
-</body>
-
-</html>

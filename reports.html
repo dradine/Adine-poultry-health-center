@@ -406,38 +406,413 @@
 
 <style>
 
-.chart-wrapper {
-    position: relative;
+/* =========================================================
+   REPORTS PAGE
+========================================================= */
+
+html,
+body {
+
+    margin: 0;
+
+    padding: 0;
+
+    min-height: 100%;
+
+    background: #f5f7fa;
+
+    color: #172033;
+
+}
+
+
+.app-container {
+
+    width: min(
+        1400px,
+        94%
+    );
+
+    margin:
+        30px auto 60px;
+
+}
+
+
+.page-header {
+
+    display: flex;
+
+    justify-content: space-between;
+
+    align-items: center;
+
+    gap: 20px;
+
+    background: #fff;
+
+    padding: 22px;
+
+    border-radius: 16px;
+
+    margin-bottom: 20px;
+
+    box-shadow:
+        0 4px 18px
+        rgba(
+            0,
+            0,
+            0,
+            .06
+        );
+
+}
+
+
+.page-header h1 {
+
+    margin:
+        0 0 8px;
+
+    font-size: 27px;
+
+}
+
+
+.page-header p {
+
+    margin:
+        0 0 5px;
+
+    font-weight: 700;
+
+}
+
+
+.header-actions {
+
+    display: flex;
+
+    gap: 10px;
+
+    flex-wrap: wrap;
+
+}
+
+
+.card {
+
+    background: #fff;
+
+    border-radius: 16px;
+
+    padding: 22px;
+
+    margin-bottom: 20px;
+
+    box-shadow:
+        0 4px 18px
+        rgba(
+            0,
+            0,
+            0,
+            .06
+        );
+
+}
+
+
+.section-title {
+
+    font-size: 20px;
+
+    font-weight: 800;
+
+    margin-bottom: 20px;
+
+    padding-bottom: 12px;
+
+    border-bottom:
+        2px solid #e8edf3;
+
+}
+
+
+.form-group {
+
+    display: flex;
+
+    flex-direction: column;
+
+    gap: 7px;
+
+    margin-bottom: 14px;
+
+}
+
+
+.form-group label {
+
+    font-weight: 700;
+
+    font-size: 14px;
+
+}
+
+
+.form-group select {
+
     width: 100%;
+
+    min-height: 48px;
+
+    border:
+        1px solid #d7dde5;
+
+    border-radius: 10px;
+
+    padding:
+        10px 13px;
+
+    font-family: inherit;
+
+    font-size: 15px;
+
+    background: #fff;
+
+    color: #172033;
+
+    outline: none;
+
+    box-sizing: border-box;
+
+}
+
+
+.form-group select:focus {
+
+    border-color: #1d3557;
+
+    box-shadow:
+        0 0 0 3px
+        rgba(
+            29,
+            53,
+            87,
+            .08
+        );
+
+}
+
+
+.btn {
+
+    border: 0;
+
+    border-radius: 10px;
+
+    padding:
+        11px 17px;
+
+    cursor: pointer;
+
+    font-family: inherit;
+
+    font-weight: 700;
+
+    font-size: 14px;
+
+}
+
+
+.btn-primary {
+
+    background: #1d3557;
+
+    color: #fff;
+
+}
+
+
+.btn-secondary {
+
+    background: #eef2f6;
+
+    color: #243447;
+
+}
+
+
+.metrics-grid {
+
+    display: grid;
+
+    grid-template-columns:
+        repeat(
+            auto-fit,
+            minmax(
+                170px,
+                1fr
+            )
+        );
+
+    gap: 12px;
+
+}
+
+
+.metric-card {
+
+    padding: 16px;
+
+    background: #f7f9fb;
+
+    border:
+        1px solid #e5eaf0;
+
+    border-radius: 12px;
+
+}
+
+
+.metric-title {
+
+    font-size: 13px;
+
+    color: #667085;
+
+    margin-bottom: 6px;
+
+}
+
+
+.metric-value {
+
+    font-size: 21px;
+
+    font-weight: 800;
+
+    color: #172033;
+
+}
+
+
+.info-box {
+
+    padding:
+        13px 15px;
+
+    border-radius: 10px;
+
+    background: #f5f8fb;
+
+    border:
+        1px solid #e1e8ef;
+
+    color: #4b5563;
+
+    line-height: 1.9;
+
+    margin-bottom: 15px;
+
+}
+
+
+.chart-wrapper {
+
+    position: relative;
+
+    width: 100%;
+
     height: 350px;
+
     margin-top: 20px;
+
+}
+
+
+.chart-wrapper canvas {
+
+    max-width: 100%;
+
 }
 
 
 .table-container {
+
     width: 100%;
+
     overflow-x: auto;
+
 }
 
 
 table {
+
     width: 100%;
+
     border-collapse: collapse;
+
     min-width: 1000px;
+
 }
 
 
 th,
 td {
+
     padding: 10px;
-    border-bottom: 1px solid #ddd;
+
+    border-bottom:
+        1px solid #ddd;
+
     text-align: center;
+
     white-space: nowrap;
+
 }
 
 
 th {
+
     background: #f2f5f7;
+
+}
+
+
+@media (max-width: 700px) {
+
+    .app-container {
+
+        width: 96%;
+
+        margin-top: 12px;
+
+    }
+
+
+    .page-header {
+
+        flex-direction: column;
+
+        align-items: stretch;
+
+    }
+
+
+    .header-actions .btn {
+
+        flex: 1;
+
+    }
+
+
+    .chart-wrapper {
+
+        height: 300px;
+
+    }
+
 }
 
 
@@ -446,13 +821,18 @@ th {
     .header-actions,
     #flockSelect,
     .report-actions {
+
         display: none !important;
+
     }
 
 
     .card {
+
         box-shadow: none !important;
+
         break-inside: avoid;
+
     }
 
 }
@@ -466,6 +846,10 @@ th {
 
     "use strict";
 
+
+    /* =====================================================
+       STATE
+    ===================================================== */
 
     let reportFlock = null;
 
@@ -485,6 +869,19 @@ th {
 
     let specializedCharts = [];
 
+
+    /*
+       هر بار انتخاب گله یک شماره جدید می‌گیرد.
+       بنابراین پاسخ درخواست قبلی نمی‌تواند
+       گزارش گله جدید را خراب کند.
+    */
+
+    let reportRequestToken = 0;
+
+
+    /* =====================================================
+       SUPABASE
+    ===================================================== */
 
     function client() {
 
@@ -530,6 +927,10 @@ th {
     }
 
 
+    /* =====================================================
+       HELPERS
+    ===================================================== */
+
     function num(value) {
 
         if (
@@ -560,7 +961,10 @@ th {
     }
 
 
-    function first(obj, keys) {
+    function first(
+        obj,
+        keys
+    ) {
 
         for (
             const key of keys
@@ -746,6 +1150,142 @@ th {
     }
 
 
+    /* =====================================================
+       HIDE OLD REPORT
+    ===================================================== */
+
+    function hideReportCards() {
+
+        [
+            "summaryCard",
+            "specializedReportCard",
+            "weightCard",
+            "cvCard",
+            "uniformityCard",
+            "consumptionCard",
+            "fcrCard",
+            "tableCard"
+        ].forEach(
+            id => {
+
+                const element =
+                    document.getElementById(
+                        id
+                    );
+
+
+                if (element) {
+
+                    element.style.display =
+                        "none";
+
+                }
+
+            }
+        );
+
+
+        specializedCharts.forEach(
+            chart => {
+
+                try {
+
+                    chart.destroy();
+
+                }
+                catch (error) {}
+
+            }
+        );
+
+
+        specializedCharts = [];
+
+
+        weightChart =
+            destroy(
+                weightChart
+            );
+
+
+        cvChart =
+            destroy(
+                cvChart
+            );
+
+
+        uniformityChart =
+            destroy(
+                uniformityChart
+            );
+
+
+        consumptionChart =
+            destroy(
+                consumptionChart
+            );
+
+
+        fcrChart =
+            destroy(
+                fcrChart
+            );
+
+
+        const summary =
+            document.getElementById(
+                "summary"
+            );
+
+
+        if (summary) {
+
+            summary.innerHTML = "";
+
+        }
+
+
+        const tableBody =
+            document.getElementById(
+                "weeklyTableBody"
+            );
+
+
+        if (tableBody) {
+
+            tableBody.innerHTML = "";
+
+        }
+
+    }
+
+
+    function setEmptyState(
+        show
+    ) {
+
+        const element =
+            document.getElementById(
+                "emptyState"
+            );
+
+
+        if (element) {
+
+            element.style.display =
+                show
+                    ? "block"
+                    : "none";
+
+        }
+
+    }
+
+
+    /* =====================================================
+       LOAD FLOCKS
+    ===================================================== */
+
     async function loadFlocks() {
 
         const db =
@@ -774,7 +1314,11 @@ th {
 
 
         const flocks =
-            result.data || [];
+            Array.isArray(
+                result.data
+            )
+                ? result.data
+                : [];
 
 
         const select =
@@ -783,8 +1327,16 @@ th {
             );
 
 
-        select.innerHTML =
-            "";
+        if (!select) {
+
+            throw new Error(
+                "عنصر انتخاب گله پیدا نشد."
+            );
+
+        }
+
+
+        select.innerHTML = "";
 
 
         const option =
@@ -793,9 +1345,7 @@ th {
             );
 
 
-        option.value =
-            "";
-
+        option.value = "";
 
         option.textContent =
             "انتخاب گله";
@@ -839,16 +1389,60 @@ th {
         );
 
 
+        /*
+           انتخاب گله فقط یک بار به select متصل می‌شود.
+        */
+
         select.onchange =
             function () {
 
-                if (
-                    this.value
-                ) {
+                const id =
+                    this.value;
 
-                    loadReport(
-                        this.value
+
+                if (id) {
+
+                    loadReport(id);
+
+                }
+
+                else {
+
+                    /*
+                       invalidate درخواست قبلی
+                    */
+
+                    ++reportRequestToken;
+
+
+                    reportFlock =
+                        null;
+
+
+                    reportRecords =
+                        [];
+
+
+                    hideReportCards();
+
+
+                    setEmptyState(
+                        true
                     );
+
+
+                    const info =
+                        document.getElementById(
+                            "flockInfo"
+                        );
+
+
+                    if (info) {
+
+                        info.textContent =
+                            "برای نمایش گزارش، یک گله را انتخاب کنید.";
+
+                    }
 
                 }
 
@@ -872,20 +1466,40 @@ th {
 
         if (id) {
 
-            select.value =
-                id;
+            const exists =
+                Array.from(
+                    select.options
+                ).some(
+                    option =>
+                        option.value ===
+                        id
+                );
 
 
-            await loadReport(
-                id
-            );
+            if (exists) {
+
+                select.value =
+                    id;
+
+
+                await loadReport(
+                    id
+                );
+
+            }
 
         }
 
     }
 
 
-    async function loadFlock(id) {
+    /* =====================================================
+       LOAD SINGLE FLOCK
+    ===================================================== */
+
+    async function loadFlock(
+        id
+    ) {
 
         const db =
             client();
@@ -916,11 +1530,24 @@ th {
     }
 
 
-    async function loadRecords(id) {
+    /* =====================================================
+       LOAD WEEKLY RECORDS
+    ===================================================== */
+
+    async function loadRecords(
+        id
+    ) {
 
         const db =
             client();
 
+
+        /*
+           جدول اصلی پروژه اول بررسی می‌شود.
+           اگر جدول وجود داشته باشد ولی برای این
+           گله داده‌ای نداشته باشد، جدول‌های
+           سازگار دیگر نیز بررسی می‌شوند.
+        */
 
         const tables = [
             "weekly_records",
@@ -930,58 +1557,263 @@ th {
         ];
 
 
+        let firstSuccessfulResult =
+            null;
+
+
         for (
             const table of tables
         ) {
 
-            const result =
-                await db
-                    .from(table)
-                    .select("*")
-                    .eq(
-                        "flock_id",
-                        id
-                    )
-                    .order(
-                        "week_number",
-                        {
-                            ascending: true
-                        }
-                    );
+            let result;
+
+
+            try {
+
+                result =
+                    await db
+                        .from(table)
+                        .select("*")
+                        .eq(
+                            "flock_id",
+                            id
+                        )
+                        .order(
+                            "week_number",
+                            {
+                                ascending: true
+                            }
+                        );
+
+            }
+            catch (error) {
+
+                console.warn(
+                    `Reports: ${table} request failed`,
+                    error
+                );
+
+
+                continue;
+
+            }
 
 
             if (
-                !result.error
+                result.error
             ) {
 
-                return result.data || [];
+                console.warn(
+                    `Reports: ${table} failed`,
+                    result.error
+                );
+
+
+                continue;
+
+            }
+
+
+            const rows =
+                Array.isArray(
+                    result.data
+                )
+                    ? result.data
+                    : [];
+
+
+            /*
+               اولین پاسخ موفق را نگه می‌داریم.
+            */
+
+            if (
+                firstSuccessfulResult ===
+                null
+            ) {
+
+                firstSuccessfulResult =
+                    rows;
+
+            }
+
+
+            /*
+               اگر داده وجود داشت همان را برمی‌گردانیم.
+            */
+
+            if (
+                rows.length > 0
+            ) {
+
+                return rows;
 
             }
 
         }
 
 
-        return [];
+        /*
+           اگر هیچ جدولی رکورد نداشت،
+           نتیجه موفق اول برگردانده می‌شود.
+        */
+
+        return (
+            firstSuccessfulResult ||
+            []
+        );
 
     }
 
 
-    async function loadReport(id) {
+    /* =====================================================
+       LOAD REPORT
+    ===================================================== */
 
-        showLoading(true);
+    async function loadReport(
+        id
+    ) {
+
+        /*
+           شماره درخواست جدید
+        */
+
+        const requestToken =
+            ++reportRequestToken;
+
+
+        /*
+           گزارش قبلی باید قبل از شروع
+           گزارش جدید پاک شود.
+        */
+
+        hideReportCards();
+
+
+        setEmptyState(
+            false
+        );
+
+
+        showLoading(
+            true
+        );
+
+
+        const info =
+            document.getElementById(
+                "flockInfo"
+            );
+
+
+        if (info) {
+
+            info.textContent =
+                "در حال دریافت اطلاعات گله...";
+
+        }
 
 
         try {
 
+            const flock =
+                await loadFlock(
+                    id
+                );
+
+
+            /*
+               اگر کاربر در همین فاصله
+               گله دیگری انتخاب کرده باشد،
+               این درخواست دیگر معتبر نیست.
+            */
+
+            if (
+                requestToken !==
+                reportRequestToken
+            ) {
+
+                return;
+
+            }
+
+
+            if (!flock) {
+
+                throw new Error(
+                    "گله انتخاب‌شده پیدا نشد."
+                );
+
+            }
+
+
+            const records =
+                await loadRecords(
+                    id
+                );
+
+
+            if (
+                requestToken !==
+                reportRequestToken
+            ) {
+
+                return;
+
+            }
+
+
             reportFlock =
-                await loadFlock(id);
+                flock;
 
 
             reportRecords =
-                await loadRecords(id);
+                Array.isArray(
+                    records
+                )
+                    ? records
+                    : [];
 
+
+            /*
+               اطلاعات گله همیشه نمایش داده می‌شود.
+            */
 
             renderInfo();
+
+
+            /*
+               اگر رکورد نداریم،
+               فقط پیام مناسب نمایش داده شود.
+            */
+
+            if (
+                reportRecords.length ===
+                0
+            ) {
+
+                setEmptyState(
+                    true
+                );
+
+
+                showLoading(
+                    false
+                );
+
+
+                return;
+
+            }
+
+
+            setEmptyState(
+                false
+            );
+
+
+            /*
+               ترتیب رندر مهم است.
+            */
 
             renderSummary();
 
@@ -991,28 +1823,79 @@ th {
 
             renderSpecialized();
 
+        }
+        catch (error) {
 
-        } catch (error) {
+            /*
+               خطای درخواست قدیمی نباید
+               صفحه درخواست جدید را خراب کند.
+            */
 
-            console.error(error);
+            if (
+                requestToken !==
+                reportRequestToken
+            ) {
+
+                return;
+
+            }
 
 
-            document.getElementById(
-                "flockInfo"
-            ).innerHTML =
-                "خطا در دریافت اطلاعات گله: " +
-                (
-                    error.message ||
-                    "خطای نامشخص"
+            console.error(
+                "Reports load error:",
+                error
+            );
+
+
+            reportFlock =
+                null;
+
+
+            reportRecords =
+                [];
+
+
+            hideReportCards();
+
+
+            setEmptyState(
+                false
+            );
+
+
+            if (info) {
+
+                info.innerHTML =
+                    "خطا در دریافت اطلاعات گله: " +
+                    (
+                        error?.message ||
+                        "خطای نامشخص"
+                    );
+
+            }
+
+        }
+        finally {
+
+            if (
+                requestToken ===
+                reportRequestToken
+            ) {
+
+                showLoading(
+                    false
                 );
+
+            }
 
         }
 
-
-        showLoading(false);
-
     }
 
+
+    /* =====================================================
+       RENDER FLOCK INFO
+    ===================================================== */
 
     function renderInfo() {
 
@@ -1020,6 +1903,13 @@ th {
             document.getElementById(
                 "flockInfo"
             );
+
+
+        if (!info) {
+
+            return;
+
+        }
 
 
         info.innerHTML = `
@@ -1054,6 +1944,10 @@ th {
     }
 
 
+    /* =====================================================
+       SUMMARY
+    ===================================================== */
+
     function renderSummary() {
 
         const card =
@@ -1069,11 +1963,24 @@ th {
 
 
         if (
+            !card ||
+            !container
+        ) {
+
+            return;
+
+        }
+
+
+        if (
             !reportRecords.length
         ) {
 
             card.style.display =
                 "none";
+
+            container.innerHTML =
+                "";
 
             return;
 
@@ -1198,6 +2105,10 @@ th {
     }
 
 
+    /* =====================================================
+       TABLE
+    ===================================================== */
+
     function renderTable() {
 
         const card =
@@ -1210,6 +2121,20 @@ th {
             document.getElementById(
                 "weeklyTableBody"
             );
+
+
+        if (
+            !card ||
+            !body
+        ) {
+
+            return;
+
+        }
+
+
+        body.innerHTML =
+            "";
 
 
         if (
@@ -1226,10 +2151,6 @@ th {
 
         card.style.display =
             "block";
-
-
-        body.innerHTML =
-            "";
 
 
         reportRecords.forEach(
@@ -1321,7 +2242,13 @@ th {
     }
 
 
-    function standardWeight(w) {
+    /* =====================================================
+       STANDARD WEIGHT
+    ===================================================== */
+
+    function standardWeight(
+        w
+    ) {
 
         if (
             w === null ||
@@ -1370,11 +2297,15 @@ th {
 
                     if (
                         item &&
-                        num(item.weight) !== null
+                        num(
+                            item.weight
+                        ) !== null
                     ) {
 
                         return (
-                            num(item.weight) +
+                            num(
+                                item.weight
+                            ) +
                             " g"
                         );
 
@@ -1384,13 +2315,18 @@ th {
 
             }
 
-        } catch(error) {}
+        }
+        catch(error) {}
 
 
         return "-";
 
     }
 
+
+    /* =====================================================
+       LABELS
+    ===================================================== */
 
     function labels() {
 
@@ -1406,15 +2342,24 @@ th {
     }
 
 
-    function destroy(chart) {
+    /* =====================================================
+       CHART DESTROY
+    ===================================================== */
+
+    function destroy(
+        chart
+    ) {
 
         if (
             chart
         ) {
 
             try {
+
                 chart.destroy();
-            } catch(error) {}
+
+            }
+            catch(error) {}
 
         }
 
@@ -1424,7 +2369,13 @@ th {
     }
 
 
-    function options(title) {
+    /* =====================================================
+       CHART OPTIONS
+    ===================================================== */
+
+    function options(
+        title
+    ) {
 
         return {
 
@@ -1433,19 +2384,27 @@ th {
             maintainAspectRatio: false,
 
             interaction: {
+
                 mode: "index",
+
                 intersect: false
+
             },
 
             plugins: {
 
                 legend: {
+
                     position: "top"
+
                 },
 
                 title: {
+
                     display: true,
+
                     text: title
+
                 }
 
             }
@@ -1454,6 +2413,10 @@ th {
 
     }
 
+
+    /* =====================================================
+       MAIN CHARTS
+    ===================================================== */
 
     function renderCharts() {
 
@@ -1470,19 +2433,29 @@ th {
         ].forEach(
             id => {
 
-                document.getElementById(
-                    id
-                ).style.display =
-                    show
-                        ? "block"
-                        : "none";
+                const element =
+                    document.getElementById(
+                        id
+                    );
+
+
+                if (element) {
+
+                    element.style.display =
+                        show
+                            ? "block"
+                            : "none";
+
+                }
 
             }
         );
 
 
         if (!show) {
+
             return;
+
         }
 
 
@@ -1516,274 +2489,363 @@ th {
             );
 
 
-        weightChart =
-            new Chart(
-                document.getElementById(
-                    "weightChart"
-                ),
-                {
-
-                    type: "line",
-
-                    data: {
-
-                        labels:
-                            labels(),
-
-                        datasets: [
-
-                            {
-                                label:
-                                    "میانگین وزن",
-
-                                data:
-                                    reportRecords.map(
-                                        weight
-                                    ),
-
-                                borderWidth: 3,
-
-                                tension: .3
-                            },
-
-
-                            {
-                                label:
-                                    "استاندارد",
-
-                                data:
-                                    reportRecords.map(
-                                        record =>
-                                            num(
-                                                standardWeight(
-                                                    week(
-                                                        record
-                                                    )
-                                                )
-                                            )
-                                    ),
-
-                                borderDash: [
-                                    6,
-                                    5
-                                ],
-
-                                borderWidth: 2,
-
-                                tension: .3
-                            }
-
-                        ]
-
-                    },
-
-                    options:
-                        options(
-                            "روند میانگین وزن و استاندارد"
-                        )
-
-                }
+        const weightCanvas =
+            document.getElementById(
+                "weightChart"
             );
 
 
-        cvChart =
-            new Chart(
-                document.getElementById(
-                    "cvChart"
-                ),
-                {
-
-                    type: "line",
-
-                    data: {
-
-                        labels:
-                            labels(),
-
-                        datasets: [
-
-                            {
-                                label:
-                                    "CV%",
-
-                                data:
-                                    reportRecords.map(
-                                        cv
-                                    ),
-
-                                borderWidth: 3,
-
-                                tension: .3
-                            }
-
-                        ]
-
-                    },
-
-                    options:
-                        options(
-                            "روند CV"
-                        )
-
-                }
+        const cvCanvas =
+            document.getElementById(
+                "cvChart"
             );
 
 
-        uniformityChart =
-            new Chart(
-                document.getElementById(
-                    "uniformityChart"
-                ),
-                {
-
-                    type: "line",
-
-                    data: {
-
-                        labels:
-                            labels(),
-
-                        datasets: [
-
-                            {
-                                label:
-                                    "یکنواختی ±10%",
-
-                                data:
-                                    reportRecords.map(
-                                        uniformity
-                                    ),
-
-                                borderWidth: 3,
-
-                                tension: .3
-                            },
-
-
-                            {
-                                label:
-                                    "استاندارد مدیریتی 80%",
-
-                                data:
-                                    reportRecords.map(
-                                        () => 80
-                                    ),
-
-                                borderDash: [
-                                    6,
-                                    5
-                                ],
-
-                                borderWidth: 2
-                            }
-
-                        ]
-
-                    },
-
-                    options:
-                        options(
-                            "روند یکنواختی"
-                        )
-
-                }
+        const uniformityCanvas =
+            document.getElementById(
+                "uniformityChart"
             );
 
 
-        consumptionChart =
-            new Chart(
-                document.getElementById(
-                    "consumptionChart"
-                ),
-                {
-
-                    type: "bar",
-
-                    data: {
-
-                        labels:
-                            labels(),
-
-                        datasets: [
-
-                            {
-                                label:
-                                    "دان هفتگی (kg)",
-
-                                data:
-                                    reportRecords.map(
-                                        feed
-                                    )
-                            },
-
-
-                            {
-                                label:
-                                    "آب هفتگی (L)",
-
-                                data:
-                                    reportRecords.map(
-                                        water
-                                    )
-                            }
-
-                        ]
-
-                    },
-
-                    options:
-                        options(
-                            "مصرف هفتگی دان و آب"
-                        )
-
-                }
+        const consumptionCanvas =
+            document.getElementById(
+                "consumptionChart"
             );
 
 
-        fcrChart =
-            new Chart(
-                document.getElementById(
-                    "fcrChart"
-                ),
-                {
-
-                    type: "line",
-
-                    data: {
-
-                        labels:
-                            labels(),
-
-                        datasets: [
-
-                            {
-                                label:
-                                    "FCR تجمعی",
-
-                                data:
-                                    reportRecords.map(
-                                        fcr
-                                    ),
-
-                                borderWidth: 3,
-
-                                tension: .3
-                            }
-
-                        ]
-
-                    },
-
-                    options:
-                        options(
-                            "ضریب تبدیل تجمعی"
-                        )
-
-                }
+        const fcrCanvas =
+            document.getElementById(
+                "fcrChart"
             );
+
+
+        if (
+            weightCanvas
+        ) {
+
+            weightChart =
+                new Chart(
+                    weightCanvas,
+                    {
+
+                        type: "line",
+
+                        data: {
+
+                            labels:
+                                labels(),
+
+                            datasets: [
+
+                                {
+
+                                    label:
+                                        "میانگین وزن",
+
+                                    data:
+                                        reportRecords.map(
+                                            weight
+                                        ),
+
+                                    borderWidth: 3,
+
+                                    tension: .3
+
+                                },
+
+
+                                {
+
+                                    label:
+                                        "استاندارد",
+
+                                    data:
+                                        reportRecords.map(
+                                            record => {
+
+                                                const value =
+                                                    standardWeight(
+                                                        week(
+                                                            record
+                                                        )
+                                                    );
+
+
+                                                if (
+                                                    typeof value ===
+                                                    "string"
+                                                ) {
+
+                                                    return num(
+                                                        value
+                                                    );
+
+                                                }
+
+
+                                                return num(
+                                                    value
+                                                );
+
+                                            }
+                                        ),
+
+                                    borderDash: [
+                                        6,
+                                        5
+                                    ],
+
+                                    borderWidth: 2,
+
+                                    tension: .3
+
+                                }
+
+                            ]
+
+                        },
+
+                        options:
+                            options(
+                                "روند میانگین وزن و استاندارد"
+                            )
+
+                    }
+                );
+
+        }
+
+
+        if (
+            cvCanvas
+        ) {
+
+            cvChart =
+                new Chart(
+                    cvCanvas,
+                    {
+
+                        type: "line",
+
+                        data: {
+
+                            labels:
+                                labels(),
+
+                            datasets: [
+
+                                {
+
+                                    label:
+                                        "CV%",
+
+                                    data:
+                                        reportRecords.map(
+                                            cv
+                                        ),
+
+                                    borderWidth: 3,
+
+                                    tension: .3
+
+                                }
+
+                            ]
+
+                        },
+
+                        options:
+                            options(
+                                "روند CV"
+                            )
+
+                    }
+                );
+
+        }
+
+
+        if (
+            uniformityCanvas
+        ) {
+
+            uniformityChart =
+                new Chart(
+                    uniformityCanvas,
+                    {
+
+                        type: "line",
+
+                        data: {
+
+                            labels:
+                                labels(),
+
+                            datasets: [
+
+                                {
+
+                                    label:
+                                        "یکنواختی ±10%",
+
+                                    data:
+                                        reportRecords.map(
+                                            uniformity
+                                        ),
+
+                                    borderWidth: 3,
+
+                                    tension: .3
+
+                                },
+
+
+                                {
+
+                                    label:
+                                        "استاندارد مدیریتی 80%",
+
+                                    data:
+                                        reportRecords.map(
+                                            () => 80
+                                        ),
+
+                                    borderDash: [
+                                        6,
+                                        5
+                                    ],
+
+                                    borderWidth: 2
+
+                                }
+
+                            ]
+
+                        },
+
+                        options:
+                            options(
+                                "روند یکنواختی"
+                            )
+
+                    }
+                );
+
+        }
+
+
+        if (
+            consumptionCanvas
+        ) {
+
+            consumptionChart =
+                new Chart(
+                    consumptionCanvas,
+                    {
+
+                        type: "bar",
+
+                        data: {
+
+                            labels:
+                                labels(),
+
+                            datasets: [
+
+                                {
+
+                                    label:
+                                        "دان هفتگی (kg)",
+
+                                    data:
+                                        reportRecords.map(
+                                            feed
+                                        )
+
+                                },
+
+
+                                {
+
+                                    label:
+                                        "آب هفتگی (L)",
+
+                                    data:
+                                        reportRecords.map(
+                                            water
+                                        )
+
+                                }
+
+                            ]
+
+                        },
+
+                        options:
+                            options(
+                                "مصرف هفتگی دان و آب"
+                            )
+
+                    }
+                );
+
+        }
+
+
+        if (
+            fcrCanvas
+        ) {
+
+            fcrChart =
+                new Chart(
+                    fcrCanvas,
+                    {
+
+                        type: "line",
+
+                        data: {
+
+                            labels:
+                                labels(),
+
+                            datasets: [
+
+                                {
+
+                                    label:
+                                        "FCR تجمعی",
+
+                                    data:
+                                        reportRecords.map(
+                                            fcr
+                                        ),
+
+                                    borderWidth: 3,
+
+                                    tension: .3
+
+                                }
+
+                            ]
+
+                        },
+
+                        options:
+                            options(
+                                "ضریب تبدیل تجمعی"
+                            )
+
+                    }
+                );
+
+        }
 
     }
 
+
+    /* =====================================================
+       SPECIALIZED REPORT
+    ===================================================== */
 
     function renderSpecialized() {
 
@@ -1791,6 +2853,13 @@ th {
             document.getElementById(
                 "specializedReportCard"
             );
+
+
+        if (!card) {
+
+            return;
+
+        }
 
 
         if (
@@ -1809,8 +2878,11 @@ th {
             chart => {
 
                 try {
+
                     chart.destroy();
-                } catch(error) {}
+
+                }
+                catch(error) {}
 
             }
         );
@@ -1845,6 +2917,7 @@ th {
                 "گزارش تخصصی تخم‌گذار";
 
         }
+
         else if (
             type.includes("breeder") ||
             type.includes("مادر")
@@ -1854,6 +2927,7 @@ th {
                 "گزارش تخصصی مرغ مادر";
 
         }
+
         else if (
             type.includes("pullet") ||
             type.includes("پولت")
@@ -1863,6 +2937,7 @@ th {
                 "گزارش تخصصی پولت";
 
         }
+
         else {
 
             title =
@@ -1871,51 +2946,100 @@ th {
         }
 
 
-        document.getElementById(
-            "specializedReportTitle"
-        ).textContent =
-            title;
+        const titleElement =
+            document.getElementById(
+                "specializedReportTitle"
+            );
 
 
-        document.getElementById(
-            "specializedReportInfo"
-        ).textContent =
-            "شاخص‌های تخصصی بر اساس نوع پرورش و اطلاعات ثبت‌شده نمایش داده می‌شوند.";
+        if (titleElement) {
+
+            titleElement.textContent =
+                title;
+
+        }
+
+
+        const info =
+            document.getElementById(
+                "specializedReportInfo"
+            );
+
+
+        if (info) {
+
+            info.textContent =
+                "شاخص‌های تخصصی بر اساس نوع پرورش و اطلاعات ثبت‌شده نمایش داده می‌شوند.";
+
+        }
 
 
         const groups = {
 
             production: [
+
                 "hen_day",
+
                 "hen_housed",
+
                 "egg_production",
+
                 "egg_rate",
+
                 "egg_mass",
+
                 "hatchability",
+
                 "fertility",
+
                 "hatch_rate",
+
                 "daily_gain",
+
                 "growth_rate"
+
             ],
+
 
             efficiency: [
+
                 "feed_per_bird",
+
+                "feedPerBird",
+
                 "water_per_bird",
+
+                "waterPerBird",
+
                 "water_feed_ratio",
+
                 "fcr",
+
                 "cumulative_fcr",
+
                 "feed_conversion"
+
             ],
 
+
             quality: [
+
                 "egg_weight",
+
                 "egg_weight_avg",
+
                 "egg_shell",
+
                 "shell_strength",
+
                 "broken_egg",
+
                 "dirty_egg",
+
                 "uniformity",
+
                 "uniformity_10"
+
             ]
 
         };
@@ -1944,6 +3068,10 @@ th {
     }
 
 
+    /* =====================================================
+       SPECIALIZED CHART
+    ===================================================== */
+
     function createSpecialized(
         canvasId,
         keys,
@@ -1954,6 +3082,13 @@ th {
             document.getElementById(
                 canvasId
             );
+
+
+        if (!canvas) {
+
+            return;
+
+        }
 
 
         let found =
@@ -1981,8 +3116,11 @@ th {
             ) {
 
                 found = {
+
                     key,
+
                     values
+
                 };
 
                 break;
@@ -2016,6 +3154,7 @@ th {
                         datasets: [
 
                             {
+
                                 label:
                                     found.key,
 
@@ -2025,6 +3164,7 @@ th {
                                 borderWidth: 3,
 
                                 tension: .3
+
                             }
 
                         ]
@@ -2047,6 +3187,10 @@ th {
     }
 
 
+    /* =====================================================
+       FORMAT
+    ===================================================== */
+
     function format(
         value,
         decimals,
@@ -2055,7 +3199,10 @@ th {
 
         if (
             value === null ||
-            value === undefined
+            value === undefined ||
+            Number.isNaN(
+                Number(value)
+            )
         ) {
 
             return "-";
@@ -2068,11 +3215,13 @@ th {
         ).toLocaleString(
             "fa-IR",
             {
+
                 minimumFractionDigits:
                     decimals,
 
                 maximumFractionDigits:
                     decimals
+
             }
         ) +
         (
@@ -2082,19 +3231,38 @@ th {
     }
 
 
+    /* =====================================================
+       LOADING
+    ===================================================== */
+
     function showLoading(
         show
     ) {
 
-        document.getElementById(
-            "loading"
-        ).style.display =
+        const element =
+            document.getElementById(
+                "loading"
+            );
+
+
+        if (!element) {
+
+            return;
+
+        }
+
+
+        element.style.display =
             show
                 ? "block"
                 : "none";
 
     }
 
+
+    /* =====================================================
+       START
+    ===================================================== */
 
     document.addEventListener(
         "DOMContentLoaded",
@@ -2104,21 +3272,36 @@ th {
 
                 await loadFlocks();
 
-            } catch(error) {
+            }
+            catch(error) {
 
                 console.error(
+                    "Reports initialization error:",
                     error
                 );
 
 
-                document.getElementById(
-                    "flockInfo"
-                ).textContent =
-                    "خطا در دریافت گله‌ها: " +
-                    (
-                        error.message ||
-                        "خطای نامشخص"
+                const info =
+                    document.getElementById(
+                        "flockInfo"
                     );
+
+
+                if (info) {
+
+                    info.textContent =
+                        "خطا در دریافت گله‌ها: " +
+                        (
+                            error?.message ||
+                            "خطای نامشخص"
+                        );
+
+                }
+
+
+                showLoading(
+                    false
+                );
 
             }
 

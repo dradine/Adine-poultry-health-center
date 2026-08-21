@@ -755,7 +755,53 @@ function readCurrentSelectionFallback() {
 
 }
 
+/* =========================================================
+   EVALUATION DATE CALENDAR
+========================================================= */
 
+function initializeEvaluationDatePicker() {
+
+    const input =
+        document.getElementById(
+            "evaluationDate"
+        );
+
+    if (
+        !input ||
+        typeof window.jQuery === "undefined" ||
+        typeof window.jQuery.fn.persianDatepicker !== "function"
+    ) {
+        return;
+    }
+
+    const $input =
+        window.jQuery(input);
+
+    if (
+        $input.data("persian-datepicker-initialized")
+    ) {
+        return;
+    }
+
+    $input.persianDatepicker({
+        format: "YYYY/MM/DD",
+        autoClose: true,
+        initialValue: false,
+        observer: true,
+        calendarType: "persian",
+        toolbox: {
+            calendarSwitch: {
+                enabled: false
+            }
+        }
+    });
+
+    $input.data(
+        "persian-datepicker-initialized",
+        true
+    );
+
+}
 /* =========================================================
    TODAY SHAMSI
 ========================================================= */

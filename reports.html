@@ -248,35 +248,144 @@
              WEIGHT
         ================================================== -->
 
-        <section
-            id="weightCard"
-            class="card"
-            style="display:none;"
-        >
+        function standardWeight(recordOrWeek) {
 
-            <div class="section-title">
-                روند وزن و مقایسه با استاندارد
-            </div>
+    let w = recordOrWeek;
 
+    /*
+     * اگر رکورد کامل به تابع داده شده باشد،
+     * هفته را از آن استخراج می‌کنیم.
+     */
+    if (
+        recordOrWeek &&
+        typeof recordOrWeek === "object"
+    ) {
 
-            <div
-                id="weightComparison"
-                class="chart-info"
-            ></div>
+        w =
+            recordOrWeek.weekNumber ??
+            recordOrWeek.week_number ??
+            recordOrWeek.week ??
+            recordOrWeek.age_week ??
+            recordOrWeek.age;
 
-
-            <div class="chart-wrapper">
-
-                <canvas
-                    id="weightChart"
-                ></canvas>
-
-            </div>
-
-        </section>
+    }
 
 
+    w = num(w);
 
+
+    if (w === null) {
+
+        return null;
+
+    }
+
+
+    try {
+
+        /*
+         * استاندارد واقعی پروژه
+         */
+        if (
+            typeof getStandard !==
+            "function"
+        ) {
+
+            console.warn(
+                "getStandard در دسترس نیست."
+            );
+
+            return null;
+
+        }
+
+
+        /*
+         * استاندارد بر اساس نوع پرورش
+         * و سویه گله
+         */
+        const standard =
+            getStandard(
+                productionType(
+                    reportFlock
+                ),
+                genetics(
+                    reportFlock
+                )
+            );
+
+
+        if (
+            !standard ||
+            !Array.isArray(
+                standard.weights
+            )
+        ) {
+
+            console.warn(
+                "جدول استاندارد وزن برای این گله پیدا نشد.",
+                {
+                    productionType:
+                        productionType(
+                            reportFlock
+                        ),
+
+                    genetics:
+                        genetics(
+                            reportFlock
+                        )
+                }
+            );
+
+            return null;
+
+        }
+
+
+        /*
+         * پیدا کردن استاندارد دقیق همان هفته
+         */
+        const item =
+            standard.weights.find(
+                row =>
+                    Number(
+                        row.week
+                    ) ===
+                    Number(w)
+            );
+
+
+        if (
+            !item
+        ) {
+
+            return null;
+
+        }
+
+
+        const value =
+            num(
+                item.weight
+            );
+
+
+        return value;
+
+    }
+
+    catch (error) {
+
+        console.error(
+            "STANDARD WEIGHT ERROR:",
+            error
+        );
+
+        return null;
+
+    }
+
+}
         <!-- =================================================
              CV
         ================================================== -->

@@ -1,4 +1,4 @@
-/* =========================================================
+* =========================================================
    ADINE POULTRY HEALTH CENTER
    HOUSES + FLOCKS
    SUPABASE
@@ -88,16 +88,16 @@ async function initializeFlocks() {
         currentUser =
             access.user;
 
-
+        /*
+         * The page may be opened directly on iPhone/PWA without a
+         * previously selected farm. In that case, recover the farm from
+         * the URL or let the user select one instead of failing startup.
+         */
         await loadSelectedFarm();
 
-
         setupHouseForm();
-
         setupFlockForm();
-
         setupGenetics();
-
         setupJalaliDate();
 
 
@@ -125,29 +125,20 @@ async function initializeFlocks() {
 
 async function loadSelectedFarm() {
 
-    const selection =
+    let selection =
         getCurrentSelection();
 
+    const params = new URLSearchParams(window.location.search);
+    const urlFarmId = params.get("farm") || params.get("farm_id");
+
+    if (!selection.farmId && urlFarmId) {
+        setCurrentSelection({ farmId: urlFarmId, houseId: null, flockId: null });
+        selection = getCurrentSelection();
+    }
 
     if (!selection.farmId) {
 
-        document.getElementById(
-            "selectedFarm"
-        ).innerHTML = `
-
-            <p>
-                هنوز فارمی انتخاب نشده است.
-            </p>
-
-            <button
-                class="btn btn-primary"
-                type="button"
-                onclick="location.href='Farms.html'"
-            >
-                انتخاب فارم
-            </button>
-
-        `;
+        await renderFarmChooser();
 
         disableForms();
 
@@ -238,6 +229,85 @@ async function loadSelectedFarm() {
 
     await loadFlocks();
 
+    enableForms();
+
+}
+
+
+/* =========================================================
+   FARM CHOOSER (SAFE DIRECT ENTRY)
+========================================================= */
+
+async function renderFarmChooser() {
+
+    const container =
+        document.getElementById("selectedFarm");
+
+    if (!container) return;
+
+    try {
+
+        const { data, error } =
+            await supabaseClient
+                .from("farms")
+                .select("id,name,farm_code,capacity")
+                .eq("owner_id", currentUser.id)
+                .order("created_at", { ascending: false });
+
+        if (error) throw error;
+
+        const farms = data || [];
+
+        if (!farms.length) {
+            container.innerHTML = `
+                <p>هنوز فارمی برای این حساب ثبت نشده است.</p>
+                <button class="btn btn-primary" type="button"
+                    onclick="location.href='Farms.html'">
+                    ثبت / انتخاب فارم
+                </button>`;
+            return;
+        }
+
+        container.innerHTML = `
+            <div class="form-group">
+                <label for="directFarmSelect">انتخاب فارم</label>
+                <select id="directFarmSelect">
+                    <option value="">انتخاب فارم</option>
+                </select>
+            </div>`;
+
+        const select = document.getElementById("directFarmSelect");
+        farms.forEach(farm => {
+            const option = document.createElement("option");
+            option.value = farm.id;
+            option.textContent = farm.name + (farm.farm_code ? " — " + farm.farm_code : "");
+            select.appendChild(option);
+        });
+
+        select.addEventListener("change", async function () {
+            if (!this.value) return;
+            setCurrentSelection({ farmId: this.value, houseId: null, flockId: null });
+            await loadSelectedFarm();
+            enableForms();
+        });
+
+    } catch (error) {
+        console.error("Farm chooser error:", error);
+        container.innerHTML = `
+            <p>دریافت فهرست فارم‌ها انجام نشد.</p>
+            <button class="btn btn-secondary" type="button" onclick="location.reload()">
+                تلاش مجدد
+            </button>`;
+    }
+}
+
+
+function enableForms() {
+    ["houseForm", "flockForm"].forEach(id => {
+        const form = document.getElementById(id);
+        if (!form) return;
+        Array.from(form.elements).forEach(el => { el.disabled = false; });
+    });
 }
 
 

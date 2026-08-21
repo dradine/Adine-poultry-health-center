@@ -662,6 +662,10 @@ async function loadCurrentFlock() {
     window.currentFlockForSpecialized =
         currentFlock;
 
+    if (typeof renderWeeklySpecializedFields === "function") {
+        renderWeeklySpecializedFields(currentFlock);
+    }
+
 
     container.innerHTML = `
 
@@ -2601,10 +2605,26 @@ async function saveWeeklyRecord() {
                 "weeklyNotes"
             );
 
-        const productionMetrics =
+        let productionMetrics =
             typeof getWeeklySpecializedMetrics === "function"
                 ? getWeeklySpecializedMetrics()
                 : {};
+
+        if (liveBirds !== null && liveBirds !== undefined) {
+            productionMetrics.live_birds = liveBirds;
+        }
+
+        if (Number.isFinite(Number(stats.mean))) {
+            productionMetrics.measured_weight_g = stats.mean;
+        }
+
+        if (typeof calculateWeeklySpecializedDerived === "function") {
+            productionMetrics = calculateWeeklySpecializedDerived(
+                productionMetrics,
+                currentFlock,
+                existingForCumulative
+            );
+        }
 
         const specializedValidation =
             typeof validateSpecializedMetrics === "function"

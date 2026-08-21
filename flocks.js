@@ -2686,7 +2686,7 @@ function renderJalaliPicker() {
 
                 }
 
-               iPicker();
+                renderJalaliPicker();
 
             }
         );

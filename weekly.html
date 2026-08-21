@@ -9,10 +9,87 @@
 
     <link rel="stylesheet" href="style.css">
 
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <!-- 1 — weekly.html -->
 
-    <script src="supabase-config.js"></script>
+<!-- در بخش <head> فایل weekly.html، این قسمت را دقیقاً قرار بده -->
+
+<link
+    rel="stylesheet"
+    href="https://cdn.jsdelivr.net/npm/persian-datepicker@1.2.0/dist/css/persian-datepicker.min.css"
+>
+
+<script src="https://cdn.jsdelivr.net/npm/jquery@3.7.1/dist/jquery.min.js"></script>
+
+<script src="https://cdn.jsdelivr.net/npm/persian-date@1.1.0/dist/persian-date.min.js"></script>
+
+<script src="https://cdn.jsdelivr.net/npm/persian-datepicker@1.2.0/dist/js/persian-datepicker.min.js"></script>
+
+<script src="health-date.js"></script>
+
+
+<!-- input تاریخ را با این جایگزین کن -->
+
+<div class="form-group">
+
+    <label for="evaluationDate">
+        تاریخ ارزیابی
+    </label>
+
+    <input
+        id="evaluationDate"
+        class="jalali-input"
+        type="text"
+        inputmode="numeric"
+        placeholder="۱۴۰۵/۰۵/۲۹"
+        autocomplete="off"
+        readonly
+    >
+
+</div>
+
+
+<!-- بخش دکمه‌های بالای صفحه را با این جایگزین کن -->
+
+<div class="header-actions">
+
+    <button
+        type="button"
+        class="btn btn-secondary"
+        onclick="location.href='Dashboard.html'"
+    >
+        داشبورد
+    </button>
+
+    <button
+        type="button"
+        class="btn btn-secondary"
+        onclick="location.href='flocks.html'"
+    >
+        انتخاب گله
+    </button>
+
+    <button
+        type="button"
+        class="btn btn-primary"
+        onclick="goToWeeklyReport()"
+    >
+        📊 گزارش
+    </button>
+
+    <button
+        type="button"
+        class="btn btn-secondary"
+        onclick="closeCurrentFlockPeriod()"
+    >
+        بستن دوره
+    </button>
+
+</div>
+
+
+<!-- قبل از </body> فایل weekly.html قرار بده -->
+
+<script src="supabase-config.js"></script>
 <script src="auth.js"></script>
 <script src="app-core.js"></script>
 <script src="standard-data.js"></script>
@@ -23,8 +100,224 @@
 <script src="weekly-engine.js"></script>
 <script src="weekly-specialized.js"></script>
 <script src="weekly.js"></script>
-</head>
 
+<script>
+
+(function () {
+
+    "use strict";
+
+    function initializeAdineWeeklyCalendar() {
+
+        if (
+            typeof window.jQuery === "undefined" ||
+            typeof window.jQuery.fn.persianDatepicker !== "function"
+        ) {
+            return;
+        }
+
+        const $ = window.jQuery;
+
+        $(".jalali-input").each(function () {
+
+            const input = this;
+
+            if (
+                input.dataset.calendarInitialized === "true"
+            ) {
+                return;
+            }
+
+            input.dataset.calendarInitialized = "true";
+
+            $(input).persianDatepicker({
+
+                format: "YYYY/MM/DD",
+
+                autoClose: true,
+
+                initialValue: false,
+
+                observer: true,
+
+                calendarType: "persian",
+
+                calendar: {
+
+                    persian: {
+
+                        locale: "fa",
+
+                        leapYearMode: "algorithmic"
+
+                    }
+
+                },
+
+                toolbox: {
+
+                    calendarSwitch: false,
+
+                    todayButton: {
+
+                        enabled: true,
+
+                        text: {
+
+                            fa: "امروز"
+
+                        }
+
+                    }
+
+                },
+
+                navigator: {
+
+                    enabled: true,
+
+                    scroll: {
+
+                        enabled: false
+
+                    }
+
+                },
+
+                responsive: true,
+
+                timePicker: {
+
+                    enabled: false
+
+                }
+
+            });
+
+        });
+
+    }
+
+
+    function waitForAdineCalendar() {
+
+        if (
+            typeof window.jQuery !== "undefined" &&
+            typeof window.jQuery.fn.persianDatepicker === "function"
+        ) {
+
+            initializeAdineWeeklyCalendar();
+
+        } else {
+
+            setTimeout(
+                waitForAdineCalendar,
+                150
+            );
+
+        }
+
+    }
+
+
+    window.goToWeeklyReport = function () {
+
+        let flockId = "";
+
+        try {
+
+            const selection =
+                typeof getCurrentSelection === "function"
+                    ? getCurrentSelection()
+                    : null;
+
+            if (
+                selection &&
+                selection.flockId
+            ) {
+
+                flockId =
+                    selection.flockId;
+
+            }
+
+        } catch (error) {
+
+            console.warn(
+                "Weekly selection:",
+                error
+            );
+
+        }
+
+
+        if (!flockId) {
+
+            try {
+
+                const raw =
+                    localStorage.getItem(
+                        "adine_poultry_current_selection"
+                    );
+
+                if (raw) {
+
+                    const parsed =
+                        JSON.parse(raw);
+
+                    flockId =
+                        parsed?.flockId || "";
+
+                }
+
+            } catch (error) {
+
+                console.warn(
+                    "Weekly local selection:",
+                    error
+                );
+
+            }
+
+        }
+
+
+        if (flockId) {
+
+            location.href =
+                "reports.html?flock=" +
+                encodeURIComponent(
+                    flockId
+                );
+
+        } else {
+
+            location.href =
+                "reports.html";
+
+        }
+
+    };
+
+
+    if (
+        document.readyState === "loading"
+    ) {
+
+        document.addEventListener(
+            "DOMContentLoaded",
+            waitForAdineCalendar
+        );
+
+    } else {
+
+        waitForAdineCalendar();
+
+    }
+
+})();
+
+</script>
 <body>
 
 <div class="app-container">

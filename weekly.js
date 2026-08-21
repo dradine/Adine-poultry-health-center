@@ -629,6 +629,9 @@ async function loadCurrentFlock() {
     currentFlock =
         data;
 
+    window.currentFlockForSpecialized =
+        currentFlock;
+
 
     container.innerHTML = `
 
@@ -1680,6 +1683,10 @@ function editWeeklyRecord(
         record.notes
     );
 
+    if (typeof loadWeeklySpecializedMetrics === "function") {
+        loadWeeklySpecializedMetrics(record.production_metrics || record.productionMetrics || {});
+    }
+
 
     const weightsContainer =
         document.getElementById(
@@ -1962,6 +1969,10 @@ function clearWeeklyForm() {
         "weeklyNotes",
         ""
     );
+
+    if (typeof clearWeeklySpecializedMetrics === "function") {
+        clearWeeklySpecializedMetrics();
+    }
 
 
     const weightsContainer =
@@ -2416,6 +2427,11 @@ async function saveWeeklyRecord() {
 
         }
 
+        if (String(currentFlock.status || "active").toLowerCase() === "closed") {
+            alert("این دوره بسته شده است و امکان ثبت یا ویرایش وجود ندارد.");
+            return;
+        }
+
 
         const week =
             getNumber(
@@ -2509,6 +2525,35 @@ async function saveWeeklyRecord() {
                 "weeklyNotes"
             );
 
+        const productionMetrics =
+            typeof getWeeklySpecializedMetrics === "function"
+                ? getWeeklySpecializedMetrics()
+                : {};
+
+        const specializedValidation =
+            typeof validateSpecializedMetrics === "function"
+                ? validateSpecializedMetrics(
+                    currentFlock.production_type || currentFlock.productionType,
+                    productionMetrics
+                )
+                : null;
+
+        if (specializedValidation) {
+            alert(specializedValidation);
+            return;
+        }
+
+        const existingForCumulative =
+            weeklyRecords
+                .filter(item => String(item.id) !== String(editingRecordId || ""));
+
+        const ageDays =
+            currentFlock.placement_date || currentFlock.placementDate
+                ? calculateAgeDays(
+                    currentFlock.placement_date || currentFlock.placementDate,
+                    evaluationDate || todayISO()
+                )
+                : null;
 
         const editingRecord =
             editingRecordId
@@ -2596,6 +2641,33 @@ async function saveWeeklyRecord() {
 
             water_per_bird_ml:
                 waterPerBird,
+
+            age_days:
+                ageDays,
+
+            water_feed_ratio:
+                feedTotal > 0 && waterTotal >= 0
+                    ? Number((waterTotal / feedTotal).toFixed(3))
+                    : null,
+
+            production_metrics:
+                productionMetrics,
+
+            cumulative_fcr:
+                typeof calculateWeeklyCumulativeConversion === "function"
+                    ? calculateWeeklyCumulativeConversion(
+                        existingForCumulative,
+                        {
+                            id: recordId,
+                            feed_total_kg: feedTotal,
+                            average_weight_g: stats.mean,
+                            live_birds: liveBirds,
+                            production_metrics: productionMetrics,
+                            week_number: week
+                        },
+                        currentFlock.production_type || currentFlock.productionType
+                    )
+                    : null,
 
             notes:
                 notes,
@@ -3091,6 +3163,33 @@ function calculateWeeklyHistoryFCR(current) {
     return null;
 }
 
+
+/* =========================================================
+   DELETE WEEKLY RECORD - STRICT CONFIRMATION
+========================================================= */
+async function deleteWeeklyRecord(recordId) {
+    if (!recordId || !currentUser || !currentFlock) return;
+    const record = weeklyRecords.find(r => String(r.id) === String(recordId));
+    if (!record) { alert("رکورد پیدا نشد."); return; }
+    if (String(currentFlock.status || "active").toLowerCase() === "closed") {
+        alert("دوره بسته شده و حذف مجاز نیست.");
+        return;
+    }
+    const week = record.week_number ?? "-";
+    if (!confirm(`هشدار جدی!\nگزارش هفتگی هفته ${week} حذف خواهد شد.\nاین عملیات ممکن است روی گزارش‌های تجمعی اثر بگذارد.\nآیا مطمئن هستید؟`)) return;
+    const typed = prompt(`برای حذف قطعی، عبارت «حذف هفته ${week}» را وارد کنید:`);
+    if (typed !== `حذف هفته ${week}`) { alert("عبارت صحیح وارد نشد؛ حذف لغو شد."); return; }
+    const {error} = await supabaseClient
+        .from("weekly_records")
+        .delete()
+        .eq("id", record.id)
+        .eq("owner_id", currentUser.id)
+        .eq("flock_id", currentFlock.id);
+    if (error) { console.error(error); alert("حذف انجام نشد:\n"+error.message); return; }
+    weeklyRecords = weeklyRecords.filter(r => String(r.id) !== String(record.id));
+    renderHistory();
+    alert("گزارش هفتگی حذف شد.");
+}
 
 /* =========================================================
    DATE DISPLAY
@@ -3967,6 +4066,9 @@ window.saveWeeklyRecord =
 
 window.editWeeklyRecord =
     editWeeklyRecord;
+
+window.deleteWeeklyRecord =
+    deleteWeeklyRecord;
 
 window.cancelEditWeeklyRecord =
     cancelEditWeeklyRecord;

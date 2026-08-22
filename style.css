@@ -1476,3 +1476,350 @@ body.auth-page {
     color:
         #9b2424;
 }
+/* =========================================================
+   AUTH FIX
+   فقط اصلاح نمایش فرم ورود و پیام خطا
+   بدون تغییر منطق JavaScript
+========================================================= */
+
+/* پیام مخفی واقعاً مخفی باشد */
+.hidden {
+    display: none !important;
+}
+
+/* کارت احراز هویت */
+.auth-card {
+    width: 100%;
+    position: relative;
+    direction: rtl;
+}
+
+/* فرم */
+.auth-card form {
+    width: 100%;
+    direction: rtl;
+}
+
+/* گروه فیلد */
+.auth-card .form-group {
+    width: 100%;
+    display: block;
+}
+
+/* عنوان فیلد */
+.auth-card .form-group label {
+    display: block !important;
+    visibility: visible !important;
+
+    width: 100%;
+
+    margin-bottom: 8px;
+
+    color: #34443c;
+
+    font-size: 14px;
+    font-weight: 700;
+    line-height: 1.7;
+
+    text-align: right;
+
+    direction: rtl;
+}
+
+/* فیلدهای ورود */
+.auth-card .form-group input {
+    display: block !important;
+    visibility: visible !important;
+
+    width: 100%;
+
+    height: 52px;
+    min-height: 52px;
+
+    color: #263a32;
+
+    background: #fbfcfb;
+
+    direction: rtl;
+    text-align: right;
+
+    font-family: inherit;
+    font-size: 15px;
+
+    border: 1px solid #d9e0dc;
+    border-radius: 14px;
+
+    padding: 0 14px;
+
+    outline: none;
+}
+
+/* placeholder */
+.auth-card .form-group input::placeholder {
+    color: #89958f;
+    opacity: 1;
+}
+
+/* فوکوس */
+.auth-card .form-group input:focus {
+    border-color: #287b58;
+
+    background: #ffffff;
+
+    box-shadow:
+        0 0 0 4px
+        rgba(40, 123, 88, .10);
+}
+
+/* پیام */
+.auth-card .message {
+
+    width: 100%;
+
+    display: block;
+
+    position: relative;
+
+    margin:
+        0 0 18px;
+
+    padding:
+        12px 14px;
+
+    border-radius: 13px;
+
+    font-family: inherit;
+
+    font-size: 13px;
+
+    font-weight: 600;
+
+    line-height: 1.9;
+
+    text-align: center;
+
+    direction: rtl;
+
+    white-space: normal;
+
+    overflow-wrap: anywhere;
+
+    word-break: normal;
+
+}
+
+/* خطا */
+.auth-card .message.error {
+
+    display: block;
+
+    color: #a92b2b;
+
+    background: #fff0f0;
+
+    border:
+        1px solid
+        #ffd1d1;
+}
+
+/* پیام اطلاعاتی */
+.auth-card .message.info {
+
+    display: block;
+
+    color: #245d91;
+
+    background: #eef6ff;
+
+    border:
+        1px solid
+        #cfe3f7;
+}
+
+/* پیام موفقیت */
+.auth-card .message.success {
+
+    display: block;
+
+    color: #17603f;
+
+    background: #edf9f1;
+
+    border:
+        1px solid
+        #c7e9d2;
+}
+
+/* پیام مخفی */
+.auth-card .message.hidden {
+
+    display: none !important;
+
+    visibility: hidden !important;
+
+    height: 0 !important;
+
+    min-height: 0 !important;
+
+    margin: 0 !important;
+
+    padding: 0 !important;
+
+    border: 0 !important;
+}
+
+/* دکمه */
+.auth-card .primary-button {
+
+    width: 100%;
+
+    height: 53px;
+    min-height: 53px;
+
+    display: flex;
+
+    align-items: center;
+    justify-content: center;
+
+    margin-top: 7px;
+
+    padding: 0 15px;
+
+    border: 0;
+    border-radius: 15px;
+
+    background: #17603f;
+
+    color: #ffffff;
+
+    font-family: inherit;
+
+    font-size: 16px;
+    font-weight: 800;
+
+    line-height: 1;
+
+    text-align: center;
+
+    direction: rtl;
+
+    cursor: pointer;
+
+    white-space: nowrap;
+
+    overflow: hidden;
+
+    box-sizing: border-box;
+}
+
+/* حالت غیرفعال */
+.auth-card .primary-button:disabled {
+
+    opacity: .55;
+
+    cursor: wait;
+
+}
+
+/* فیلد رمز */
+.auth-card .password-field {
+
+    position: relative;
+
+    width: 100%;
+}
+
+/* ورودی رمز */
+.auth-card .password-field input {
+
+    width: 100%;
+
+    padding-left: 75px;
+}
+
+/* دکمه نمایش رمز */
+.auth-card .password-toggle {
+
+    position: absolute;
+
+    left: 8px;
+    top: 7px;
+
+    width: 58px;
+    height: 38px;
+
+    margin: 0;
+    padding: 0;
+
+    border: 0;
+
+    border-radius: 10px;
+
+    background: transparent;
+
+    color: #287b58;
+
+    font-family: inherit;
+
+    font-size: 12px;
+
+    font-weight: 700;
+
+    line-height: 38px;
+
+    cursor: pointer;
+
+    z-index: 5;
+}
+
+/* لینک‌ها */
+.auth-card .auth-links {
+
+    display: block;
+
+    width: 100%;
+
+    margin-top: 22px;
+
+    text-align: center;
+
+    direction: rtl;
+
+    font-family: inherit;
+
+    font-size: 13px;
+
+    line-height: 2;
+}
+
+/* موبایل */
+@media (max-width: 600px) {
+
+    .auth-card {
+
+        width: 100%;
+
+        padding:
+            25px 18px;
+    }
+
+    .auth-card h1 {
+
+        font-size: 22px;
+
+        line-height: 1.7;
+    }
+
+    .auth-card .form-group label {
+
+        font-size: 13px;
+    }
+
+    .auth-card .form-group input {
+
+        height: 51px;
+        min-height: 51px;
+    }
+
+}
+

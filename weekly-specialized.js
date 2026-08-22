@@ -129,6 +129,32 @@ function loadWeeklySpecializedMetrics(metrics){
 function clearWeeklySpecializedMetrics(){
   document.querySelectorAll("[data-weekly-specialized]").forEach(input=>input.value="");
 }
+
+function calculateWeeklySpecializedDerived(metrics, flock, previousRecords) {
+  const out={...(metrics||{})};
+  const type=weeklySpecializedType(flock);
+  const rows=Array.isArray(previousRecords)?previousRecords:[];
+  const live=Number(out.live_birds||flock?.live_birds||0);
+
+  if((type==='layer'||type==='breeder') && out.egg_mass_kg==null){
+    const eggs=Number(out.egg_count??out.female_egg_count??0);
+    const eggWeight=Number(out.egg_weight_g||0);
+    if(eggs>0 && eggWeight>0) out.egg_mass_kg=Number((eggs*eggWeight/1000).toFixed(3));
+  }
+  if((type==='layer'||type==='breeder') && out.hen_day_pct==null && live>0){
+    const eggs=Number(out.egg_count??out.female_egg_count??0);
+    if(eggs>0) out.hen_day_pct=Number((eggs/(live*7)*100).toFixed(3));
+  }
+  if(type==='layer' && out.hen_housed_pct==null && live>0){
+    const eggs=Number(out.egg_count||0);
+    if(eggs>0) out.hen_housed_pct=Number((eggs/(live*7)*100).toFixed(3));
+  }
+  if(type==='breeder' && out.hatching_egg_pct==null && Number(out.female_egg_count)>0 && Number(out.hatching_egg_count)>0){
+    out.hatching_egg_pct=Number((Number(out.hatching_egg_count)/Number(out.female_egg_count)*100).toFixed(3));
+  }
+  return out;
+}
+
 function calculateWeeklyCumulativeConversion(records,current,type){
   const rows=Array.isArray(records)?[...records]:[];
   const currentFeed=Number(current?.feed_total_kg||0);
@@ -181,6 +207,7 @@ window.getWeeklySpecializedMetrics=getWeeklySpecializedMetrics;
 window.loadWeeklySpecializedMetrics=loadWeeklySpecializedMetrics;
 window.clearWeeklySpecializedMetrics=clearWeeklySpecializedMetrics;
 window.calculateWeeklyCumulativeConversion=calculateWeeklyCumulativeConversion;
+window.calculateWeeklySpecializedDerived=calculateWeeklySpecializedDerived;
 window.validateSpecializedMetrics=validateSpecializedMetrics;
 window.closeCurrentFlockPeriod=closeCurrentFlockPeriod;
 document.addEventListener("DOMContentLoaded",()=>{

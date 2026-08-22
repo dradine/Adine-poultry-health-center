@@ -7,23 +7,21 @@ document.addEventListener("DOMContentLoaded", () => {
     const message = document.getElementById("message");
     const togglePassword = document.getElementById("togglePassword");
 
+    if (!form || !emailInput || !passwordInput || !button || !message) {
+        console.error("Login UI initialization failed.");
+        return;
+    }
 
     function showMessage(text, type = "error") {
-
         message.textContent = text;
-
         message.className = "message " + type;
-
         message.classList.remove("hidden");
     }
 
-
     function hideMessage() {
-
         message.classList.add("hidden");
-
+        message.textContent = "";
     }
-
 
     const params =
         new URLSearchParams(window.location.search);
@@ -32,14 +30,8 @@ document.addEventListener("DOMContentLoaded", () => {
         params.get("message");
 
     if (urlMessage) {
-
-        showMessage(
-            urlMessage,
-            "info"
-        );
-
+        showMessage(urlMessage, "info");
     }
-
 
     if (togglePassword) {
 
@@ -47,32 +39,24 @@ document.addEventListener("DOMContentLoaded", () => {
             "click",
             () => {
 
-                if (
-                    passwordInput.type ===
-                    "password"
-                ) {
+                const visible =
+                    passwordInput.type === "text";
 
-                    passwordInput.type =
-                        "text";
+                passwordInput.type =
+                    visible ? "password" : "text";
 
-                    togglePassword.textContent =
-                        "پنهان";
+                togglePassword.textContent =
+                    visible ? "ÙÙØ§ÛØ´" : "Ù¾ÙÙØ§Ù";
 
-                } else {
-
-                    passwordInput.type =
-                        "password";
-
-                    togglePassword.textContent =
-                        "نمایش";
-
-                }
+                togglePassword.setAttribute(
+                    "aria-label",
+                    visible ? "ÙÙØ§ÛØ´ Ø±ÙØ²" : "Ù¾ÙÙØ§Ù Ú©Ø±Ø¯Ù Ø±ÙØ²"
+                );
 
             }
         );
 
     }
-
 
     form.addEventListener(
         "submit",
@@ -90,233 +74,145 @@ document.addEventListener("DOMContentLoaded", () => {
             const password =
                 passwordInput.value;
 
-
             if (!email || !password) {
 
                 showMessage(
-                    "ایمیل و رمز عبور را وارد کنید."
+                    "Ø§ÛÙÛÙ Ù Ø±ÙØ² Ø¹Ø¨ÙØ± Ø±Ø§ ÙØ§Ø±Ø¯ Ú©ÙÛØ¯."
                 );
 
                 return;
+
             }
 
-
             button.disabled = true;
-
-            button.textContent =
-                "در حال ورود...";
-
+            button.textContent = "Ø¯Ø± Ø­Ø§Ù ÙØ±ÙØ¯â¦";
 
             try {
 
                 const {
                     data,
                     error
-                } =
-                await supabaseClient.auth
-                    .signInWithPassword({
-                        email: email,
-                        password: password
-                    });
-
-
-                /*
-                 * خطای واقعی Supabase
-                 */
+                } = await supabaseClient.auth.signInWithPassword({
+                    email,
+                    password
+                });
 
                 if (error) {
 
-                    console.error(
-                        "LOGIN ERROR:",
-                        error
-                    );
+                    console.error("LOGIN ERROR:", error);
 
-                    console.error(
-                        "LOGIN ERROR CODE:",
-                        error.code
-                    );
-
-                    console.error(
-                        "LOGIN ERROR MESSAGE:",
-                        error.message
-                    );
-
-
-                    /*
-                     * پیام‌های مشخص
-                     */
+                    const errorText =
+                        String(error.message || "")
+                            .toLowerCase();
 
                     if (
-                        error.message &&
-                        error.message
-                            .toLowerCase()
-                            .includes(
-                                "email not confirmed"
-                            )
+                        errorText.includes("email not confirmed")
                     ) {
 
                         showMessage(
-                            "ایمیل شما هنوز تأیید نشده است."
+                            "Ø§ÛÙÛÙ Ø´ÙØ§ ÙÙÙØ² ØªØ£ÛÛØ¯ ÙØ´Ø¯Ù Ø§Ø³Øª."
                         );
 
                     } else {
 
                         showMessage(
                             error.message ||
-                            "ورود انجام نشد."
+                            "ÙØ±ÙØ¯ Ø§ÙØ¬Ø§Ù ÙØ´Ø¯."
                         );
 
                     }
 
                     return;
+
                 }
 
-
-                if (!data || !data.user) {
+                if (!data?.user) {
 
                     showMessage(
-                        "ورود انجام نشد؛ حساب کاربری پیدا نشد."
+                        "ÙØ±ÙØ¯ Ø§ÙØ¬Ø§Ù ÙØ´Ø¯Ø Ø­Ø³Ø§Ø¨ Ú©Ø§Ø±Ø¨Ø±Û Ù¾ÛØ¯Ø§ ÙØ´Ø¯."
                     );
 
                     return;
+
                 }
 
-
-                /*
-                 * دریافت پروفایل
-                 */
-
                 const profile =
-                    await AdineAuth
-                        .getProfile(
-                            data.user.id
-                        );
-
+                    await AdineAuth.getProfile(
+                        data.user.id
+                    );
 
                 if (!profile) {
 
-                    await supabaseClient
-                        .auth
-                        .signOut();
+                    await supabaseClient.auth.signOut();
 
                     showMessage(
-                        "حساب شما در سامانه ثبت نشده است. لطفاً با مالک سامانه تماس بگیرید."
+                        "Ø­Ø³Ø§Ø¨ Ø´ÙØ§ Ø¯Ø± Ø³Ø§ÙØ§ÙÙ Ø«Ø¨Øª ÙØ´Ø¯Ù Ø§Ø³Øª. ÙØ·ÙØ§Ù Ø¨Ø§ ÙØ§ÙÚ© Ø³Ø§ÙØ§ÙÙ ØªÙØ§Ø³ Ø¨Ú¯ÛØ±ÛØ¯."
                     );
 
                     return;
+
                 }
 
-
                 /*
-                 * بررسی وضعیت حساب
+                 * ÙÙÙ:
+                 * ÙØ¨ÙØ§Ù login.js ÙÙØ· status === active Ø±Ø§ ÙØ¨ÙÙ ÙÛâÚ©Ø±Ø¯Ø
+                 * Ø¯Ø± Ø­Ø§ÙÛ Ú©Ù Dashboard Ù auth.js access_status=approved
+                 * Ø±Ø§ ÙÙ ÙØ¨ÙÙ ÙÛâÚ©Ø±Ø¯ÙØ¯. Ø§ÛÙ Ø§Ø®ØªÙØ§Ù Ø¨Ø§Ø¹Ø« ÙØ±ÙØ¯/Ø®Ø±ÙØ¬
+                 * ÙØ§ÙÙØ¸Ù ÙÛâØ´Ø¯.
                  */
+                if (!AdineAuth.isActiveProfile(profile)) {
 
-                if (
-                    profile.status !==
-                    "active"
-                ) {
+                    const text =
+                        AdineAuth.getAccessMessage(profile);
 
-                    let text =
-                        "دسترسی شما به سامانه فعال نیست.";
-
-
-                    if (
-                        profile.status ===
-                        "pending"
-                    ) {
-
-                        text =
-                            "ایمیل شما تأیید شده است، اما حساب هنوز توسط مالک فعال نشده است.";
-
-                    }
-
-
-                    if (
-                        profile.status ===
-                        "suspended"
-                    ) {
-
-                        text =
-                            "دسترسی حساب شما موقتاً غیرفعال شده است.";
-
-                    }
-
-
-                    if (
-                        profile.status ===
-                        "blocked"
-                    ) {
-
-                        text =
-                            "حساب شما مسدود شده است.";
-
-                    }
-
-
-                    if (
-                        profile.status ===
-                        "removed"
-                    ) {
-
-                        text =
-                            "دسترسی شما به سامانه لغو شده است.";
-
-                    }
-
-
-                    await supabaseClient
-                        .auth
-                        .signOut();
-
+                    await supabaseClient.auth.signOut();
 
                     showMessage(text);
 
                     return;
+
                 }
 
+                try {
 
-                /*
-                 * ثبت آخرین فعالیت
-                 */
-
-                const {
-                    error: activityError
-                } =
-                await supabaseClient
-                    .rpc(
+                    const {
+                        error: activityError
+                    } = await supabaseClient.rpc(
                         "update_my_activity"
                     );
 
+                    if (activityError) {
+                        console.warn(
+                            "ACTIVITY UPDATE ERROR:",
+                            activityError
+                        );
+                    }
 
-                if (activityError) {
+                } catch (activityException) {
 
                     console.warn(
-                        "ACTIVITY UPDATE ERROR:",
-                        activityError
+                        "ACTIVITY UPDATE EXCEPTION:",
+                        activityException
                     );
 
                 }
 
-
-                /*
-                 * انتقال کاربر
-                 */
-
                 if (
-                    profile.role ===
+                    String(profile.role || "").toLowerCase() ===
                     "owner"
                 ) {
 
-                    window.location.href =
-                        "owner.html";
+                    window.location.replace(
+                        "owner.html"
+                    );
 
                 } else {
 
-                    window.location.href =
-                        "Dashboard.html";
+                    window.location.replace(
+                        "Dashboard.html"
+                    );
 
                 }
-
 
             } catch (error) {
 
@@ -327,16 +223,13 @@ document.addEventListener("DOMContentLoaded", () => {
 
                 showMessage(
                     error.message ||
-                    "خطایی در ورود رخ داد."
+                    "Ø®Ø·Ø§ÛÛ Ø¯Ø± ÙØ±ÙØ¯ Ø±Ø® Ø¯Ø§Ø¯. Ø§ØªØµØ§Ù Ø§ÛÙØªØ±ÙØª Ù ØªÙØ¸ÛÙØ§Øª Ø³Ø§ÙØ§ÙÙ Ø±Ø§ Ø¨Ø±Ø±Ø³Û Ú©ÙÛØ¯."
                 );
-
 
             } finally {
 
                 button.disabled = false;
-
-                button.textContent =
-                    "ورود";
+                button.textContent = "ÙØ±ÙØ¯";
 
             }
 

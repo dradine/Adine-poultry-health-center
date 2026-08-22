@@ -1,195 +1,274 @@
-document.addEventListener("DOMContentLoaded", () => {
+document.addEventListener("DOMContentLoaded", function () {
 
-    const form = document.getElementById("loginForm");
-    const emailInput = document.getElementById("email");
-    const passwordInput = document.getElementById("password");
-    const button = document.getElementById("loginButton");
-    const message = document.getElementById("message");
-    const togglePassword = document.getElementById("togglePassword");
+    "use strict";
 
-    if (!form || !emailInput || !passwordInput || !button || !message) {
-        console.error("Login UI initialization failed.");
+
+    /* =====================================================
+       ELEMENTS
+    ===================================================== */
+
+    const form =
+        document.getElementById("loginForm");
+
+    const emailInput =
+        document.getElementById("email");
+
+    const passwordInput =
+        document.getElementById("password");
+
+    const button =
+        document.getElementById("loginButton");
+
+    const buttonText =
+        document.getElementById("loginButtonText");
+
+    const message =
+        document.getElementById("message");
+
+    const togglePassword =
+        document.getElementById("togglePassword");
+
+
+    /* =====================================================
+       UI CHECK
+    ===================================================== */
+
+    if (
+        !form ||
+        !emailInput ||
+        !passwordInput ||
+        !button ||
+        !message
+    ) {
+
+        console.error(
+            "Login UI initialization failed."
+        );
+
         return;
     }
 
 
     /* =====================================================
-       MESSAGE
+       SHOW MESSAGE
     ===================================================== */
 
-    function showMessage(text, type = "error") {
+    function showMessage(
+        text,
+        type = "error"
+    ) {
 
-        message.textContent = String(text || "");
+        message.textContent =
+            String(text || "");
 
-        message.className = "message " + type;
+        message.className =
+            "message " + type;
 
-        message.classList.remove("hidden");
-    }
+        message.classList.remove(
+            "hidden"
+        );
 
+        message.style.display =
+            "block";
 
-    function hideMessage() {
+        message.setAttribute(
+            "aria-hidden",
+            "false"
+        );
 
-        message.classList.add("hidden");
-
-        message.textContent = "";
     }
 
 
     /* =====================================================
-       SUPABASE ERROR → PERSIAN MESSAGE
+       HIDE MESSAGE
     ===================================================== */
 
-    function getPersianLoginError(error) {
+    function hideMessage() {
 
-        const rawMessage =
-            String(error?.message || "")
-                .trim();
+        message.textContent = "";
 
-        const normalized =
-            rawMessage
-                .toLowerCase()
-                .replace(/\s+/g, " ");
+        message.className =
+            "message hidden";
+
+        message.style.display =
+            "none";
+
+        message.setAttribute(
+            "aria-hidden",
+            "true"
+        );
+
+    }
 
 
-        /*
-         * اطلاعات ورود اشتباه
-         */
+    /* =====================================================
+       PERSIAN LOGIN ERRORS
+    ===================================================== */
+
+    function getLoginErrorMessage(
+        error
+    ) {
+
+        const text =
+            String(
+                error?.message ||
+                error?.error_description ||
+                ""
+            )
+            .trim()
+            .toLowerCase();
+
+
+        /* INVALID LOGIN */
+
         if (
-            normalized.includes("invalid login credentials") ||
-            normalized.includes("invalid credentials") ||
-            normalized.includes("invalid email or password") ||
-            normalized.includes("email or password") ||
-            normalized.includes("wrong password") ||
-            normalized.includes("incorrect password")
+            text.includes(
+                "invalid login credentials"
+            ) ||
+            text.includes(
+                "invalid credentials"
+            ) ||
+            text.includes(
+                "invalid email or password"
+            )
         ) {
 
             return "ایمیل یا رمز عبور اشتباه است.";
         }
 
 
-        /*
-         * ایمیل تأیید نشده
-         */
+        /* EMAIL NOT CONFIRMED */
+
         if (
-            normalized.includes("email not confirmed") ||
-            normalized.includes("email_not_confirmed") ||
-            normalized.includes("email confirmation")
+            text.includes(
+                "email not confirmed"
+            )
         ) {
 
             return "ایمیل شما هنوز تأیید نشده است.";
         }
 
 
-        /*
-         * کاربر پیدا نشد
-         */
+        /* USER NOT FOUND */
+
         if (
-            normalized.includes("user not found") ||
-            normalized.includes("user_not_found")
+            text.includes(
+                "user not found"
+            )
         ) {
 
             return "حساب کاربری پیدا نشد.";
         }
 
 
-        /*
-         * محدودیت درخواست ورود
-         */
+        /* TOO MANY REQUESTS */
+
         if (
-            normalized.includes("too many requests") ||
-            normalized.includes("rate limit") ||
-            normalized.includes("rate_limit")
+            text.includes(
+                "too many requests"
+            ) ||
+            text.includes(
+                "rate limit"
+            )
         ) {
 
             return "تعداد تلاش‌های ورود بیش از حد مجاز است. لطفاً چند دقیقه بعد دوباره تلاش کنید.";
         }
 
 
-        /*
-         * شبکه
-         */
+        /* NETWORK */
+
         if (
-            normalized.includes("network") ||
-            normalized.includes("failed to fetch") ||
-            normalized.includes("fetch failed") ||
-            normalized.includes("networkerror")
+            text.includes(
+                "failed to fetch"
+            ) ||
+            text.includes(
+                "network"
+            ) ||
+            text.includes(
+                "networkerror"
+            )
         ) {
 
             return "ارتباط با سامانه برقرار نشد. اتصال اینترنت را بررسی کنید.";
         }
 
 
-        /*
-         * سرویس احراز هویت
-         */
-        if (
-            normalized.includes("service unavailable") ||
-            normalized.includes("temporarily unavailable")
-        ) {
+        /* DEFAULT */
 
-            return "سرویس ورود موقتاً در دسترس نیست. لطفاً دوباره تلاش کنید.";
-        }
-
-
-        /*
-         * اگر Supabase خطای دیگری داد،
-         * متن انگلیسی آن را مستقیماً نمایش نمی‌دهیم.
-         */
         return "ورود انجام نشد. ایمیل و رمز عبور خود را بررسی کنید.";
+
     }
 
 
     /* =====================================================
-       URL MESSAGE
+       CHECK SUPABASE
     ===================================================== */
 
-    const params =
-        new URLSearchParams(window.location.search);
+    function checkSupabase() {
 
-    const urlMessage =
-        params.get("message");
+        if (
+            typeof window.supabaseClient ===
+            "undefined"
+        ) {
 
-    if (urlMessage) {
+            return false;
+        }
 
-        showMessage(
-            urlMessage,
-            "info"
-        );
+        if (
+            !window.supabaseClient ||
+            !window.supabaseClient.auth
+        ) {
+
+            return false;
+        }
+
+        return true;
     }
 
 
     /* =====================================================
-       PASSWORD SHOW / HIDE
+       PASSWORD TOGGLE
     ===================================================== */
 
     if (togglePassword) {
 
         togglePassword.addEventListener(
             "click",
-            () => {
+            function () {
 
                 const isVisible =
-                    passwordInput.type === "text";
+                    passwordInput.type ===
+                    "text";
 
 
-                passwordInput.type =
-                    isVisible
-                        ? "password"
-                        : "text";
+                if (isVisible) {
 
+                    passwordInput.type =
+                        "password";
 
-                togglePassword.textContent =
-                    isVisible
-                        ? "نمایش"
-                        : "پنهان";
+                    togglePassword.textContent =
+                        "نمایش";
 
+                    togglePassword.setAttribute(
+                        "aria-label",
+                        "نمایش رمز"
+                    );
 
-                togglePassword.setAttribute(
-                    "aria-label",
-                    isVisible
-                        ? "نمایش رمز"
-                        : "پنهان کردن رمز"
-                );
+                } else {
+
+                    passwordInput.type =
+                        "text";
+
+                    togglePassword.textContent =
+                        "پنهان";
+
+                    togglePassword.setAttribute(
+                        "aria-label",
+                        "پنهان کردن رمز"
+                    );
+
+                }
 
             }
         );
@@ -198,19 +277,50 @@ document.addEventListener("DOMContentLoaded", () => {
 
 
     /* =====================================================
-       LOGIN SUBMIT
+       URL MESSAGE
+    ===================================================== */
+
+    try {
+
+        const params =
+            new URLSearchParams(
+                window.location.search
+            );
+
+        const urlMessage =
+            params.get("message");
+
+        if (urlMessage) {
+
+            showMessage(
+                urlMessage,
+                "info"
+            );
+        }
+
+    } catch (error) {
+
+        console.warn(
+            "URL message error:",
+            error
+        );
+
+    }
+
+
+    /* =====================================================
+       LOGIN
     ===================================================== */
 
     form.addEventListener(
         "submit",
-        async (event) => {
+        async function (event) {
 
             event.preventDefault();
 
 
-            /*
-             * جلوگیری از دوبار کلیک
-             */
+            /* PREVENT DOUBLE CLICK */
+
             if (button.disabled) {
                 return;
             }
@@ -235,19 +345,6 @@ document.addEventListener("DOMContentLoaded", () => {
             /* =================================================
                VALIDATION
             ================================================= */
-
-            if (!email && !password) {
-
-                showMessage(
-                    "ایمیل و رمز عبور را وارد کنید.",
-                    "error"
-                );
-
-                emailInput.focus();
-
-                return;
-            }
-
 
             if (!email) {
 
@@ -276,38 +373,72 @@ document.addEventListener("DOMContentLoaded", () => {
 
 
             /* =================================================
+               SUPABASE CHECK
+            ================================================= */
+
+            if (!checkSupabase()) {
+
+                showMessage(
+                    "سامانه ورود به حساب کاربری بارگذاری نشده است. لطفاً صفحه را دوباره بارگذاری کنید.",
+                    "error"
+                );
+
+                console.error(
+                    "supabaseClient is not available."
+                );
+
+                return;
+            }
+
+
+            /* =================================================
                LOADING
             ================================================= */
 
-            button.disabled = true;
+            button.disabled =
+                true;
 
             button.setAttribute(
                 "aria-busy",
                 "true"
             );
 
-            button.textContent =
-                "در حال ورود…";
+
+            if (buttonText) {
+
+                buttonText.textContent =
+                    "در حال ورود…";
+
+            } else {
+
+                button.textContent =
+                    "در حال ورود…";
+            }
 
 
             try {
 
+
                 /* =================================================
-                   SUPABASE AUTH
+                   SIGN IN
                 ================================================= */
 
-                const {
-                    data,
-                    error
-                } =
-                    await supabaseClient.auth.signInWithPassword({
-                        email,
-                        password
+                const result =
+                    await window.supabaseClient.auth.signInWithPassword({
+                        email: email,
+                        password: password
                     });
 
 
+                const data =
+                    result?.data;
+
+                const error =
+                    result?.error;
+
+
                 /* =================================================
-                   LOGIN ERROR
+                   AUTH ERROR
                 ================================================= */
 
                 if (error) {
@@ -318,15 +449,13 @@ document.addEventListener("DOMContentLoaded", () => {
                     );
 
 
-                    /*
-                     * مهم:
-                     * هیچ متن خام انگلیسی Supabase
-                     * مستقیماً به کاربر نشان داده نمی‌شود.
-                     */
                     showMessage(
-                        getPersianLoginError(error),
+                        getLoginErrorMessage(
+                            error
+                        ),
                         "error"
                     );
+
 
                     return;
                 }
@@ -351,8 +480,24 @@ document.addEventListener("DOMContentLoaded", () => {
                    PROFILE
                 ================================================= */
 
+                if (
+                    typeof window.AdineAuth ===
+                    "undefined"
+                ) {
+
+                    await window.supabaseClient.auth.signOut();
+
+                    showMessage(
+                        "سامانه احراز هویت به‌درستی بارگذاری نشده است.",
+                        "error"
+                    );
+
+                    return;
+                }
+
+
                 const profile =
-                    await AdineAuth.getProfile(
+                    await window.AdineAuth.getProfile(
                         data.user.id
                     );
 
@@ -363,7 +508,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
                 if (!profile) {
 
-                    await supabaseClient.auth.signOut();
+                    await window.supabaseClient.auth.signOut();
 
                     showMessage(
                         "حساب شما در سامانه ثبت نشده است. لطفاً با مالک سامانه تماس بگیرید.",
@@ -375,25 +520,30 @@ document.addEventListener("DOMContentLoaded", () => {
 
 
                 /* =================================================
-                   ACCOUNT STATUS
+                   ACCOUNT ACCESS
                 ================================================= */
 
-                if (!AdineAuth.isActiveProfile(profile)) {
+                if (
+                    !window.AdineAuth
+                        .isActiveProfile(profile)
+                ) {
 
                     const accessMessage =
-                        AdineAuth.getAccessMessage(
-                            profile
-                        );
+                        window.AdineAuth
+                            .getAccessMessage(
+                                profile
+                            );
 
 
-                    await supabaseClient.auth.signOut();
+                    await window.supabaseClient.auth.signOut();
 
 
                     showMessage(
                         accessMessage ||
-                        "دسترسی حساب شما به سامانه فعال نیست.",
+                        "دسترسی حساب شما فعال نیست.",
                         "error"
                     );
+
 
                     return;
                 }
@@ -405,28 +555,29 @@ document.addEventListener("DOMContentLoaded", () => {
 
                 try {
 
-                    const {
-                        error: activityError
-                    } =
-                        await supabaseClient.rpc(
+                    const activityResult =
+                        await window.supabaseClient.rpc(
                             "update_my_activity"
                         );
 
 
-                    if (activityError) {
+                    if (
+                        activityResult?.error
+                    ) {
 
                         console.warn(
                             "ACTIVITY UPDATE ERROR:",
-                            activityError
+                            activityResult.error
                         );
                     }
 
-                } catch (activityException) {
+                } catch (activityError) {
 
                     console.warn(
                         "ACTIVITY UPDATE EXCEPTION:",
-                        activityException
+                        activityError
                     );
+
                 }
 
 
@@ -434,10 +585,16 @@ document.addEventListener("DOMContentLoaded", () => {
                    REDIRECT
                 ================================================= */
 
+                const role =
+                    String(
+                        profile.role || ""
+                    )
+                    .trim()
+                    .toLowerCase();
+
+
                 if (
-                    String(profile.role || "")
-                        .toLowerCase() ===
-                    "owner"
+                    role === "owner"
                 ) {
 
                     window.location.replace(
@@ -449,6 +606,7 @@ document.addEventListener("DOMContentLoaded", () => {
                     window.location.replace(
                         "Dashboard.html"
                     );
+
                 }
 
 
@@ -461,21 +619,34 @@ document.addEventListener("DOMContentLoaded", () => {
 
 
                 showMessage(
-                    "خطایی هنگام ورود رخ داد. اتصال اینترنت و تنظیمات سامانه را بررسی کنید.",
+                    getLoginErrorMessage(
+                        error
+                    ),
                     "error"
                 );
 
 
             } finally {
 
-                button.disabled = false;
+                button.disabled =
+                    false;
 
                 button.removeAttribute(
                     "aria-busy"
                 );
 
-                button.textContent =
-                    "ورود";
+
+                if (buttonText) {
+
+                    buttonText.textContent =
+                        "ورود";
+
+                } else {
+
+                    button.textContent =
+                        "ورود";
+                }
+
             }
 
         }

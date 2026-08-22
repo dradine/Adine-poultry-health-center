@@ -573,50 +573,46 @@
     </main>
 
 
-    <nav class="bottom-nav">
+    <nav class="bottom-nav" aria-label="ناوبری اصلی">
 
-        <button
-            type="button"
-            onclick="location.href='Dashboard.html'"
-        >
-            🏠
-            <br>
-            خانه
-        </button>
+    <button
+        type="button"
+        onclick="window.location.href='Dashboard.html'"
+        aria-label="خانه"
+    >
+        <span data-icon="home"></span>
+        <small>خانه</small>
+    </button>
 
+    <button
+        type="button"
+        onclick="window.location.href='Farms.html'"
+        aria-label="فارم‌ها"
+    >
+        <span data-icon="farm"></span>
+        <small>فارم‌ها</small>
+    </button>
 
-        <button
-            type="button"
-            onclick="location.href='Farms.html'"
-        >
-            🏭
-            <br>
-            فارم‌ها
-        </button>
+    <button
+        class="active"
+        type="button"
+        onclick="window.location.href='flocks.html'"
+        aria-label="سالن و گله"
+    >
+        <span data-icon="flock"></span>
+        <small>سالن و گله</small>
+    </button>
 
+    <button
+        type="button"
+        onclick="window.location.href='weekly.html'"
+        aria-label="هفتگی"
+    >
+        <span data-icon="scale"></span>
+        <small>هفتگی</small>
+    </button>
 
-        <button
-            class="active"
-            type="button"
-            onclick="location.href='flocks.html'"
-        >
-            🐔
-            <br>
-            گله
-        </button>
-
-
-        <button
-            type="button"
-            onclick="location.href='weekly.html'"
-        >
-            ⚖️
-            <br>
-            هفتگی
-        </button>
-
-    </nav>
-
+</nav>
 </div>
 
 

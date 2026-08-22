@@ -549,3 +549,217 @@ body {
         width: 90px;
         height: 90px;
     }
+
+/* =========================================================
+   LOGIN MESSAGE FIX
+   ========================================================= */
+
+.message.hidden {
+
+    display: none !important;
+
+    visibility: hidden !important;
+
+    height: 0 !important;
+
+    min-height: 0 !important;
+
+    max-height: 0 !important;
+
+    margin: 0 !important;
+
+    padding: 0 !important;
+
+    border: 0 !important;
+
+    overflow: hidden !important;
+
+}
+
+
+.message {
+
+    width: 100%;
+
+    box-sizing: border-box;
+
+    display: block;
+
+    position: relative;
+
+    margin:
+        0 0 18px;
+
+    padding:
+        13px 14px;
+
+    border-radius:
+        13px;
+
+    font-family:
+        inherit;
+
+    font-size:
+        13px;
+
+    font-weight:
+        700;
+
+    line-height:
+        1.9;
+
+    text-align:
+        center;
+
+    direction:
+        rtl;
+
+    white-space:
+        normal;
+
+    overflow-wrap:
+        anywhere;
+
+}
+
+
+/* ERROR */
+
+.message.error {
+
+    display: block !important;
+
+    visibility: visible !important;
+
+    height: auto !important;
+
+    max-height: none !important;
+
+    margin-bottom: 18px !important;
+
+    padding:
+        13px 14px !important;
+
+    color:
+        #a92b2b;
+
+    background:
+        #fff0f0;
+
+    border:
+        1px solid #ffd1d1;
+}
+
+
+/* INFO */
+
+.message.info {
+
+    display: block !important;
+
+    visibility: visible !important;
+
+    height: auto !important;
+
+    max-height: none !important;
+
+    margin-bottom: 18px !important;
+
+    padding:
+        13px 14px !important;
+
+    color:
+        #245d91;
+
+    background:
+        #eef6ff;
+
+    border:
+        1px solid #cfe3f7;
+}
+
+
+/* SUCCESS */
+
+.message.success {
+
+    display: block !important;
+
+    visibility: visible !important;
+
+    height: auto !important;
+
+    max-height: none !important;
+
+    margin-bottom: 18px !important;
+
+    padding:
+        13px 14px !important;
+
+    color:
+        #17603f;
+
+    background:
+        #edf9f1;
+
+    border:
+        1px solid #c7e9d2;
+}
+
+
+/* LOGIN BUTTON */
+
+#loginButton {
+
+    display: flex;
+
+    align-items: center;
+
+    justify-content: center;
+
+    position: relative;
+
+    direction: rtl;
+
+    text-align: center;
+
+}
+
+
+/* INPUTS */
+
+#loginForm input {
+
+    display: block !important;
+
+    visibility: visible !important;
+
+}
+
+
+/* LABELS */
+
+#loginForm label {
+
+    display: block !important;
+
+    visibility: visible !important;
+
+}
+
+
+/* MOBILE */
+
+@media (max-width: 600px) {
+
+    .message {
+
+        font-size:
+            12px;
+
+        line-height:
+            1.9;
+
+    }
+
+}

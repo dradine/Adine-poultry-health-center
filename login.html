@@ -1,5 +1,4 @@
-‏<!DOCTYPE html>
-
+<!DOCTYPE html>
 <html lang="fa" dir="rtl">
 
 <head>
@@ -16,8 +15,13 @@
         content="#123b2a"
     >
 
+    <meta
+        name="description"
+        content="ورود به سامانه مدیریت و پایش طیور مرکز تخصصی سلامت طیور آدینه"
+    >
+
     <title>
-        ورود | مرکز تخصصی سلامت طیور آدینه
+        ورود | سامانه مدیریت و پایش طیور
     </title>
 
     <link
@@ -27,34 +31,63 @@
 
 </head>
 
+
 <body class="auth-page">
+
 
     <main class="auth-wrapper">
 
-        <section class="auth-card">
+        <section
+            class="auth-card"
+            aria-labelledby="loginTitle"
+        >
+
+
+            <!-- LOGO -->
 
             <div class="auth-logo">
 
-    <img
-        src="IMG_4309.png"
-        alt="مرکز تخصصی سلامت طیور آدینه"
-    >
+                <img
+                    src="IMG_4309.png"
+                    alt="لوگوی مرکز تخصصی سلامت طیور آدینه"
+                >
 
-</div>
-            <h1>
-                ورود به سامانه
+            </div>
+
+
+            <!-- TITLE -->
+
+            <h1 id="loginTitle">
+                مرکز تخصصی سلامت طیور آدینه
             </h1>
 
+
             <p class="auth-subtitle">
-                 پایش و مدیریت فارم
+                سامانه مدیریت و پایش طیور
             </p>
+
+
+            <!-- MESSAGE -->
 
             <div
                 id="message"
                 class="message hidden"
+                role="alert"
+                aria-live="assertive"
+                aria-atomic="true"
             ></div>
 
-            <form id="loginForm">
+
+            <!-- LOGIN FORM -->
+
+            <form
+                id="loginForm"
+                novalidate
+                autocomplete="on"
+            >
+
+
+                <!-- EMAIL -->
 
                 <div class="form-group">
 
@@ -64,13 +97,19 @@
 
                     <input
                         id="email"
+                        name="email"
                         type="email"
-                        autocomplete="email"
-                        placeholder="ایمیل خود را وارد کنید"
+                        inputmode="email"
+                        autocomplete="username"
+                        placeholder="ایمیل حساب کاربری"
+                        dir="ltr"
                         required
                     >
 
                 </div>
+
+
+                <!-- PASSWORD -->
 
                 <div class="form-group">
 
@@ -78,15 +117,19 @@
                         رمز عبور
                     </label>
 
+
                     <div class="password-field">
 
                         <input
                             id="password"
+                            name="password"
                             type="password"
                             autocomplete="current-password"
                             placeholder="رمز عبور"
+                            dir="ltr"
                             required
                         >
+
 
                         <button
                             type="button"
@@ -101,15 +144,24 @@
 
                 </div>
 
+
+                <!-- LOGIN -->
+
                 <button
                     type="submit"
                     id="loginButton"
                     class="primary-button"
                 >
-                    ورود
+                    <span id="loginButtonText">
+                        ورود
+                    </span>
                 </button>
 
+
             </form>
+
+
+            <!-- LINKS -->
 
             <div class="auth-links">
 
@@ -117,7 +169,9 @@
                     رمز عبور را فراموش کرده‌ام
                 </a>
 
-                <span> | </span>
+                <span aria-hidden="true">
+                    |
+                </span>
 
                 <a href="register.html">
                     ثبت‌نام
@@ -125,16 +179,34 @@
 
             </div>
 
+
         </section>
 
     </main>
 
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+    <!-- SUPABASE -->
+
+    <script
+        src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"
+    ></script>
+
+
+    <!-- CONFIG -->
 
     <script src="config.js"></script>
 
+
+    <!-- AUTH -->
+
     <script src="auth.js"></script>
+
+
+    <!-- LOGIN -->
 
     <script src="login.js"></script>
 
+
 </body>
+
+</html>

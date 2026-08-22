@@ -496,11 +496,20 @@ function getReportStandardSafely(
 
     try {
 
+        let resolvedGenetics = genetics;
+        let resolvedStrain = strain;
+
+        if (typeof findPoultryStandardIdentity === "function") {
+            const identity = findPoultryStandardIdentity(type, genetics, strain);
+            resolvedGenetics = identity.geneticsId || genetics;
+            resolvedStrain = identity.strain || strain;
+        }
+
         const standard =
             getStandard(
                 type,
-                genetics,
-                strain
+                resolvedGenetics,
+                resolvedStrain
             );
 
 

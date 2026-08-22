@@ -52,440 +52,14 @@
 <script src="poultry-icons.js"></script>
 
 <script src="reports-data.js"></script>
-/* =========================================================
-   HEALTH REPORT RENDERER
-========================================================= */
 
-async function renderHealthReport(
-    flockId,
-    weekStart = null,
-    weekEnd = null
-){
+</head>
 
-    const card =
-        document.getElementById(
-            "healthReportCard"
-        );
-
-    const content =
-        document.getElementById(
-            "healthReportContent"
-        );
-
-
-    if(!card || !content)
-        return;
-
-
-    try{
-
-        const summary =
-            await getHealthWeeklySummary(
-                flockId,
-                weekStart,
-                weekEnd
-            );
-
-
-        if(
-            !summary ||
-            !summary.events ||
-            !summary.events.length
-        ){
-
-            card.style.display =
-                "none";
-
-            return;
-
-        }
-
-
-        card.style.display =
-            "block";
-
-
-        const diseaseHtml =
-            summary.diseaseNames.length
-            ?
-
-            summary.diseaseNames
-                .map(
-                    name => `
-                        <span
-                            class="health-report-disease"
-                        >
-                            ${escapeHtmlHealth(
-                                name
-                            )}
-                        </span>
-                    `
-                )
-                .join("")
-
-            :
-
-            `
-                <span
-                    class="health-report-disease"
-                >
-                    بیماری مشخصی ثبت نشده
-                </span>
-            `;
-
-
-        const eventsHtml =
-            summary.events
-                .map(
-                    row => {
-
-                        const disease =
-                            row.confirmed_disease_name ||
-                            row.suspected_disease_name ||
-                            "بدون تشخیص";
-
-
-                        return `
-
-                            <div
-                                class="health-report-event"
-                            >
-
-                                <div
-                                    class="health-report-event-title"
-                                >
-
-                                    ${escapeHtmlHealth(
-                                        healthEventTypeLabel(
-                                            row.event_type
-                                        )
-                                    )}
-
-                                    — 
-
-                                    ${escapeHtmlHealth(
-                                        disease
-                                    )}
-
-                                </div>
-
-                                <div
-                                    class="health-report-event-meta"
-                                >
-
-                                    تاریخ:
-                                    ${escapeHtmlHealth(
-                                        row.event_date ||
-                                        "-"
-                                    )}
-
-                                    |
-
-                                    تلفات:
-                                    ${Number(
-                                        row.mortality_count ||
-                                        0
-                                    ).toLocaleString(
-                                        "fa-IR"
-                                    )}
-
-                                    |
-
-                                    حذفی:
-                                    ${Number(
-                                        row.cull_count ||
-                                        0
-                                    ).toLocaleString(
-                                        "fa-IR"
-                                    )}
-
-                                    |
-
-                                    درگیر:
-                                    ${Number(
-                                        row.affected_count ||
-                                        0
-                                    ).toLocaleString(
-                                        "fa-IR"
-                                    )}
-
-                                </div>
-
-                            </div>
-
-                        `;
-
-                    }
-                )
-                .join("");
-
-
-        content.innerHTML = `
-
-            <div
-                class="health-report-header"
-            >
-
-                <div>
-
-                    <div
-                        class="health-report-title"
-                    >
-                        وضعیت سلامت گله
-                    </div>
-
-                    <div
-                        class="health-report-subtitle"
-                    >
-                        خلاصه رخدادهای سلامت انتخاب‌شده برای گزارش
-                    </div>
-
-                </div>
-
-            </div>
-
-
-            <div
-                class="health-report-grid"
-            >
-
-                <div
-                    class="health-report-stat"
-                >
-
-                    <div
-                        class="health-report-stat-label"
-                    >
-                        تلفات
-                    </div>
-
-                    <div
-                        class="health-report-stat-value"
-                    >
-                        ${Number(
-                            summary.mortality
-                        ).toLocaleString(
-                            "fa-IR"
-                        )}
-                    </div>
-
-                </div>
-
-
-                <div
-                    class="health-report-stat"
-                >
-
-                    <div
-                        class="health-report-stat-label"
-                    >
-                        حذفی
-                    </div>
-
-                    <div
-                        class="health-report-stat-value"
-                    >
-                        ${Number(
-                            summary.cull
-                        ).toLocaleString(
-                            "fa-IR"
-                        )}
-                    </div>
-
-                </div>
-
-
-                <div
-                    class="health-report-stat"
-                >
-
-                    <div
-                        class="health-report-stat-label"
-                    >
-                        پرنده درگیر
-                    </div>
-
-                    <div
-                        class="health-report-stat-value"
-                    >
-                        ${Number(
-                            summary.affected
-                        ).toLocaleString(
-                            "fa-IR"
-                        )}
-                    </div>
-
-                </div>
-
-
-                <div
-                    class="health-report-stat"
-                >
-
-                    <div
-                        class="health-report-stat-label"
-                    >
-                        رخداد سلامت
-                    </div>
-
-                    <div
-                        class="health-report-stat-value"
-                    >
-                        ${summary.events.length
-                            .toLocaleString(
-                                "fa-IR"
-                            )}
-                    </div>
-
-                </div>
-
-            </div>
-
-
-            <div
-                class="health-report-diseases"
-            >
-
-                <strong>
-                    بیماری‌ها / تشخیص‌های ثبت‌شده
-                </strong>
-
-                <div>
-                    ${diseaseHtml}
-                </div>
-
-            </div>
-
-
-            <div>
-                ${eventsHtml}
-            </div>
-
-        `;
-
-    }
-    catch(error){
-
-        console.error(
-            "Health report render error:",
-            error
-        );
-
-        card.style.display =
-            "none";
-
-    }
-
-}
-
-
-/* =========================================================
-   HEALTH REPORT HELPERS
-========================================================= */
-
-function healthEventTypeLabel(
-    type
-){
-
-    const labels = {
-
-        mortality:
-            "تلفات",
-
-        cull:
-            "حذفی",
-
-        disease:
-            "بیماری",
-
-        suspected_disease:
-            "بیماری مشکوک",
-
-        clinical_case:
-            "مورد بالینی",
-
-        environmental:
-            "مشکل محیطی / مدیریتی"
-
-    };
-
-
-    return labels[type] ||
-        "رخداد سلامت";
-
-}
-
-
-function escapeHtmlHealth(
-    value
-){
-
-    return String(
-        value ?? ""
-    )
-    .replace(
-        /&/g,
-        "&amp;"
-    )
-    .replace(
-        /</g,
-        "&lt;"
-    )
-    .replace(
-        />/g,
-        "&gt;"
-    )
-    .replace(
-        /"/g,
-        "&quot;"
-    )
-    .replace(
-        /'/g,
-        "&#039;"
-    );
-
-}
 <body>
 
 
 <div class="reports-page">
-<!-- =====================================================
-     HEALTH REPORT
-====================================================== -->
 
-<section
-    id="healthReportCard"
-    class="report-card"
-    style="display:none;"
->
-
-    <div class="report-card-header">
-
-        <div>
-
-            <h2>
-                🩺 وضعیت سلامت گله
-            </h2>
-
-            <p>
-                تلفات، بیماری‌ها و رخدادهای سلامت ثبت‌شده
-            </p>
-
-        </div>
-
-    </div>
-
-
-    <div
-        id="healthReportContent"
-        class="report-card-content"
-    >
-
-        در حال دریافت اطلاعات سلامت...
-
-    </div>
-
-</section>
 
     <!-- =====================================================
          HEADER
@@ -810,6 +384,82 @@ function escapeHtmlHealth(
 
     </section>
 
+
+
+
+    <!-- =====================================================
+         HEALTH / MORTALITY REPORT
+    ====================================================== -->
+    <section id="healthReportCard" class="card" style="display:none;">
+        <div class="section-title">تلفات و بیماری‌ها</div>
+
+        <div class="info-box">
+            این بخش تلفات ثبت‌شده در پایش هفتگی و رویدادهای تلفات/بیماری ثبت‌شده برای همین گله را جداگانه نشان می‌دهد تا از دوباره‌شماری جلوگیری شود.
+            گزینه «نمایش در گزارش» فقط روی رویدادهای ثبت‌شده اعمال می‌شود.
+        </div>
+
+        <div id="healthReportSummary" class="health-report-grid"></div>
+
+        <div id="healthMortalityChartWrap" class="chart-wrapper" style="display:none;margin-top:18px;">
+            <canvas id="healthMortalityChart"></canvas>
+        </div>
+
+        <div id="healthReportToolbar" class="health-report-toolbar">
+            <div class="form-group">
+                <label for="healthReportTypeFilter">فیلتر نوع</label>
+                <select id="healthReportTypeFilter">
+                    <option value="all">همه موارد</option>
+                    <option value="mortality">تلفات</option>
+                    <option value="disease">بیماری</option>
+                    <option value="suspected">مشکوک</option>
+                    <option value="other">سایر</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label for="healthReportVisibilityFilter">وضعیت گزارش</label>
+                <select id="healthReportVisibilityFilter">
+                    <option value="all">همه</option>
+                    <option value="included">فقط موارد قابل نمایش در گزارش</option>
+                    <option value="excluded">فقط موارد حذف‌شده از گزارش</option>
+                </select>
+            </div>
+
+            <button id="healthReportSelectAllBtn" type="button" class="btn btn-secondary">
+                انتخاب همه برای گزارش
+            </button>
+        </div>
+
+        <div class="health-report-actions">
+            <button id="healthReportClearAllBtn" type="button" class="btn btn-secondary">
+                حذف همه از گزارش
+            </button>
+            <button id="healthReportRefreshBtn" type="button" class="btn btn-secondary">
+                ↻ به‌روزرسانی
+            </button>
+        </div>
+
+        <div id="healthReportTableWrap" class="health-report-table-wrap">
+            <table class="health-report-table">
+                <thead>
+                    <tr>
+                        <th>تاریخ</th>
+                        <th>سن</th>
+                        <th>نوع</th>
+                        <th>تعداد</th>
+                        <th>تشخیص / بیماری</th>
+                        <th>شدت</th>
+                        <th>علائم / یافته‌ها</th>
+                        <th>اقدامات</th>
+                        <th>نمایش در گزارش</th>
+                    </tr>
+                </thead>
+                <tbody id="healthReportTableBody"></tbody>
+            </table>
+        </div>
+
+        <div id="healthReportNote" class="health-report-note"></div>
+    </section>
 
 
     <!-- =====================================================
@@ -1687,7 +1337,49 @@ tbody tr:hover {
 
     }
 
+    #healthReportToolbar,
+    .health-report-actions,
+    .health-report-note {
+        display: none !important;
+    }
+
+    .health-report-table {
+        min-width: 0 !important;
+    }
+
+    .health-report-table th:last-child,
+    .health-report-table td:last-child {
+        display: none !important;
+    }
+
 }
+
+
+/* =====================================================
+   HEALTH / MORTALITY REPORT
+===================================================== */
+.health-report-grid{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:12px;margin-top:14px}
+.health-stat{background:#f7faf9;border:1px solid #e3ebe8;border-radius:14px;padding:14px}
+.health-stat-label{color:#667085;font-size:13px;margin-bottom:7px}
+.health-stat-value{color:#173f35;font-size:21px;font-weight:900}
+.health-report-toolbar{display:grid;grid-template-columns:1fr 1fr auto;gap:10px;align-items:end;margin-top:15px}
+.health-report-table-wrap{overflow-x:auto;margin-top:15px}
+.health-report-table{width:100%;border-collapse:collapse;min-width:980px}
+.health-report-table th,.health-report-table td{border-bottom:1px solid #edf1f0;padding:11px 9px;text-align:right;vertical-align:top}
+.health-report-table th{background:#f7faf9;font-size:13px;color:#344054;white-space:nowrap}
+.health-report-table td{font-size:13px;color:#475467}
+.health-report-badge{display:inline-flex;align-items:center;padding:5px 9px;border-radius:999px;font-size:12px;font-weight:800;background:#eef4f1;color:#173f35;white-space:nowrap}
+.health-report-badge.danger{background:#fff1f0;color:#b42318}
+.health-report-badge.warning{background:#fff7e8;color:#9a6700}
+.health-report-badge.success{background:#ecfdf3;color:#067647}
+.health-report-include{display:inline-flex;align-items:center;gap:6px;white-space:nowrap;font-weight:700}
+.health-report-include input{width:18px;height:18px;accent-color:#173f35}
+.health-report-note{margin-top:10px;padding:10px 12px;border-radius:10px;background:#f8fafc;color:#667085;font-size:12px;line-height:1.8}
+.health-report-empty{text-align:center;padding:24px 12px;color:#667085}
+.health-report-danger-text{color:#b42318;font-weight:900}
+.health-report-actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}
+@media(max-width:900px){.health-report-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.health-report-toolbar{grid-template-columns:1fr}}
+@media(max-width:520px){.health-report-grid{grid-template-columns:1fr}}
 
 </style>
 
@@ -1740,6 +1432,11 @@ tbody tr:hover {
 
     let requestToken =
         0;
+
+    let healthReportRecords = [];
+    let healthMortalityChart = null;
+    let healthReportTypeFilter = "all";
+    let healthReportVisibilityFilter = "all";
 
 
 
@@ -1992,6 +1689,7 @@ tbody tr:hover {
             "consumptionCard",
             "fcrCard",
             "specializedReportCard",
+            "healthReportCard",
             "tableCard"
         ]
         .forEach(
@@ -4901,6 +4599,503 @@ tbody tr:hover {
         window.__adineSpecializedCharts.push(chart);
     }
 
+
+    /* =====================================================
+       HEALTH / MORTALITY REPORT
+    ====================================================== */
+
+    function healthStorageRead(key, fallback = []) {
+        try {
+            if (typeof readStorage === "function") {
+                const value = readStorage(key, fallback);
+                return Array.isArray(value) ? value : fallback;
+            }
+            const raw = localStorage.getItem(key);
+            if (!raw) return fallback;
+            const parsed = JSON.parse(raw);
+            return Array.isArray(parsed) ? parsed : fallback;
+        } catch (error) {
+            console.warn("Health storage read error:", error);
+            return fallback;
+        }
+    }
+
+    function healthStorageWrite(key, value) {
+        try {
+            if (typeof writeStorage === "function") {
+                writeStorage(key, value);
+                return true;
+            }
+            localStorage.setItem(key, JSON.stringify(value));
+            return true;
+        } catch (error) {
+            console.error("Health storage write error:", error);
+            return false;
+        }
+    }
+
+    function healthEscapeHTML(value) {
+        return String(value ?? "")
+            .replace(/&/g, "&amp;")
+            .replace(/</g, "&lt;")
+            .replace(/>/g, "&gt;")
+            .replace(/"/g, "&quot;")
+            .replace(/'/g, "&#039;");
+    }
+
+    function healthNumber(value, decimals = 0) {
+        const n = num(value);
+        if (n === null) return "-";
+        return n.toLocaleString("fa-IR", {
+            minimumFractionDigits: decimals,
+            maximumFractionDigits: decimals
+        });
+    }
+
+    function healthDate(value) {
+        if (!value) return "-";
+        const date = new Date(value);
+        if (Number.isNaN(date.getTime())) return healthEscapeHTML(value);
+        return date.toLocaleDateString("fa-IR");
+    }
+
+    function healthTypeLabel(type) {
+        const labels = {
+            mortality: "تلفات",
+            disease: "بیماری",
+            suspected: "مشکوک",
+            other: "سایر"
+        };
+        return labels[type] || "-";
+    }
+
+    function healthSeverityLabel(severity) {
+        const labels = {
+            low: "خفیف",
+            medium: "متوسط",
+            high: "شدید",
+            critical: "بحرانی"
+        };
+        return labels[severity] || "-";
+    }
+
+    function healthSeverityClass(severity) {
+        if (severity === "critical" || severity === "high") return "danger";
+        if (severity === "medium") return "warning";
+        if (severity === "low") return "success";
+        return "";
+    }
+
+    function healthRecordIncluded(record) {
+        return record?.includeInReport !== false;
+    }
+
+    function healthLoadEventRecords() {
+        if (!reportFlock?.id) return [];
+
+        return healthStorageRead("disease_records", [])
+            .filter(record =>
+                String(record?.flockId) === String(reportFlock.id)
+            )
+            .map(record => ({
+                ...record,
+                includeInReport: record.includeInReport !== false
+            }))
+            .sort((a, b) =>
+                String(b.date || "").localeCompare(String(a.date || ""))
+            );
+    }
+
+    function healthSaveEventVisibility(recordId, includeInReport) {
+        const records = healthStorageRead("disease_records", []);
+        let changed = false;
+
+        const updated = records.map(record => {
+            if (String(record?.id) !== String(recordId)) return record;
+            changed = true;
+            return {
+                ...record,
+                includeInReport: Boolean(includeInReport)
+            };
+        });
+
+        if (changed) healthStorageWrite("disease_records", updated);
+        return changed;
+    }
+
+    function healthBuildWeeklySummary() {
+        const rows = Array.isArray(reportRecords) ? reportRecords : [];
+
+        const mortalityRows = rows
+            .map(record => ({
+                week: num(record?.weekNumber),
+                date: record?.evaluationDate || null,
+                mortality: num(record?.mortality),
+                liveBirds: num(record?.liveBirds)
+            }))
+            .filter(row => row.mortality !== null);
+
+        const totalMortality = mortalityRows.reduce(
+            (sum, row) => sum + Number(row.mortality || 0),
+            0
+        );
+
+        const latest = mortalityRows.length
+            ? mortalityRows[mortalityRows.length - 1]
+            : null;
+
+        const initialBirds = num(
+            reportFlock?.initial_bird_count ??
+            reportFlock?.initialBirdCount
+        );
+
+        const cumulativeMortalityRate = initialBirds > 0
+            ? (totalMortality / initialBirds) * 100
+            : null;
+
+        return {
+            mortalityRows,
+            totalMortality,
+            latest,
+            initialBirds,
+            cumulativeMortalityRate
+        };
+    }
+
+    function renderHealthSummary() {
+        const summary = document.getElementById("healthReportSummary");
+        if (!summary) return;
+
+        const weekly = healthBuildWeeklySummary();
+        const events = Array.isArray(healthReportRecords)
+            ? healthReportRecords
+            : [];
+
+        const diseaseCount = events
+            .filter(item => item.type === "disease")
+            .reduce((sum, item) => sum + Number(item.count || 0), 0);
+
+        const suspectedCount = events
+            .filter(item => item.type === "suspected")
+            .length;
+
+        const criticalCount = events
+            .filter(item => item.severity === "critical")
+            .length;
+
+        const includedCount = events.filter(healthRecordIncluded).length;
+
+        summary.innerHTML = `
+            <div class="health-stat">
+                <div class="health-stat-label">تلفات آخرین ارزیابی</div>
+                <div class="health-stat-value">
+                    ${weekly.latest ? healthNumber(weekly.latest.mortality, 0) : "-"}
+                </div>
+            </div>
+
+            <div class="health-stat">
+                <div class="health-stat-label">تلفات تجمعی ثبت‌شده در هفتگی</div>
+                <div class="health-stat-value">${healthNumber(weekly.totalMortality, 0)}</div>
+            </div>
+
+            <div class="health-stat">
+                <div class="health-stat-label">نرخ تلفات تجمعی</div>
+                <div class="health-stat-value">
+                    ${
+                        weekly.cumulativeMortalityRate !== null
+                            ? healthNumber(weekly.cumulativeMortalityRate, 2) + "٪"
+                            : "-"
+                    }
+                </div>
+            </div>
+
+            <div class="health-stat">
+                <div class="health-stat-label">پرندگان درگیرِ ثبت‌شده در بیماری‌ها</div>
+                <div class="health-stat-value">${healthNumber(diseaseCount, 0)}</div>
+            </div>
+
+            <div class="health-stat">
+                <div class="health-stat-label">موارد قابل نمایش در گزارش</div>
+                <div class="health-stat-value">${healthNumber(includedCount, 0)}</div>
+            </div>
+
+            ${
+                suspectedCount > 0 || criticalCount > 0
+                    ? `
+                        <div class="health-report-note" style="grid-column:1/-1;">
+                            ${
+                                suspectedCount > 0
+                                    ? `موارد مشکوک: <strong>${healthNumber(suspectedCount, 0)}</strong>`
+                                    : ""
+                            }
+                            ${
+                                criticalCount > 0
+                                    ? `${suspectedCount > 0 ? " | " : ""}موارد بحرانی: <strong class="health-report-danger-text">${healthNumber(criticalCount, 0)}</strong>`
+                                    : ""
+                            }
+                        </div>
+                    `
+                    : ""
+            }
+        `;
+    }
+
+    function renderHealthMortalityChart() {
+        const wrap = document.getElementById("healthMortalityChartWrap");
+        const canvas = document.getElementById("healthMortalityChart");
+        if (!wrap || !canvas) return;
+
+        const rows = healthBuildWeeklySummary().mortalityRows;
+
+        if (!rows.length) {
+            wrap.style.display = "none";
+            if (healthMortalityChart) {
+                try { healthMortalityChart.destroy(); } catch (_) {}
+                healthMortalityChart = null;
+            }
+            return;
+        }
+
+        wrap.style.display = "block";
+
+        if (healthMortalityChart) {
+            try { healthMortalityChart.destroy(); } catch (_) {}
+        }
+
+        healthMortalityChart = new Chart(canvas, {
+            type: "line",
+            data: {
+                labels: rows.map(row =>
+                    row.week !== null
+                        ? "هفته " + healthNumber(row.week, 0)
+                        : healthDate(row.date)
+                ),
+                datasets: [{
+                    label: "تلفات هفتگی",
+                    data: rows.map(row => row.mortality),
+                    tension: 0.25,
+                    spanGaps: true,
+                    borderWidth: 3
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                interaction: {
+                    mode: "index",
+                    intersect: false
+                },
+                plugins: {
+                    legend: { position: "top" }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        title: {
+                            display: true,
+                            text: "تعداد پرنده"
+                        }
+                    }
+                }
+            }
+        });
+    }
+
+    function healthFilteredEvents() {
+        return healthReportRecords.filter(record => {
+            if (
+                healthReportTypeFilter !== "all" &&
+                record.type !== healthReportTypeFilter
+            ) {
+                return false;
+            }
+
+            if (
+                healthReportVisibilityFilter === "included" &&
+                !healthRecordIncluded(record)
+            ) {
+                return false;
+            }
+
+            if (
+                healthReportVisibilityFilter === "excluded" &&
+                healthRecordIncluded(record)
+            ) {
+                return false;
+            }
+
+            return true;
+        });
+    }
+
+    function renderHealthTable() {
+        const body = document.getElementById("healthReportTableBody");
+        const note = document.getElementById("healthReportNote");
+        if (!body) return;
+
+        const rows = healthFilteredEvents();
+
+        if (!rows.length) {
+            body.innerHTML = `
+                <tr>
+                    <td colspan="9" class="health-report-empty">
+                        برای این فیلتر موردی ثبت نشده است.
+                    </td>
+                </tr>
+            `;
+        } else {
+            body.innerHTML = rows.map(record => {
+                const severityClass = healthSeverityClass(record.severity);
+
+                return `
+                    <tr>
+                        <td>${healthDate(record.date)}</td>
+                        <td>
+                            ${
+                                record.age !== null &&
+                                record.age !== undefined &&
+                                record.age !== ""
+                                    ? healthNumber(record.age, 0) + " روز"
+                                    : "-"
+                            }
+                        </td>
+                        <td>
+                            <span class="health-report-badge">
+                                ${healthEscapeHTML(healthTypeLabel(record.type))}
+                            </span>
+                        </td>
+                        <td>${healthNumber(record.count, 0)}</td>
+                        <td>${healthEscapeHTML(record.disease || "-")}</td>
+                        <td>
+                            ${
+                                record.severity
+                                    ? `<span class="health-report-badge ${severityClass}">
+                                            ${healthEscapeHTML(healthSeverityLabel(record.severity))}
+                                       </span>`
+                                    : "-"
+                            }
+                        </td>
+                        <td>${healthEscapeHTML(record.symptoms || "-")}</td>
+                        <td>${healthEscapeHTML(record.actions || record.notes || "-")}</td>
+                        <td>
+                            <label class="health-report-include">
+                                <input
+                                    type="checkbox"
+                                    data-health-include-id="${healthEscapeHTML(record.id)}"
+                                    ${healthRecordIncluded(record) ? "checked" : ""}
+                                >
+                                نمایش
+                            </label>
+                        </td>
+                    </tr>
+                `;
+            }).join("");
+        }
+
+        if (note) {
+            const included = healthReportRecords.filter(healthRecordIncluded).length;
+            const excluded = healthReportRecords.length - included;
+
+            note.innerHTML =
+                `قابل نمایش در گزارش: <strong>${healthNumber(included, 0)}</strong> مورد` +
+                ` | حذف‌شده از گزارش: <strong>${healthNumber(excluded, 0)}</strong> مورد` +
+                ` | تغییر این گزینه رکورد اصلی را حذف نمی‌کند.`;
+        }
+    }
+
+    function renderHealthReport() {
+        const card = document.getElementById("healthReportCard");
+        if (!card) return;
+
+        const weekly = healthBuildWeeklySummary();
+        healthReportRecords = healthLoadEventRecords();
+
+        const hasWeekly = weekly.mortalityRows.length > 0;
+        const hasEvents = healthReportRecords.length > 0;
+
+        card.style.display = hasWeekly || hasEvents ? "block" : "none";
+
+        if (!hasWeekly && !hasEvents) {
+            if (healthMortalityChart) {
+                try { healthMortalityChart.destroy(); } catch (_) {}
+                healthMortalityChart = null;
+            }
+            return;
+        }
+
+        renderHealthSummary();
+        renderHealthMortalityChart();
+        renderHealthTable();
+    }
+
+    function bindHealthReportControls() {
+        const typeFilter = document.getElementById("healthReportTypeFilter");
+        const visibilityFilter = document.getElementById("healthReportVisibilityFilter");
+        const selectAll = document.getElementById("healthReportSelectAllBtn");
+        const clearAll = document.getElementById("healthReportClearAllBtn");
+        const refresh = document.getElementById("healthReportRefreshBtn");
+        const table = document.getElementById("healthReportTableBody");
+
+        if (typeFilter && !typeFilter.dataset.bound) {
+            typeFilter.dataset.bound = "1";
+            typeFilter.addEventListener("change", () => {
+                healthReportTypeFilter = typeFilter.value;
+                renderHealthTable();
+            });
+        }
+
+        if (visibilityFilter && !visibilityFilter.dataset.bound) {
+            visibilityFilter.dataset.bound = "1";
+            visibilityFilter.addEventListener("change", () => {
+                healthReportVisibilityFilter = visibilityFilter.value;
+                renderHealthTable();
+            });
+        }
+
+        if (selectAll && !selectAll.dataset.bound) {
+            selectAll.dataset.bound = "1";
+            selectAll.addEventListener("click", () => {
+                healthReportRecords.forEach(record =>
+                    healthSaveEventVisibility(record.id, true)
+                );
+                renderHealthReport();
+            });
+        }
+
+        if (clearAll && !clearAll.dataset.bound) {
+            clearAll.dataset.bound = "1";
+            clearAll.addEventListener("click", () => {
+                healthReportRecords.forEach(record =>
+                    healthSaveEventVisibility(record.id, false)
+                );
+                renderHealthReport();
+            });
+        }
+
+        if (refresh && !refresh.dataset.bound) {
+            refresh.dataset.bound = "1";
+            refresh.addEventListener("click", () => renderHealthReport());
+        }
+
+        if (table && !table.dataset.bound) {
+            table.dataset.bound = "1";
+            table.addEventListener("change", event => {
+                const input = event.target;
+
+                if (!input?.matches("[data-health-include-id]")) return;
+
+                const id = input.getAttribute("data-health-include-id");
+
+                healthSaveEventVisibility(id, input.checked);
+
+                healthReportRecords = healthLoadEventRecords();
+                renderHealthSummary();
+                renderHealthTable();
+            });
+        }
+    }
+
+
     /* =====================================================
        RENDER ALL
     ====================================================== */
@@ -4922,6 +5117,10 @@ tbody tr:hover {
         renderFCRChart();
 
         renderTable();
+
+        bindHealthReportControls();
+
+        renderHealthReport();
 
         renderSpecialized();
 
@@ -5040,6 +5239,10 @@ tbody tr:hover {
             ) {
 
                 renderFlockInfo();
+
+                bindHealthReportControls();
+
+                renderHealthReport();
 
                 setEmptyState(
                     true
@@ -5363,6 +5566,41 @@ tbody tr:hover {
     }
 
 
+
+
+    /* =====================================================
+       PRINT SAFETY
+       فقط موارد علامت‌خورده برای گزارش چاپ می‌شوند.
+    ====================================================== */
+
+    let healthPrintVisibilityBackup = null;
+
+    window.addEventListener("beforeprint", function () {
+        healthPrintVisibilityBackup =
+            healthReportVisibilityFilter;
+
+        healthReportVisibilityFilter =
+            "included";
+
+        renderHealthTable();
+    });
+
+    window.addEventListener("afterprint", function () {
+        healthReportVisibilityFilter =
+            healthPrintVisibilityBackup || "all";
+
+        const filter =
+            document.getElementById(
+                "healthReportVisibilityFilter"
+            );
+
+        if (filter) {
+            filter.value =
+                healthReportVisibilityFilter;
+        }
+
+        renderHealthTable();
+    });
 
     /* =====================================================
        START

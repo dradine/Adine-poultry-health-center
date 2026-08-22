@@ -286,6 +286,24 @@ function standardRecord(ageDays, values = {}) {
 /* Official values intentionally limited to values we can trace to breeder documents. */
 const VERIFIED_STANDARDS = {
     broiler: {
+        cobb: {
+            "Cobb500": {
+                sourceYear: 2022,
+                sourceType: "official-performance-objective",
+                sourceLabel: "Cobb500 Broiler Performance & Nutrition Supplement 2022 (As-Hatched)",
+                sourceUrl: "https://www.cobbgenetics.com/assets/Cobb-Files/2022-Cobb500-Broiler-Performance-Nutrition-Supplement.pdf",
+                records: [
+                    standardRecord(7,  { bodyWeight: 202,  dailyFeed: 34,  fcr: 0.891 }),
+                    standardRecord(14, { bodyWeight: 570,  dailyFeed: 80,  fcr: 1.029 }),
+                    standardRecord(21, { bodyWeight: 1116, dailyFeed: 125, fcr: 1.182 }),
+                    standardRecord(28, { bodyWeight: 1783, dailyFeed: 165, fcr: 1.322 }),
+                    standardRecord(35, { bodyWeight: 2521, dailyFeed: 194, fcr: 1.441 }),
+                    standardRecord(42, { bodyWeight: 3278, dailyFeed: 220, fcr: 1.555 }),
+                    standardRecord(49, { bodyWeight: 4001, dailyFeed: 247, fcr: 1.686 }),
+                    standardRecord(56, { bodyWeight: 4641, dailyFeed: 262, fcr: 1.842 })
+                ]
+            }
+        },
         aviagen_ross: {
             "Ross 308": {
                 sourceYear: 2022,

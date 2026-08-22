@@ -1564,3 +1564,155 @@ if (
         applyReportStandards;
 
 }
+/* =========================================================
+   HEALTH REPORT DATA
+========================================================= */
+
+async function getHealthReportEvents(
+    flockId,
+    startDate = null,
+    endDate = null
+){
+
+    if(!flockId)
+        return [];
+
+
+    let query =
+        supabaseClient
+            .from(
+                "health_weekly_report_events"
+            )
+            .select("*")
+            .eq(
+                "flock_id",
+                flockId
+            )
+            .eq(
+                "owner_id",
+                reportsCurrentUser.id
+            )
+            .order(
+                "event_date",
+                {
+                    ascending:true
+                }
+            );
+
+
+    if(startDate){
+
+        query =
+            query.gte(
+                "event_date",
+                startDate
+            );
+
+    }
+
+
+    if(endDate){
+
+        query =
+            query.lte(
+                "event_date",
+                endDate
+            );
+
+    }
+
+
+    const {
+        data,
+        error
+    } =
+        await query;
+
+
+    if(error){
+
+        console.error(
+            "Health report events error:",
+            error
+        );
+
+        throw error;
+
+    }
+
+
+    return Array.isArray(data)
+        ? data
+        : [];
+
+}
+
+
+/* =========================================================
+   HEALTH WEEK SUMMARY
+========================================================= */
+
+async function getHealthWeeklySummary(
+    flockId,
+    weekStart,
+    weekEnd
+){
+
+    const events =
+        await getHealthReportEvents(
+            flockId,
+            weekStart,
+            weekEnd
+        );
+
+
+    return {
+
+        mortality:
+            events.reduce(
+                (sum,row) =>
+                    sum +
+                    Number(
+                        row.mortality_count || 0
+                    ),
+                0
+            ),
+
+        cull:
+            events.reduce(
+                (sum,row) =>
+                    sum +
+                    Number(
+                        row.cull_count || 0
+                    ),
+                0
+            ),
+
+        affected:
+            events.reduce(
+                (sum,row) =>
+                    sum +
+                    Number(
+                        row.affected_count || 0
+                    ),
+                0
+            ),
+
+        events,
+
+        diseaseNames:
+            [
+                ...new Set(
+                    events
+                        .map(
+                            row =>
+                                row.confirmed_disease_name ||
+                                row.suspected_disease_name
+                        )
+                        .filter(Boolean)
+                )
+            ]
+
+    };
+
+}

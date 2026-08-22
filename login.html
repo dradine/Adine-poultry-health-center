@@ -1,6 +1,4 @@
-
 <!DOCTYPE html>
-
 <html lang="fa" dir="rtl">
 
 <head>
@@ -17,8 +15,13 @@
         content="#123b2a"
     >
 
+    <meta
+        name="description"
+        content="ورود به سامانه مدیریت و پایش طیور مرکز تخصصی سلامت طیور آدینه"
+    >
+
     <title>
-        ورود | مرکز تخصصی سلامت طیور آدینه
+        ورود | سامانه مدیریت و پایش طیور
     </title>
 
     <link
@@ -28,34 +31,49 @@
 
 </head>
 
+
 <body class="auth-page">
+
 
     <main class="auth-wrapper">
 
+
         <section class="auth-card">
+
 
             <div class="auth-logo">
 
-    <img
-        src="IMG_4309.png"
-        alt="مرکز تخصصی سلامت طیور آدینه"
-    >
+                <img
+                    src="IMG_4309.png"
+                    alt="لوگوی مرکز تخصصی سلامت طیور آدینه"
+                >
 
-</div>
+            </div>
+
+
             <h1>
-                ورود به سامانه
+                مرکز تخصصی سلامت طیور آدینه
             </h1>
 
+
             <p class="auth-subtitle">
-                مرکز تخصصی سلامت طیور آدینه
+                سامانه مدیریت و پایش طیور
             </p>
+
 
             <div
                 id="message"
                 class="message hidden"
+                role="alert"
+                aria-live="polite"
             ></div>
 
-            <form id="loginForm">
+
+            <form
+                id="loginForm"
+                novalidate
+            >
+
 
                 <div class="form-group">
 
@@ -63,15 +81,19 @@
                         ایمیل
                     </label>
 
+
                     <input
                         id="email"
+                        name="email"
                         type="email"
+                        inputmode="email"
                         autocomplete="email"
-                        placeholder="ایمیل خود را وارد کنید"
+                        placeholder="ایمیل حساب کاربری"
                         required
                     >
 
                 </div>
+
 
                 <div class="form-group">
 
@@ -79,15 +101,19 @@
                         رمز عبور
                     </label>
 
+
                     <div class="password-field">
+
 
                         <input
                             id="password"
+                            name="password"
                             type="password"
                             autocomplete="current-password"
                             placeholder="رمز عبور"
                             required
                         >
+
 
                         <button
                             type="button"
@@ -98,9 +124,11 @@
                             نمایش
                         </button>
 
+
                     </div>
 
                 </div>
+
 
                 <button
                     type="submit"
@@ -110,25 +138,36 @@
                     ورود
                 </button>
 
+
             </form>
 
+
             <div class="auth-links">
+
 
                 <a href="reset-password.html">
                     رمز عبور را فراموش کرده‌ام
                 </a>
 
-                <span> | </span>
+
+                <span aria-hidden="true">
+                    |
+                </span>
+
 
                 <a href="register.html">
                     ثبت‌نام
                 </a>
 
+
             </div>
+
 
         </section>
 
+
     </main>
+
 
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
@@ -137,6 +176,7 @@
     <script src="auth.js"></script>
 
     <script src="login.js"></script>
+
 
 </body>
 

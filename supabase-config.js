@@ -3,345 +3,263 @@
    SUPABASE CONFIGURATION
    ========================================================= */
 
-
 const SUPABASE_URL =
     "https://vzcczkavlopznljnnehp.supabase.co";
-
 
 const SUPABASE_PUBLISHABLE_KEY =
     "sb_publishable_4jMgvqKI__-MsmMQtEiCig_M9WjhvN9";
 
-
 const supabaseClient =
     window.supabase.createClient(
         SUPABASE_URL,
-        SUPABASE_PUBLISHABLE_KEY
+        SUPABASE_PUBLISHABLE_KEY,
+        {
+            auth: {
+                persistSession: true,
+                autoRefreshToken: true,
+                detectSessionInUrl: true,
+                flowType: "implicit"
+            }
+        }
     );
 
-
-
-/* =========================================================
+/* ---------------------------------------------------------
    CURRENT USER
-   ========================================================= */
+   Session-first is intentional: getUser() may require a
+   network request, while getSession() can restore the local
+   session immediately on iPhone/PWA.
+--------------------------------------------------------- */
 
 async function getCurrentUser() {
 
-    const {
-        data,
-        error
-    } =
-        await supabaseClient
-            .auth
-            .getUser();
+    try {
 
+        const {
+            data: sessionData,
+            error: sessionError
+        } = await supabaseClient.auth.getSession();
 
-    if (error) {
+        if (!sessionError && sessionData?.session?.user) {
+            return sessionData.session.user;
+        }
 
-        console.error(
-            "Supabase user error:",
+        const {
+            data,
             error
-        );
+        } = await supabaseClient.auth.getUser();
 
+        if (error) {
+            console.error("Supabase user error:", error);
+            return null;
+        }
+
+        return data?.user || null;
+
+    } catch (error) {
+
+        console.error("getCurrentUser:", error);
         return null;
 
     }
 
-
-    return data.user || null;
-
 }
 
 
-
-/* =========================================================
+/* ---------------------------------------------------------
    CURRENT PROFILE
-   ========================================================= */
+--------------------------------------------------------- */
 
-async function getCurrentProfile() {
+async function getCurrentProfile(userId = null) {
 
     const user =
-        await getCurrentUser();
+        userId
+            ? { id: userId }
+            : await getCurrentUser();
 
-
-    if (!user) {
-
+    if (!user?.id) {
         return null;
-
     }
 
+    try {
 
-    const {
-        data,
-        error
-    } =
-        await supabaseClient
+        const {
+            data,
+            error
+        } = await supabaseClient
             .from("profiles")
             .select("*")
-            .eq(
-                "id",
-                user.id
-            )
+            .eq("id", user.id)
             .maybeSingle();
 
+        if (error) {
+            console.error("Profile error:", error);
+            return null;
+        }
 
-    if (error) {
+        return data || null;
 
-        console.error(
-            "Profile error:",
-            error
-        );
+    } catch (error) {
 
+        console.error("getCurrentProfile:", error);
         return null;
 
     }
-
-
-    return data;
 
 }
 
 
-
-/* =========================================================
+/* ---------------------------------------------------------
    ACCESS
-   ========================================================= */
+   Keep the existing access rules, but make them consistent
+   with AdineAuth so login and dashboard cannot disagree.
+--------------------------------------------------------- */
+
+function checkProfileAccess(profile) {
+
+    if (!profile) {
+        return false;
+    }
+
+    const status =
+        String(profile.status || "")
+            .trim()
+            .toLowerCase();
+
+    const accessStatus =
+        String(profile.access_status || "")
+            .trim()
+            .toLowerCase();
+
+    const role =
+        String(profile.role || "")
+            .trim()
+            .toLowerCase();
+
+    const blocked =
+        ["blocked", "suspended", "removed"].includes(status) ||
+        ["blocked", "suspended", "removed"].includes(accessStatus);
+
+    if (blocked) {
+        return false;
+    }
+
+    return (
+        status === "active" ||
+        accessStatus === "approved" ||
+        role === "owner" ||
+        role === "admin"
+    );
+
+}
+
 
 async function checkUserAccess() {
 
     const user =
         await getCurrentUser();
 
-
-    /* -----------------------------------------
-       Ú©Ø§Ø±Ø¨Ø± ÙØ§Ø±Ø¯ ÙØ´Ø¯Ù
-       ----------------------------------------- */
-
     if (!user) {
 
         return {
-
-            authenticated:
-                false,
-
-            allowed:
-                false,
-
-            user:
-                null,
-
-            profile:
-                null
-
+            authenticated: false,
+            allowed: false,
+            user: null,
+            profile: null,
+            error: null
         };
 
     }
 
-
-    /* -----------------------------------------
-       Ø¯Ø±ÛØ§ÙØª Ù¾Ø±ÙÙØ§ÛÙ
-       ----------------------------------------- */
-
     const profile =
-        await getCurrentProfile();
-
+        await getCurrentProfile(user.id);
 
     if (!profile) {
 
         return {
-
-            authenticated:
-                true,
-
-            allowed:
-                false,
-
+            authenticated: true,
+            allowed: false,
             user,
-
-            profile:
-                null
-
+            profile: null,
+            error: "PROFILE_NOT_FOUND"
         };
 
     }
 
-
-    /* -----------------------------------------
-       ÙØ¶Ø¹ÛØª Ø­Ø³Ø§Ø¨
-       ----------------------------------------- */
-
-    const status =
-        String(
-            profile.status ||
-            ""
-        )
-        .trim()
-        .toLowerCase();
-
-
-    const accessStatus =
-        String(
-            profile.access_status ||
-            ""
-        )
-        .trim()
-        .toLowerCase();
-
-
-    const role =
-        String(
-            profile.role ||
-            ""
-        )
-        .trim()
-        .toLowerCase();
-
-
-
-    /* -----------------------------------------
-       Ø­Ø³Ø§Ø¨âÙØ§Û ØªØ£ÛÛØ¯ Ø´Ø¯Ù
-       ----------------------------------------- */
-
-    const isApproved =
-        accessStatus ===
-        "approved";
-
-
-    const isActive =
-        status ===
-        "active";
-
-
-    const isOwner =
-        role ===
-        "owner";
-
-
-    const isAdmin =
-        role ===
-        "admin";
-
-
-
-    /* -----------------------------------------
-       ÙØ¶Ø¹ÛØªâÙØ§Û ÙØ³Ø¯ÙØ¯Ú©ÙÙØ¯Ù
-       ----------------------------------------- */
-
-    const isBlocked =
-        status ===
-        "blocked";
-
-
-    const isSuspended =
-        status ===
-        "suspended";
-
-
-    const isRemoved =
-        status ===
-        "removed";
-
-
-    const isDenied =
-        accessStatus ===
-        "blocked" ||
-        accessStatus ===
-        "suspended" ||
-        accessStatus ===
-        "removed";
-
-
-
-    /* -----------------------------------------
-       ØªØµÙÛÙ ÙÙØ§ÛÛ
-       ----------------------------------------- */
-
-    let allowed =
-        false;
-
-
-    /*
-     * Ø§Ú¯Ø± Ø­Ø³Ø§Ø¨ ØµØ±Ø§Ø­ØªØ§Ù ÙØ³Ø¯ÙØ¯Ø
-     * ÙØ¹ÙÙ ÛØ§ Ø­Ø°Ù Ø´Ø¯Ù Ø¨Ø§Ø´Ø¯Ø
-     * Ø§Ø¬Ø§Ø²Ù ÙØ±ÙØ¯ ÙÙÛâØ¯ÙÛÙ.
-     */
-
-    if (
-        isBlocked ||
-        isSuspended ||
-        isRemoved ||
-        isDenied
-    ) {
-
-        allowed =
-            false;
-
-    }
-
-    else if (
-        isApproved ||
-        isActive ||
-        isOwner ||
-        isAdmin
-    ) {
-
-        allowed =
-            true;
-
-    }
-
-
-
-    /* -----------------------------------------
-       ÙØªÛØ¬Ù
-       ----------------------------------------- */
-
     return {
 
-        authenticated:
-            true,
+        authenticated: true,
 
-        allowed,
+        allowed:
+            checkProfileAccess(profile),
 
         user,
 
-        profile
+        profile,
+
+        error: null
 
     };
 
 }
 
 
-
-/* =========================================================
+/* ---------------------------------------------------------
    LOGOUT
-   ========================================================= */
+--------------------------------------------------------- */
 
 async function logoutUser() {
 
-    const {
-        error
-    } =
-        await supabaseClient
+    try {
+
+        const {
+            error
+        } = await supabaseClient
             .auth
             .signOut();
 
+        if (error) {
+            console.error("Logout error:", error);
+        }
 
-    if (error) {
+    } catch (error) {
 
-        console.error(
-            "Logout error:",
-            error
-        );
-
-        return false;
+        console.error("Logout exception:", error);
 
     }
 
-
-    window.location.href =
-        "login.html";
-
+    window.location.replace("login.html");
 
     return true;
+
+}
+
+
+/* ---------------------------------------------------------
+   Keep auth state synchronized when Supabase refreshes a
+   session in the background.
+--------------------------------------------------------- */
+
+if (
+    typeof supabaseClient !== "undefined" &&
+    supabaseClient.auth
+) {
+
+    supabaseClient.auth.onAuthStateChange(
+        function (event, session) {
+
+            window.dispatchEvent(
+                new CustomEvent(
+                    "adine-auth-state-change",
+                    {
+                        detail: {
+                            event,
+                            session
+                        }
+                    }
+                )
+            );
+
+        }
+    );
 
 }

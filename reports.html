@@ -5025,10 +5025,16 @@ tbody tr:hover {
     <button
         type="button"
         class="bottom-nav-item"
-        onclick="location.href='index.html'"
+        onclick="location.href='Dashboard.html'"
     >
-        <span class="bottom-nav-icon">⌂</span>
-        <span>خانه</span>
+        <span class="bottom-nav-icon">
+            <svg viewBox="0 0 24 24" aria-hidden="true">
+                <path d="M3 10.5L12 3l9 7.5"></path>
+                <path d="M5 9.5V21h14V9.5"></path>
+                <path d="M9 21v-6h6v6"></path>
+            </svg>
+        </span>
+        <span>داشبورد</span>
     </button>
 
 
@@ -5037,7 +5043,14 @@ tbody tr:hover {
         class="bottom-nav-item"
         onclick="location.href='flocks.html'"
     >
-        <span class="bottom-nav-icon">🐔</span>
+        <span class="bottom-nav-icon">
+            <svg viewBox="0 0 24 24" aria-hidden="true">
+                <circle cx="9" cy="8" r="3"></circle>
+                <circle cx="17" cy="10" r="2.5"></circle>
+                <path d="M3.5 20c.5-4 2.5-6 5.5-6s5 2 5.5 6"></path>
+                <path d="M14 15c2.8-.2 4.8 1.4 5.3 4"></path>
+            </svg>
+        </span>
         <span>گله‌ها</span>
     </button>
 
@@ -5047,7 +5060,17 @@ tbody tr:hover {
         class="bottom-nav-item active"
         onclick="location.href='weekly.html'"
     >
-        <span class="bottom-nav-icon">📊</span>
+        <span class="bottom-nav-icon">
+            <svg viewBox="0 0 24 24" aria-hidden="true">
+                <path d="M4 19V5"></path>
+                <path d="M4 19h17"></path>
+                <path d="M6.5 15l4-4 3 2 5-6"></path>
+                <circle cx="6.5" cy="15" r="1"></circle>
+                <circle cx="10.5" cy="11" r="1"></circle>
+                <circle cx="13.5" cy="13" r="1"></circle>
+                <circle cx="18.5" cy="7" r="1"></circle>
+            </svg>
+        </span>
         <span>پایش هفتگی</span>
     </button>
 
@@ -5055,13 +5078,20 @@ tbody tr:hover {
     <button
         type="button"
         class="bottom-nav-item"
-        onclick="location.href='reports.html'"
+        onclick="goToWeeklyReport()"
     >
-        <span class="bottom-nav-icon">📋</span>
+        <span class="bottom-nav-icon">
+            <svg viewBox="0 0 24 24" aria-hidden="true">
+                <path d="M6 3h9l4 4v14H6z"></path>
+                <path d="M15 3v5h5"></path>
+                <path d="M9 12h6"></path>
+                <path d="M9 16h6"></path>
+                <path d="M9 8h2"></path>
+            </svg>
+        </span>
         <span>گزارشات</span>
     </button>
 
-</nav>
-</body>
+</nav></body>
 
 </html>

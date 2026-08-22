@@ -304,15 +304,23 @@ function saveWeeklyWeightRecord(
    FCR
    ========================================================= */
 
-function calculateWeeklyFCR(flockId, currentWeight, currentFeed, currentLiveBirds=null, previousRecord=null, productionType=null) {
-    const feedKg=Number(currentFeed), cw=Number(currentWeight), cb=Number(currentLiveBirds);
-    if (!Number.isFinite(feedKg)||feedKg<=0||!Number.isFinite(cw)||cw<=0||!previousRecord) return null;
-    const ow=Number(previousRecord.averageWeight);
+function calculateWeeklyFCR(flockId, currentWeight, currentFeed, currentLiveBirds=null, previousRecord=null, productionType=null, productionMetrics=null) {
+    const feedKg=Number(currentFeed);
+    const cw=Number(currentWeight);
+    const cb=Number(currentLiveBirds);
+    const type=typeof normalizePoultryProductionType==='function'
+        ? normalizePoultryProductionType(productionType||getFlockProductionType(flockId)||'broiler')
+        : String(productionType||'broiler').toLowerCase();
+    if(!Number.isFinite(feedKg)||feedKg<=0) return null;
+
+    if(type==='layer' || type==='breeder'){
+        const eggMassKg=Number(productionMetrics?.egg_mass_kg);
+        return Number.isFinite(eggMassKg)&&eggMassKg>0 ? Number((feedKg/eggMassKg).toFixed(3)) : null;
+    }
+    if(!previousRecord) return null;
+    const ow=Number(previousRecord.average_weight_g ?? previousRecord.averageWeight ?? previousRecord.averageWeightG);
     const ob=Number(previousRecord.live_birds ?? previousRecord.liveBirds);
-    const type=String(productionType||'').toLowerCase();
-    if (type && type!=='broiler' && type!=='ÃÂÃÂ¯ÃÂÃÂÃÂÃÂ´ÃÂÃÂªÃÂÃÂ') return null;
-    if (![ow,ob,cb].every(Number.isFinite)||ow<0||ob<=0||cb<=0) return null;
-    if (typeof calculateBroilerFCR==='function') return calculateBroilerFCR({feedKg,openingBirds:ob,closingBirds:cb,openingAverageWeightG:ow,closingAverageWeightG:cw});
+    if(![ow,ob,cb,cw].every(Number.isFinite)||ow<0||ob<=0||cb<=0||cw<=0) return null;
     const gainKg=(cb*cw-ob*ow)/1000;
     return gainKg>0?Number((feedKg/gainKg).toFixed(3)):null;
 }

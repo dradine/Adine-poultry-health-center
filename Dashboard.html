@@ -32,8 +32,6 @@
 <div class="app-shell">
 
 
-    <!-- HEADER -->
-
     <header class="topbar">
 
         <div class="brand">
@@ -63,21 +61,18 @@
             class="logout-btn"
             type="button"
         >
+
             خروج
+
         </button>
 
     </header>
 
 
-
-    <!-- MAIN -->
-
     <main class="page">
 
         <div class="container">
 
-
-            <!-- WELCOME -->
 
             <section class="welcome-card">
 
@@ -100,13 +95,12 @@
             </section>
 
 
-
-            <!-- ACCOUNT STATUS -->
-
             <section class="account-status-card">
 
-                <div class="status-icon">
-                    ✓
+                <div
+                    class="status-icon"
+                    data-icon="check"
+                >
                 </div>
 
                 <div class="status-content">
@@ -123,9 +117,6 @@
 
             </section>
 
-
-
-            <!-- DASHBOARD -->
 
             <section class="dashboard-section">
 
@@ -146,20 +137,18 @@
                 </div>
 
 
-
                 <div class="dashboard-grid">
 
-
-                    <!-- FARMS -->
 
                     <a
                         class="menu-card"
                         href="Farms.html"
                     >
 
-                        <div class="menu-icon">
-                            🏭
-                        </div>
+                        <div
+                            class="menu-icon"
+                            data-icon="farm"
+                        ></div>
 
                         <div class="menu-content">
 
@@ -181,16 +170,15 @@
 
 
 
-                    <!-- FLOCKS -->
-
                     <a
                         class="menu-card"
                         href="flocks.html"
                     >
 
-                        <div class="menu-icon">
-                            🐔
-                        </div>
+                        <div
+                            class="menu-icon"
+                            data-icon="flock"
+                        ></div>
 
                         <div class="menu-content">
 
@@ -212,16 +200,15 @@
 
 
 
-                    <!-- WEEKLY -->
-
                     <a
                         class="menu-card"
                         href="weekly.html"
                     >
 
-                        <div class="menu-icon">
-                            ⚖️
-                        </div>
+                        <div
+                            class="menu-icon"
+                            data-icon="scale"
+                        ></div>
 
                         <div class="menu-content">
 
@@ -243,16 +230,15 @@
 
 
 
-                    <!-- HEALTH -->
-
                     <a
                         class="menu-card"
                         href="health.html"
                     >
 
-                        <div class="menu-icon">
-                            💉
-                        </div>
+                        <div
+                            class="menu-icon"
+                            data-icon="vaccine"
+                        ></div>
 
                         <div class="menu-content">
 
@@ -274,16 +260,15 @@
 
 
 
-                    <!-- MORTALITY -->
-
                     <a
                         class="menu-card"
                         href="mortality.html"
                     >
 
-                        <div class="menu-icon">
-                            🩺
-                        </div>
+                        <div
+                            class="menu-icon"
+                            data-icon="health"
+                        ></div>
 
                         <div class="menu-content">
 
@@ -305,16 +290,15 @@
 
 
 
-                    <!-- REPORTS -->
-
                     <a
                         class="menu-card"
                         href="reports.html"
                     >
 
-                        <div class="menu-icon">
-                            📊
-                        </div>
+                        <div
+                            class="menu-icon"
+                            data-icon="report"
+                        ></div>
 
                         <div class="menu-content">
 
@@ -336,16 +320,15 @@
 
 
 
-                    <!-- RECORDS -->
-
                     <a
                         class="menu-card"
                         href="records.html"
                     >
 
-                        <div class="menu-icon">
-                            🗂️
-                        </div>
+                        <div
+                            class="menu-icon"
+                            data-icon="archive"
+                        ></div>
 
                         <div class="menu-content">
 
@@ -367,16 +350,15 @@
 
 
 
-                    <!-- SETTINGS -->
-
                     <a
                         class="menu-card"
                         href="settings.html"
                     >
 
-                        <div class="menu-icon">
-                            ⚙️
-                        </div>
+                        <div
+                            class="menu-icon"
+                            data-icon="settings"
+                        ></div>
 
                         <div class="menu-content">
 
@@ -407,10 +389,8 @@
     </main>
 
 
-
-    <!-- BOTTOM NAV -->
-
     <nav class="bottom-nav">
+
 
         <button
             class="active"
@@ -418,9 +398,9 @@
             onclick="location.href='Dashboard.html'"
         >
 
-            <span>
-                🏠
-            </span>
+            <span
+                data-icon="home"
+            ></span>
 
             <small>
                 خانه
@@ -434,9 +414,9 @@
             onclick="location.href='Farms.html'"
         >
 
-            <span>
-                🏭
-            </span>
+            <span
+                data-icon="farm"
+            ></span>
 
             <small>
                 فارم‌ها
@@ -450,9 +430,9 @@
             onclick="location.href='weekly.html'"
         >
 
-            <span>
-                ⚖️
-            </span>
+            <span
+                data-icon="scale"
+            ></span>
 
             <small>
                 هفتگی
@@ -466,9 +446,9 @@
             onclick="location.href='reports.html'"
         >
 
-            <span>
-                📊
-            </span>
+            <span
+                data-icon="report"
+            ></span>
 
             <small>
                 گزارش
@@ -476,14 +456,12 @@
 
         </button>
 
+
     </nav>
 
 
 </div>
 
-
-
-<!-- SUPABASE -->
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
@@ -491,11 +469,8 @@
 
 <script src="app-core.js"></script>
 
-<script src="dashboard.js"></script>
 <script src="poultry-icons.js"></script>
 
-</body>
-</html>
 
 <script>
 
@@ -503,10 +478,12 @@ document.addEventListener(
     "DOMContentLoaded",
     async function () {
 
+
         const welcomeText =
             document.getElementById(
                 "welcomeText"
             );
+
 
         const accountStatus =
             document.getElementById(
@@ -516,16 +493,12 @@ document.addEventListener(
 
         try {
 
-            /*
-             * اگر تابع checkUserAccess
-             * در app-core.js وجود داشته باشد
-             * از آن استفاده می‌کنیم.
-             */
 
             if (
                 typeof checkUserAccess ===
                 "function"
             ) {
+
 
                 const result =
                     await checkUserAccess();
@@ -587,10 +560,6 @@ document.addEventListener(
 
             else {
 
-                /*
-                 * اگر app-core تابع را نداشت،
-                 * خودمان وضعیت Session را می‌خوانیم.
-                 */
 
                 if (
                     typeof supabaseClient ===
@@ -598,7 +567,7 @@ document.addEventListener(
                 ) {
 
                     welcomeText.textContent =
-                        "خطا: supabaseClient پیدا نشد.";
+                        "خطا: اتصال سامانه پیدا نشد.";
 
                     return;
 
@@ -652,6 +621,7 @@ document.addEventListener(
 
             }
 
+
         }
 
         catch (error) {
@@ -664,7 +634,6 @@ document.addEventListener(
 
             welcomeText.textContent =
                 "سلام دکتر ادینه؛ به سامانه مرکز تخصصی سلامت طیور آدینه خوش آمدید.";
-
 
             accountStatus.textContent =
                 "حساب شما فعال است.";
@@ -684,7 +653,9 @@ document.getElementById(
     "click",
     async function () {
 
+
         try {
+
 
             if (
                 typeof logoutUser ===
@@ -705,6 +676,7 @@ document.getElementById(
                     .signOut();
 
             }
+
 
         }
 

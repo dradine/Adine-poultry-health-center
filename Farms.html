@@ -259,53 +259,46 @@
          BOTTOM NAV
     ================================================== -->
 
-    <nav class="bottom-nav">
+    <nav class="bottom-nav" aria-label="ناوبری اصلی">
 
-        <button
-            type="button"
-            onclick="location.href='Dashboard.html'"
-        >
-            🏠
-            <br>
-            خانه
-        </button>
+    <button
+        type="button"
+        data-nav="Dashboard.html"
+        aria-label="خانه"
+    >
+        <span data-icon="home"></span>
+        <small>خانه</small>
+    </button>
 
+    <button
+        class="active"
+        type="button"
+        data-nav="Farms.html"
+        aria-label="فارم‌ها"
+    >
+        <span data-icon="farm"></span>
+        <small>فارم‌ها</small>
+    </button>
 
-        <button
-            class="active"
-            type="button"
-            onclick="location.href='Farms.html'"
-        >
-            🏭
-            <br>
-            فارم‌ها
-        </button>
+    <button
+        type="button"
+        data-nav="weekly.html"
+        aria-label="هفتگی"
+    >
+        <span data-icon="scale"></span>
+        <small>هفتگی</small>
+    </button>
 
+    <button
+        type="button"
+        data-nav="reports.html"
+        aria-label="گزارش‌ها"
+    >
+        <span data-icon="report"></span>
+        <small>گزارش</small>
+    </button>
 
-        <button
-            type="button"
-            onclick="location.href='weekly.html'"
-        >
-            ⚖️
-            <br>
-            هفتگی
-        </button>
-
-
-        <button
-            type="button"
-            onclick="location.href='reports.html'"
-        >
-            📊
-            <br>
-            گزارش
-        </button>
-
-    </nav>
-
-</div>
-
-
+</nav>
 <!-- SUPABASE -->
 
 <script
@@ -327,11 +320,11 @@
 <script src="weekly-engine.js"></script>
 
 
-<!-- FARMS -->
-
-<script src="Farms.js"></script>
-
+<!-- FARMS ICON SYSTEM -->
 <script src="poultry-icons.js"></script>
+
+<!-- FARMS -->
+<script src="Farms.js"></script>
 </body>
 
 </html>

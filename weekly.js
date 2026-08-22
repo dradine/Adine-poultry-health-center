@@ -2618,6 +2618,10 @@ async function saveWeeklyRecord() {
             productionMetrics.measured_weight_g = stats.mean;
         }
 
+        const existingForCumulative =
+            weeklyRecords
+                .filter(item => String(item.id) !== String(editingRecordId || ""));
+
         if (typeof calculateWeeklySpecializedDerived === "function") {
             productionMetrics = calculateWeeklySpecializedDerived(
                 productionMetrics,
@@ -2638,10 +2642,6 @@ async function saveWeeklyRecord() {
             alert(specializedValidation);
             return;
         }
-
-        const existingForCumulative =
-            weeklyRecords
-                .filter(item => String(item.id) !== String(editingRecordId || ""));
 
         const ageDays =
             currentFlock.placement_date || currentFlock.placementDate

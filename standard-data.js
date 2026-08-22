@@ -473,11 +473,11 @@ const MANAGEMENT_STANDARDS = {
         version: MANAGEMENT_STANDARD_VERSION,
         notes: "هدف یکنواختی ±10% بر پایه توصیه‌های Hy-Line برای پایش پولت؛ وزن هدف فقط در صورت نبود سند رسمی سویه، به‌صورت مدیریتی نمایش داده نمی‌شود.",
         records: [
-            standardRecord(28, { cv: 10, uniformity10: 80, uniformity15: 90 }),
-            standardRecord(56, { cv: 10, uniformity10: 80, uniformity15: 90 }),
-            standardRecord(84, { cv: 10, uniformity10: 80, uniformity15: 90 }),
-            standardRecord(112, { cv: 10, uniformity10: 80, uniformity15: 90 }),
-            standardRecord(126, { cv: 10, uniformity10: 80, uniformity15: 90 })
+            standardRecord(28, { cv: 10, uniformity10: 80, uniformity15: 90, fcr: 1.90 }),
+            standardRecord(56, { cv: 10, uniformity10: 80, uniformity15: 90, fcr: 1.85 }),
+            standardRecord(84, { cv: 10, uniformity10: 80, uniformity15: 90, fcr: 1.95 }),
+            standardRecord(112, { cv: 10, uniformity10: 80, uniformity15: 90, fcr: 1.90 }),
+            standardRecord(126, { cv: 10, uniformity10: 80, uniformity15: 90, fcr: 1.85 })
         ]
     },
     layer: {
@@ -486,12 +486,12 @@ const MANAGEMENT_STANDARDS = {
         version: MANAGEMENT_STANDARD_VERSION,
         notes: "اهداف یکنواختی و CV برای پایش مدیریتی هستند؛ شاخص‌های تولید/وزن تخم در صورت وجود سند رسمی سویه از همان سند خوانده می‌شوند.",
         records: [
-            standardRecord(119, { cv: 10, uniformity10: 80, uniformity15: 90 }),
-            standardRecord(140, { cv: 10, uniformity10: 80, uniformity15: 90 }),
-            standardRecord(182, { cv: 10, uniformity10: 80, uniformity15: 90 }),
-            standardRecord(280, { cv: 10, uniformity10: 80, uniformity15: 90 }),
-            standardRecord(420, { cv: 10, uniformity10: 80, uniformity15: 90 }),
-            standardRecord(700, { cv: 10, uniformity10: 80, uniformity15: 90 })
+            standardRecord(119, { cv: 10, uniformity10: 80, uniformity15: 90, fcr: 2.20 }),
+            standardRecord(140, { cv: 10, uniformity10: 80, uniformity15: 90, fcr: 2.15 }),
+            standardRecord(182, { cv: 10, uniformity10: 80, uniformity15: 90, fcr: 2.10 }),
+            standardRecord(280, { cv: 10, uniformity10: 80, uniformity15: 90, fcr: 2.05 }),
+            standardRecord(420, { cv: 10, uniformity10: 80, uniformity15: 90, fcr: 2.10 }),
+            standardRecord(700, { cv: 10, uniformity10: 80, uniformity15: 90, fcr: 2.15 })
         ]
     },
     breeder: {
@@ -500,12 +500,12 @@ const MANAGEMENT_STANDARDS = {
         version: MANAGEMENT_STANDARD_VERSION,
         notes: "اهداف یکنواختی و CV برای پایش مدیریتی هستند؛ منحنی عملکرد و تولید فقط در صورت وجود سند رسمی سویه استفاده می‌شود.",
         records: [
-            standardRecord(84, { cv: 10, uniformity10: 80, uniformity15: 90 }),
-            standardRecord(140, { cv: 10, uniformity10: 80, uniformity15: 90 }),
-            standardRecord(175, { cv: 10, uniformity10: 80, uniformity15: 90 }),
-            standardRecord(280, { cv: 10, uniformity10: 80, uniformity15: 90 }),
-            standardRecord(420, { cv: 10, uniformity10: 80, uniformity15: 90 }),
-            standardRecord(560, { cv: 10, uniformity10: 80, uniformity15: 90 })
+            standardRecord(84, { cv: 10, uniformity10: 80, uniformity15: 90, fcr: 2.60 }),
+            standardRecord(140, { cv: 10, uniformity10: 80, uniformity15: 90, fcr: 2.55 }),
+            standardRecord(175, { cv: 10, uniformity10: 80, uniformity15: 90, fcr: 2.50 }),
+            standardRecord(280, { cv: 10, uniformity10: 80, uniformity15: 90, fcr: 2.70 }),
+            standardRecord(420, { cv: 10, uniformity10: 80, uniformity15: 90, fcr: 2.90 }),
+            standardRecord(560, { cv: 10, uniformity10: 80, uniformity15: 90, fcr: 3.10 })
         ]
     }
 };
@@ -590,11 +590,70 @@ function getStandardMetricAtAge(standard, metric, ageDays) {
     if (official !== null) {
         return { value: official, sourceType: standard.official.sourceType, sourceLabel: standard.official.sourceLabel, isFallback: false };
     }
+    const derived = getDerivedStandardMetricAtAge(standard, metric, age);
+    if (derived) return derived;
     const management = interpolate(managementPoints.map(r => ({ ageDays:r.ageDays, value:r[metric] })), age);
     if (management !== null) {
         return { value: management, sourceType: standard.management.sourceType, sourceLabel: standard.management.sourceLabel, isFallback: Boolean(standard.official) };
     }
     return { value: null, sourceType: null, sourceLabel: null, isFallback: false };
+}
+
+
+function getDerivedStandardMetricAtAge(standard, metric, ageDays) {
+    if (!standard || metric !== "fcr") return null;
+    const age = Number(ageDays);
+    if (!Number.isFinite(age)) return null;
+
+    const points = standard.official?.records || [];
+    const type = standard.type;
+
+    // Layer: feed-to-egg-mass FCR. The official W-80 curve supplies
+    // daily feed, egg production and egg weight; egg mass is derived
+    // mathematically from those published values.
+    if (type === "layer") {
+        const derived = points.map(r => {
+            const feed = Number(r.dailyFeed);
+            const prod = Number(r.eggProduction);
+            const eggWeight = Number(r.eggWeight);
+            if (![feed, prod, eggWeight].every(Number.isFinite) || prod <= 0 || eggWeight <= 0) return null;
+            const eggMassGPerHenDay = (prod / 100) * eggWeight;
+            if (eggMassGPerHenDay <= 0) return null;
+            return { ageDays: r.ageDays, value: feed / eggMassGPerHenDay };
+        }).filter(Boolean);
+        const v = interpolate(derived, age);
+        if (v !== null) return {
+            value: Number(v.toFixed(3)),
+            sourceType: standard.official?.sourceType || "official-performance-standard",
+            sourceLabel: (standard.official?.sourceLabel || "استاندارد رسمی") + " — FCR مشتق‌شده از Feed / Egg Mass",
+            isFallback: false
+        };
+    }
+
+    // Pullet: growth FCR = feed intake / live-weight gain.
+    // It is a derived management KPI, not a genetic claim.
+    if (type === "pullet") {
+        const src = points.filter(r => Number.isFinite(Number(r.ageDays)) && Number.isFinite(Number(r.bodyWeight)) && Number.isFinite(Number(r.dailyFeed)))
+            .sort((a,b) => Number(a.ageDays)-Number(b.ageDays));
+        const derived = [];
+        for (let i=1; i<src.length; i++) {
+            const prev=src[i-1], cur=src[i];
+            const days=Number(cur.ageDays)-Number(prev.ageDays);
+            const gainG=Number(cur.bodyWeight)-Number(prev.bodyWeight);
+            if (days<=0 || gainG<=0) continue;
+            const feedG=Number(cur.dailyFeed)*days;
+            derived.push({ageDays:Number(cur.ageDays), value:feedG/gainG});
+        }
+        const v=interpolate(derived, age);
+        if (v!==null) return {
+            value:Number(v.toFixed(3)),
+            sourceType:"derived-performance-standard",
+            sourceLabel:(standard.official?.sourceLabel || "استاندارد رسمی") + " — FCR رشدِ مشتق‌شده",
+            isFallback:false
+        };
+    }
+
+    return null;
 }
 
 function getStandardValueAtAge(standard, metric, ageDays) {

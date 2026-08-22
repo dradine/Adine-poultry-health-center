@@ -5017,670 +5017,81 @@ tbody tr:hover {
 </script>
 
 <!-- =========================================================
-     GLOBAL BOTTOM NAVIGATION
-     خانه | فارم‌ها | ثبت هفتگی | گزارش‌ها
-     ثابت در تمام صفحات اصلی
-========================================================= -->
+     MOBILE / GLOBAL BOTTOM NAVIGATION
+     ========================================================= -->
 
-<nav
-    class="bottom-navigation"
-    id="bottomNavigation"
-    aria-label="ناوبری اصلی"
->
+<nav class="bottom-navigation" id="bottomNavigation">
 
-    <!-- خانه -->
     <button
         type="button"
         class="bottom-nav-item"
         onclick="location.href='Dashboard.html'"
-        aria-label="خانه"
     >
-
-        <span
-            class="bottom-nav-icon"
-            aria-hidden="true"
-        >
-
-            <svg
-                viewBox="0 0 48 48"
-                xmlns="http://www.w3.org/2000/svg"
-            >
-
-                <path
-                    d="M7 22L24 8L41 22V41H29V29H19V41H7V22Z"
-                    class="nav-icon-fill"
-                />
-
-                <path
-                    d="M7 22L24 8L41 22"
-                />
-
-                <path
-                    d="M11 20V41H37V20"
-                />
-
-                <path
-                    d="M19 41V29H29V41"
-                />
-
+        <span class="bottom-nav-icon">
+            <svg viewBox="0 0 24 24" aria-hidden="true">
+                <path d="M3 10.5L12 3l9 7.5"></path>
+                <path d="M5 9.5V21h14V9.5"></path>
+                <path d="M9 21v-6h6v6"></path>
             </svg>
-
         </span>
-
-        <span class="bottom-nav-label">
-            خانه
-        </span>
-
+        <span>داشبورد</span>
     </button>
 
 
-    <!-- فارم‌ها -->
     <button
         type="button"
         class="bottom-nav-item"
         onclick="location.href='flocks.html'"
-        aria-label="فارم‌ها"
     >
-
-        <span
-            class="bottom-nav-icon"
-            aria-hidden="true"
-        >
-
-            <svg
-                viewBox="0 0 48 48"
-                xmlns="http://www.w3.org/2000/svg"
-            >
-
-                <path
-                    d="M7 40V22L24 10L41 22V40H31V28H17V40H7Z"
-                    class="nav-icon-fill"
-                />
-
-                <path
-                    d="M7 40H41"
-                />
-
-                <path
-                    d="M7 22L24 10L41 22"
-                />
-
-                <path
-                    d="M17 40V28H31V40"
-                />
-
-                <path
-                    d="M19 22H29"
-                />
-
-                <path
-                    d="M24 17V22"
-                />
-
+        <span class="bottom-nav-icon">
+            <svg viewBox="0 0 24 24" aria-hidden="true">
+                <circle cx="9" cy="8" r="3"></circle>
+                <circle cx="17" cy="10" r="2.5"></circle>
+                <path d="M3.5 20c.5-4 2.5-6 5.5-6s5 2 5.5 6"></path>
+                <path d="M14 15c2.8-.2 4.8 1.4 5.3 4"></path>
             </svg>
-
         </span>
-
-        <span class="bottom-nav-label">
-            فارم‌ها
-        </span>
-
+        <span>گله‌ها</span>
     </button>
 
 
-    <!-- ثبت هفتگی -->
-    <button
-        type="button"
-        class="bottom-nav-item"
-        onclick="location.href='weekly.html'"
-        aria-label="ثبت هفتگی"
-    >
-
-        <span
-            class="bottom-nav-icon"
-            aria-hidden="true"
-        >
-
-            <svg
-                viewBox="0 0 48 48"
-                xmlns="http://www.w3.org/2000/svg"
-            >
-
-                <path
-                    d="M7 41H42"
-                />
-
-                <path
-                    d="M7 41V9"
-                />
-
-                <path
-                    d="M10 34L19 25L26 30L39 14"
-                />
-
-                <circle
-                    cx="10"
-                    cy="34"
-                    r="2"
-                    class="nav-dot"
-                />
-
-                <circle
-                    cx="19"
-                    cy="25"
-                    r="2"
-                    class="nav-dot"
-                />
-
-                <circle
-                    cx="26"
-                    cy="30"
-                    r="2"
-                    class="nav-dot"
-                />
-
-                <circle
-                    cx="39"
-                    cy="14"
-                    r="2"
-                    class="nav-dot"
-                />
-
-            </svg>
-
-        </span>
-
-        <span class="bottom-nav-label">
-            ثبت هفتگی
-        </span>
-
-    </button>
-
-
-    <!-- گزارش‌ها -->
     <button
         type="button"
         class="bottom-nav-item active"
-        onclick="location.href='reports.html'"
-        aria-label="گزارش‌ها"
-        aria-current="page"
+        onclick="location.href='weekly.html'"
     >
-
-        <span
-            class="bottom-nav-icon"
-            aria-hidden="true"
-        >
-
-            <svg
-                viewBox="0 0 48 48"
-                xmlns="http://www.w3.org/2000/svg"
-            >
-
-                <path
-                    d="M10 5H30L38 13V43H10V5Z"
-                    class="nav-icon-fill"
-                />
-
-                <path
-                    d="M30 5V14H38"
-                />
-
-                <path
-                    d="M17 21H31"
-                />
-
-                <path
-                    d="M17 27H31"
-                />
-
-                <path
-                    d="M17 33H27"
-                />
-
+        <span class="bottom-nav-icon">
+            <svg viewBox="0 0 24 24" aria-hidden="true">
+                <path d="M4 19V5"></path>
+                <path d="M4 19h17"></path>
+                <path d="M6.5 15l4-4 3 2 5-6"></path>
+                <circle cx="6.5" cy="15" r="1"></circle>
+                <circle cx="10.5" cy="11" r="1"></circle>
+                <circle cx="13.5" cy="13" r="1"></circle>
+                <circle cx="18.5" cy="7" r="1"></circle>
             </svg>
-
         </span>
-
-        <span class="bottom-nav-label">
-            گزارش‌ها
-        </span>
-
+        <span>پایش هفتگی</span>
     </button>
 
-</nav>
-/* =========================================================
-   GLOBAL BOTTOM NAVIGATION
-   ADINE POULTRY HEALTH CENTER
-========================================================= */
 
-.bottom-navigation {
-
-    position: fixed;
-
-    left: 50%;
-    bottom: 14px;
-
-    transform: translateX(-50%);
-
-    z-index: 99999;
-
-    width: min(
-        620px,
-        calc(100% - 24px)
-    );
-
-    height: 72px;
-
-    display: grid;
-
-    grid-template-columns:
-        repeat(4, 1fr);
-
-    align-items: stretch;
-
-    background:
-        rgba(
-            255,
-            255,
-            255,
-            .97
-        );
-
-    border:
-        1px solid
-        #dfe5ec;
-
-    border-radius:
-        20px;
-
-    box-shadow:
-        0 10px 35px
-        rgba(
-            15,
-            23,
-            42,
-            .16
-        );
-
-    backdrop-filter:
-        blur(14px);
-
-    -webkit-backdrop-filter:
-        blur(14px);
-
-    overflow:
-        hidden;
-}
-
-
-/* =========================================================
-   NAV BUTTON
-========================================================= */
-
-.bottom-nav-item {
-
-    position:
-        relative;
-
-    border:
-        0;
-
-    outline:
-        none;
-
-    background:
-        transparent;
-
-    color:
-        #667085;
-
-    cursor:
-        pointer;
-
-    font-family:
-        inherit;
-
-    font-size:
-        11px;
-
-    font-weight:
-        700;
-
-    display:
-        flex;
-
-    flex-direction:
-        column;
-
-    align-items:
-        center;
-
-    justify-content:
-        center;
-
-    gap:
-        5px;
-
-    min-width:
-        0;
-
-    padding:
-        7px 4px;
-
-    transition:
-        background .2s ease,
-        color .2s ease,
-        transform .2s ease;
-}
-
-
-/* =========================================================
-   HOVER
-========================================================= */
-
-.bottom-nav-item:hover {
-
-    color:
-        #1d3557;
-
-    background:
-        #f5f8fb;
-
-}
-
-
-/* =========================================================
-   ACTIVE
-========================================================= */
-
-.bottom-nav-item.active {
-
-    color:
-        #1d3557;
-
-    background:
-        #eef3f8;
-
-}
-
-
-.bottom-nav-item.active::before {
-
-    content:
-        "";
-
-    position:
-        absolute;
-
-    top:
-        0;
-
-    left:
-        25%;
-
-    width:
-        50%;
-
-    height:
-        3px;
-
-    background:
-        #1d3557;
-
-    border-radius:
-        0 0 5px 5px;
-
-}
-
-
-/* =========================================================
-   ICON
-========================================================= */
-
-.bottom-nav-icon {
-
-    width:
-        28px;
-
-    height:
-        28px;
-
-    display:
-        flex;
-
-    align-items:
-        center;
-
-    justify-content:
-        center;
-
-    flex-shrink:
-        0;
-
-}
-
-
-.bottom-nav-icon svg {
-
-    width:
-        25px;
-
-    height:
-        25px;
-
-    fill:
-        none;
-
-    stroke:
-        currentColor;
-
-    stroke-width:
-        1.8;
-
-    stroke-linecap:
-        round;
-
-    stroke-linejoin:
-        round;
-
-}
-
-
-/* =========================================================
-   DUOTONE FILL
-========================================================= */
-
-.bottom-nav-icon svg .nav-icon-fill {
-
-    fill:
-        currentColor;
-
-    fill-opacity:
-        .13;
-
-}
-
-
-.bottom-nav-icon svg .nav-dot {
-
-    fill:
-        currentColor;
-
-    stroke:
-        none;
-
-}
-
-
-.bottom-nav-item.active
-.bottom-nav-icon
-svg {
-
-    stroke-width:
-        2.15;
-
-}
-
-
-.bottom-nav-item.active
-.bottom-nav-icon
-svg
-.nav-icon-fill {
-
-    fill-opacity:
-        .18;
-
-}
-
-
-/* =========================================================
-   LABEL
-========================================================= */
-
-.bottom-nav-label {
-
-    display:
-        block;
-
-    line-height:
-        1.2;
-
-    white-space:
-        nowrap;
-
-}
-
-
-/* =========================================================
-   MOBILE
-========================================================= */
-
-@media (
-    max-width: 700px
-) {
-
-    body {
-
-        padding-bottom:
-            94px !important;
-
-    }
-
-
-    .bottom-navigation {
-
-        bottom:
-            8px;
-
-        width:
-            calc(100% - 16px);
-
-        height:
-            68px;
-
-        border-radius:
-            18px;
-
-    }
-
-
-    .bottom-nav-item {
-
-        font-size:
-            10px;
-
-        gap:
-            3px;
-
-        padding:
-            7px 3px;
-
-    }
-
-
-    .bottom-nav-icon {
-
-        width:
-            25px;
-
-        height:
-            25px;
-
-    }
-
-
-    .bottom-nav-icon svg {
-
-        width:
-            23px;
-
-        height:
-            23px;
-
-    }
-
-}
-
-
-/* =========================================================
-   VERY SMALL SCREENS
-========================================================= */
-
-@media (
-    max-width: 380px
-) {
-
-    .bottom-navigation {
-
-        width:
-            calc(100% - 10px);
-
-        bottom:
-            5px;
-
-        height:
-            64px;
-
-        border-radius:
-            17px;
-
-    }
-
-
-    .bottom-nav-item {
-
-        font-size:
-            9px;
-
-        padding:
-            5px 2px;
-
-    }
-
-
-    .bottom-nav-icon {
-
-        width:
-            23px;
-
-        height:
-            23px;
-
-    }
-
-
-    .bottom-nav-icon svg {
-
-        width:
-            21px;
-
-        height:
-            21px;
-
-    }
-
-}
-    
-</body>
+    <button
+        type="button"
+        class="bottom-nav-item"
+        onclick="goToWeeklyReport()"
+    >
+        <span class="bottom-nav-icon">
+            <svg viewBox="0 0 24 24" aria-hidden="true">
+                <path d="M6 3h9l4 4v14H6z"></path>
+                <path d="M15 3v5h5"></path>
+                <path d="M9 12h6"></path>
+                <path d="M9 16h6"></path>
+                <path d="M9 8h2"></path>
+            </svg>
+        </span>
+        <span>گزارشات</span>
+    </button>
+
+</nav></body>
 
 </html>

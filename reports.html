@@ -446,6 +446,14 @@
 
         </div>
 
+        <div class="chart-wrapper">
+
+            <canvas
+                id="specializedReproductionChart"
+            ></canvas>
+
+        </div>
+
     </section>
 
 
@@ -1501,6 +1509,11 @@ tbody tr:hover {
 
         specializedCharts =
             [];
+
+        (window.__adineSpecializedCharts || []).forEach(chart => {
+            try { chart.destroy(); } catch (_) {}
+        });
+        window.__adineSpecializedCharts = [];
 
     }
 
@@ -4341,352 +4354,135 @@ tbody tr:hover {
     ====================================================== */
 
     function renderSpecialized() {
+        const card = document.getElementById("specializedReportCard");
+        if (!card) return;
+        const type = String(productionType(reportFlock) || "broiler").toLowerCase();
+        const normalized = type.includes("layer") || type.includes("تخم") ? "layer"
+            : type.includes("breeder") || type.includes("مادر") ? "breeder"
+            : type.includes("pullet") || type.includes("پولت") ? "pullet" : "broiler";
 
-        const card =
-            document.getElementById(
-                "specializedReportCard"
-            );
+        const titles = {
+            broiler: "گزارش تخصصی گوشتی",
+            pullet: "گزارش تخصصی پولت",
+            layer: "گزارش تخصصی تخم‌گذار",
+            breeder: "گزارش تخصصی مرغ مادر"
+        };
+        document.getElementById("specializedReportTitle").textContent = titles[normalized];
+        document.getElementById("specializedReportInfo").textContent =
+            "تمام نمودارها هفتگی هستند و مقدار واقعی با استاندارد همان سن، سویه و شاخص مقایسه می‌شود. FCR برای همه تیپ‌ها محاسبه می‌شود؛ تعریف آن برای گوشتی/پولت = دان به ازای افزایش وزن و برای تخم‌گذار/مادر = دان به ازای Egg Mass است.";
+        card.querySelectorAll(".chart-wrapper").forEach(w => { w.style.display = "none"; });
+        card.style.display = "block";
 
-
-        if (!card) {
-
-            return;
-
-        }
-
-
-        /*
-         * فقط وقتی داده تخصصی وجود داشته باشد
-         * این قسمت نمایش داده می‌شود.
-         */
-
-        const type =
-            String(
-                productionType(
-                    reportFlock
-                )
-            )
-            .toLowerCase();
-
-
-        let title =
-            "گزارش تخصصی";
-
-
-        if (
-            type.includes("layer") ||
-            type.includes("تخم")
-        ) {
-
-            title =
-                "گزارش تخصصی تخم‌گذار";
-
-        }
-
-        else if (
-            type.includes("breeder") ||
-            type.includes("مادر")
-        ) {
-
-            title =
-                "گزارش تخصصی مرغ مادر";
-
-        }
-
-        else if (
-            type.includes("pullet") ||
-            type.includes("پولت")
-        ) {
-
-            title =
-                "گزارش تخصصی پولت";
-
-        }
-
-        else {
-
-            title =
-                "گزارش تخصصی گوشتی";
-
-        }
-
-
-        const titleElement =
-            document.getElementById(
-                "specializedReportTitle"
-            );
-
-
-        if (titleElement) {
-
-            titleElement.textContent =
-                title;
-
-        }
-
-
-        /*
-         * در این نسخه اگر داده تخصصی در رکوردها
-         * وجود نداشته باشد کارت مخفی می‌ماند.
-         */
-
-        const possibleKeys = [
-
-            "egg_production",
-
-            "egg_rate",
-
-            "hen_day",
-
-            "hen_housed",
-
-            "egg_mass",
-
-            "daily_gain",
-
-            "growth_rate"
-
-        ];
-
-
-        const hasSpecializedData =
-            reportRecords.some(
-                record =>
-                    possibleKeys.some(
-                        key =>
-                            num(
-                                record?.[
-                                    key
-                                ]
-                            ) !== null
-                    )
-            );
-
-
-        if (!hasSpecializedData) {
-
-            card.style.display =
-                "none";
-
-            return;
-
-        }
-
-
-        card.style.display =
-            "block";
-
-
-        const info =
-            document.getElementById(
-                "specializedReportInfo"
-            );
-
-
-        if (info) {
-
-            info.textContent =
-                "شاخص‌های تخصصی بر اساس داده‌های ثبت‌شده نمایش داده می‌شوند.";
-
-        }
-
-
-        createSpecializedChart(
-            "specializedProductionChart",
-            [
-                "egg_production",
-                "egg_rate",
-                "hen_day",
-                "hen_housed"
+        const configs = {
+            broiler: [
+                ["specializedProductionChart", "رشد وزن", "bodyWeight", "وزن بدن (g)"],
+                ["specializedEfficiencyChart", "FCR", "fcr", "FCR (kg/kg)"],
+                ["specializedQualityChart", "یکنواختی و CV", "uniformity", "%"]
             ],
-            "شاخص تولید"
-        );
-
-
-        createSpecializedChart(
-            "specializedEfficiencyChart",
-            [
-                "egg_mass",
-                "daily_gain",
-                "growth_rate"
+            pullet: [
+                ["specializedProductionChart", "رشد وزن", "bodyWeight", "وزن بدن (g)"],
+                ["specializedEfficiencyChart", "FCR رشد", "fcr", "FCR (kg/kg)"],
+                ["specializedQualityChart", "یکنواختی و CV", "uniformity", "%"]
             ],
-            "شاخص بهره‌وری"
-        );
-
-
-        createSpecializedChart(
-            "specializedQualityChart",
-            [
-                "egg_quality",
-                "shell_quality",
-                "broken_egg_percent"
+            layer: [
+                ["specializedProductionChart", "تولید تخم", "eggProduction", "%"],
+                ["specializedEfficiencyChart", "FCR و Egg Mass", "fcrEggMass", "FCR / Egg Mass"],
+                ["specializedQualityChart", "وزن تخم", "eggWeight", "گرم"],
+                ["specializedReproductionChart", "کیفیت و شاخص‌های تولید", "layerQuality", "% / HU"]
             ],
-            "شاخص کیفیت"
-        );
+            breeder: [
+                ["specializedProductionChart", "تولید تخم مادر", "henHousedProduction", "%"],
+                ["specializedEfficiencyChart", "FCR و Egg Mass", "fcrEggMass", "FCR / Egg Mass"],
+                ["specializedQualityChart", "نطفه‌داری و هچ", "reproduction", "%"],
+                ["specializedReproductionChart", "تخم قابل جوجه‌کشی و جوجه", "breederOutput", "% / عدد"]
+            ]
+        };
 
+        (window.__adineSpecializedCharts || []).forEach(c => { try { c.destroy(); } catch (_) {} });
+        window.__adineSpecializedCharts = [];
+        const selected = configs[normalized] || configs.broiler;
+        selected.forEach(([id, title, metric, unit]) => createSpecializedChartV2(id, title, metric, unit, normalized));
     }
 
+    function createSpecializedChartV2(canvasId, title, metric, unit, type) {
+        const canvas = document.getElementById(canvasId);
+        if (!canvas) return;
+        const wrapper = canvas.parentElement;
+        if (!wrapper) return;
 
+        const labelsData = labels();
+        const actual = reportRecords.map(r => {
+            if (metric === "bodyWeight") return num(r?.averageWeight);
+            if (metric === "fcr") return num(r?.fcr);
+            if (metric === "fcrEggMass") return num(r?.fcr);
+            if (metric === "uniformity") return num(r?.uniformity10);
+            if (metric === "eggProduction") return num(r?.productionMetrics?.hen_day_pct ?? r?.productionMetrics?.egg_production);
+            if (metric === "henHousedProduction") return num(r?.productionMetrics?.hen_housed_pct);
+            if (metric === "eggWeight") return num(r?.productionMetrics?.egg_weight_g);
+            return null;
+        });
 
-    /* =====================================================
-       SPECIALIZED CHART
-    ====================================================== */
+        let standardMetric = null;
+        if (metric === "bodyWeight") standardMetric = "bodyWeight";
+        else if (metric === "fcr" || metric === "fcrEggMass") standardMetric = "fcr";
+        else if (metric === "eggProduction") standardMetric = "eggProduction";
+        else if (metric === "henHousedProduction") standardMetric = "henHousedProduction";
+        else if (metric === "eggWeight") standardMetric = "eggWeight";
 
-    function createSpecializedChart(
-        canvasId,
-        keys,
-        title
-    ) {
+        let standard = standardMetric
+            ? reportRecords.map(r => {
+                const meta = typeof getReportSpecializedMetric === "function"
+                    ? getReportSpecializedMetric(reportStandard, standardMetric, r.ageDays)
+                    : null;
+                return meta?.value == null ? null : Number(meta.value);
+            })
+            : null;
 
-        const canvas =
-            document.getElementById(
-                canvasId
-            );
+        const datasets = [];
+        if (actual.some(v => v !== null)) datasets.push({ label: "واقعی", data: actual, borderWidth: 3, tension: .25, spanGaps: true });
+        if (standard && standard.some(v => v !== null)) datasets.push({ label: "استاندارد", data: standard, borderWidth: 3, borderDash: [8,5], tension: .25, spanGaps: true });
 
-
-        if (!canvas) {
-
-            return;
-
+        // Multi-series specialized charts.
+        if (metric === "uniformity") {
+            const u15 = reportRecords.map(r => num(r?.uniformity15));
+            const cu = reportRecords.map(r => num(r?.cv));
+            if (u15.some(v=>v!==null)) datasets.push({label:"یکنواختی ±15%",data:u15,borderWidth:2,tension:.25,spanGaps:true});
+            if (cu.some(v=>v!==null)) datasets.push({label:"CV",data:cu,borderWidth:2,borderDash:[4,4],tension:.25,spanGaps:true});
+            const stdU10=reportRecords.map(r=>{const m=getReportStandardMeta(reportStandard,"uniformity10",r.ageDays);return m?.value??null});
+            const stdCV=reportRecords.map(r=>{const m=getReportStandardMeta(reportStandard,"cv",r.ageDays);return m?.value??null});
+            if(stdU10.some(v=>v!==null)) datasets.push({label:"استاندارد یکنواختی ±10%",data:stdU10,borderWidth:2,borderDash:[8,5],tension:.25,spanGaps:true});
+            if(stdCV.some(v=>v!==null)) datasets.push({label:"استاندارد CV",data:stdCV,borderWidth:2,borderDash:[2,3],tension:.25,spanGaps:true});
+        }
+        if (metric === "layerQuality") {
+            const mass=reportRecords.map(r=>num(r?.productionMetrics?.egg_mass_kg));
+            const haugh=reportRecords.map(r=>num(r?.productionMetrics?.haugh_unit));
+            if(mass.some(v=>v!==null)) datasets.push({label:"Egg Mass (kg/هفته)",data:mass,borderWidth:2,tension:.25,spanGaps:true});
+            if(haugh.some(v=>v!==null)) datasets.push({label:"Haugh Unit",data:haugh,borderWidth:2,tension:.25,spanGaps:true});
+        }
+        if (metric === "reproduction") {
+            const fert=reportRecords.map(r=>num(r?.productionMetrics?.fertility_pct));
+            const hatch=reportRecords.map(r=>num(r?.productionMetrics?.hatchability_pct));
+            if(fert.some(v=>v!==null)) datasets.push({label:"نطفه‌داری واقعی",data:fert,borderWidth:3,tension:.25,spanGaps:true});
+            if(hatch.some(v=>v!==null)) datasets.push({label:"هچ واقعی",data:hatch,borderWidth:3,tension:.25,spanGaps:true});
+            const sh=reportRecords.map(r=>{const m=getReportStandardMeta(reportStandard,"hatchability",r.ageDays);return m?.value??null});
+            if(sh.some(v=>v!==null)) datasets.push({label:"استاندارد هچ",data:sh,borderWidth:3,borderDash:[8,5],tension:.25,spanGaps:true});
+        }
+        if (metric === "breederOutput") {
+            const he=reportRecords.map(r=>num(r?.productionMetrics?.hatching_egg_pct));
+            const ch=reportRecords.map(r=>num(r?.productionMetrics?.chicks_per_hen));
+            if(he.some(v=>v!==null)) datasets.push({label:"تخم قابل جوجه‌کشی",data:he,borderWidth:3,tension:.25,spanGaps:true});
+            if(ch.some(v=>v!==null)) datasets.push({label:"جوجه/مرغ",data:ch,borderWidth:2,tension:.25,spanGaps:true});
         }
 
-
-        let found =
-            null;
-
-
-        for (
-            const key of keys
-        ) {
-
-            const values =
-                reportRecords.map(
-                    record =>
-                        num(
-                            record?.[key]
-                        )
-                );
-
-
-            if (
-                values.some(
-                    value =>
-                        value !== null
-                )
-            ) {
-
-                found = {
-
-                    key,
-
-                    values
-
-                };
-
-
-                break;
-
-            }
-
-        }
-
-
-        if (!found) {
-
-            canvas.parentElement.style.display =
-                "none";
-
-            return;
-
-        }
-
-
-        const chart =
-            new Chart(
-                canvas,
-                {
-
-                    type:
-                        "line",
-
-
-                    data: {
-
-                        labels:
-                            labels(),
-
-
-                        datasets: [
-
-                            {
-
-                                label:
-                                    title +
-                                    " — " +
-                                    found.key,
-
-                                data:
-                                    found.values,
-
-                                borderWidth:
-                                    3,
-
-                                tension:
-                                    0.25,
-
-                                spanGaps:
-                                    true
-
-                            }
-
-                        ]
-
-                    },
-
-
-                    options: {
-
-                        responsive:
-                            true,
-
-                        maintainAspectRatio:
-                            false,
-
-                        interaction: {
-
-                            mode:
-                                "index",
-
-                            intersect:
-                                false
-
-                        },
-
-
-                        plugins: {
-
-                            legend: {
-
-                                position:
-                                    "top"
-
-                            }
-
-                        }
-
-                    }
-
-                }
-            );
-
-
-        specializedCharts.push(
-            chart
-        );
-
+        wrapper.style.display = datasets.length ? "block" : "none";
+        if (!datasets.length) return;
+        const chart = new Chart(canvas, {
+            type:"line",
+            data:{labels:labelsData,datasets},
+            options:{responsive:true,maintainAspectRatio:false,interaction:{mode:"index",intersect:false},plugins:{legend:{position:"top"},title:{display:true,text:title},tooltip:{callbacks:{label:c=>`${c.dataset.label}: ${c.parsed.y == null ? "-" : Number(c.parsed.y).toLocaleString("fa-IR",{maximumFractionDigits:3})} ${unit}`}}}}
+        });
+        window.__adineSpecializedCharts.push(chart);
     }
-
-
 
     /* =====================================================
        RENDER ALL

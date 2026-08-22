@@ -1858,3 +1858,367 @@ th {
     }
 
 }
+/* =========================================================
+   ADINE PROFESSIONAL SVG ICON SYSTEM
+========================================================= */
+
+.adi-icon {
+
+    display:
+        inline-flex;
+
+    align-items:
+        center;
+
+    justify-content:
+        center;
+
+    flex-shrink:
+        0;
+
+    line-height:
+        0;
+
+}
+
+
+.adi-icon svg {
+
+    display:
+        block;
+
+    width:
+        100%;
+
+    height:
+        100%;
+
+    fill:
+        none;
+
+    stroke:
+        currentColor;
+
+    stroke-width:
+        2.25;
+
+    stroke-linecap:
+        round;
+
+    stroke-linejoin:
+        round;
+
+}
+
+
+.menu-icon {
+
+    display:
+        flex;
+
+    align-items:
+        center;
+
+    justify-content:
+        center;
+
+    width:
+        58px;
+
+    height:
+        58px;
+
+    min-width:
+        58px;
+
+    border-radius:
+        18px;
+
+    background:
+        linear-gradient(
+            145deg,
+            #edf5f1,
+            #ffffff
+        );
+
+    color:
+        #173f35;
+
+    border:
+        1px solid
+        rgba(
+            23,
+            63,
+            53,
+            .10
+        );
+
+    box-shadow:
+        0 5px 16px
+        rgba(
+            23,
+            63,
+            53,
+            .08
+        );
+
+}
+
+
+.menu-icon .adi-icon {
+
+    width:
+        34px;
+
+    height:
+        34px;
+
+}
+
+
+.menu-card:hover .menu-icon {
+
+    transform:
+        translateY(-1px)
+        scale(1.03);
+
+}
+
+
+.menu-icon {
+
+    transition:
+        transform .18s ease,
+        box-shadow .18s ease;
+
+}
+
+
+.bottom-nav button,
+.bottom-nav a {
+
+    position:
+        relative;
+
+}
+
+
+.bottom-nav .adi-icon {
+
+    width:
+        23px;
+
+    height:
+        23px;
+
+    margin:
+        0 auto 3px;
+
+    color:
+        currentColor;
+
+}
+
+
+.bottom-nav .adi-icon-label {
+
+    display:
+        block;
+
+    line-height:
+        1.2;
+
+}
+
+
+.status-icon {
+
+    display:
+        flex;
+
+    align-items:
+        center;
+
+    justify-content:
+        center;
+
+}
+
+
+.status-icon .adi-icon {
+
+    width:
+        27px;
+
+    height:
+        27px;
+
+}
+
+
+.adi-icon-status svg {
+
+    stroke-width:
+        2.6;
+
+}
+
+
+.health-action .adi-icon,
+.action-card .adi-icon,
+.quick-action .adi-icon,
+.nav-item .adi-icon {
+
+    width:
+        30px;
+
+    height:
+        30px;
+
+}
+
+
+[data-icon] {
+
+    display:
+        inline-flex;
+
+    align-items:
+        center;
+
+    justify-content:
+        center;
+
+}
+
+
+[data-icon] .adi-icon {
+
+    width:
+        30px;
+
+    height:
+        30px;
+
+}
+
+
+/* رنگ‌بندی تخصصی آیکون‌ها */
+
+.menu-card:nth-child(1) .menu-icon {
+    color: #315f50;
+}
+
+.menu-card:nth-child(2) .menu-icon {
+    color: #8a5b25;
+}
+
+.menu-card:nth-child(3) .menu-icon {
+    color: #315f50;
+}
+
+.menu-card:nth-child(4) .menu-icon {
+    color: #567d9a;
+}
+
+.menu-card:nth-child(5) .menu-icon {
+    color: #8a4650;
+}
+
+.menu-card:nth-child(6) .menu-icon {
+    color: #526b84;
+}
+
+.menu-card:nth-child(7) .menu-icon {
+    color: #69724a;
+}
+
+.menu-card:nth-child(8) .menu-icon {
+    color: #5f596f;
+}
+
+
+/* جلوگیری از کوچک شدن آیکون‌ها در iPhone */
+
+@media (max-width: 600px) {
+
+    .menu-icon {
+
+        width:
+            54px;
+
+        height:
+            54px;
+
+        min-width:
+            54px;
+
+        border-radius:
+            16px;
+
+    }
+
+
+    .menu-icon .adi-icon {
+
+        width:
+            32px;
+
+        height:
+            32px;
+
+    }
+
+
+    .bottom-nav .adi-icon {
+
+        width:
+            22px;
+
+        height:
+            22px;
+
+    }
+
+}
+
+
+/* حالت لمس iPhone */
+
+@media (hover: none) {
+
+    .menu-card:hover .menu-icon {
+
+        transform:
+            none;
+
+    }
+
+}
+
+
+/* حذف Highlight پیش‌فرض Safari */
+
+.menu-card,
+.bottom-nav button,
+.bottom-nav a,
+button {
+
+    -webkit-tap-highlight-color:
+        transparent;
+
+}
+
+
+/* دسترسی‌پذیری */
+
+@media (prefers-reduced-motion: reduce) {
+
+    .menu-icon {
+
+        transition:
+            none;
+
+    }
+
+}

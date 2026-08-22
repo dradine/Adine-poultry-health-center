@@ -12,16 +12,31 @@ document.addEventListener("DOMContentLoaded", () => {
         return;
     }
 
+    /* =====================================================
+       MESSAGE
+    ===================================================== */
+
     function showMessage(text, type = "error") {
-        message.textContent = text;
+
+        message.textContent = String(text || "");
+
         message.className = "message " + type;
+
         message.classList.remove("hidden");
     }
 
+
     function hideMessage() {
+
         message.classList.add("hidden");
+
         message.textContent = "";
     }
+
+
+    /* =====================================================
+       URL MESSAGE
+    ===================================================== */
 
     const params =
         new URLSearchParams(window.location.search);
@@ -30,8 +45,17 @@ document.addEventListener("DOMContentLoaded", () => {
         params.get("message");
 
     if (urlMessage) {
-        showMessage(urlMessage, "info");
+
+        showMessage(
+            urlMessage,
+            "info"
+        );
     }
+
+
+    /* =====================================================
+       PASSWORD VISIBILITY
+    ===================================================== */
 
     if (togglePassword) {
 
@@ -43,14 +67,20 @@ document.addEventListener("DOMContentLoaded", () => {
                     passwordInput.type === "text";
 
                 passwordInput.type =
-                    visible ? "password" : "text";
+                    visible
+                        ? "password"
+                        : "text";
 
                 togglePassword.textContent =
-                    visible ? "ÙÙØ§ÛØ´" : "Ù¾ÙÙØ§Ù";
+                    visible
+                        ? "نمایش"
+                        : "پنهان";
 
                 togglePassword.setAttribute(
                     "aria-label",
-                    visible ? "ÙÙØ§ÛØ´ Ø±ÙØ²" : "Ù¾ÙÙØ§Ù Ú©Ø±Ø¯Ù Ø±ÙØ²"
+                    visible
+                        ? "نمایش رمز"
+                        : "پنهان کردن رمز"
                 );
 
             }
@@ -58,13 +88,30 @@ document.addEventListener("DOMContentLoaded", () => {
 
     }
 
+
+    /* =====================================================
+       LOGIN
+    ===================================================== */
+
     form.addEventListener(
         "submit",
         async (event) => {
 
             event.preventDefault();
 
+            /*
+             * جلوگیری از ارسال دوباره فرم
+             */
+            if (button.disabled) {
+                return;
+            }
+
             hideMessage();
+
+
+            /* =================================================
+               GET FORM VALUES
+            ================================================= */
 
             const email =
                 emailInput.value
@@ -74,114 +121,178 @@ document.addEventListener("DOMContentLoaded", () => {
             const password =
                 passwordInput.value;
 
+
+            /* =================================================
+               VALIDATION
+            ================================================= */
+
             if (!email || !password) {
 
                 showMessage(
-                    "Ø§ÛÙÛÙ Ù Ø±ÙØ² Ø¹Ø¨ÙØ± Ø±Ø§ ÙØ§Ø±Ø¯ Ú©ÙÛØ¯."
+                    "ایمیل و رمز عبور را وارد کنید.",
+                    "error"
                 );
 
                 return;
-
             }
 
+
+            /* =================================================
+               LOADING
+            ================================================= */
+
             button.disabled = true;
-            button.textContent = "Ø¯Ø± Ø­Ø§Ù ÙØ±ÙØ¯â¦";
+
+            button.setAttribute(
+                "aria-busy",
+                "true"
+            );
+
+            button.textContent =
+                "در حال ورود…";
+
 
             try {
+
+                /* =================================================
+                   SUPABASE LOGIN
+                ================================================= */
 
                 const {
                     data,
                     error
-                } = await supabaseClient.auth.signInWithPassword({
-                    email,
-                    password
-                });
+                } =
+                    await supabaseClient.auth.signInWithPassword({
+                        email,
+                        password
+                    });
+
+
+                /* =================================================
+                   SUPABASE ERROR
+                ================================================= */
 
                 if (error) {
 
-                    console.error("LOGIN ERROR:", error);
+                    console.error(
+                        "LOGIN ERROR:",
+                        error
+                    );
 
                     const errorText =
                         String(error.message || "")
                             .toLowerCase();
 
+
                     if (
-                        errorText.includes("email not confirmed")
+                        errorText.includes(
+                            "email not confirmed"
+                        )
                     ) {
 
                         showMessage(
-                            "Ø§ÛÙÛÙ Ø´ÙØ§ ÙÙÙØ² ØªØ£ÛÛØ¯ ÙØ´Ø¯Ù Ø§Ø³Øª."
+                            "ایمیل شما هنوز تأیید نشده است.",
+                            "error"
                         );
 
                     } else {
 
                         showMessage(
                             error.message ||
-                            "ÙØ±ÙØ¯ Ø§ÙØ¬Ø§Ù ÙØ´Ø¯."
+                            "ورود انجام نشد.",
+                            "error"
                         );
-
                     }
 
                     return;
-
                 }
+
+
+                /* =================================================
+                   USER CHECK
+                ================================================= */
 
                 if (!data?.user) {
 
                     showMessage(
-                        "ÙØ±ÙØ¯ Ø§ÙØ¬Ø§Ù ÙØ´Ø¯Ø Ø­Ø³Ø§Ø¨ Ú©Ø§Ø±Ø¨Ø±Û Ù¾ÛØ¯Ø§ ÙØ´Ø¯."
+                        "ورود انجام نشد؛ حساب کاربری پیدا نشد.",
+                        "error"
                     );
 
                     return;
-
                 }
+
+
+                /* =================================================
+                   GET USER PROFILE
+                ================================================= */
 
                 const profile =
                     await AdineAuth.getProfile(
                         data.user.id
                     );
 
+
+                /* =================================================
+                   PROFILE NOT FOUND
+                ================================================= */
+
                 if (!profile) {
 
                     await supabaseClient.auth.signOut();
 
                     showMessage(
-                        "Ø­Ø³Ø§Ø¨ Ø´ÙØ§ Ø¯Ø± Ø³Ø§ÙØ§ÙÙ Ø«Ø¨Øª ÙØ´Ø¯Ù Ø§Ø³Øª. ÙØ·ÙØ§Ù Ø¨Ø§ ÙØ§ÙÚ© Ø³Ø§ÙØ§ÙÙ ØªÙØ§Ø³ Ø¨Ú¯ÛØ±ÛØ¯."
+                        "حساب شما در سامانه ثبت نشده است. لطفاً با مالک سامانه تماس بگیرید.",
+                        "error"
                     );
 
                     return;
-
                 }
 
+
+                /* =================================================
+                   ACCOUNT STATUS
+                ================================================= */
+
                 /*
-                 * ÙÙÙ:
-                 * ÙØ¨ÙØ§Ù login.js ÙÙØ· status === active Ø±Ø§ ÙØ¨ÙÙ ÙÛâÚ©Ø±Ø¯Ø
-                 * Ø¯Ø± Ø­Ø§ÙÛ Ú©Ù Dashboard Ù auth.js access_status=approved
-                 * Ø±Ø§ ÙÙ ÙØ¨ÙÙ ÙÛâÚ©Ø±Ø¯ÙØ¯. Ø§ÛÙ Ø§Ø®ØªÙØ§Ù Ø¨Ø§Ø¹Ø« ÙØ±ÙØ¯/Ø®Ø±ÙØ¬
-                 * ÙØ§ÙÙØ¸Ù ÙÛâØ´Ø¯.
+                 * مهم:
+                 * منطق اصلی AdineAuth دست‌نخورده باقی مانده است.
                  */
+
                 if (!AdineAuth.isActiveProfile(profile)) {
 
                     const text =
-                        AdineAuth.getAccessMessage(profile);
+                        AdineAuth.getAccessMessage(
+                            profile
+                        );
 
                     await supabaseClient.auth.signOut();
 
-                    showMessage(text);
+                    showMessage(
+                        text,
+                        "error"
+                    );
 
                     return;
-
                 }
+
+
+                /* =================================================
+                   UPDATE ACTIVITY
+                ================================================= */
 
                 try {
 
                     const {
                         error: activityError
-                    } = await supabaseClient.rpc(
-                        "update_my_activity"
-                    );
+                    } =
+                        await supabaseClient.rpc(
+                            "update_my_activity"
+                        );
+
 
                     if (activityError) {
+
                         console.warn(
                             "ACTIVITY UPDATE ERROR:",
                             activityError
@@ -194,11 +305,16 @@ document.addEventListener("DOMContentLoaded", () => {
                         "ACTIVITY UPDATE EXCEPTION:",
                         activityException
                     );
-
                 }
 
+
+                /* =================================================
+                   REDIRECT
+                ================================================= */
+
                 if (
-                    String(profile.role || "").toLowerCase() ===
+                    String(profile.role || "")
+                        .toLowerCase() ===
                     "owner"
                 ) {
 
@@ -211,8 +327,8 @@ document.addEventListener("DOMContentLoaded", () => {
                     window.location.replace(
                         "Dashboard.html"
                     );
-
                 }
+
 
             } catch (error) {
 
@@ -223,14 +339,21 @@ document.addEventListener("DOMContentLoaded", () => {
 
                 showMessage(
                     error.message ||
-                    "Ø®Ø·Ø§ÛÛ Ø¯Ø± ÙØ±ÙØ¯ Ø±Ø® Ø¯Ø§Ø¯. Ø§ØªØµØ§Ù Ø§ÛÙØªØ±ÙØª Ù ØªÙØ¸ÛÙØ§Øª Ø³Ø§ÙØ§ÙÙ Ø±Ø§ Ø¨Ø±Ø±Ø³Û Ú©ÙÛØ¯."
+                    "خطایی در ورود رخ داد. اتصال اینترنت و تنظیمات سامانه را بررسی کنید.",
+                    "error"
                 );
+
 
             } finally {
 
                 button.disabled = false;
-                button.textContent = "ÙØ±ÙØ¯";
 
+                button.removeAttribute(
+                    "aria-busy"
+                );
+
+                button.textContent =
+                    "ورود";
             }
 
         }

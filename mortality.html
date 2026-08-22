@@ -10,44 +10,272 @@
     content="width=device-width, initial-scale=1, viewport-fit=cover"
 >
 
-<meta
-    name="theme-color"
-    content="#173f35"
->
+<meta name="theme-color" content="#173f35">
 
-<title>
-تلفات و بیماری | مرکز تخصصی سلامت طیور آدینه
-</title>
+<title>تلفات و بیماری | مرکز تخصصی سلامت طیور آدینه</title>
 
 <link rel="stylesheet" href="app.css">
 
-</head>
+<style>
 
+.health-dashboard{
+    display:grid;
+    grid-template-columns:repeat(4,minmax(0,1fr));
+    gap:12px;
+    margin-bottom:20px;
+}
+
+.health-stat{
+    background:#fff;
+    border:1px solid #e6ebe8;
+    border-radius:16px;
+    padding:16px;
+    box-shadow:0 4px 16px rgba(0,0,0,.04);
+}
+
+.health-stat-label{
+    color:#6b7470;
+    font-size:13px;
+    margin-bottom:8px;
+}
+
+.health-stat-value{
+    font-size:25px;
+    font-weight:800;
+    color:#173f35;
+}
+
+.health-stat.danger .health-stat-value{
+    color:#b42318;
+}
+
+.health-stat.warning .health-stat-value{
+    color:#b54708;
+}
+
+.health-tabs{
+    display:flex;
+    flex-wrap:wrap;
+    gap:8px;
+    margin-bottom:18px;
+}
+
+.health-tab{
+    border:1px solid #dfe6e2;
+    background:#fff;
+    color:#33413b;
+    padding:11px 16px;
+    border-radius:12px;
+    cursor:pointer;
+    font-family:inherit;
+    font-size:14px;
+}
+
+.health-tab.active{
+    background:#173f35;
+    color:#fff;
+    border-color:#173f35;
+}
+
+.health-panel{
+    display:none;
+}
+
+.health-panel.active{
+    display:block;
+}
+
+.section-title{
+    margin:0 0 15px;
+    font-size:18px;
+    color:#173f35;
+}
+
+.sub-title{
+    margin:20px 0 12px;
+    font-size:15px;
+    color:#34443d;
+}
+
+.check-grid{
+    display:grid;
+    grid-template-columns:repeat(3,minmax(0,1fr));
+    gap:8px;
+}
+
+.check-item{
+    display:flex;
+    align-items:center;
+    gap:8px;
+    border:1px solid #e4e9e7;
+    border-radius:10px;
+    padding:10px;
+    background:#fafcfb;
+}
+
+.check-item input{
+    width:18px;
+    height:18px;
+}
+
+.report-box{
+    border:1px solid #dce8e1;
+    background:#f4faf6;
+    border-radius:14px;
+    padding:15px;
+    margin-top:15px;
+}
+
+.report-row{
+    display:flex;
+    align-items:center;
+    gap:10px;
+    margin:8px 0;
+}
+
+.report-row label{
+    margin:0;
+}
+
+.badge{
+    display:inline-flex;
+    align-items:center;
+    padding:5px 9px;
+    border-radius:9px;
+    font-size:12px;
+    background:#edf2ef;
+}
+
+.badge-danger{
+    background:#fdecec;
+    color:#a61b1b;
+}
+
+.badge-warning{
+    background:#fff4e5;
+    color:#9a4b00;
+}
+
+.badge-success{
+    background:#eaf7ee;
+    color:#18733a;
+}
+
+.status-box{
+    display:none;
+    padding:12px 14px;
+    border-radius:12px;
+    margin-bottom:15px;
+}
+
+.status-box.show{
+    display:block;
+}
+
+.status-success{
+    background:#eaf7ee;
+    color:#176b37;
+}
+
+.status-error{
+    background:#fdecec;
+    color:#a61b1b;
+}
+
+.table-wrapper{
+    overflow-x:auto;
+}
+
+.data-table{
+    width:100%;
+    border-collapse:collapse;
+}
+
+.data-table th,
+.data-table td{
+    padding:10px;
+    border-bottom:1px solid #e6ebe8;
+    text-align:right;
+    white-space:nowrap;
+}
+
+.empty-state{
+    text-align:center;
+    padding:35px 15px;
+    color:#78837e;
+}
+
+.form-help{
+    color:#77827d;
+    font-size:12px;
+    margin-top:5px;
+}
+
+.two-column{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:15px;
+}
+
+@media(max-width:900px){
+
+    .health-dashboard{
+        grid-template-columns:repeat(2,1fr);
+    }
+
+    .check-grid{
+        grid-template-columns:repeat(2,1fr);
+    }
+
+}
+
+@media(max-width:600px){
+
+    .health-dashboard{
+        grid-template-columns:1fr 1fr;
+    }
+
+    .two-column{
+        grid-template-columns:1fr;
+    }
+
+    .check-grid{
+        grid-template-columns:1fr;
+    }
+
+    .health-tab{
+        flex:1 1 auto;
+    }
+
+}
+
+</style>
+
+</head>
 
 <body>
 
 <header class="topbar">
 
-<div class="brand">
+    <div class="brand">
 
-<img
-    src="IMG_4309.png"
-    alt="آدینه"
->
+        <img
+            src="IMG_4309.png"
+            alt="آدینه"
+        >
 
-<span>
-تلفات و بیماری
-</span>
+        <span>
+            تلفات و بیماری
+        </span>
 
-</div>
+    </div>
 
-
-<button
-    class="btn btn-secondary"
-    onclick="location.href='Dashboard.html'"
->
-داشبورد
-</button>
+    <button
+        class="btn btn-secondary"
+        onclick="location.href='Dashboard.html'"
+    >
+        داشبورد
+    </button>
 
 </header>
 
@@ -56,751 +284,949 @@
 
 <div class="container">
 
+    <h1 class="page-title">
+        پایش سلامت، تلفات و بیماری
+    </h1>
+
+    <p
+        id="flockInfo"
+        class="page-description"
+    ></p>
+
+
+    <div
+        id="healthStatus"
+        class="status-box"
+    ></div>
+
+
+    <!-- =====================================================
+         DASHBOARD
+    ====================================================== -->
+
+    <section class="health-dashboard">
+
+        <div class="health-stat danger">
+            <div class="health-stat-label">
+                تلفات
+            </div>
+            <div
+                id="statMortality"
+                class="health-stat-value"
+            >
+                ۰
+            </div>
+        </div>
+
+        <div class="health-stat warning">
+            <div class="health-stat-label">
+                حذفی
+            </div>
+            <div
+                id="statCull"
+                class="health-stat-value"
+            >
+                ۰
+            </div>
+        </div>
+
+        <div class="health-stat">
+            <div class="health-stat-label">
+                موارد بیماری
+            </div>
+            <div
+                id="statDisease"
+                class="health-stat-value"
+            >
+                ۰
+            </div>
+        </div>
+
+        <div class="health-stat">
+            <div class="health-stat-label">
+                موارد مشکوک
+            </div>
+            <div
+                id="statSuspected"
+                class="health-stat-value"
+            >
+                ۰
+            </div>
+        </div>
+
+    </section>
+
+
+    <!-- =====================================================
+         TABS
+    ====================================================== -->
+
+    <div class="health-tabs">
+
+        <button
+            class="health-tab active"
+            data-tab="overview"
+        >
+            📊 نمای کلی
+        </button>
+
+        <button
+            class="health-tab"
+            data-tab="event"
+        >
+            ☠️ ثبت مورد
+        </button>
+
+        <button
+            class="health-tab"
+            data-tab="clinical"
+        >
+            🩺 علائم و کالبدگشایی
+        </button>
+
+        <button
+            class="health-tab"
+            data-tab="report"
+        >
+            📋 گزارش
+        </button>
 
-<h1 class="page-title">
-پایش تلفات و بیماری
-</h1>
+        <button
+            class="health-tab"
+            data-tab="history"
+        >
+            🗂 سوابق
+        </button>
 
+    </div>
 
-<p
-    id="flockInfo"
-    class="page-description"
-></p>
 
+    <!-- =====================================================
+         OVERVIEW
+    ====================================================== -->
 
+    <section
+        id="panel-overview"
+        class="health-panel active"
+    >
 
-<section class="card">
+        <div class="card">
 
-<h2 class="card-title">
-ثبت مورد جدید
-</h2>
+            <h2 class="section-title">
+                وضعیت سلامت گله
+            </h2>
 
+            <div id="healthOverview">
+                <div class="empty-state">
+                    در حال دریافت اطلاعات...
+                </div>
+            </div>
 
-<form id="mortalityForm">
+        </div>
 
-<div class="form-grid">
+    </section>
 
 
-<div class="form-group">
+    <!-- =====================================================
+         EVENT
+    ====================================================== -->
 
-<label>
-تاریخ
-</label>
+    <section
+        id="panel-event"
+        class="health-panel"
+    >
 
-<input
-    id="eventDate"
-    type="date"
-    required
->
+        <div class="card">
 
-</div>
+            <h2 class="section-title">
+                ثبت رخداد سلامت
+            </h2>
 
+            <form id="healthEventForm">
 
-<div class="form-group">
+                <div class="form-grid">
 
-<label>
-سن گله
-</label>
+                    <div class="form-group">
 
-<input
-    id="eventAge"
-    type="number"
-    min="0"
->
+                        <label>
+                            تاریخ
+                        </label>
 
-</div>
+                        <input
+                            id="eventDate"
+                            type="date"
+                            required
+                        >
 
+                    </div>
 
-<div class="form-group">
 
-<label>
-نوع مورد
-</label>
+                    <div class="form-group">
 
-<select
-    id="eventType"
-    required
->
+                        <label>
+                            سن گله
+                        </label>
 
-<option value="">
-انتخاب کنید
-</option>
+                        <input
+                            id="eventAge"
+                            type="number"
+                            min="0"
+                            step="1"
+                        >
 
-<option value="mortality">
-تلفات
-</option>
+                    </div>
 
-<option value="disease">
-بیماری
-</option>
 
-<option value="suspected">
-مشکوک
-</option>
+                    <div class="form-group">
 
-<option value="other">
-سایر
-</option>
+                        <label>
+                            نوع رخداد
+                        </label>
 
-</select>
+                        <select
+                            id="eventType"
+                            required
+                        >
 
-</div>
+                            <option value="">
+                                انتخاب کنید
+                            </option>
 
+                            <option value="mortality">
+                                تلفات
+                            </option>
 
-<div class="form-group">
+                            <option value="cull">
+                                حذفی
+                            </option>
 
-<label>
-تعداد
-</label>
+                            <option value="disease">
+                                بیماری
+                            </option>
 
-<input
-    id="eventCount"
-    type="number"
-    min="0"
-    value="0"
->
+                            <option value="suspected_disease">
+                                بیماری مشکوک
+                            </option>
 
-</div>
+                            <option value="clinical_case">
+                                مورد بالینی
+                            </option>
 
+                            <option value="environmental">
+                                مشکل محیطی / مدیریتی
+                            </option>
 
-<div class="form-group">
+                        </select>
 
-<label>
-تشخیص / بیماری
-</label>
+                    </div>
 
-<select id="disease">
 
-<option value="">
-انتخاب کنید
-</option>
+                    <div class="form-group">
 
-<option>H9 / آنفلوانزا</option>
-<option>نیوکاسل</option>
-<option>برونشیت عفونی</option>
-<option>گامبورو</option>
-<option>کوکسیدیوز</option>
-<option>کلی‌باسیلوز</option>
-<option>مایکوپلاسما</option>
-<option>سالمونلا</option>
-<option>سایر</option>
+                        <label>
+                            تعداد تلفات
+                        </label>
 
-</select>
+                        <input
+                            id="mortalityCount"
+                            type="number"
+                            min="0"
+                            value="0"
+                        >
 
-</div>
+                    </div>
 
 
-<div class="form-group">
+                    <div class="form-group">
 
-<label>
-شدت
-</label>
+                        <label>
+                            تعداد حذفی
+                        </label>
 
-<select id="severity">
+                        <input
+                            id="cullCount"
+                            type="number"
+                            min="0"
+                            value="0"
+                        >
 
-<option value="">
-انتخاب کنید
-</option>
+                    </div>
 
-<option value="low">
-خفیف
-</option>
 
-<option value="medium">
-متوسط
-</option>
+                    <div class="form-group">
 
-<option value="high">
-شدید
-</option>
+                        <label>
+                            تعداد درگیر / بیمار
+                        </label>
 
-<option value="critical">
-بحرانی
-</option>
+                        <input
+                            id="affectedCount"
+                            type="number"
+                            min="0"
+                            value="0"
+                        >
 
-</select>
+                    </div>
 
-</div>
 
+                    <div class="form-group">
 
-<div class="form-group full">
+                        <label>
+                            بیماری مشکوک
+                        </label>
 
-<label>
-علائم / یافته‌ها
-</label>
+                        <select id="suspectedDisease">
 
-<textarea id="symptoms"></textarea>
+                            <option value="">
+                                انتخاب نشده
+                            </option>
 
-</div>
+                        </select>
 
+                    </div>
 
-<div class="form-group full">
 
-<label>
-اقدامات انجام‌شده
-</label>
+                    <div class="form-group">
 
-<textarea id="actions"></textarea>
+                        <label>
+                            تشخیص نهایی
+                        </label>
 
-</div>
+                        <select id="confirmedDisease">
 
+                            <option value="">
+                                هنوز تشخیص قطعی ندارد
+                            </option>
 
-<div class="form-group full">
+                        </select>
 
-<label>
-توضیحات
-</label>
+                    </div>
 
-<textarea id="eventNotes"></textarea>
 
-</div>
+                    <div class="form-group">
 
+                        <label>
+                            شدت
+                        </label>
 
-</div>
+                        <select id="severity">
 
+                            <option value="">
+                                انتخاب نشده
+                            </option>
 
-<div class="button-row">
+                            <option value="mild">
+                                خفیف
+                            </option>
 
-<button
-    type="submit"
-    class="btn btn-primary"
->
-ذخیره مورد
-</button>
+                            <option value="moderate">
+                                متوسط
+                            </option>
 
-</div>
+                            <option value="severe">
+                                شدید
+                            </option>
 
-</form>
+                        </select>
 
-</section>
+                    </div>
 
 
+                    <div class="form-group">
 
-<section class="card">
+                        <label>
+                            وضعیت تشخیص
+                        </label>
 
-<h2 class="card-title">
-خلاصه وضعیت
-</h2>
+                        <select id="diagnosisStatus">
 
-<div
-    id="summary"
-    class="stats-grid"
-></div>
+                            <option value="not_confirmed">
+                                تأیید نشده
+                            </option>
 
-</section>
+                            <option value="suspected">
+                                مشکوک
+                            </option>
 
+                            <option value="clinical">
+                                تشخیص بالینی
+                            </option>
 
+                            <option value="necropsy">
+                                بر اساس کالبدگشایی
+                            </option>
 
-<section class="card">
+                            <option value="laboratory">
+                                آزمایشگاهی
+                            </option>
 
-<h2 class="card-title">
-سوابق
-</h2>
+                            <option value="confirmed">
+                                تأیید شده
+                            </option>
 
+                        </select>
 
-<div class="table-wrapper">
+                    </div>
 
-<table class="data-table">
 
-<thead>
+                    <div class="form-group">
 
-<tr>
+                        <label>
+                            مرگ ناگهانی؟
+                        </label>
 
-<th>تاریخ</th>
-<th>نوع</th>
-<th>تعداد</th>
-<th>تشخیص</th>
-<th>شدت</th>
-<th>عملیات</th>
+                        <select id="suddenDeath">
 
-</tr>
+                            <option value="false">
+                                خیر
+                            </option>
 
-</thead>
+                            <option value="true">
+                                بله
+                            </option>
 
+                        </select>
 
-<tbody id="mortalityTable"></tbody>
+                    </div>
 
-</table>
 
-</div>
+                    <div class="form-group">
 
-</section>
+                        <label>
+                            وضعیت پرونده
+                        </label>
+
+                        <select id="eventStatus">
+
+                            <option value="open">
+                                باز
+                            </option>
+
+                            <option value="monitoring">
+                                در حال پایش
+                            </option>
+
+                            <option value="resolved">
+                                برطرف شده
+                            </option>
+
+                            <option value="closed">
+                                بسته شده
+                            </option>
+
+                        </select>
+
+                    </div>
+
+
+                    <div class="form-group full">
+
+                        <label>
+                            توضیحات اولیه
+                        </label>
+
+                        <textarea
+                            id="eventNotes"
+                            rows="4"
+                            placeholder="شرح وضعیت گله، زمان شروع، نحوه انتشار و سایر مشاهدات..."
+                        ></textarea>
+
+                    </div>
+
+                </div>
+
+
+                <div class="report-box">
+
+                    <strong>
+                        تنظیمات گزارش
+                    </strong>
+
+                    <div class="report-row">
+
+                        <input
+                            id="showInReports"
+                            type="checkbox"
+                        >
+
+                        <label for="showInReports">
+                            این مورد در گزارشات نمایش داده شود
+                        </label>
+
+                    </div>
+
+
+                    <div class="form-group">
+
+                        <label>
+                            سطح گزارش
+                        </label>
+
+                        <select id="reportLevel">
+
+                            <option value="private">
+                                خصوصی — فقط پرونده دامپزشکی
+                            </option>
+
+                            <option value="farm">
+                                گزارش فارم
+                            </option>
+
+                            <option value="management">
+                                گزارش مدیریتی
+                            </option>
+
+                        </select>
+
+                    </div>
+
+
+                    <div class="report-row">
+
+                        <input
+                            id="includeWeekly"
+                            type="checkbox"
+                        >
+
+                        <label for="includeWeekly">
+                            در گزارش هفتگی نمایش داده شود
+                        </label>
+
+                    </div>
+
+
+                    <div class="report-row">
+
+                        <input
+                            id="includeAnalysis"
+                            type="checkbox"
+                            checked
+                        >
+
+                        <label for="includeAnalysis">
+                            در تحلیل سلامت گله لحاظ شود
+                        </label>
+
+                    </div>
+
+                </div>
+
+
+                <div class="button-row">
+
+                    <button
+                        type="submit"
+                        class="btn btn-primary"
+                    >
+                        ثبت رخداد
+                    </button>
+
+                    <button
+                        type="reset"
+                        class="btn btn-secondary"
+                    >
+                        پاک کردن
+                    </button>
+
+                </div>
+
+            </form>
+
+        </div>
+
+    </section>
+
+
+    <!-- =====================================================
+         CLINICAL
+    ====================================================== -->
+
+    <section
+        id="panel-clinical"
+        class="health-panel"
+    >
+
+        <div class="card">
+
+            <h2 class="section-title">
+                علائم بالینی
+            </h2>
+
+            <p class="form-help">
+                پس از ثبت رخداد، از این بخش می‌توان علائم مشاهده‌شده را به پرونده متصل کرد.
+            </p>
+
+            <div id="clinicalSignsContainer">
+
+                <div class="empty-state">
+                    ابتدا یک رخداد را ثبت یا از سوابق انتخاب کنید.
+                </div>
+
+            </div>
+
+        </div>
+
+
+        <div class="card">
+
+            <h2 class="section-title">
+                کالبدگشایی
+            </h2>
+
+            <form id="necropsyForm">
+
+                <input
+                    type="hidden"
+                    id="necropsyEventId"
+                >
+
+                <div class="form-grid">
+
+                    <div class="form-group">
+
+                        <label>
+                            تعداد پرنده بررسی‌شده
+                        </label>
+
+                        <input
+                            id="birdsExamined"
+                            type="number"
+                            min="1"
+                            value="1"
+                        >
+
+                    </div>
+
+                    <div class="form-group">
+
+                        <label>
+                            وضعیت بدنی
+                        </label>
+
+                        <select id="bodyCondition">
+
+                            <option value="">
+                                انتخاب
+                            </option>
+
+                            <option>
+                                مناسب
+                            </option>
+
+                            <option>
+                                ضعیف
+                            </option>
+
+                            <option>
+                                بسیار ضعیف
+                            </option>
+
+                        </select>
+
+                    </div>
+
+
+                    <div class="form-group">
+
+                        <label>
+                            دهیدراتاسیون
+                        </label>
+
+                        <select id="dehydration">
+
+                            <option value="">
+                                مشاهده نشده
+                            </option>
+
+                            <option value="true">
+                                وجود دارد
+                            </option>
+
+                            <option value="false">
+                                وجود ندارد
+                            </option>
+
+                        </select>
+
+                    </div>
+
+
+                    <div class="form-group full">
+
+                        <label>
+                            یافته‌های ظاهری
+                        </label>
+
+                        <textarea
+                            id="externalLesions"
+                            rows="3"
+                        ></textarea>
+
+                    </div>
+
+
+                    <div class="form-group">
+
+                        <label>
+                            دستگاه تنفسی
+                        </label>
+
+                        <textarea
+                            id="respiratoryFindings"
+                            rows="3"
+                        ></textarea>
+
+                    </div>
+
+
+                    <div class="form-group">
+
+                        <label>
+                            دستگاه گوارش
+                        </label>
+
+                        <textarea
+                            id="digestiveFindings"
+                            rows="3"
+                        ></textarea>
+
+                    </div>
+
+
+                    <div class="form-group">
+
+                        <label>
+                            کبد
+                        </label>
+
+                        <textarea
+                            id="liverFindings"
+                            rows="3"
+                        ></textarea>
+
+                    </div>
+
+
+                    <div class="form-group">
+
+                        <label>
+                            قلب
+                        </label>
+
+                        <textarea
+                            id="heartFindings"
+                            rows="3"
+                        ></textarea>
+
+                    </div>
+
+
+                    <div class="form-group">
+
+                        <label>
+                            کلیه
+                        </label>
+
+                        <textarea
+                            id="kidneyFindings"
+                            rows="3"
+                        ></textarea>
+
+                    </div>
+
+
+                    <div class="form-group">
+
+                        <label>
+                            بورس فابریسیوس
+                        </label>
+
+                        <textarea
+                            id="bursaFindings"
+                            rows="3"
+                        ></textarea>
+
+                    </div>
+
+
+                    <div class="form-group">
+
+                        <label>
+                            روده و سکوم
+                        </label>
+
+                        <textarea
+                            id="intestinalFindings"
+                            rows="3"
+                        ></textarea>
+
+                    </div>
+
+
+                    <div class="form-group">
+
+                        <label>
+                            کلیه / طحال / پانکراس
+                        </label>
+
+                        <textarea
+                            id="otherOrganFindings"
+                            rows="3"
+                        ></textarea>
+
+                    </div>
+
+
+                    <div class="form-group full">
+
+                        <label>
+                            تشخیص ماکروسکوپی
+                        </label>
+
+                        <textarea
+                            id="grossDiagnosis"
+                            rows="3"
+                        ></textarea>
+
+                    </div>
+
+
+                    <div class="form-group full">
+
+                        <label>
+                            یادداشت دامپزشک
+                        </label>
+
+                        <textarea
+                            id="veterinarianNotes"
+                            rows="3"
+                        ></textarea>
+
+                    </div>
+
+                </div>
+
+
+                <div class="button-row">
+
+                    <button
+                        type="submit"
+                        class="btn btn-primary"
+                    >
+                        ثبت کالبدگشایی
+                    </button>
+
+                </div>
+
+            </form>
+
+        </div>
+
+    </section>
+
+
+    <!-- =====================================================
+         REPORT
+    ====================================================== -->
+
+    <section
+        id="panel-report"
+        class="health-panel"
+    >
+
+        <div class="card">
+
+            <h2 class="section-title">
+                وضعیت گزارش‌دهی
+            </h2>
+
+            <div id="reportPreview">
+
+                <div class="empty-state">
+                    یک رخداد را از سوابق انتخاب کنید.
+                </div>
+
+            </div>
+
+        </div>
+
+    </section>
+
+
+    <!-- =====================================================
+         HISTORY
+    ====================================================== -->
+
+    <section
+        id="panel-history"
+        class="health-panel"
+    >
+
+        <div class="card">
+
+            <h2 class="section-title">
+                سوابق سلامت گله
+            </h2>
+
+            <div class="table-wrapper">
+
+                <table class="data-table">
+
+                    <thead>
+
+                        <tr>
+
+                            <th>تاریخ</th>
+
+                            <th>نوع</th>
+
+                            <th>تلفات</th>
+
+                            <th>حذفی</th>
+
+                            <th>درگیر</th>
+
+                            <th>بیماری</th>
+
+                            <th>شدت</th>
+
+                            <th>گزارش</th>
+
+                            <th>عملیات</th>
+
+                        </tr>
+
+                    </thead>
+
+                    <tbody id="healthHistoryTable">
+
+                    </tbody>
+
+                </table>
+
+            </div>
+
+        </div>
+
+    </section>
 
 </div>
 
 </main>
 
 
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+<script src="supabase-config.js"></script>
+
 <script src="app-core.js"></script>
-<script src="standard-data.js"></script>
-<script src="standards.js"></script>
+
 <script src="poultry-utils.js"></script>
-<script src="weekly-storage.js"></script>
-<script src="comparison-engine.js"></script>
-<script src="genetics-ui.js"></script>
-<script src="weekly-engine.js"></script>
 
+<script src="health-date.js"></script>
 
-<script>
-
-const selection =
-    getCurrentSelection();
-
-
-if (!selection.flockId) {
-    location.href = "flocks.html";
-}
-
-
-const flock =
-    getFlocks()
-        .find(
-            item =>
-                item.id === selection.flockId
-        );
-
-
-if (!flock) {
-    location.href = "flocks.html";
-}
-
-
-const farm =
-    getFarms()
-        .find(
-            item =>
-                item.id === flock.farmId
-        );
-
-
-const house =
-    getHouses()
-        .find(
-            item =>
-                item.id === flock.houseId
-        );
-
-
-document.getElementById(
-    "flockInfo"
-).textContent =
-
-    `${farm?.name || ""} | ` +
-    `${house?.name || ""} | ` +
-    `${flock.flockName}`;
-
-
-document.getElementById(
-    "eventDate"
-).value = todayISO();
-
-
-
-/* =====================================================
-   STORAGE
-===================================================== */
-
-function getDiseaseRecords() {
-
-    return readStorage(
-        "disease_records",
-        []
-    );
-
-}
-
-
-function saveDiseaseRecord(record) {
-
-    const records =
-        getDiseaseRecords();
-
-
-    records.push({
-
-        id: createId("disease"),
-
-        farmId: flock.farmId,
-        houseId: flock.houseId,
-        flockId: flock.id,
-
-        ...record,
-
-        createdAt:
-            new Date().toISOString()
-
-    });
-
-
-    writeStorage(
-        "disease_records",
-        records
-    );
-
-}
-
-
-function deleteDiseaseRecord(id) {
-
-    const records =
-        getDiseaseRecords()
-            .filter(
-                item =>
-                    item.id !== id
-            );
-
-
-    writeStorage(
-        "disease_records",
-        records
-    );
-
-
-    renderRecords();
-
-}
-
-
-
-/* =====================================================
-   SAVE
-===================================================== */
-
-document.getElementById(
-    "mortalityForm"
-).addEventListener(
-    "submit",
-    function(event) {
-
-        event.preventDefault();
-
-
-        saveDiseaseRecord({
-
-            date:
-                document.getElementById(
-                    "eventDate"
-                ).value,
-
-            age:
-                Number(
-                    document.getElementById(
-                        "eventAge"
-                    ).value || 0
-                ),
-
-            type:
-                document.getElementById(
-                    "eventType"
-                ).value,
-
-            count:
-                Number(
-                    document.getElementById(
-                        "eventCount"
-                    ).value || 0
-                ),
-
-            disease:
-                document.getElementById(
-                    "disease"
-                ).value,
-
-            severity:
-                document.getElementById(
-                    "severity"
-                ).value,
-
-            symptoms:
-                document.getElementById(
-                    "symptoms"
-                ).value,
-
-            actions:
-                document.getElementById(
-                    "actions"
-                ).value,
-
-            notes:
-                document.getElementById(
-                    "eventNotes"
-                ).value
-
-        });
-
-
-        this.reset();
-
-
-        document.getElementById(
-            "eventDate"
-        ).value = todayISO();
-
-
-        renderRecords();
-
-
-        alert(
-            "مورد با موفقیت ثبت شد."
-        );
-
-    }
-);
-
-
-
-/* =====================================================
-   RENDER
-===================================================== */
-
-function renderRecords() {
-
-    const records =
-        getDiseaseRecords()
-            .filter(
-                item =>
-                    item.flockId === flock.id
-            )
-            .sort(
-                (a,b) =>
-                    b.date.localeCompare(a.date)
-            );
-
-
-    const table =
-        document.getElementById(
-            "mortalityTable"
-        );
-
-
-    if (!records.length) {
-
-        table.innerHTML = `
-
-            <tr>
-
-                <td colspan="6">
-                    هنوز موردی ثبت نشده است.
-                </td>
-
-            </tr>
-
-        `;
-
-    } else {
-
-        table.innerHTML =
-            records
-                .map(
-                    record => `
-
-                        <tr>
-
-                            <td>
-                                ${escapeHTML(
-                                    record.date
-                                )}
-                            </td>
-
-                            <td>
-                                ${getTypeLabel(
-                                    record.type
-                                )}
-                            </td>
-
-                            <td>
-                                ${Number(
-                                    record.count || 0
-                                ).toLocaleString(
-                                    "fa-IR"
-                                )}
-                            </td>
-
-                            <td>
-                                ${escapeHTML(
-                                    record.disease ||
-                                    "-"
-                                )}
-                            </td>
-
-                            <td>
-                                ${getSeverityLabel(
-                                    record.severity
-                                )}
-                            </td>
-
-                            <td>
-
-                                <button
-                                    class="btn btn-danger"
-                                    onclick="
-                                        deleteDiseaseRecord(
-                                            '${record.id}'
-                                        )
-                                    "
-                                >
-                                    حذف
-                                </button>
-
-                            </td>
-
-                        </tr>
-
-                    `
-                )
-                .join("");
-
-    }
-
-
-    renderSummary(records);
-
-}
-
-
-
-function renderSummary(records) {
-
-    const totalDeaths =
-        records
-            .filter(
-                x =>
-                    x.type === "mortality"
-            )
-            .reduce(
-                (
-                    sum,
-                    x
-                ) =>
-                    sum +
-                    Number(
-                        x.count || 0
-                    ),
-                0
-            );
-
-
-    const diseaseCases =
-        records
-            .filter(
-                x =>
-                    x.type === "disease"
-            )
-            .reduce(
-                (
-                    sum,
-                    x
-                ) =>
-                    sum +
-                    Number(
-                        x.count || 0
-                    ),
-                0
-            );
-
-
-    const suspected =
-        records
-            .filter(
-                x =>
-                    x.type === "suspected"
-            )
-            .length;
-
-
-    const critical =
-        records
-            .filter(
-                x =>
-                    x.severity === "critical"
-            )
-            .length;
-
-
-    document.getElementById(
-        "summary"
-    ).innerHTML = `
-
-        <div class="stat">
-            <div class="stat-label">
-                مجموع تلفات
-            </div>
-            <div class="stat-value">
-                ${totalDeaths.toLocaleString("fa-IR")}
-            </div>
-        </div>
-
-        <div class="stat">
-            <div class="stat-label">
-                موارد بیماری
-            </div>
-            <div class="stat-value">
-                ${diseaseCases.toLocaleString("fa-IR")}
-            </div>
-        </div>
-
-        <div class="stat">
-            <div class="stat-label">
-                موارد مشکوک
-            </div>
-            <div class="stat-value">
-                ${suspected.toLocaleString("fa-IR")}
-            </div>
-        </div>
-
-        <div class="stat">
-            <div class="stat-label">
-                موارد بحرانی
-            </div>
-            <div class="stat-value">
-                ${critical.toLocaleString("fa-IR")}
-            </div>
-        </div>
-
-    `;
-
-}
-
-
-
-function getTypeLabel(type) {
-
-    const labels = {
-
-        mortality: "تلفات",
-        disease: "بیماری",
-        suspected: "مشکوک",
-        other: "سایر"
-
-    };
-
-
-    return labels[type] || "-";
-
-}
-
-
-
-function getSeverityLabel(severity) {
-
-    const labels = {
-
-        low: "خفیف",
-        medium: "متوسط",
-        high: "شدید",
-        critical: "بحرانی"
-
-    };
-
-
-    return labels[severity] || "-";
-
-}
-
-
-renderRecords();
-
-</script>
+<script src="mortality.js"></script>
 
 </body>
+
 </html>

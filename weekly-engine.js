@@ -310,7 +310,7 @@ function calculateWeeklyFCR(flockId, currentWeight, currentFeed, currentLiveBird
     const ow=Number(previousRecord.averageWeight);
     const ob=Number(previousRecord.live_birds ?? previousRecord.liveBirds);
     const type=String(productionType||'').toLowerCase();
-    if (type && type!=='broiler' && type!=='ÃÂ¯ÃÂÃÂ´ÃÂªÃÂ') return null;
+    if (type && type!=='broiler' && type!=='ÃÂÃÂ¯ÃÂÃÂÃÂÃÂ´ÃÂÃÂªÃÂÃÂ') return null;
     if (![ow,ob,cb].every(Number.isFinite)||ow<0||ob<=0||cb<=0) return null;
     if (typeof calculateBroilerFCR==='function') return calculateBroilerFCR({feedKg,openingBirds:ob,closingBirds:cb,openingAverageWeightG:ow,closingAverageWeightG:cw});
     const gainKg=(cb*cw-ob*ow)/1000;
@@ -380,10 +380,39 @@ function getStandardForCurrentFlock(
     }
 
 
+    const productionType =
+        flock.production_type ||
+        flock.productionType ||
+        "broiler";
+
+    const genetics =
+        flock.genetics ||
+        flock.genetic ||
+        flock.breed ||
+        "";
+
+    const strain =
+        flock.strain ||
+        flock.flock_strain ||
+        "";
+
+    if (typeof findPoultryStandardIdentity === "function") {
+        const identity = findPoultryStandardIdentity(
+            productionType,
+            genetics,
+            strain
+        );
+        return getStandard(
+            identity.type || productionType,
+            identity.geneticsId || genetics,
+            identity.strain || strain
+        );
+    }
+
     return getStandard(
-        flock.productionType,
-        flock.genetics,
-        flock.strain
+        productionType,
+        genetics,
+        strain
     );
 
 }

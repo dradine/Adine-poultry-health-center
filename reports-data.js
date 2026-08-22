@@ -803,187 +803,78 @@ function getReportSourceLabel(
    FCR
 ========================================================= */
 
-function calculateReportFCR(
-    previous,
-    current,
-    productionType = "broiler"
-) {
+function calculateReportFCR(previous, current, productionType = "broiler") {
+    const type = normalizeReportProductionType(productionType);
+    const feed = reportNumber(current?.feedTotalKg);
+    if (!Number.isFinite(feed) || feed <= 0) return null;
 
-    const type =
-        normalizeReportProductionType(
-            productionType
-        );
-
-
-    if (
-        !previous ||
-        !current
-    ) {
-
-        return null;
-
+    // Layer / breeder: FCR is feed kg per kg egg mass for the reporting week.
+    if (type === "layer" || type === "breeder") {
+        const eggMass = reportNumber(current?.productionMetrics?.egg_mass_kg);
+        return Number.isFinite(eggMass) && eggMass > 0
+            ? Number((feed / eggMass).toFixed(3))
+            : null;
     }
 
+    // Pullet / broiler: FCR is feed kg per kg live-weight gain.
+    if (!previous) return null;
+    const openingWeight = reportNumber(previous.averageWeight);
+    const closingWeight = reportNumber(current.averageWeight);
+    const openingBirds = reportNumber(previous.liveBirds);
+    const closingBirds = reportNumber(current.liveBirds);
+    if (![openingWeight, closingWeight, openingBirds, closingBirds].every(Number.isFinite)) return null;
+    if (openingWeight < 0 || closingWeight <= 0 || openingBirds <= 0 || closingBirds <= 0) return null;
 
-    /*
-     * FCR کلاسیک در این گزارش
-     * برای مرغ گوشتی محاسبه می‌شود.
-     */
-
-    if (
-        type !== "broiler"
-    ) {
-
-        return null;
-
-    }
-
-
-    const feed =
-        reportNumber(
-            current.feedTotalKg
-        );
-
-
-    const openingWeight =
-        reportNumber(
-            previous.averageWeight
-        );
-
-
-    const closingWeight =
-        reportNumber(
-            current.averageWeight
-        );
-
-
-    const openingBirds =
-        reportNumber(
-            previous.liveBirds
-        );
-
-
-    const closingBirds =
-        reportNumber(
-            current.liveBirds
-        );
-
-
-    if (
-        ![
-            feed,
-            openingWeight,
-            closingWeight,
-            openingBirds,
-            closingBirds
-        ]
-        .every(
-            Number.isFinite
-        )
-    ) {
-
-        return null;
-
-    }
-
-
-    if (
-        feed <= 0 ||
-        openingWeight < 0 ||
-        closingWeight <= 0 ||
-        openingBirds <= 0 ||
-        closingBirds <= 0
-    ) {
-
-        return null;
-
-    }
-
-
-    if (
-        typeof calculateBroilerFCR ===
-        "function"
-    ) {
-
-        try {
-
-            const result =
-                calculateBroilerFCR({
-
-                    feedKg:
-                        feed,
-
-                    openingBirds:
-                        openingBirds,
-
-                    closingBirds:
-                        closingBirds,
-
-                    openingAverageWeightG:
-                        openingWeight,
-
-                    closingAverageWeightG:
-                        closingWeight
-
-                });
-
-
-            if (
-                Number.isFinite(
-                    Number(result)
-                )
-            ) {
-
-                return Number(
-                    result
-                );
-
-            }
-
-        }
-
-        catch (error) {
-
-            console.warn(
-                "calculateBroilerFCR error:",
-                error
-            );
-
-        }
-
-    }
-
-
-    const gainKg =
-        (
-            closingBirds *
-            closingWeight
-            -
-            openingBirds *
-            openingWeight
-        ) /
-        1000;
-
-
-    if (
-        gainKg <= 0
-    ) {
-
-        return null;
-
-    }
-
-
-    return Number(
-        (
-            feed /
-            gainKg
-        )
-        .toFixed(3)
-    );
-
+    const gainKg = (closingBirds * closingWeight - openingBirds * openingWeight) / 1000;
+    return gainKg > 0 ? Number((feed / gainKg).toFixed(3)) : null;
 }
 
+function getReportSpecializedMetric(standard, metric, ageDays) {
+    const direct = getReportStandardMeta(standard, metric, ageDays);
+    if (direct && direct.value != null) return direct;
+    // Aliases used by the weekly-specialized form and reports.
+    const aliases = {
+        henDayProduction: "henDayProduction",
+        henHousedProduction: "henHousedProduction",
+        eggProduction: "eggProduction",
+        eggWeight: "eggWeight",
+        eggMass: "eggMass",
+        fertility: "fertility",
+        hatchability: "hatchability",
+        uniformity10: "uniformity10",
+        uniformity15: "uniformity15",
+        cv: "cv",
+        fcr: "fcr"
+    };
+    const key = aliases[metric] || metric;
+    return getReportStandardMeta(standard, key, ageDays);
+}
+
+function getActualSpecializedMetric(record, metric) {
+    const m = record?.productionMetrics || {};
+    const map = {
+        eggProduction: m.hen_day_pct ?? m.egg_production ?? null,
+        henDayProduction: m.hen_day_pct ?? null,
+        henHousedProduction: m.hen_housed_pct ?? null,
+        eggWeight: m.egg_weight_g ?? null,
+        eggMass: m.egg_mass_kg ?? null,
+        fertility: m.fertility_pct ?? null,
+        hatchability: m.hatchability_pct ?? null,
+        hatchingEggProduction: m.hatching_egg_pct ?? null,
+        uniformity10: record?.uniformity10 ?? null,
+        uniformity15: record?.uniformity15 ?? null,
+        cv: record?.cv ?? null,
+        bodyWeight: record?.averageWeight ?? null,
+        fcr: record?.fcr ?? null
+    };
+    const value = map[metric];
+    return value == null ? null : reportNumber(value);
+}
+
+if (typeof window !== "undefined") {
+    window.getReportSpecializedMetric = getReportSpecializedMetric;
+    window.getActualSpecializedMetric = getActualSpecializedMetric;
+}
 
 /* =========================================================
    CUMULATIVE FCR

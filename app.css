@@ -1862,362 +1862,219 @@ th {
    ADINE PROFESSIONAL SVG ICON SYSTEM
 ========================================================= */
 
-.adi-icon {
-
-    display:
-        inline-flex;
-
-    align-items:
-        center;
-
-    justify-content:
-        center;
-
-    flex-shrink:
-        0;
-
-    line-height:
-        0;
-
-}
-
-
-.adi-icon svg {
-
-    display:
-        block;
-
-    width:
-        100%;
-
-    height:
-        100%;
-
-    fill:
-        none;
-
-    stroke:
-        currentColor;
-
-    stroke-width:
-        2.25;
-
-    stroke-linecap:
-        round;
-
-    stroke-linejoin:
-        round;
-
-}
-
+/* ============================================================
+   ADINE ICONS - FINAL CSS
+============================================================ */
 
 .menu-icon {
 
-    display:
-        flex;
+    width: 54px !important;
+    height: 54px !important;
 
-    align-items:
-        center;
+    min-width: 54px !important;
 
-    justify-content:
-        center;
+    display: flex !important;
 
-    width:
-        58px;
+    align-items: center !important;
+    justify-content: center !important;
 
-    height:
-        58px;
+    overflow: hidden;
 
-    min-width:
-        58px;
-
-    border-radius:
-        18px;
+    border-radius: 16px;
 
     background:
         linear-gradient(
             145deg,
-            #edf5f1,
+            #edf6f1,
             #ffffff
         );
 
-    color:
-        #173f35;
+    color: #315f50;
 
     border:
         1px solid
-        rgba(
-            23,
-            63,
-            53,
-            .10
-        );
-
-    box-shadow:
-        0 5px 16px
-        rgba(
-            23,
-            63,
-            53,
-            .08
-        );
+        rgba(23,63,53,.10);
 
 }
 
 
-.menu-icon .adi-icon {
+.adi-svg-icon {
 
-    width:
-        34px;
+    display: inline-flex !important;
 
-    height:
-        34px;
+    align-items: center !important;
+    justify-content: center !important;
 
-}
+    width: 100% !important;
+    height: 100% !important;
 
+    line-height: 0;
 
-.menu-card:hover .menu-icon {
-
-    transform:
-        translateY(-1px)
-        scale(1.03);
+    color: inherit;
 
 }
 
 
-.menu-icon {
+.adi-svg-icon svg {
 
-    transition:
-        transform .18s ease,
-        box-shadow .18s ease;
+    display: block !important;
 
-}
+    width: 34px !important;
+    height: 34px !important;
 
+    fill: none !important;
 
-.bottom-nav button,
-.bottom-nav a {
+    stroke: currentColor !important;
 
-    position:
-        relative;
+    stroke-width: 2.2;
 
-}
+    stroke-linecap: round;
 
-
-.bottom-nav .adi-icon {
-
-    width:
-        23px;
-
-    height:
-        23px;
-
-    margin:
-        0 auto 3px;
-
-    color:
-        currentColor;
+    stroke-linejoin: round;
 
 }
 
 
-.bottom-nav .adi-icon-label {
+.menu-icon .adi-generated {
 
-    display:
-        block;
-
-    line-height:
-        1.2;
+    width: 34px !important;
+    height: 34px !important;
 
 }
 
 
-.status-icon {
+.menu-icon .adi-generated svg {
 
-    display:
-        flex;
-
-    align-items:
-        center;
-
-    justify-content:
-        center;
+    width: 34px !important;
+    height: 34px !important;
 
 }
 
 
-.status-icon .adi-icon {
-
-    width:
-        27px;
-
-    height:
-        27px;
-
-}
-
-
-.adi-icon-status svg {
-
-    stroke-width:
-        2.6;
-
-}
-
-
-.health-action .adi-icon,
-.action-card .adi-icon,
-.quick-action .adi-icon,
-.nav-item .adi-icon {
-
-    width:
-        30px;
-
-    height:
-        30px;
-
-}
-
-
-[data-icon] {
-
-    display:
-        inline-flex;
-
-    align-items:
-        center;
-
-    justify-content:
-        center;
-
-}
-
-
-[data-icon] .adi-icon {
-
-    width:
-        30px;
-
-    height:
-        30px;
-
-}
-
-
-/* رنگ‌بندی تخصصی آیکون‌ها */
+/* رنگ اختصاصی کارت‌ها */
 
 .menu-card:nth-child(1) .menu-icon {
-    color: #315f50;
+    color: #376b59;
 }
 
 .menu-card:nth-child(2) .menu-icon {
-    color: #8a5b25;
+    color: #47715e;
 }
 
 .menu-card:nth-child(3) .menu-icon {
-    color: #315f50;
+    color: #647b8a;
 }
 
 .menu-card:nth-child(4) .menu-icon {
-    color: #567d9a;
+    color: #4f718e;
 }
 
 .menu-card:nth-child(5) .menu-icon {
-    color: #8a4650;
+    color: #805761;
 }
 
 .menu-card:nth-child(6) .menu-icon {
-    color: #526b84;
+    color: #59657d;
 }
 
 .menu-card:nth-child(7) .menu-icon {
-    color: #69724a;
+    color: #716553;
 }
 
 .menu-card:nth-child(8) .menu-icon {
-    color: #5f596f;
+    color: #586e65;
 }
 
 
-/* جلوگیری از کوچک شدن آیکون‌ها در iPhone */
+/* Bottom navigation */
 
-@media (max-width: 600px) {
+.bottom-nav button > span {
+
+    display: flex !important;
+
+    align-items: center !important;
+    justify-content: center !important;
+
+    width: 26px !important;
+    height: 26px !important;
+
+}
+
+
+.bottom-nav .adi-svg-icon {
+
+    width: 25px !important;
+    height: 25px !important;
+
+}
+
+
+.bottom-nav .adi-svg-icon svg {
+
+    width: 23px !important;
+    height: 23px !important;
+
+}
+
+
+/* وضعیت */
+
+.status-icon .adi-svg-icon {
+
+    width: 28px !important;
+    height: 28px !important;
+
+}
+
+
+.status-icon .adi-svg-icon svg {
+
+    width: 28px !important;
+    height: 28px !important;
+
+}
+
+
+/* موبایل */
+
+@media (max-width:600px) {
 
     .menu-icon {
 
-        width:
-            54px;
+        width: 50px !important;
+        height: 50px !important;
 
-        height:
-            54px;
-
-        min-width:
-            54px;
-
-        border-radius:
-            16px;
+        min-width: 50px !important;
 
     }
 
+    .menu-icon .adi-generated,
+    .menu-icon .adi-generated svg {
 
-    .menu-icon .adi-icon {
-
-        width:
-            32px;
-
-        height:
-            32px;
-
-    }
-
-
-    .bottom-nav .adi-icon {
-
-        width:
-            22px;
-
-        height:
-            22px;
+        width: 32px !important;
+        height: 32px !important;
 
     }
 
 }
 
 
-/* حالت لمس iPhone */
-
-@media (hover: none) {
-
-    .menu-card:hover .menu-icon {
-
-        transform:
-            none;
-
-    }
-
-}
-
-
-/* حذف Highlight پیش‌فرض Safari */
-
-.menu-card,
-.bottom-nav button,
-.bottom-nav a,
-button {
-
-    -webkit-tap-highlight-color:
-        transparent;
-
-}
-
-
-/* دسترسی‌پذیری */
-
-@media (prefers-reduced-motion: reduce) {
+@media (max-width:380px) {
 
     .menu-icon {
 
-        transition:
-            none;
+        width: 46px !important;
+        height: 46px !important;
+
+        min-width: 46px !important;
+
+    }
+
+    .menu-icon .adi-generated,
+    .menu-icon .adi-generated svg {
+
+        width: 29px !important;
+        height: 29px !important;
 
     }
 

@@ -12,6 +12,7 @@ document.addEventListener("DOMContentLoaded", () => {
         return;
     }
 
+
     /* =====================================================
        MESSAGE
     ===================================================== */
@@ -35,6 +36,110 @@ document.addEventListener("DOMContentLoaded", () => {
 
 
     /* =====================================================
+       SUPABASE ERROR → PERSIAN MESSAGE
+    ===================================================== */
+
+    function getPersianLoginError(error) {
+
+        const rawMessage =
+            String(error?.message || "")
+                .trim();
+
+        const normalized =
+            rawMessage
+                .toLowerCase()
+                .replace(/\s+/g, " ");
+
+
+        /*
+         * اطلاعات ورود اشتباه
+         */
+        if (
+            normalized.includes("invalid login credentials") ||
+            normalized.includes("invalid credentials") ||
+            normalized.includes("invalid email or password") ||
+            normalized.includes("email or password") ||
+            normalized.includes("wrong password") ||
+            normalized.includes("incorrect password")
+        ) {
+
+            return "ایمیل یا رمز عبور اشتباه است.";
+        }
+
+
+        /*
+         * ایمیل تأیید نشده
+         */
+        if (
+            normalized.includes("email not confirmed") ||
+            normalized.includes("email_not_confirmed") ||
+            normalized.includes("email confirmation")
+        ) {
+
+            return "ایمیل شما هنوز تأیید نشده است.";
+        }
+
+
+        /*
+         * کاربر پیدا نشد
+         */
+        if (
+            normalized.includes("user not found") ||
+            normalized.includes("user_not_found")
+        ) {
+
+            return "حساب کاربری پیدا نشد.";
+        }
+
+
+        /*
+         * محدودیت درخواست ورود
+         */
+        if (
+            normalized.includes("too many requests") ||
+            normalized.includes("rate limit") ||
+            normalized.includes("rate_limit")
+        ) {
+
+            return "تعداد تلاش‌های ورود بیش از حد مجاز است. لطفاً چند دقیقه بعد دوباره تلاش کنید.";
+        }
+
+
+        /*
+         * شبکه
+         */
+        if (
+            normalized.includes("network") ||
+            normalized.includes("failed to fetch") ||
+            normalized.includes("fetch failed") ||
+            normalized.includes("networkerror")
+        ) {
+
+            return "ارتباط با سامانه برقرار نشد. اتصال اینترنت را بررسی کنید.";
+        }
+
+
+        /*
+         * سرویس احراز هویت
+         */
+        if (
+            normalized.includes("service unavailable") ||
+            normalized.includes("temporarily unavailable")
+        ) {
+
+            return "سرویس ورود موقتاً در دسترس نیست. لطفاً دوباره تلاش کنید.";
+        }
+
+
+        /*
+         * اگر Supabase خطای دیگری داد،
+         * متن انگلیسی آن را مستقیماً نمایش نمی‌دهیم.
+         */
+        return "ورود انجام نشد. ایمیل و رمز عبور خود را بررسی کنید.";
+    }
+
+
+    /* =====================================================
        URL MESSAGE
     ===================================================== */
 
@@ -54,7 +159,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
 
     /* =====================================================
-       PASSWORD VISIBILITY
+       PASSWORD SHOW / HIDE
     ===================================================== */
 
     if (togglePassword) {
@@ -63,22 +168,25 @@ document.addEventListener("DOMContentLoaded", () => {
             "click",
             () => {
 
-                const visible =
+                const isVisible =
                     passwordInput.type === "text";
 
+
                 passwordInput.type =
-                    visible
+                    isVisible
                         ? "password"
                         : "text";
 
+
                 togglePassword.textContent =
-                    visible
+                    isVisible
                         ? "نمایش"
                         : "پنهان";
 
+
                 togglePassword.setAttribute(
                     "aria-label",
-                    visible
+                    isVisible
                         ? "نمایش رمز"
                         : "پنهان کردن رمز"
                 );
@@ -90,7 +198,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
 
     /* =====================================================
-       LOGIN
+       LOGIN SUBMIT
     ===================================================== */
 
     form.addEventListener(
@@ -99,18 +207,20 @@ document.addEventListener("DOMContentLoaded", () => {
 
             event.preventDefault();
 
+
             /*
-             * جلوگیری از ارسال دوباره فرم
+             * جلوگیری از دوبار کلیک
              */
             if (button.disabled) {
                 return;
             }
 
+
             hideMessage();
 
 
             /* =================================================
-               GET FORM VALUES
+               VALUES
             ================================================= */
 
             const email =
@@ -126,12 +236,40 @@ document.addEventListener("DOMContentLoaded", () => {
                VALIDATION
             ================================================= */
 
-            if (!email || !password) {
+            if (!email && !password) {
 
                 showMessage(
                     "ایمیل و رمز عبور را وارد کنید.",
                     "error"
                 );
+
+                emailInput.focus();
+
+                return;
+            }
+
+
+            if (!email) {
+
+                showMessage(
+                    "لطفاً ایمیل خود را وارد کنید.",
+                    "error"
+                );
+
+                emailInput.focus();
+
+                return;
+            }
+
+
+            if (!password) {
+
+                showMessage(
+                    "لطفاً رمز عبور خود را وارد کنید.",
+                    "error"
+                );
+
+                passwordInput.focus();
 
                 return;
             }
@@ -155,7 +293,7 @@ document.addEventListener("DOMContentLoaded", () => {
             try {
 
                 /* =================================================
-                   SUPABASE LOGIN
+                   SUPABASE AUTH
                 ================================================= */
 
                 const {
@@ -169,7 +307,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
 
                 /* =================================================
-                   SUPABASE ERROR
+                   LOGIN ERROR
                 ================================================= */
 
                 if (error) {
@@ -179,30 +317,16 @@ document.addEventListener("DOMContentLoaded", () => {
                         error
                     );
 
-                    const errorText =
-                        String(error.message || "")
-                            .toLowerCase();
 
-
-                    if (
-                        errorText.includes(
-                            "email not confirmed"
-                        )
-                    ) {
-
-                        showMessage(
-                            "ایمیل شما هنوز تأیید نشده است.",
-                            "error"
-                        );
-
-                    } else {
-
-                        showMessage(
-                            error.message ||
-                            "ورود انجام نشد.",
-                            "error"
-                        );
-                    }
+                    /*
+                     * مهم:
+                     * هیچ متن خام انگلیسی Supabase
+                     * مستقیماً به کاربر نشان داده نمی‌شود.
+                     */
+                    showMessage(
+                        getPersianLoginError(error),
+                        "error"
+                    );
 
                     return;
                 }
@@ -224,7 +348,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
 
                 /* =================================================
-                   GET USER PROFILE
+                   PROFILE
                 ================================================= */
 
                 const profile =
@@ -254,22 +378,20 @@ document.addEventListener("DOMContentLoaded", () => {
                    ACCOUNT STATUS
                 ================================================= */
 
-                /*
-                 * مهم:
-                 * منطق اصلی AdineAuth دست‌نخورده باقی مانده است.
-                 */
-
                 if (!AdineAuth.isActiveProfile(profile)) {
 
-                    const text =
+                    const accessMessage =
                         AdineAuth.getAccessMessage(
                             profile
                         );
 
+
                     await supabaseClient.auth.signOut();
 
+
                     showMessage(
-                        text,
+                        accessMessage ||
+                        "دسترسی حساب شما به سامانه فعال نیست.",
                         "error"
                     );
 
@@ -337,9 +459,9 @@ document.addEventListener("DOMContentLoaded", () => {
                     error
                 );
 
+
                 showMessage(
-                    error.message ||
-                    "خطایی در ورود رخ داد. اتصال اینترنت و تنظیمات سامانه را بررسی کنید.",
+                    "خطایی هنگام ورود رخ داد. اتصال اینترنت و تنظیمات سامانه را بررسی کنید.",
                     "error"
                 );
 
